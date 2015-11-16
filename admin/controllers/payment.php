@@ -4,13 +4,13 @@
  * Manage payments
  *
  * @package     Nails
- * @subpackage  module-payment-payment
- * @category    Controller
+ * @subpackage  module-order-payment
+ * @category    AdminController
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Admin\Payment;
+namespace Nails\Admin\Order;
 
 use Nails\Factory;
 use Nails\Admin\Helper;
@@ -31,7 +31,7 @@ class Payment extends Base
         if (userHasPermission('admin:order:payment:manage')) {
 
             $navGroup = new \Nails\Admin\Nav('Orders &amp; Payments', 'fa-credit-card');
-            $navGroup->addAction('Manage payments');
+            $navGroup->addAction('Manage Payments');
 
             return $navGroup;
         }

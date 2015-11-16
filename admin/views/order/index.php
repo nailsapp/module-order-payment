@@ -58,7 +58,7 @@
 
                     ?>
                     <tr>
-                        <td colspan="2" class="no-data">
+                        <td colspan="3" class="no-data">
                             No Orders Found
                         </td>
                     </tr>

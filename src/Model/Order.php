@@ -12,6 +12,14 @@
 
 namespace Nails\OrderPayment\Model;
 
-class Order
+use Nails\Common\Model\Base;
+
+class Order extends Base
 {
+    public function __construct()
+    {
+        parent::__construct();
+        $this->table       = NAILS_DB_PREFIX . 'orderpayment_order';
+        $this->tablePrefix = 'opo';
+    }
 }

@@ -5,7 +5,7 @@
  *
  * @package     Nails
  * @subpackage  module-order-payment
- * @category    Controller
+ * @category    AdminController
  * @author      Nails Dev Team
  * @link
  */
@@ -31,7 +31,7 @@ class Order extends Base
         if (userHasPermission('admin:order:order:manage')) {
 
             $navGroup = new \Nails\Admin\Nav('Orders &amp; Payments', 'fa-credit-card');
-            $navGroup->addAction('Manage orders');
+            $navGroup->addAction('Manage Orders');
 
             return $navGroup;
         }
@@ -64,7 +64,7 @@ class Order extends Base
     {
         parent::__construct();
 
-        $this->oOrderModel = Factory::model('ORder', 'nailsapp/module-order-payment');
+        $this->oOrderModel = Factory::model('Order', 'nailsapp/module-order-payment');
     }
 
     // --------------------------------------------------------------------------
