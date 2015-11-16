@@ -1,6 +1,6 @@
 {
     "name": "nailsapp/module-order-payment",
-    "keywords": ["Nails", "Shed Collective", "CodeIgniter", "Orders & Payments Module"],
+    "keywords": ["Nails", "Shed Collective", "CodeIgniter", "Orders Payments Module"],
     "homepage": "http://nailsapp.co.uk/modules/order-payment",
     "description": "This is the Orders & Payments module for nails, it provides an interface for accepting payment from customers.",
     "license": "MIT",
