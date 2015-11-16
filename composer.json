@@ -21,7 +21,9 @@
     "prefer-stable": true,
     "require":
     {
-        "nailsapp/common": "dev-develop"
+        "nailsapp/common": "dev-develop",
+        "nailsapp/driver-order-payment-stripe": "dev-develop",
+        "nailsapp/driver-order-payment-gocardless": "dev-develop"
     },
     "require-dev":
     {
