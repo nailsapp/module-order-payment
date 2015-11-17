@@ -245,9 +245,8 @@ class Payment extends Base
      */
     protected function validatePost()
     {
-        $this->load->library('form_validation');
-
-        return $this->form_validation->run();
+        $oFormValidation = Factory::service('FormValidation');
+        return $oFormValidation->run();
     }
 
     // --------------------------------------------------------------------------
