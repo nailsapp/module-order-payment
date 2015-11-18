@@ -30,7 +30,9 @@ class Order extends Base
     {
         if (userHasPermission('admin:order:order:manage')) {
 
-            $navGroup = new \Nails\Admin\Nav('Orders &amp; Payments', 'fa-credit-card');
+            $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+            $navGroup->setLabel('Orders &amp; Payments');
+            $navGroup->setIcon('fa-credit-card');
             $navGroup->addAction('Manage Orders');
 
             return $navGroup;

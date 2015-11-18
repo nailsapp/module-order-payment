@@ -1,8 +1,11 @@
 <div class="group-order-payment order browse">
+    <p>
+        Browse orders which have been generated.
+    </p>
     <?php
 
-        echo \Nails\Admin\Helper::loadSearch($search);
-        echo \Nails\Admin\Helper::loadPagination($pagination);
+        echo adminHelper('loadSearch', $search);
+        echo adminHelper('loadPagination', $pagination);
 
     ?>
     <div class="table-responsive">
@@ -26,7 +29,7 @@
                             <td class="quote">
                                 <?=$oOrder->ref?>
                             </td>
-                            <?=\Nails\Admin\Helper::loadUserCell($oOrder->user_id)?>
+                            <?=adminHelper('loadUserCell', $oOrder->user_id)?>
                             <td class="actions">
                                 <?php
 
@@ -71,7 +74,8 @@
     </div>
     <?php
 
-        echo \Nails\Admin\Helper::loadPagination($pagination);
+        echo adminHelper('loadPagination', $pagination);
+        echo adminHelper('loadPagination', $pagination);
 
     ?>
 </div>

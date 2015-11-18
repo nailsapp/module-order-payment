@@ -1,15 +1,23 @@
 <div class="group-payment-payment payment browse">
+    <p>
+        Browse payments received by the site.
+    </p>
     <?php
 
-        echo \Nails\Admin\Helper::loadSearch($search);
-        echo \Nails\Admin\Helper::loadPagination($pagination);
+        echo adminHelper('loadSearch', $search);
+        echo adminHelper('loadPagination', $pagination);
 
     ?>
     <div class="table-responsive">
         <table>
             <thead>
                 <tr>
-                    <th class="ref">Ref</th>
+                    <th class="processor">Processor</th>
+                    <th class="order">Order</th>
+                    <th class="trans-id">Transaction ID</th>
+                    <th class="amount">Amount</th>
+                    <th class="currency">Currency</th>
+                    <th class="datetime">Received</th>
                     <th class="actions">Actions</th>
                 </tr>
             </thead>
@@ -22,29 +30,57 @@
 
                         ?>
                         <tr>
-                            <td class="quote">
-                                <?=$oPayment->ref?>
+                            <td class="processor">
+                                <?php
+
+                                if (empty($drivers[$oPayment->processor])) {
+                                    echo $oPayment->processor;
+                                    ?>
+                                    <small class="text-danger">
+                                        <b class="fa fa-exclamation-triangle"></b>
+                                        Payment Processor not installed
+                                    </small>
+                                    <?php
+
+                                } else {
+                                    echo $drivers[$oPayment->processor]->getLabel();
+                                }
+
+                                ?>
                             </td>
+                            <td class="order">
+                                <?php
+
+                                if (empty($oPayment->order)) {
+
+                                } else {
+
+                                    echo anchor(
+                                        'admin/order/order/view/' . $oPayment->order->id,
+                                        $oPayment->order->ref
+                                    );
+                                }
+
+                                ?>
+                            </td>
+                            <td class="trans-id">
+                                <?=$oPayment->transaction_id?>
+                            </td>
+                            <td class="amount">
+                                <?=$oPayment->amount?>
+                            </td>
+                            <td class="currency">
+                                <?=$oPayment->currency?>
+                            </td>
+                            <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
                             <td class="actions">
                                 <?php
 
-                                if (userHasPermission('admin:payment:payment:edit')) {
-
-                                    echo anchor(
-                                        'admin/order/payment/edit/' . $oPayment->id,
-                                        lang('action_edit'),
-                                        'class="awesome small"'
-                                    );
-                                }
-
-                                if (userHasPermission('admin:payment:payment:delete')) {
-
-                                    echo anchor(
-                                        'admin/order/payment/delete/' . $oPayment->id,
-                                        lang('action_delete'),
-                                        'class="awesome red small confirm" data-body="You cannot undo this action"'
-                                    );
-                                }
+                                echo anchor(
+                                    'admin/order/payment/view/' . $oPayment->id,
+                                    lang('action_view'),
+                                    'class="btn btn-xs btn-primary"'
+                                );
 
                                 ?>
                             </td>
@@ -69,7 +105,7 @@
     </div>
     <?php
 
-        echo \Nails\Admin\Helper::loadPagination($pagination);
+        echo adminHelper('loadPagination', $pagination);
 
     ?>
 </div>

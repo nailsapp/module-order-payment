@@ -15,6 +15,13 @@ return array(
             } else {
                 return new \Nails\OrderPayment\Model\Payment();
             }
+        },
+        'Processor' => function () {
+            if (class_exists('\App\OrderPayment\Model\Processor')) {
+                return new \App\OrderPayment\Model\Processor();
+            } else {
+                return new \Nails\OrderPayment\Model\Processor();
+            }
         }
     )
 );

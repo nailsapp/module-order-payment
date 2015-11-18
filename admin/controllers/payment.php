@@ -19,6 +19,7 @@ use Nails\Admin\Controller\Base;
 class Payment extends Base
 {
     protected $oPaymentModel;
+    protected $oProcessorModel;
 
     // --------------------------------------------------------------------------
 
@@ -30,7 +31,9 @@ class Payment extends Base
     {
         if (userHasPermission('admin:order:payment:manage')) {
 
-            $navGroup = new \Nails\Admin\Nav('Orders &amp; Payments', 'fa-credit-card');
+            $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+            $navGroup->setLabel('Orders &amp; Payments');
+            $navGroup->setIcon('fa-credit-card');
             $navGroup->addAction('Manage Payments');
 
             return $navGroup;
@@ -48,9 +51,6 @@ class Payment extends Base
         $permissions = parent::permissions();
 
         $permissions['manage'] = 'Can manage payments';
-        $permissions['create'] = 'Can create payments';
-        $permissions['edit']   = 'Can edit payments';
-        $permissions['delete'] = 'Can delete payments';
 
         return $permissions;
     }
@@ -64,7 +64,8 @@ class Payment extends Base
     {
         parent::__construct();
 
-        $this->oPaymentModel = Factory::model('Payment', 'nailsapp/module-order-payment');
+        $this->oPaymentModel   = Factory::model('Payment', 'nailsapp/module-order-payment');
+        $this->oProcessorModel = Factory::model('Processor', 'nailsapp/module-order-payment');
     }
 
     // --------------------------------------------------------------------------
@@ -100,8 +101,33 @@ class Payment extends Base
 
         //  Define the sortable columns
         $sortColumns = array(
-            $sTablePrefix . '.created'  => 'Created Date',
-            $sTablePrefix . '.modified' => 'Modified Date'
+            $sTablePrefix . '.created'        => 'Received Date',
+            $sTablePrefix . '.processor'      => 'Payment Processor',
+            $sTablePrefix . '.order_id'       => 'Order ID',
+            $sTablePrefix . '.transaction_id' => 'Transaction ID',
+            $sTablePrefix . '.amount'         => 'Amount',
+            $sTablePrefix . '.currency'       => 'Currency'
+        );
+
+        // --------------------------------------------------------------------------
+
+        //  Define the filters
+        $aCbFilters = array();
+        $aOptions   = array();
+        $aDrivers   = $this->oProcessorModel->getAll();
+
+        foreach ($aDrivers as $sSlug => $oDriver) {
+            $aOptions[] = array(
+                $oDriver->getLabel(),
+                $sSlug,
+                true
+            );
+        }
+
+        $aCbFilters[] = Helper::searchFilterObject(
+            $sTablePrefix . '.processor',
+            'Processor',
+            $aOptions
         );
 
         // --------------------------------------------------------------------------
@@ -111,23 +137,27 @@ class Payment extends Base
             'sort' => array(
                 array($sortOn, $sortOrder)
             ),
-            'keywords' => $keywords
+            'keywords'  => $keywords,
+            'cbFilters' => $aCbFilters
         );
 
         //  Get the items for the page
         $totalRows              = $this->oPaymentModel->count_all($data);
         $this->data['payments'] = $this->oPaymentModel->get_all($page, $perPage, $data);
+        $this->data['drivers']  = $aDrivers;
 
         //  Set Search and Pagination objects for the view
-        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords);
+        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
         $this->data['pagination'] = Helper::paginationObject($page, $perPage, $totalRows);
 
+        // --------------------------------------------------------------------------
+
         //  Add a header button
-        if (userHasPermission('admin:order:payment:create')) {
+        if (userHasPermission('admin:order:order:create')) {
 
              Helper::addHeaderButton(
-                'admin/order/payment/create',
-                'Create Payment'
+                'admin/order/order/create',
+                'Request Payment'
             );
         }
 
@@ -139,164 +169,16 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Create a new payment
+     * View a single payment
      * @return void
      */
-    public function create()
+    public function view()
     {
-        if (!userHasPermission('admin:order:payment:create')) {
-
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Page Title
-        $this->data['page']->title = 'Create Payment';
-
-        // --------------------------------------------------------------------------
-
-        if ($this->input->post()) {
-
-            if ($this->validatePost()) {
-
-                if ($this->oPaymentModel->create($this->getObjectFromPost())) {
-
-                    $this->session->set_flashdata('success', 'Payment created successfully.');
-                    redirect('admin/order/payment/index');
-
-                } else {
-
-                    $this->data['error'] = 'Failed to create payment. ' . $this->oPaymentModel->last_error();
-                }
-
-            } else {
-
-                $this->data['error'] = lang('fv_there_were_errors');
-            }
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Load views
-        Helper::loadView('edit');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Edit an payment
-     * @return void
-     */
-    public function edit()
-    {
-        if (!userHasPermission('admin:order:payment:edit')) {
-
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
         $this->data['payment'] = $this->oPaymentModel->get_by_id($this->uri->segment(5));
 
-        if (!$this->data['payment']) {
-
+        if (empty($this->data['payment'])) {
             show_404();
         }
-
-        // --------------------------------------------------------------------------
-
-        //  Page Title
-        $this->data['page']->title = 'Edit Payment &rsaquo; ' . $this->data['payment']->ref;
-
-        // --------------------------------------------------------------------------
-
-        if ($this->input->post()) {
-
-            if ($this->validatePost()) {
-
-                if ($this->oPaymentModel->update($this->data['payment']->id, $this->getObjectFromPost())) {
-
-                    $this->session->set_flashdata('success', lang('payments_edit_ok'));
-                    redirect('admin/order/payment/index');
-
-                } else {
-
-                    $this->data['error'] = 'Failed to update payment. ' . $this->oPaymentModel->last_error();
-                }
-
-            } else {
-
-                $this->data['error'] = lang('fv_there_were_errors');
-            }
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Load views
-        Helper::loadView('edit');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Validate the POST data
-     * @return boolean
-     */
-    protected function validatePost()
-    {
-        $oFormValidation = Factory::service('FormValidation');
-        return $oFormValidation->run();
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Get an object generated from the POST data
-     * @return array
-     */
-    protected function getObjectFromPost()
-    {
-        $aData = array();
-
-        return $aData;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Delete an payment
-     * @return void
-     */
-    public function delete()
-    {
-        if (!userHasPermission('admin:order:payment:delete')) {
-
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        $oPayment = $this->oPaymentModel->get_by_id($this->uri->segment(5));
-        if (!$oPayment) {
-
-            show_404();
-        }
-
-        // --------------------------------------------------------------------------
-
-        if ($this->oPaymentModel->delete($oPayment->id)) {
-
-            $sStatus  = 'success';
-            $sMessage = 'Payment deleted successfully!';
-
-        } else {
-
-            $sStatus  = 'error';
-            $sMessage = 'Payment failed to delete. ' . $this->oPaymentModel->last_error();
-        }
-
-        $this->session->set_flashdata($sStatus, $sMessage);
-        redirect('admin/order/payment/index');
+        Helper::loadView('view');
     }
 }
