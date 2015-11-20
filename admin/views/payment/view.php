@@ -1,4 +1,4 @@
-<div class="group-order-payment payment view">
+<div class="group-invoice payment view">
     <p class="alert alert-warning">
         @todo: View a payment
     </p>

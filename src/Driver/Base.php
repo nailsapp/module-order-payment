@@ -4,19 +4,19 @@
  * Payment driver base
  *
  * @package     Nails
- * @subpackage  module-order-payment
+ * @subpackage  module-invoice
  * @category    Interface
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\OrderPayment\Driver;
+namespace Nails\Invoice\Driver;
 
-use Nails\OrderPayment\Exception\DriverException;
+use Nails\Invoice\Exception\DriverException;
 
 class Base
 {
-    protected $sLabel = 'Untitled Processor';
+    protected $sLabel = 'Untitled Driver';
 
     // --------------------------------------------------------------------------
 

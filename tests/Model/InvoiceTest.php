@@ -1,8 +1,8 @@
 <?php
 
-namespace Nails\OrderPayment\Model;
+namespace Nails\Invoice\Model;
 
-class OrderTest extends \PHPUnit_Framework_TestCase
+class InvoiceTest extends \PHPUnit_Framework_TestCase
 {
     public function testFoo()
     {

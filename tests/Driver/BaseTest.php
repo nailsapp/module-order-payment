@@ -1,8 +1,8 @@
 <?php
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Driver;
 
-class PaymentTest extends \PHPUnit_Framework_TestCase
+class BaseTest extends \PHPUnit_Framework_TestCase
 {
     public function testFoo()
     {

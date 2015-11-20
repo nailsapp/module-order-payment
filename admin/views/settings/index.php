@@ -4,7 +4,7 @@
 $oInput = nailsFactory('service', 'Input');
 
 ?>
-<div class="group-order-payment settings">
+<div class="group-invoice settings">
     <?php
 
         echo form_open();
@@ -14,7 +14,7 @@ $oInput = nailsFactory('service', 'Input');
     <ul class="tabs" data-active-tab-input="#active-tab">
         <?php
 
-        if (userHasPermission('admin:order:settings:misc')) {
+        if (userHasPermission('admin:invoice:settings:misc')) {
 
             ?>
             <li class="tab">
@@ -23,7 +23,7 @@ $oInput = nailsFactory('service', 'Input');
             <?php
         }
 
-        if (userHasPermission('admin:order:settings:drivers')) {
+        if (userHasPermission('admin:invoice:settings:drivers')) {
 
             ?>
             <li class="tab">
@@ -37,7 +37,7 @@ $oInput = nailsFactory('service', 'Input');
     <section class="tabs">
         <?php
 
-        if (userHasPermission('admin:order:settings:misc')) {
+        if (userHasPermission('admin:invoice:settings:misc')) {
 
             ?>
             <div class="tab-page tab-misc">
@@ -53,7 +53,7 @@ $oInput = nailsFactory('service', 'Input');
             <?php
         }
 
-        if (userHasPermission('admin:order:settings:drivers')) {
+        if (userHasPermission('admin:invoice:settings:drivers')) {
 
             ?>
             <div class="tab-page tab-drivers">

@@ -1,6 +1,6 @@
-<div class="group-order-payment order browse">
+<div class="group-invoice invoice browse">
     <p>
-        Browse orders which have been generated.
+        Browse invoices which have been raised.
     </p>
     <?php
 
@@ -20,32 +20,32 @@
             <tbody>
                 <?php
 
-                if ($orders) {
+                if ($invoices) {
 
-                    foreach ($orders as $oOrder) {
+                    foreach ($invoices as $oInvoice) {
 
                         ?>
                         <tr>
                             <td class="quote">
-                                <?=$oOrder->ref?>
+                                <?=$oInvoice->ref?>
                             </td>
-                            <?=adminHelper('loadUserCell', $oOrder->user_id)?>
+                            <?=adminHelper('loadUserCell', $oInvoice->user_id)?>
                             <td class="actions">
                                 <?php
 
-                                if (userHasPermission('admin:order:order:edit')) {
+                                if (userHasPermission('admin:invoice:invoice:edit')) {
 
                                     echo anchor(
-                                        'admin/order/order/edit/' . $oOrder->id,
+                                        'admin/invoice/invoice/edit/' . $oInvoice->id,
                                         lang('action_edit'),
                                         'class="awesome small"'
                                     );
                                 }
 
-                                if (userHasPermission('admin:order:order:delete')) {
+                                if (userHasPermission('admin:invoice:invoice:delete')) {
 
                                     echo anchor(
-                                        'admin/order/order/delete/' . $oOrder->id,
+                                        'admin/invoice/invoice/delete/' . $oInvoice->id,
                                         lang('action_delete'),
                                         'class="awesome red small confirm" data-body="You cannot undo this action"'
                                     );
@@ -62,7 +62,7 @@
                     ?>
                     <tr>
                         <td colspan="3" class="no-data">
-                            No Orders Found
+                            No Invoices Found
                         </td>
                     </tr>
                     <?php

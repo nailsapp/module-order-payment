@@ -2,7 +2,7 @@
 
 namespace Nails\Invoice\Model;
 
-class PaymentTest extends \PHPUnit_Framework_TestCase
+class InvoiceItemTest extends \PHPUnit_Framework_TestCase
 {
     public function testFoo()
     {

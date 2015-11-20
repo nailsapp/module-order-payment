@@ -1,8 +1,8 @@
 {
-    "name": "nailsapp/module-order-payment",
-    "keywords": ["Nails", "Shed Collective", "CodeIgniter", "Orders Payments Module"],
-    "homepage": "http://nailsapp.co.uk/modules/order-payment",
-    "description": "This is the Orders & Payments module for nails, it provides an interface for accepting payment from customers.",
+    "name": "nailsapp/module-invoice",
+    "keywords": ["Nails", "Shed Collective", "CodeIgniter", "Invoice Module", "Invoicing", "Payments"],
+    "homepage": "http://nailsapp.co.uk/modules/invoice",
+    "description": "This is the Invoice module for nails, it provides an interface for raising invoices and accepting payment from customers.",
     "license": "MIT",
     "authors":
     [
@@ -22,8 +22,8 @@
     "require":
     {
         "nailsapp/common": "dev-develop",
-        "nailsapp/driver-order-payment-stripe": "dev-develop",
-        "nailsapp/driver-order-payment-gocardless": "dev-develop"
+        "nailsapp/driver-invoice-stripe": "dev-develop",
+        "nailsapp/driver-invoice-gocardless": "dev-develop"
     },
     "require-dev":
     {
@@ -31,13 +31,13 @@
     },
     "autoload":
     {
-        "psr-4": {"Nails\\OrderPayment\\": "src/"}
+        "psr-4": {"Nails\\Invoice\\": "src/"}
     },
     "extra":
     {
         "nails" :
         {
-            "moduleName": "order",
+            "moduleName": "invoice",
             "type": "module"
         }
     }

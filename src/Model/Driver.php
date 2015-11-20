@@ -1,21 +1,25 @@
 <?php
 
 /**
- * Payment PRocessor model
+ * Driver model
  *
  * @package     Nails
- * @subpackage  module-order-payment
+ * @subpackage  module-invoice
  * @category    Model
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\OrderPayment\Model;
+namespace Nails\Invoice\Model;
 
-use Nails\OrderPayment\Exception\DriverException;
+use Nails\Invoice\Exception\DriverException;
 
-class Processor
+class Driver
 {
+    /**
+     * An array of discovered drivers
+     * @var array
+     */
     private $aDrivers;
 
     // --------------------------------------------------------------------------
@@ -41,13 +45,13 @@ class Processor
                     throw new DriverException('Driver name missing from driver "' . $oDriver->name . '"', 1);
                 }
 
-                $sDriverClass    = '\Nails\OrderPayment\Driver\\' . $sClassName;
+                $sDriverClass    = '\Nails\Invoice\Driver\\' . $sClassName;
                 $oDriverInstance = new $sDriverClass();
 
-                if (!($oDriverInstance instanceof \Nails\OrderPayment\Driver\Base)) {
+                if (!($oDriverInstance instanceof \Nails\Invoice\Driver\Base)) {
 
                     throw new DriverException(
-                        'Driver "' . $oDriver->name . '" must extend \Nails\OrderPayment\Driver\Base',
+                        'Driver "' . $oDriver->name . '" must extend \Nails\Invoice\Driver\Base',
                         2
                     );
 

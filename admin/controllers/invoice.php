@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Manage orders
+ * Manage invoices
  *
  * @package     Nails
- * @subpackage  module-order-payment
+ * @subpackage  module-invoice
  * @category    AdminController
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Admin\Order;
+namespace Nails\Admin\Invoice;
 
 use Nails\Factory;
 use Nails\Admin\Helper;
 use Nails\Admin\Controller\Base;
 
-class Order extends Base
+class Invoice extends Base
 {
-    protected $oOrderModel;
+    protected $oInvoiceModel;
 
     // --------------------------------------------------------------------------
 
@@ -28,12 +28,12 @@ class Order extends Base
      */
     public static function announce()
     {
-        if (userHasPermission('admin:order:order:manage')) {
+        if (userHasPermission('admin:invoice:invoice:manage')) {
 
             $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
-            $navGroup->setLabel('Orders &amp; Payments');
+            $navGroup->setLabel('Invoices &amp; Payments');
             $navGroup->setIcon('fa-credit-card');
-            $navGroup->addAction('Manage Orders');
+            $navGroup->addAction('Manage Invoices');
 
             return $navGroup;
         }
@@ -49,10 +49,10 @@ class Order extends Base
     {
         $permissions = parent::permissions();
 
-        $permissions['manage'] = 'Can manage orders';
-        $permissions['create'] = 'Can create orders';
-        $permissions['edit']   = 'Can edit orders';
-        $permissions['delete'] = 'Can delete orders';
+        $permissions['manage'] = 'Can manage invoices';
+        $permissions['create'] = 'Can create invoices';
+        $permissions['edit']   = 'Can edit invoices';
+        $permissions['delete'] = 'Can delete invoices';
 
         return $permissions;
     }
@@ -66,18 +66,18 @@ class Order extends Base
     {
         parent::__construct();
 
-        $this->oOrderModel = Factory::model('Order', 'nailsapp/module-order-payment');
+        $this->oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Browse orders
+     * Browse invoices
      * @return void
      */
     public function index()
     {
-        if (!userHasPermission('admin:order:order:manage')) {
+        if (!userHasPermission('admin:invoice:invoice:manage')) {
 
             unauthorised();
         }
@@ -85,11 +85,11 @@ class Order extends Base
         // --------------------------------------------------------------------------
 
         //  Set method info
-        $this->data['page']->title = 'Manage Orders';
+        $this->data['page']->title = 'Manage Invoices';
 
         // --------------------------------------------------------------------------
 
-        $sTablePrefix = $this->oOrderModel->getTablePrefix();
+        $sTablePrefix = $this->oInvoiceModel->getTablePrefix();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
@@ -117,19 +117,19 @@ class Order extends Base
         );
 
         //  Get the items for the page
-        $totalRows            = $this->oOrderModel->count_all($data);
-        $this->data['orders'] = $this->oOrderModel->get_all($page, $perPage, $data);
+        $totalRows            = $this->oInvoiceModel->count_all($data);
+        $this->data['invoices'] = $this->oInvoiceModel->get_all($page, $perPage, $data);
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords);
         $this->data['pagination'] = Helper::paginationObject($page, $perPage, $totalRows);
 
         //  Add a header button
-        if (userHasPermission('admin:order:order:create')) {
+        if (userHasPermission('admin:invoice:invoice:create')) {
 
              Helper::addHeaderButton(
-                'admin/order/order/create',
-                'Create Order'
+                'admin/invoice/invoice/create',
+                'Create Invoice'
             );
         }
 
@@ -141,12 +141,12 @@ class Order extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Create a new order
+     * Create a new invoice
      * @return void
      */
     public function create()
     {
-        if (!userHasPermission('admin:order:order:create')) {
+        if (!userHasPermission('admin:invoice:invoice:create')) {
 
             unauthorised();
         }
@@ -154,7 +154,7 @@ class Order extends Base
         // --------------------------------------------------------------------------
 
         //  Page Title
-        $this->data['page']->title = 'Create Order';
+        $this->data['page']->title = 'Create Invoice';
 
         // --------------------------------------------------------------------------
 
@@ -162,14 +162,14 @@ class Order extends Base
 
             if ($this->validatePost()) {
 
-                if ($this->oOrderModel->create($this->getObjectFromPost())) {
+                if ($this->oInvoiceModel->create($this->getObjectFromPost())) {
 
-                    $this->session->set_flashdata('success', 'Order created successfully.');
-                    redirect('admin/order/order/index');
+                    $this->session->set_flashdata('success', 'Invoice created successfully.');
+                    redirect('admin/invoice/invoice/index');
 
                 } else {
 
-                    $this->data['error'] = 'Failed to create order. ' . $this->oOrderModel->last_error();
+                    $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->last_error();
                 }
 
             } else {
@@ -187,21 +187,21 @@ class Order extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Edit an order
+     * Edit an invoice
      * @return void
      */
     public function edit()
     {
-        if (!userHasPermission('admin:order:order:edit')) {
+        if (!userHasPermission('admin:invoice:invoice:edit')) {
 
             unauthorised();
         }
 
         // --------------------------------------------------------------------------
 
-        $this->data['order'] = $this->oOrderModel->get_by_id($this->uri->segment(5));
+        $this->data['invoice'] = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
 
-        if (!$this->data['order']) {
+        if (!$this->data['invoice']) {
 
             show_404();
         }
@@ -209,7 +209,7 @@ class Order extends Base
         // --------------------------------------------------------------------------
 
         //  Page Title
-        $this->data['page']->title = 'Edit Order &rsaquo; ' . $this->data['order']->ref;
+        $this->data['page']->title = 'Edit Invoice &rsaquo; ' . $this->data['invoice']->ref;
 
         // --------------------------------------------------------------------------
 
@@ -217,14 +217,14 @@ class Order extends Base
 
             if ($this->validatePost()) {
 
-                if ($this->oOrderModel->update($this->data['order']->id, $this->getObjectFromPost())) {
+                if ($this->oInvoiceModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
 
-                    $this->session->set_flashdata('success', lang('orders_edit_ok'));
-                    redirect('admin/order/order/index');
+                    $this->session->set_flashdata('success', lang('invoices_edit_ok'));
+                    redirect('admin/invoice/invoice/index');
 
                 } else {
 
-                    $this->data['error'] = 'Failed to update order. ' . $this->oOrderModel->last_error();
+                    $this->data['error'] = 'Failed to update invoice. ' . $this->oInvoiceModel->last_error();
                 }
 
             } else {
@@ -267,38 +267,38 @@ class Order extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Delete an order
+     * Delete an invoice
      * @return void
      */
     public function delete()
     {
-        if (!userHasPermission('admin:order:order:delete')) {
+        if (!userHasPermission('admin:invoice:invoice:delete')) {
 
             unauthorised();
         }
 
         // --------------------------------------------------------------------------
 
-        $oOrder = $this->oOrderModel->get_by_id($this->uri->segment(5));
-        if (!$oOrder) {
+        $oInvoice = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
+        if (!$oInvoice) {
 
             show_404();
         }
 
         // --------------------------------------------------------------------------
 
-        if ($this->oOrderModel->delete($oOrder->id)) {
+        if ($this->oInvoiceModel->delete($oInvoice->id)) {
 
             $sStatus  = 'success';
-            $sMessage = 'Order deleted successfully!';
+            $sMessage = 'Invoice deleted successfully!';
 
         } else {
 
             $sStatus  = 'error';
-            $sMessage = 'Order failed to delete. ' . $this->oOrderModel->last_error();
+            $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->last_error();
         }
 
         $this->session->set_flashdata($sStatus, $sMessage);
-        redirect('admin/order/order/index');
+        redirect('admin/invoice/invoice/index');
     }
 }

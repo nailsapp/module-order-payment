@@ -1,4 +1,4 @@
-<div class="group-payment-payment payment browse">
+<div class="group-invoice payment browse">
     <p>
         Browse payments received by the site.
     </p>
@@ -13,7 +13,7 @@
             <thead>
                 <tr>
                     <th class="processor">Processor</th>
-                    <th class="order">Order</th>
+                    <th class="invoice">Invoice ID</th>
                     <th class="trans-id">Transaction ID</th>
                     <th class="amount">Amount</th>
                     <th class="currency">Currency</th>
@@ -48,16 +48,16 @@
 
                                 ?>
                             </td>
-                            <td class="order">
+                            <td class="invoice">
                                 <?php
 
-                                if (empty($oPayment->order)) {
+                                if (empty($oPayment->invoice)) {
 
                                 } else {
 
                                     echo anchor(
-                                        'admin/order/order/view/' . $oPayment->order->id,
-                                        $oPayment->order->ref
+                                        'admin/invoice/invoice/view/' . $oPayment->invoice->id,
+                                        $oPayment->invoice->ref
                                     );
                                 }
 
@@ -77,7 +77,7 @@
                                 <?php
 
                                 echo anchor(
-                                    'admin/order/payment/view/' . $oPayment->id,
+                                    'admin/invoice/payment/view/' . $oPayment->id,
                                     lang('action_view'),
                                     'class="btn btn-xs btn-primary"'
                                 );

@@ -1,16 +1,16 @@
 <?php
 
 /**
- * This class registers some handlers for Order & Payment settings
+ * This class registers some handlers for Invoicing & Payment settings
  *
  * @package     Nails
- * @subpackage  module-order-payment
+ * @subpackage  module-invoice
  * @category    AdminController
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Admin\Order;
+namespace Nails\Admin\Invoice;
 
 use Nails\Factory;
 use Nails\Admin\Helper;
@@ -28,8 +28,8 @@ class Settings extends Base
         $navGroup->setLabel('Settings');
         $navGroup->setIcon('fa-wrench');
 
-        if (userHasPermission('admin:order:settings:*')) {
-            $navGroup->addAction('Orders &amp; Payments');
+        if (userHasPermission('admin:invoice:settings:*')) {
+            $navGroup->addAction('Invoicing &amp; Payments');
         }
 
         return $navGroup;

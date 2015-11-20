@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Payment model
+ * Invoice model
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -14,12 +14,12 @@ namespace Nails\Invoice\Model;
 
 use Nails\Common\Model\Base;
 
-class Payment extends Base
+class Invoice extends Base
 {
     public function __construct()
     {
         parent::__construct();
-        $this->table       = NAILS_DB_PREFIX . 'invoicing_payment';
-        $this->tablePrefix = 'p';
+        $this->table       = NAILS_DB_PREFIX . 'invoicing_invoice';
+        $this->tablePrefix = 'i';
     }
 }

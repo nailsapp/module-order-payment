@@ -4,13 +4,13 @@
  * Manage payments
  *
  * @package     Nails
- * @subpackage  module-order-payment
+ * @subpackage  module-invoice
  * @category    AdminController
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Admin\Order;
+namespace Nails\Admin\Invoice;
 
 use Nails\Factory;
 use Nails\Admin\Helper;
@@ -19,7 +19,7 @@ use Nails\Admin\Controller\Base;
 class Payment extends Base
 {
     protected $oPaymentModel;
-    protected $oProcessorModel;
+    protected $oDriverModel;
 
     // --------------------------------------------------------------------------
 
@@ -29,10 +29,10 @@ class Payment extends Base
      */
     public static function announce()
     {
-        if (userHasPermission('admin:order:payment:manage')) {
+        if (userHasPermission('admin:invoice:payment:manage')) {
 
             $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
-            $navGroup->setLabel('Orders &amp; Payments');
+            $navGroup->setLabel('Invoicing &amp; Payments');
             $navGroup->setIcon('fa-credit-card');
             $navGroup->addAction('Manage Payments');
 
@@ -64,8 +64,8 @@ class Payment extends Base
     {
         parent::__construct();
 
-        $this->oPaymentModel   = Factory::model('Payment', 'nailsapp/module-order-payment');
-        $this->oProcessorModel = Factory::model('Processor', 'nailsapp/module-order-payment');
+        $this->oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $this->oDriverModel  = Factory::model('Processor', 'nailsapp/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class Payment extends Base
      */
     public function index()
     {
-        if (!userHasPermission('admin:order:payment:manage')) {
+        if (!userHasPermission('admin:invoice:payment:manage')) {
 
             unauthorised();
         }
@@ -103,7 +103,7 @@ class Payment extends Base
         $sortColumns = array(
             $sTablePrefix . '.created'        => 'Received Date',
             $sTablePrefix . '.processor'      => 'Payment Processor',
-            $sTablePrefix . '.order_id'       => 'Order ID',
+            $sTablePrefix . '.invoice_id'     => 'Invoice ID',
             $sTablePrefix . '.transaction_id' => 'Transaction ID',
             $sTablePrefix . '.amount'         => 'Amount',
             $sTablePrefix . '.currency'       => 'Currency'
@@ -114,7 +114,7 @@ class Payment extends Base
         //  Define the filters
         $aCbFilters = array();
         $aOptions   = array();
-        $aDrivers   = $this->oProcessorModel->getAll();
+        $aDrivers   = $this->oDriverModel->getAll();
 
         foreach ($aDrivers as $sSlug => $oDriver) {
             $aOptions[] = array(
@@ -153,10 +153,10 @@ class Payment extends Base
         // --------------------------------------------------------------------------
 
         //  Add a header button
-        if (userHasPermission('admin:order:order:create')) {
+        if (userHasPermission('admin:invoice:invoice:create')) {
 
              Helper::addHeaderButton(
-                'admin/order/order/create',
+                'admin/invoice/invoice/create',
                 'Request Payment'
             );
         }

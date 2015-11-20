@@ -1,5 +1,5 @@
-# Orders & Payments Module for Nails
+# Invoice Module for Nails
 
-This is the Orders & Payments module for nails, it provides an interface for accepting payment from customers.
+This is the Invoice module for Nails, it provides an interface for raising invoices and accepting payment from customers.
 
-http://nailsapp.co.uk/modules/order-payment
+http://nailsapp.co.uk/modules/invoice
