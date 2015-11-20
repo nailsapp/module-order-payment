@@ -32,7 +32,7 @@ class Driver
     {
         if (is_null($this->aDrivers)) {
 
-            $aComponents = _NAILS_GET_DRIVERS('order-payment');
+            $aComponents = _NAILS_GET_DRIVERS('invoice');
 
             foreach ($aComponents as $oDriver) {
 

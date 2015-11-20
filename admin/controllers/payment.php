@@ -18,6 +18,7 @@ use Nails\Admin\Controller\Base;
 
 class Payment extends Base
 {
+    protected $oInvoiceModel;
     protected $oPaymentModel;
     protected $oDriverModel;
 
@@ -32,7 +33,7 @@ class Payment extends Base
         if (userHasPermission('admin:invoice:payment:manage')) {
 
             $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
-            $navGroup->setLabel('Invoicing &amp; Payments');
+            $navGroup->setLabel('Invoices &amp; Payments');
             $navGroup->setIcon('fa-credit-card');
             $navGroup->addAction('Manage Payments');
 
@@ -64,8 +65,9 @@ class Payment extends Base
     {
         parent::__construct();
 
+        $this->oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
         $this->oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $this->oDriverModel  = Factory::model('Processor', 'nailsapp/module-invoice');
+        $this->oDriverModel  = Factory::model('Driver', 'nailsapp/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -142,9 +144,10 @@ class Payment extends Base
         );
 
         //  Get the items for the page
-        $totalRows              = $this->oPaymentModel->count_all($data);
-        $this->data['payments'] = $this->oPaymentModel->get_all($page, $perPage, $data);
-        $this->data['drivers']  = $aDrivers;
+        $totalRows                   = $this->oPaymentModel->count_all($data);
+        $this->data['payments']      = $this->oPaymentModel->get_all($page, $perPage, $data);
+        $this->data['drivers']       = $aDrivers;
+        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();;
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
@@ -174,11 +177,13 @@ class Payment extends Base
      */
     public function view()
     {
-        $this->data['payment'] = $this->oPaymentModel->get_by_id($this->uri->segment(5));
-
-        if (empty($this->data['payment'])) {
+        $this->data['payment'] = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
+        if (!$this->data['payment']) {
             show_404();
         }
+
+        $this->data['page']->title = 'View Payment &rsaquo; ' . $this->data['payment']->id;
+
         Helper::loadView('view');
     }
 }

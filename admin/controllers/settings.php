@@ -29,7 +29,7 @@ class Settings extends Base
         $navGroup->setIcon('fa-wrench');
 
         if (userHasPermission('admin:invoice:settings:*')) {
-            $navGroup->addAction('Invoicing &amp; Payments');
+            $navGroup->addAction('Invoices &amp; Payments');
         }
 
         return $navGroup;
@@ -59,6 +59,9 @@ class Settings extends Base
      */
     public function index()
     {
+        $oDriverModel = Factory::model('Driver', 'nailsapp/module-invoice');
+        $this->data['drivers'] = $oDriverModel->getAll();
+
         Helper::loadView('index');
     }
 }

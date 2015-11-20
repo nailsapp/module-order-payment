@@ -37,5 +37,28 @@ return array(
                 return new \Nails\Invoice\PaymentEventHandler();
             }
         }
+    ),
+    'factories' => array(
+        'Invoice' => function () {
+            if (class_exists('\App\Invoice\Object\Invoice')) {
+                return new \App\Invoice\Object\Invoice();
+            } else {
+                return new \Nails\Invoice\Object\Invoice();
+            }
+        },
+        'InvoiceItem' => function () {
+            if (class_exists('\App\Invoice\Object\InvoiceItem')) {
+                return new \App\Invoice\Object\InvoiceItem();
+            } else {
+                return new \Nails\Invoice\Object\InvoiceItem();
+            }
+        },
+        'Payment' => function () {
+            if (class_exists('\App\Invoice\Object\Payment')) {
+                return new \App\Invoice\Object\Payment();
+            } else {
+                return new \Nails\Invoice\Object\Payment();
+            }
+        }
     )
 );

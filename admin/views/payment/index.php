@@ -13,9 +13,10 @@
             <thead>
                 <tr>
                     <th class="processor">Processor</th>
-                    <th class="invoice">Invoice ID</th>
-                    <th class="trans-id">Transaction ID</th>
+                    <th class="trans-ref">Transaction Ref</th>
+                    <th class="invoice">Invoice</th>
                     <th class="amount">Amount</th>
+                    <th class="amount fee">Fee</th>
                     <th class="currency">Currency</th>
                     <th class="datetime">Received</th>
                     <th class="actions">Actions</th>
@@ -48,26 +49,24 @@
 
                                 ?>
                             </td>
+                            <td class="trans-ref">
+                                <?=$oPayment->transaction_ref?>
+                            </td>
                             <td class="invoice">
                                 <?php
 
-                                if (empty($oPayment->invoice)) {
-
-                                } else {
-
-                                    echo anchor(
-                                        'admin/invoice/invoice/view/' . $oPayment->invoice->id,
-                                        $oPayment->invoice->ref
-                                    );
-                                }
+                                echo anchor(
+                                    'admin/invoice/invoice/edit/' . $oPayment->invoice_id,
+                                    $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
+                                );
 
                                 ?>
                             </td>
-                            <td class="trans-id">
-                                <?=$oPayment->transaction_id?>
-                            </td>
                             <td class="amount">
                                 <?=$oPayment->amount?>
+                            </td>
+                            <td class="amount fee">
+                                <?=$oPayment->fee?>
                             </td>
                             <td class="currency">
                                 <?=$oPayment->currency?>
@@ -92,7 +91,7 @@
 
                     ?>
                     <tr>
-                        <td colspan="2" class="no-data">
+                        <td colspan="8" class="no-data">
                             No Payments Found
                         </td>
                     </tr>

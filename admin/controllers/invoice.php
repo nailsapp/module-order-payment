@@ -33,7 +33,7 @@ class Invoice extends Base
             $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
             $navGroup->setLabel('Invoices &amp; Payments');
             $navGroup->setIcon('fa-credit-card');
-            $navGroup->addAction('Manage Invoices');
+            $navGroup->addAction('Manage Invoices', 'index', array(), 0);
 
             return $navGroup;
         }
@@ -103,7 +103,29 @@ class Invoice extends Base
         //  Define the sortable columns
         $sortColumns = array(
             $sTablePrefix . '.created'  => 'Created Date',
-            $sTablePrefix . '.modified' => 'Modified Date'
+            $sTablePrefix . '.modified' => 'Modified Date',
+            $sTablePrefix . '.state'    => 'Invoice State',
+        );
+
+        // --------------------------------------------------------------------------
+
+        //  Define the filters
+        $aCbFilters = array();
+        $aOptions   = array();
+        $aStates    = $this->oInvoiceModel->getStates();
+
+        foreach ($aStates as $sState => $sLabel) {
+            $aOptions[] = array(
+                $sLabel,
+                $sState,
+                true
+            );
+        }
+
+        $aCbFilters[] = Helper::searchFilterObject(
+            $sTablePrefix . '.state',
+            'State',
+            $aOptions
         );
 
         // --------------------------------------------------------------------------
@@ -113,7 +135,8 @@ class Invoice extends Base
             'sort' => array(
                 array($sortOn, $sortOrder)
             ),
-            'keywords' => $keywords
+            'keywords' => $keywords,
+            'cbFilters' => $aCbFilters
         );
 
         //  Get the items for the page
@@ -121,7 +144,7 @@ class Invoice extends Base
         $this->data['invoices'] = $this->oInvoiceModel->get_all($page, $perPage, $data);
 
         //  Set Search and Pagination objects for the view
-        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords);
+        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
         $this->data['pagination'] = Helper::paginationObject($page, $perPage, $totalRows);
 
         //  Add a header button
@@ -201,8 +224,7 @@ class Invoice extends Base
 
         $this->data['invoice'] = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
 
-        if (!$this->data['invoice']) {
-
+        if (!$this->data['invoice'] || $this->data['invoice']->state != 'DRAFT') {
             show_404();
         }
 
@@ -237,6 +259,29 @@ class Invoice extends Base
 
         //  Load views
         Helper::loadView('edit');
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * View an invoice
+     * @return void
+     */
+    public function view()
+    {
+        if (!userHasPermission('admin:invoice:invoice:edit')) {
+
+            unauthorised();
+        }
+
+        $this->data['invoice'] = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
+        if (!$this->data['invoice'] || $this->data['invoice']->state == 'DRAFT') {
+            show_404();
+        }
+
+        $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
+
+        Helper::loadView('view');
     }
 
     // --------------------------------------------------------------------------
