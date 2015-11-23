@@ -38,6 +38,16 @@ class Invoice extends Base
     const STATE_PAID           = 'PAID';
     const STATE_WRITTEN_OFF    = 'WRITTEN_OFF';
 
+    /**
+     * The various item quantity units
+     */
+    const ITEM_UNIT_NONE  = 'NONE';
+    const ITEM_UNIT_HOUR  = 'HOUR';
+    const ITEM_UNIT_DAY   = 'DAY';
+    const ITEM_UNIT_WEEK  = 'WEEK';
+    const ITEM_UNIT_MONTH = 'MONTH';
+    const ITEM_UNIT_YEAR  = 'YEAR';
+
     // --------------------------------------------------------------------------
 
     /**
@@ -62,11 +72,29 @@ class Invoice extends Base
     public function getStates()
     {
         return array(
-            self::STATE_DRAFT => 'Draft',
-            self::STATE_OPEN => 'Open',
+            self::STATE_DRAFT          => 'Draft',
+            self::STATE_OPEN           => 'Open',
             self::STATE_PARTIALLY_PAID => 'Partially Paid',
-            self::STATE_PAID => 'Paid',
-            self::STATE_WRITTEN_OFF => 'Written Off',
+            self::STATE_PAID           => 'Paid',
+            self::STATE_WRITTEN_OFF    => 'Written Off'
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the item quantity units with human friendly names
+     * @return array
+     */
+    public function getItemUnits()
+    {
+        return array(
+            self::ITEM_UNIT_NONE  => 'None',
+            self::ITEM_UNIT_HOUR  => 'Hours',
+            self::ITEM_UNIT_DAY   => 'Days',
+            self::ITEM_UNIT_WEEK  => 'Weeks',
+            self::ITEM_UNIT_MONTH => 'Months',
+            self::ITEM_UNIT_YEAR  => 'Years'
         );
     }
 
@@ -78,19 +106,18 @@ class Invoice extends Base
      * @param  int     $perPage        The number of results per page
      * @param  array   $data           Data to pass _to getcount_common()
      * @param  boolean $includeDeleted Whether to include deleted results
-     * @param  string  $_caller        Internal flag of which emthod called this method
      * @return array
      */
-    public function get_all($page = null, $perPage = null, $data = array(), $includeDeleted = false, $_caller = 'GET_ALL')
+    public function getAll($page = null, $perPage = null, $data = array(), $includeDeleted = false)
     {
-        $aResults = parent::get_all($page, $perPage, $data, $includeDeleted, $_caller);
-        $aOut     =  array();
+        $aInvoices = parent::getAll($page, $perPage, $data, $includeDeleted);
 
-        if ($aResults) {
+        if ($aInvoices) {
+
             //  Get the ID's of all the returned invoices
             $aInvoiceIds = array();
-            foreach ($aResults as $oRow) {
-                $aInvoiceIds[] = $oRow->id;
+            foreach ($aInvoices as $oInvoice) {
+                $aInvoiceIds[] = $oInvoice->id;
             }
 
             //  Get line items for returned invoices
@@ -103,32 +130,49 @@ class Invoice extends Base
             $aPayments = $this->oPaymentModel->getForInvoices($aInvoiceIds);
 
             //  Merge line items into the resultset and convert into an Invoice object
-            foreach ($aResults as $oRow) {
+            foreach ($aInvoices as $oInvoice) {
 
                 //  Line items
-                $oRow->items = array();
-                foreach ($aItems as $oItemRow) {
-                    if ($oItemRow->invoice_id == $oRow->id) {
-                        $oItem = Factory::factory('InvoiceItem', 'nailsapp/module-invoice');
-                        $oItem->init($oItemRow);
-                        $oRow->items[] = $oItem;
+                $oInvoice->items = array();
+                foreach ($aItems as $oItem) {
+                    if ($oItem->invoice_id == $oInvoice->id) {
+                        $oInvoice->items[] = $oItem;
                     }
                 }
 
                 //  Payments
-                $oRow->payments = array();
+                $oInvoice->payments = array();
                 foreach ($aPayments as $oPayment) {
-                    if ($oPayment->invoice_id == $oRow->id) {
-                        $oRow->payments[] = $oPayment;
+                    if ($oPayment->invoice_id == $oInvoice->id) {
+                        $oInvoice->payments[] = $oPayment;
                     }
                 }
-
-                $oInvoice = Factory::factory('Invoice', 'nailsapp/module-invoice');
-                $oInvoice->init($oRow);
-                $aOut[] = $oInvoice;
             }
         }
 
-        return $aOut;
+        return $aInvoices;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Generates a valid invoice ref
+     * @return string
+     */
+    public function generateValidRef()
+    {
+        Factory::helper('string');
+
+        $oNow = Factory::factory('DateTime');
+
+        do {
+
+            $sRef = $oNow->format('Ym') .'-' . strtoupper(random_string('alnum'));
+            $this->db->where('ref', $sRef);
+            $bRefExists = (bool) $this->db->count_all_results($this->table);
+
+        } while ($bRefExists);
+
+        return $sRef;
     }
 }

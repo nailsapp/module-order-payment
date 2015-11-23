@@ -44,6 +44,7 @@
                                     <?php
 
                                 } else {
+
                                     echo $drivers[$oPayment->processor]->getLabel();
                                 }
 
@@ -55,10 +56,20 @@
                             <td class="invoice">
                                 <?php
 
-                                echo anchor(
-                                    'admin/invoice/invoice/edit/' . $oPayment->invoice_id,
-                                    $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
-                                );
+                                if ($oPayment->invoice_state == 'EDIT') {
+
+                                    echo anchor(
+                                        'admin/invoice/invoice/edit/' . $oPayment->invoice_id,
+                                        $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
+                                    );
+
+                                } else {
+
+                                    echo anchor(
+                                        'admin/invoice/invoice/view/' . $oPayment->invoice_id,
+                                        $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
+                                    );
+                                }
 
                                 ?>
                             </td>

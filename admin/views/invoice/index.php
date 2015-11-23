@@ -35,7 +35,7 @@
                                 <?=$oInvoice->ref?>
                             </td>
                             <td class="state">
-                                <?=$oInvoice->state?>
+                                <?=$invoiceStates[$oInvoice->state]?>
                             </td>
                             <?=adminHelper('loadUserCell', $oInvoice->user_id)?>
                             <td class="amount total">

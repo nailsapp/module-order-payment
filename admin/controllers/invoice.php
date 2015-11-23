@@ -19,6 +19,7 @@ use Nails\Admin\Controller\Base;
 class Invoice extends Base
 {
     protected $oInvoiceModel;
+    protected $oTaxModel;
 
     // --------------------------------------------------------------------------
 
@@ -67,6 +68,7 @@ class Invoice extends Base
         parent::__construct();
 
         $this->oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $this->oTaxModel     = Factory::model('Tax', 'nailsapp/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -140,8 +142,9 @@ class Invoice extends Base
         );
 
         //  Get the items for the page
-        $totalRows            = $this->oInvoiceModel->count_all($data);
-        $this->data['invoices'] = $this->oInvoiceModel->get_all($page, $perPage, $data);
+        $totalRows                   = $this->oInvoiceModel->count_all($data);
+        $this->data['invoices']      = $this->oInvoiceModel->get_all($page, $perPage, $data);
+        $this->data['invoiceStates'] = $aStates;
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
@@ -203,6 +206,28 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
+        //  Page data
+        $aItemUnits = $this->oInvoiceModel->getItemUnits();
+        $aTaxes     = $this->oTaxModel->get_all();
+
+        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
+
+        // --------------------------------------------------------------------------
+
+        $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
+        $this->asset->load('knockout/dist/knockout.js', 'NAILS-BOWER');
+        $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
+        $this->asset->inline(
+            'ko.applyBindings(
+                new invoiceEdit(
+                    ' . json_encode($aItemUnits) . ',
+                    ' . json_encode($aTaxes) . ',
+                    []
+                )
+            );',
+            'JS'
+        );
+
         //  Load views
         Helper::loadView('edit');
     }
@@ -257,6 +282,28 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
+        //  Page data
+        $aItemUnits = $this->oInvoiceModel->getItemUnits();
+        $aTaxes     = $this->oTaxModel->get_all();
+
+        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
+
+        // --------------------------------------------------------------------------
+
+        $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
+        $this->asset->load('knockout/dist/knockout.js', 'NAILS-BOWER');
+        $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
+        $this->asset->inline(
+            'ko.applyBindings(
+                new invoiceEdit(
+                    ' . json_encode($aItemUnits) . ',
+                    ' . json_encode($aTaxes) . ',
+                    ' . json_encode($this->data['invoice']->items) . '
+                )
+            );',
+            'JS'
+        );
+
         //  Load views
         Helper::loadView('edit');
     }
@@ -293,6 +340,31 @@ class Invoice extends Base
     protected function validatePost()
     {
         $oFormValidation = Factory::service('FormValidation');
+
+        $aRules = array(
+            'ref'             => 'xss_clean|trim|required',
+            'state'           => 'xss_clean|trim|required',
+            'dated'           => 'xss_clean|trim|valid_date',
+            'terms'           => 'xss_clean|trim|is_natural',
+            'user_id'         => 'xss_clean|trim',
+            'user_email'      => 'xss_clean|trim|valid_email',
+            'additional_text' => 'xss_clean|trim',
+            'items'           => 'xss_clean'
+        );
+
+        $aRulesFV = array();
+        foreach ($aRules as $sKey => $sRules) {
+            $aRulesFV[] = array(
+                'field' => $sKey,
+                'label' => '',
+                'rules' => $sRules
+            );
+        }
+
+        $oFormValidation->set_rules($aRulesFV);
+
+        $oFormValidation->set_message('required', lang('fv_required'));
+
         return $oFormValidation->run();
     }
 
@@ -304,6 +376,7 @@ class Invoice extends Base
      */
     protected function getObjectFromPost()
     {
+        dumpanddie($_POST);
         $aData = array();
 
         return $aData;
