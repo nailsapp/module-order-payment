@@ -195,7 +195,7 @@ class Invoice extends Base
 
                 } else {
 
-                    $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->last_error();
+                    $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->lastError();
                 }
 
             } else {
@@ -271,7 +271,7 @@ class Invoice extends Base
 
                 } else {
 
-                    $this->data['error'] = 'Failed to update invoice. ' . $this->oInvoiceModel->last_error();
+                    $this->data['error'] = 'Failed to update invoice. ' . $this->oInvoiceModel->lastError();
                 }
 
             } else {
@@ -413,7 +413,7 @@ class Invoice extends Base
         } else {
 
             $sStatus  = 'error';
-            $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->last_error();
+            $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
         }
 
         $this->session->set_flashdata($sStatus, $sMessage);
