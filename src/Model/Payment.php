@@ -39,7 +39,7 @@ class Payment extends Base
             )
         );
 
-        return $this->get_all(null, null, $aData);
+        return $this->getAll(null, null, $aData);
     }
 
     // --------------------------------------------------------------------------
@@ -50,12 +50,12 @@ class Payment extends Base
      * @param  array  $data    Data passed from the calling method
      * @return void
      **/
-    protected function _getcount_common($data = array())
+    protected function getCountCommon($data = array())
     {
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
 
         $this->db->select($this->tablePrefix . '.*, i.ref invoice_ref, i.state invoice_state');
         $this->db->join($oInvoiceModel->getTableName() . ' i', $this->tablePrefix . '.invoice_id = i.id');
-        parent::_getcount_common($data);
+        parent::getCountCommon($data);
     }
 }

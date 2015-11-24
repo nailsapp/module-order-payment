@@ -144,10 +144,10 @@ class Payment extends Base
         );
 
         //  Get the items for the page
-        $totalRows                   = $this->oPaymentModel->count_all($data);
-        $this->data['payments']      = $this->oPaymentModel->get_all($page, $perPage, $data);
+        $totalRows                   = $this->oPaymentModel->countAll($data);
+        $this->data['payments']      = $this->oPaymentModel->getAll($page, $perPage, $data);
         $this->data['drivers']       = $aDrivers;
-        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();;
+        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
@@ -158,7 +158,7 @@ class Payment extends Base
         //  Add a header button
         if (userHasPermission('admin:invoice:invoice:create')) {
 
-             Helper::addHeaderButton(
+            Helper::addHeaderButton(
                 'admin/invoice/invoice/create',
                 'Request Payment'
             );
@@ -177,7 +177,7 @@ class Payment extends Base
      */
     public function view()
     {
-        $this->data['payment'] = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
+        $this->data['payment'] = $this->oInvoiceModel->getById($this->uri->segment(5));
         if (!$this->data['payment']) {
             show_404();
         }

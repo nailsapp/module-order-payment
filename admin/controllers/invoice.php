@@ -142,8 +142,8 @@ class Invoice extends Base
         );
 
         //  Get the items for the page
-        $totalRows                   = $this->oInvoiceModel->count_all($data);
-        $this->data['invoices']      = $this->oInvoiceModel->get_all($page, $perPage, $data);
+        $totalRows                   = $this->oInvoiceModel->countAll($data);
+        $this->data['invoices']      = $this->oInvoiceModel->getAll($page, $perPage, $data);
         $this->data['invoiceStates'] = $aStates;
 
         //  Set Search and Pagination objects for the view
@@ -153,7 +153,7 @@ class Invoice extends Base
         //  Add a header button
         if (userHasPermission('admin:invoice:invoice:create')) {
 
-             Helper::addHeaderButton(
+            Helper::addHeaderButton(
                 'admin/invoice/invoice/create',
                 'Create Invoice'
             );
@@ -208,7 +208,7 @@ class Invoice extends Base
 
         //  Page data
         $aItemUnits = $this->oInvoiceModel->getItemUnits();
-        $aTaxes     = $this->oTaxModel->get_all();
+        $aTaxes     = $this->oTaxModel->getAll();
 
         $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
 
@@ -247,7 +247,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $this->data['invoice'] = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
+        $this->data['invoice'] = $this->oInvoiceModel->getById($this->uri->segment(5));
 
         if (!$this->data['invoice'] || $this->data['invoice']->state != 'DRAFT') {
             show_404();
@@ -284,7 +284,7 @@ class Invoice extends Base
 
         //  Page data
         $aItemUnits = $this->oInvoiceModel->getItemUnits();
-        $aTaxes     = $this->oTaxModel->get_all();
+        $aTaxes     = $this->oTaxModel->getAll();
 
         $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
 
@@ -321,7 +321,7 @@ class Invoice extends Base
             unauthorised();
         }
 
-        $this->data['invoice'] = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
+        $this->data['invoice'] = $this->oInvoiceModel->getById($this->uri->segment(5));
         if (!$this->data['invoice'] || $this->data['invoice']->state == 'DRAFT') {
             show_404();
         }
@@ -397,7 +397,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $oInvoice = $this->oInvoiceModel->get_by_id($this->uri->segment(5));
+        $oInvoice = $this->oInvoiceModel->getById($this->uri->segment(5));
         if (!$oInvoice) {
 
             show_404();
