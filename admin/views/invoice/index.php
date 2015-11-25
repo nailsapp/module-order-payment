@@ -66,7 +66,7 @@
                                         echo anchor(
                                             'admin/invoice/invoice/view/' . $oInvoice->id,
                                             lang('action_view'),
-                                            'class="btn btn-xs btn-success"'
+                                            'class="btn btn-xs btn-default"'
                                         );
                                     }
                                 }

@@ -89,7 +89,7 @@
                                 echo anchor(
                                     'admin/invoice/payment/view/' . $oPayment->id,
                                     lang('action_view'),
-                                    'class="btn btn-xs btn-primary"'
+                                    'class="btn btn-xs btn-default"'
                                 );
 
                                 ?>
