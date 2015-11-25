@@ -32,12 +32,12 @@ class Payment extends Base
     {
         if (userHasPermission('admin:invoice:payment:manage')) {
 
-            $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
-            $navGroup->setLabel('Invoices &amp; Payments');
-            $navGroup->setIcon('fa-credit-card');
-            $navGroup->addAction('Manage Payments');
+            $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+            $oNavGroup->setLabel('Invoices &amp; Payments');
+            $oNavGroup->setIcon('fa-credit-card');
+            $oNavGroup->addAction('Manage Payments');
 
-            return $navGroup;
+            return $oNavGroup;
         }
     }
 

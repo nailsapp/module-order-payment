@@ -24,15 +24,15 @@ class Settings extends Base
      */
     public static function announce()
     {
-        $navGroup = Factory::factory('Nav', 'nailsapp/module-admin');
-        $navGroup->setLabel('Settings');
-        $navGroup->setIcon('fa-wrench');
+        $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+        $oNavGroup->setLabel('Settings');
+        $oNavGroup->setIcon('fa-wrench');
 
         if (userHasPermission('admin:invoice:settings:*')) {
-            $navGroup->addAction('Invoices &amp; Payments');
+            $oNavGroup->addAction('Invoices &amp; Payments');
         }
 
-        return $navGroup;
+        return $oNavGroup;
     }
 
     // --------------------------------------------------------------------------
