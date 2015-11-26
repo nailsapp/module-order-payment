@@ -36,23 +36,32 @@ class Driver
 
             foreach ($aComponents as $oDriver) {
 
-                if (!empty($oDriver->moduleData->className)) {
+                if (!empty($oDriver->data->namespace)) {
 
-                    $sClassName = $oDriver->moduleData->className;
+                    $sNamespace = $oDriver->data->namespace;
 
                 } else {
 
-                    throw new DriverException('Driver name missing from driver "' . $oDriver->name . '"', 1);
+                    throw new DriverException('Driver Namespace missing from driver "' . $oDriver->name . '"', 1);
                 }
 
-                $sDriverClass    = '\Nails\Invoice\Driver\\' . $sClassName;
+                if (!empty($oDriver->data->class)) {
+
+                    $sClassName = $oDriver->data->class;
+
+                } else {
+
+                    throw new DriverException('Driver ClassName missing from driver "' . $oDriver->name . '"', 2);
+                }
+
+                $sDriverClass    = $sNamespace . $sClassName;
                 $oDriverInstance = new $sDriverClass();
 
                 if (!($oDriverInstance instanceof \Nails\Invoice\Driver\Base)) {
 
                     throw new DriverException(
                         'Driver "' . $oDriver->name . '" must extend \Nails\Invoice\Driver\Base',
-                        2
+                        3
                     );
 
                 } else {
