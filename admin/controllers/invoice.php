@@ -215,7 +215,7 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
-        $this->asset->load('knockout/dist/knockout.js', 'NAILS-BOWER');
+        library('KNOCKOUT');
         $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
         $this->asset->inline(
             'ko.applyBindings(
@@ -291,7 +291,7 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
-        $this->asset->load('knockout/dist/knockout.js', 'NAILS-BOWER');
+        library('KNOCKOUT');
         $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
         $this->asset->inline(
             'ko.applyBindings(
