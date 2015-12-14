@@ -59,13 +59,15 @@ class Invoice extends NAILS_Controller
      */
     public function _remap()
     {
-        $sInvoiceToken = $this->uri->rsegment(2);
-        $sMethod       = $this->uri->rsegment(3) ?: 'view';
+        $sInvoiceRef   = $this->uri->rsegment(2);
+        $sInvoiceToken = $this->uri->rsegment(3);
+        $sMethod       = $this->uri->rsegment(4) ?: 'view';
 
         //  @todo verify invoice and token
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoice      = $oInvoiceModel->getById($sInvoiceToken);
-        if (empty($oInvoice) || !method_exists($this, $sMethod)) {
+        $oInvoice      = $oInvoiceModel->getByRef($sInvoiceRef);
+
+        if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {
             show_404();
         }
 

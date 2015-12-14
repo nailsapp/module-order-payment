@@ -243,6 +243,9 @@ class Invoice extends Base
         //  Always has a reference
         $aData['ref'] = !empty($aData['ref']) ? $aData['ref'] : $this->generateValidRef();
 
+        //  Always has a valid token
+        $aData['token'] = $this->generateValidToken($aData['ref']);
+
         //  Always has an uppercase state
         $aData['state'] = !empty($aData['state']) ? $aData['state'] : self::STATE_DRAFT;
         $aData['state'] = strtoupper(trim($aData['state']));
@@ -486,6 +489,35 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Fetch an invoice by it's token
+     * @param  string $sToken  The token of the invoice to fetch
+     * @param  mixed  $aData Any data to pass to getCountCommon()
+     * @return mixed
+     */
+    public function getByToken($sToken, $aData = array())
+    {
+        if (empty($sRef)) {
+            return false;
+        }
+
+        if (!isset($aData['where'])) {
+            $aData['where'] = array();
+        }
+
+        $aData['where'][] = array($this->tablePrefix . '.token', $sToken);
+
+        $aResult = $this->getAll(null, null, $aData);
+
+        if (empty($aResult)) {
+            return false;
+        }
+
+        return $aResult[0];
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Generates a valid invoice ref
      * @return string
      */
@@ -504,6 +536,28 @@ class Invoice extends Base
         } while ($bRefExists);
 
         return $sRef;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Generates a valid invoice token
+     * @return string
+     */
+    public function generateValidToken($sRef)
+    {
+        Factory::helper('string');
+
+        do {
+
+            //  @todo: use more secure token generation, like random_bytes();
+            $sToken = md5(microtime(true) . $sRef . APP_PRIVATE_KEY);
+            $this->db->where('token', $sToken);
+            $bTokenExists = (bool) $this->db->count_all_results($this->table);
+
+        } while ($bTokenExists);
+
+        return $sToken;
     }
 
     // --------------------------------------------------------------------------
@@ -528,7 +582,7 @@ class Invoice extends Base
 
         //  URLS
         $oObj->urls           = new \stdClass();
-        $oObj->urls->payment  = site_url('invoice/' . $oObj->id . '/pay');
-        $oObj->urls->download = site_url('invoice/' . $oObj->id . '/download');
+        $oObj->urls->payment  = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/pay');
+        $oObj->urls->download = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/download');
     }
 }
