@@ -15,9 +15,9 @@
                     <th class="ref">Ref</th>
                     <th class="state">State</th>
                     <th class="user">Customer</th>
-                    <th class="amount total">Total</th>
+                    <th class="amount sub">Sub Total</th>
                     <th class="amount tax">Tax</th>
-                    <th class="amount fee">Fee</th>
+                    <th class="amount grand">Grand Total</th>
                     <th class="datetime">Created</th>
                     <th class="actions">Actions</th>
                 </tr>
@@ -37,15 +37,15 @@
                             <td class="state">
                                 <?=$invoiceStates[$oInvoice->state]?>
                             </td>
-                            <?=adminHelper('loadUserCell', $oInvoice->user_id)?>
+                            <?=adminHelper('loadUserCell', $oInvoice->user->id)?>
                             <td class="amount total">
-                                <?=$oInvoice->total?>
+                                <?=$oInvoice->totals->sub?>
                             </td>
                             <td class="amount tax">
-                                <?=$oInvoice->tax?>
+                                <?=$oInvoice->totals->tax?>
                             </td>
-                            <td class="amount fee">
-                                <?=$oInvoice->fee?>
+                            <td class="amount grand">
+                                <?=$oInvoice->totals->grand?>
                             </td>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->created)?>
                             <td class="actions">
@@ -68,6 +68,27 @@
                                             lang('action_view'),
                                             'class="btn btn-xs btn-default"'
                                         );
+
+                                        echo anchor(
+                                            $oInvoice->urls->download,
+                                            lang('action_download'),
+                                            'class="btn btn-xs btn-primary" target="_blank"'
+                                        );
+
+                                        if (empty($oInvoice->payments)) {
+
+                                            echo anchor(
+                                                'admin/invoice/invoice/make_draft/' . $oInvoice->id,
+                                                'Make Draft',
+                                                'class="btn btn-xs btn-warning"'
+                                            );
+
+                                        } else {
+
+                                            echo '<a href="#" class="btn btn-xs btn-warning" disabled rel="tipsy" title="An invoice with associated payments cannot be edited">';
+                                                echo 'Make Draft';
+                                            echo '</a>';
+                                        }
                                     }
                                 }
 

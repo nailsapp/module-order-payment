@@ -44,5 +44,14 @@ return array(
                 return new \Nails\Invoice\PaymentEventHandler();
             }
         }
+    ),
+    'factories' => array(
+        'InvoiceBuilder' => function () {
+            if (class_exists('\App\Invoice\Model\InvoiceBuilder')) {
+                return new \App\Invoice\InvoiceBuilder();
+            } else {
+                return new \Nails\Invoice\InvoiceBuilder();
+            }
+        }
     )
 );

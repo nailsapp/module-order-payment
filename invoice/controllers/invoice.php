@@ -10,17 +10,45 @@
  * @link
  */
 
+use Nails\Factory;
+
 class Invoice extends NAILS_Controller
 {
     /**
      * View a single invoice
-     * @param  string $sInvoiceToken The invoice token
+     * @param  object $oInvoice The invoice object
      * @return void
      */
-    protected function viewInvoice($sInvoiceToken)
+    protected function view($oInvoice)
     {
         dump('View Invoice');
-        dump($sInvoiceToken);
+        dump($oInvoice);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Download a single invoice
+     * @param  object $oInvoice The invoice object
+     * @return void
+     */
+    protected function download($oInvoice)
+    {
+        dump('Download Invoice');
+        dump($oInvoice);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Pay a single invoice
+     * @param  object $oInvoice The invoice object
+     * @return void
+     */
+    protected function pay($oInvoice)
+    {
+        dump('Pay Invoice');
+        dump($oInvoice);
     }
 
     // --------------------------------------------------------------------------
@@ -32,10 +60,15 @@ class Invoice extends NAILS_Controller
     public function _remap()
     {
         $sInvoiceToken = $this->uri->rsegment(2);
-        if (method_exists($this, $sInvoiceToken)) {
-            $this->{$sInvoiceToken}();
-        } else {
-            $this->viewInvoice($sInvoiceToken);
+        $sMethod       = $this->uri->rsegment(3) ?: 'view';
+
+        //  @todo verify invoice and token
+        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oInvoice      = $oInvoiceModel->getById($sInvoiceToken);
+        if (empty($oInvoice) || !method_exists($this, $sMethod)) {
+            show_404();
         }
+
+        $this->{$sMethod}($oInvoice);
     }
 }

@@ -28,15 +28,16 @@ class Migration0 extends Base
             CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `ref` char(20) NOT NULL DEFAULT '',
-                `state` enum('DRAFT','OPEN','PARTIALLY_PAID','PAID','WRITTEN_OFF') NOT NULL DEFAULT 'DRAFT',
+                `state` enum('DRAFT','OPEN','PENDING','PARTIALLY_PAID','PAID','WRITTEN_OFF') NOT NULL DEFAULT 'DRAFT',
                 `dated` date NOT NULL,
                 `terms` int(11) unsigned NOT NULL DEFAULT '0',
+                `due` date NOT NULL,
                 `user_id` int(11) unsigned DEFAULT NULL,
                 `user_email` varchar(255) DEFAULT NULL,
                 `currency` char(3) NOT NULL DEFAULT '',
                 `total` int(11) unsigned NOT NULL DEFAULT '0',
                 `tax` int(11) unsigned NOT NULL DEFAULT '0',
-                `fee` int(11) unsigned NOT NULL,
+                `discount` int(11) unsigned NOT NULL DEFAULT '0',
                 `additional_text` text,
                 `callback_data` text,
                 `created` datetime NOT NULL,
@@ -58,13 +59,14 @@ class Migration0 extends Base
                 `invoice_id` int(11) unsigned NOT NULL,
                 `order` int(11) unsigned NOT NULL DEFAULT '0',
                 `quantity` int(11) unsigned DEFAULT NULL,
-                `units` enum('NONE','HOUR','DAY','WEEK','MONTH','YEAR') NOT NULL DEFAULT 'NONE',
-                `tax` decimal(4,3) DEFAULT NULL,
+                `units` enum('NONE','MINUTE','HOUR','DAY','WEEK','MONTH','YEAR') NOT NULL DEFAULT 'NONE',
+                `tax` int(11) unsigned DEFAULT NULL,
                 `label` varchar(255) NOT NULL DEFAULT '',
                 `body` text,
                 PRIMARY KEY (`id`),
                 KEY `invoice_id` (`invoice_id`),
-                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_item_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_invoice` (`id`) ON DELETE CASCADE
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_item_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_invoice` (`id`) ON DELETE CASCADE,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_item_ibfk_2` FOREIGN KEY (`tax_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_tax` (`id`) ON DELETE RESTRICT
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("

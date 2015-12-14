@@ -27,7 +27,7 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Retrive payments which relate to a aprticular set of invoice IDs
+     * Retrive payments which relate to a particular set of invoice IDs
      * @param  array $aInvoiceIds The invoice IDs
      * @return array
      */

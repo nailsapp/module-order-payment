@@ -210,19 +210,32 @@ class Invoice extends Base
         $aItemUnits = $this->oInvoiceModel->getItemUnits();
         $aTaxes     = $this->oTaxModel->getAll();
 
-        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
+        $this->data['invoiceStates'] = $this->oInvoiceModel->getSelectableStates();
+
+        // --------------------------------------------------------------------------
+
+        //  Invoice Items
+        if ($this->input->post()) {
+
+            $aItems = $this->input->post('items') ?: array();
+
+        } else {
+
+            $aItems = array();
+        }
 
         // --------------------------------------------------------------------------
 
         $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
-        library('KNOCKOUT');
+        $this->asset->library('KNOCKOUT');
+        $this->asset->library('MOMENT');
         $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
         $this->asset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
                     ' . json_encode($aItemUnits) . ',
                     ' . json_encode($aTaxes) . ',
-                    []
+                    ' . json_encode($aItems) . '
                 )
             );',
             'JS'
@@ -286,19 +299,32 @@ class Invoice extends Base
         $aItemUnits = $this->oInvoiceModel->getItemUnits();
         $aTaxes     = $this->oTaxModel->getAll();
 
-        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
+        $this->data['invoiceStates'] = $this->oInvoiceModel->getSelectableStates();
+
+        // --------------------------------------------------------------------------
+
+        //  Invoice Items
+        if ($this->input->post()) {
+
+            $aItems = $this->input->post('items') ?: array();
+
+        } else {
+
+            $aItems = $this->data['invoice']->items;
+        }
 
         // --------------------------------------------------------------------------
 
         $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
-        library('KNOCKOUT');
+        $this->asset->library('KNOCKOUT');
+        $this->asset->library('MOMENT');
         $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
         $this->asset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
                     ' . json_encode($aItemUnits) . ',
                     ' . json_encode($aTaxes) . ',
-                    ' . json_encode($this->data['invoice']->items) . '
+                    ' . json_encode($aItems) . '
                 )
             );',
             'JS'
@@ -342,7 +368,7 @@ class Invoice extends Base
         $oFormValidation = Factory::service('FormValidation');
 
         $aRules = array(
-            'ref'             => 'xss_clean|trim|required',
+            'ref'             => 'xss_clean|trim',
             'state'           => 'xss_clean|trim|required',
             'dated'           => 'xss_clean|trim|valid_date',
             'terms'           => 'xss_clean|trim|is_natural',
@@ -351,6 +377,10 @@ class Invoice extends Base
             'additional_text' => 'xss_clean|trim',
             'items'           => 'xss_clean'
         );
+
+        if (!$this->input->post('user_id')) {
+                $aRules['user_email'] .= '|required';
+        }
 
         $aRulesFV = array();
         foreach ($aRules as $sKey => $sRules) {
@@ -364,6 +394,9 @@ class Invoice extends Base
         $oFormValidation->set_rules($aRulesFV);
 
         $oFormValidation->set_message('required', lang('fv_required'));
+        $oFormValidation->set_message('valid_date', lang('fv_valid_date'));
+        $oFormValidation->set_message('is_natural', lang('fv_is_natural'));
+        $oFormValidation->set_message('valid_email', lang('fv_valid_email'));
 
         return $oFormValidation->run();
     }
@@ -376,8 +409,28 @@ class Invoice extends Base
      */
     protected function getObjectFromPost()
     {
-        dumpanddie($_POST);
-        $aData = array();
+        $aData = array(
+            'ref' => $this->input->post('ref') ?: null,
+            'state' => $this->input->post('state') ?: null,
+            'dated' => $this->input->post('dated') ?: null,
+            'terms' => (int) $this->input->post('terms') ?: 0,
+            'user_id' => (int) $this->input->post('user_id') ?: null,
+            'user_email' => $this->input->post('user_email') ?: null,
+            'additional_text' => $this->input->post('additional_text') ?: null,
+            'items' => array()
+        );
+
+        foreach ($this->input->post('items') as $aItem) {
+            $aData['items'][] = array(
+                'id' => array_key_exists('id', $aItem) ? $aItem['id'] : null,
+                'quantity' => array_key_exists('quantity', $aItem) ? $aItem['quantity'] : null,
+                'unit' => array_key_exists('unit', $aItem) ? $aItem['unit'] : null,
+                'label' => array_key_exists('label', $aItem) ? $aItem['label'] : null,
+                'body' => array_key_exists('body', $aItem) ? $aItem['body'] : null,
+                'unit_cost' => array_key_exists('unit_cost', $aItem) ? $aItem['unit_cost'] : null,
+                'tax_id' => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null
+            );
+        }
 
         return $aData;
     }
