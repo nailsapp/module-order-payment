@@ -8,7 +8,8 @@ $oInput = nailsFactory('service', 'Input');
     <?php
 
         echo form_open();
-        echo '<input type="hidden" value="' . set_value('activeTab', 'tab-misc') . '" id="active-tab" />';
+        $sActiveTab = $this->input->post('active_tab') ?: 'tab-misc';
+        echo '<input type="hidden" name="active_tab" value="' . $sActiveTab . '" id="active-tab">';
 
     ?>
     <ul class="tabs" data-active-tab-input="#active-tab">
@@ -19,6 +20,15 @@ $oInput = nailsFactory('service', 'Input');
             ?>
             <li class="tab">
                 <a href="#" data-tab="tab-misc">Miscellaneous</a>
+            </li>
+            <?php
+        }
+
+        if (userHasPermission('admin:invoice:settings:currency')) {
+
+            ?>
+            <li class="tab">
+                <a href="#" data-tab="tab-currency">Currency</a>
             </li>
             <?php
         }
@@ -41,13 +51,19 @@ $oInput = nailsFactory('service', 'Input');
 
             ?>
             <div class="tab-page tab-misc">
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                <p class="alert alert-warning">
+                    <strong>@todo:</strong> Any misc settings.
+                </p>
+            </div>
+            <?php
+        }
+
+        if (userHasPermission('admin:invoice:settings:currency')) {
+
+            ?>
+            <div class="tab-page tab-currency">
+                <p class="alert alert-warning">
+                    <strong>@todo:</strong> Currency settings
                 </p>
             </div>
             <?php
@@ -57,9 +73,12 @@ $oInput = nailsFactory('service', 'Input');
 
             ?>
             <div class="tab-page tab-drivers">
-                <p>
-                    <?php dump($drivers);?>
-                </p>
+                <?=adminHelper(
+                    'loadSettingsDriverTable',
+                    'enabled_payment_drivers',
+                    $payment_drivers,
+                    $payment_drivers_enabled
+                )?>
             </div>
             <?php
         }

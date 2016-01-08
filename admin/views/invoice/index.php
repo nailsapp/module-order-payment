@@ -19,6 +19,7 @@
                     <th class="amount tax">Tax</th>
                     <th class="amount grand">Grand Total</th>
                     <th class="datetime">Created</th>
+                    <th class="datetime">Modified</th>
                     <th class="actions">Actions</th>
                 </tr>
             </thead>
@@ -39,15 +40,16 @@
                             </td>
                             <?=adminHelper('loadUserCell', $oInvoice->user->id)?>
                             <td class="amount total">
-                                <?=$oInvoice->totals->sub?>
+                                <?=$oInvoice->totals->localised->sub?>
                             </td>
                             <td class="amount tax">
-                                <?=$oInvoice->totals->tax?>
+                                <?=$oInvoice->totals->localised->tax?>
                             </td>
                             <td class="amount grand">
-                                <?=$oInvoice->totals->grand?>
+                                <?=$oInvoice->totals->localised->grand?>
                             </td>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->created)?>
+                            <?=adminHelper('loadDateTimeCell', $oInvoice->modified)?>
                             <td class="actions">
                                 <?php
 

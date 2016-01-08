@@ -1,0 +1,103 @@
+/* --------------------------------------------------------------
+   Nails Invoice Module Admin Styles
+-------------------------------------------------------------- */
+
+.group-invoice {
+    &.invoice {
+        .generate-ref {
+            .fa {
+                display: none;
+            }
+            &.loading {
+                .fa {
+                    display: inline-block;
+                }
+            }
+        }
+        &.edit {
+            table {
+                border-bottom: 1px solid #EFEFEF;
+                input,
+                textarea,
+                select {
+                    width: 100%;
+                    margin: 0;
+                }
+                textarea {
+                    margin-top: 0.5em;
+                    min-height: 45px;
+                }
+                select {
+                    display: inline-block;
+                    height: 29px;
+                    padding: 6px 12px;
+                    line-height: 1.42857143;
+                    color: #555555;
+                    background-color: #FFFFFF;
+                    background-image: none;
+                    border: 1px solid #CCCCCC;
+                    border-radius: 4px;
+                    &[disabled] {
+                        background: #EFEFEF;
+                        color: #777777;
+                        cursor: not-allowed;
+                    }
+                }
+                th,
+                td {
+                    vertical-align: middle;
+                    &.quantity {
+                        width: 80px;
+                        input {
+                            text-align: center;
+                        }
+                    }
+                    &.unit,
+                    &.tax {
+                        width: 150px;
+                    }
+                    &.price {
+                        width: 150px;
+                        input {
+                            text-align: center;
+                        }
+                    }
+                    &.actions {
+                        width: 40px;
+                        a {
+                            display: block;
+                        }
+                    }
+                }
+                tfoot.add-item {
+                    .add-item {
+                        border-top: 1px solid #ECECEC;
+                        padding: 1em;
+                    }
+                }
+                tfoot.invoice-total {
+                    .total-row {
+                        td {
+                            padding: 0.25em 0;
+                        }
+                        &:first-child {
+                            td {
+                                border-top: 1px solid #ECECEC;
+                            }
+                        }
+                        &:nth-child(2) {
+                            td {
+                                background: #F6F6F6;
+                            }
+                        }
+                        span {
+                            display: inline-block;
+                            min-width: 100px;
+                            text-align: center;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

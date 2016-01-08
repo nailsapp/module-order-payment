@@ -61,7 +61,7 @@
         $aField = array(
             'key'     => 'user_id',
             'label'   => 'User',
-            'default' => !empty($invoice->user_id) ? $invoice->user_id : '',
+            'default' => !empty($invoice->user->id) ? $invoice->user->id : '',
             'class'   => 'user-search'
         );
         echo form_field($aField);
@@ -111,7 +111,7 @@
                     <tr>
                         <td class="quantity text-center">
                             <input type="hidden" data-bind="attr: {name: 'items[' + $index() + '][id]'}, value: id" />
-                            <input type="number" min="0" data-bind="attr: {name: 'items[' + $index() + '][quantity]'}, textInput: quantity" />
+                            <input type="number" step="0.001" min="0" data-bind="attr: {name: 'items[' + $index() + '][quantity]'}, textInput: quantity" />
                         </td>
                         <td class="unit">
                             <select data-bind="
@@ -123,11 +123,11 @@
                                 value: unit"></select>
                         </td>
                         <td>
-                            <input type="text" placeholder="The line item's title" data-bind="attr: {name: 'items[' + $index() + '][label]'}, value: label" />
+                            <input type="text" placeholder="The line item's label" data-bind="attr: {name: 'items[' + $index() + '][label]'}, value: label" />
                             <textarea placeholder="The line item's description" data-bind="attr: {name: 'items[' + $index() + '][body]'}, html: body"></textarea>
                         </td>
                         <td class="price text-center">
-                            <input type="number" min="0" data-bind="attr: {name: 'items[' + $index() + '][unit_cost]'}, textInput: unit_cost" />
+                            <input type="number", step="0.01" min="0" data-bind="attr: {name: 'items[' + $index() + '][unit_cost]'}, textInput: unit_cost" />
                         </td>
                         <td class="tax">
                             <select data-bind="
@@ -177,7 +177,7 @@
                 <tfoot class="add-item">
                     <tr>
                         <td colspan="6" class="add-item">
-                            <button class="btn btn-block btn-sm btn-success" data-bind="click: addItem">
+                            <button type="button" class="btn btn-block btn-sm btn-success" data-bind="click: addItem">
                                 <b class="fa fa-plus"></b>
                                 Add Line Item
                             </button>

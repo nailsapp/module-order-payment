@@ -43,6 +43,16 @@ class Invoice extends Base
     const ITEM_UNIT_MONTH  = 'MONTH';
     const ITEM_UNIT_YEAR   = 'YEAR';
 
+    /**
+     * Currency values
+     * @todo  make this way more dynamic
+     */
+    const CURRENCY_DECIMAL_PLACES = 2;
+    const CURRENCY_CODE           = 'GBP';
+    const CURRENCY_SYMBOL_HTML    = '&pound;';
+    const CURRENCY_SYMBOL_TEXT    = '£';
+    const CURRENCY_LOCALISE_VALUE = 100;
+
     // --------------------------------------------------------------------------
 
     /**
@@ -110,60 +120,28 @@ class Invoice extends Base
 
     /**
      * Retrieve all invoices from the databases
-     * @param  int     $page           The page number to return
-     * @param  int     $perPage        The number of results per page
-     * @param  array   $data           Data to pass _to getcount_common()
-     * @param  boolean $includeDeleted Whether to include deleted results
+     * @param  int     $iPage           The page number to return
+     * @param  int     $iPerPage        The number of results per page
+     * @param  array   $aData           Data to pass _to getcount_common()
+     * @param  boolean $bIncludeDeleted Whether to include deleted results
      * @return array
      */
-    public function getAll($page = null, $perPage = null, $data = array(), $includeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, $aData = array(), $bIncludeDeleted = false)
     {
-        $aInvoices = parent::getAll($page, $perPage, $data, $includeDeleted);
+        $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
 
-        if ($aInvoices) {
+        if (!empty($aItems)) {
 
-            //  Get the ID's of all the returned invoices
-            $aInvoiceIds = array();
-            foreach ($aInvoices as $oInvoice) {
-                $aInvoiceIds[] = $oInvoice->id;
+            if (!empty($aData['includeAll']) || !empty($aData['includePayments'])) {
+                $this->getManyAssociatedItems($aItems, 'payments', 'invoice_id', 'Payment', 'nailsapp/module-invoice');
             }
 
-            //  Models
-            $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-            $oItemModel    = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
-
-            //  Get line items for returned invoices
-            $this->db->select('id,invoice_id,label,body');
-            $this->db->where_in('invoice_id', $aInvoiceIds);
-            $this->db->order_by('order');
-            $aItems = $this->db->get($this->tableItem)->result();
-
-            //  Get payments for returned invoices
-            $aPayments = $oPaymentModel->getForInvoices($aInvoiceIds);
-            $aItems    = $oItemModel->getForInvoices($aInvoiceIds);
-
-            //  Merge line items into the resultset
-            foreach ($aInvoices as $oInvoice) {
-
-                //  Line items
-                $oInvoice->items = array();
-                foreach ($aItems as $oItem) {
-                    if ($oItem->invoice_id == $oInvoice->id) {
-                        $oInvoice->items[] = $oItem;
-                    }
-                }
-
-                //  Payments
-                $oInvoice->payments = array();
-                foreach ($aPayments as $oPayment) {
-                    if ($oPayment->invoice_id == $oInvoice->id) {
-                        $oInvoice->payments[] = $oPayment;
-                    }
-                }
+            if (!empty($aData['includeAll']) || !empty($aData['includeItems'])) {
+                $this->getManyAssociatedItems($aItems, 'items', 'invoice_id', 'InvoiceItem', 'nailsapp/module-invoice');
             }
         }
 
-        return $aInvoices;
+        return $aItems;
     }
 
     // --------------------------------------------------------------------------
@@ -273,6 +251,7 @@ class Invoice extends Base
 
         //  Sanitize each item
         $iCounter = 0;
+        $aTaxIds  = array();
         foreach ($aData['items'] as &$aItem) {
 
             //  Always has a unit
@@ -280,17 +259,13 @@ class Invoice extends Base
             $aItem['unit'] = strtoupper(trim($aItem['unit']));
 
             //  Always has a unit cost
-            $aItem['unit_cost'] = !empty($aItem['unit_cost']) ? $aItem['unit_cost'] : 0;
-
-            //  Convert to pence
-            //  @todo do this properly taking into consideration currency
-            $aItem['unit_cost'] = $aItem['unit_cost'] * 100;
+            $aItem['unit_cost'] = !empty($aItem['unit_cost']) ? (float) $aItem['unit_cost'] : 0;
 
             //  Always has a quantity
-            $aItem['quantity'] = !empty($aItem['quantity']) ? $aItem['quantity'] : 0;
+            $aItem['quantity'] = !empty($aItem['quantity']) ? (float) $aItem['quantity'] : 0;
 
             //  Always has a tax_id
-            $aItem['tax_id'] = !empty($aItem['tax_id']) ? $aItem['tax_id'] : null;
+            $aItem['tax_id'] = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
 
             //  Give it an order
             $aItem['order'] = $iCounter;
@@ -336,7 +311,7 @@ class Invoice extends Base
 
         //  Missing items
         if ($aData['state'] !== self::STATE_DRAFT && empty($aData['items'])) {
-            throw new \Exception('At least one line item must be provided if creating a non-draft invoice.', 1);
+            throw new \Exception('At least one line item must be provided if saving a non-draft invoice.', 1);
         }
 
         //  Check each item
@@ -373,6 +348,7 @@ class Invoice extends Base
         //  @todo: do this properly considering currencies etc
         $aData['sub_total'] = 0;
         $aData['tax_total'] = 0;
+
         foreach ($aData['items'] as $aItem) {
 
             //  Add to sub total
@@ -390,6 +366,8 @@ class Invoice extends Base
 
         }
         $aData['grand_total'] = $aData['sub_total'] + $aData['tax_total'];
+
+        dumpjson($aData);
     }
 
     // --------------------------------------------------------------------------
@@ -566,16 +544,29 @@ class Invoice extends Base
     {
         //  User
         $oObj->user = new \stdClass();
-        $oObj->user->id = $oObj->sub_total;
-        $oObj->user->email = $oObj->tax_total;
+        $oObj->user->id = $oObj->user_id;
+        $oObj->user->email = $oObj->user_email;
         unset($oObj->user_id);
         unset($oObj->user_email);
 
         //  Totals
-        $oObj->totals = new \stdClass();
-        $oObj->totals->sub = $oObj->sub_total;
-        $oObj->totals->tax = $oObj->tax_total;
-        $oObj->totals->grand = $oObj->grand_total;
+        $oObj->totals              = new \stdClass();
+        $oObj->totals->base        = new \stdClass();
+        $oObj->totals->base->sub   = $oObj->sub_total;
+        $oObj->totals->base->tax   = $oObj->tax_total;
+        $oObj->totals->base->grand = $oObj->grand_total;
+
+        //  Localise to the User's preference; perform any currency conversions as required
+        $oObj->totals->localised        = new \stdClass();
+        $oObj->totals->localised->sub   = (float) number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised->tax   = (float) number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised->grand = (float) number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+
+        $oObj->totals->localised_formatted        = new \stdClass();
+        $oObj->totals->localised_formatted->sub   = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised_formatted->tax   = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised_formatted->grand = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+
         unset($oObj->sub_total);
         unset($oObj->tax_total);
         unset($oObj->grand_total);

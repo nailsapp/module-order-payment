@@ -14,9 +14,9 @@ namespace Nails\Admin\Invoice;
 
 use Nails\Factory;
 use Nails\Admin\Helper;
-use Nails\Admin\Controller\Base;
+use Nails\Invoice\Controller\BaseAdmin;
 
-class Payment extends Base
+class Payment extends BaseAdmin
 {
     protected $oInvoiceModel;
     protected $oPaymentModel;
@@ -67,7 +67,7 @@ class Payment extends Base
 
         $this->oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
         $this->oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $this->oDriverModel  = Factory::model('Driver', 'nailsapp/module-invoice');
+        $this->oDriverModel  = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
     }
 
     // --------------------------------------------------------------------------

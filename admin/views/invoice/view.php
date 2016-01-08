@@ -14,11 +14,70 @@
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">
-            <strong>Line Items</strong>
+            <strong>Line Items &amp; Totals</strong>
         </div>
-        <div class="panel-body">
-            <?php dump($invoice->items)?>
-        </div>
+        <?php
+
+        if ($invoice->items->count > 0) {
+
+            ?>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>cat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                        foreach ($invoice->items->data as $oItem) {
+
+                            ?>
+                            <tr>
+                                <td>
+                                    <?=$oItem->id?>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+
+                        ?>
+                    </tbody>
+                    <tfoot class="invoice-total" data-bind="visible: items().length">
+                        <tr class="total-row">
+                            <td colspan="6" class="text-right">
+                                <strong>Sub Total:</strong>
+                                <?=$invoice->totals->localised->sub?>
+                            </td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="6" class="text-right">
+                                <strong>Tax:</strong>
+                                <?=$invoice->totals->localised->tax?>
+                            </td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="6" class="text-right">
+                                <strong>Grand Total:</strong>
+                                <?=$invoice->totals->localised->grand?>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <?php
+
+        } else {
+
+            ?>
+            <div class="panel-body">
+                No line items recorded on this invoice.
+            </div>
+            <?php
+        }
+
+        ?>
     </div>
     <div class="panel panel-default">
         <div class="panel-heading">

@@ -23,18 +23,18 @@ return array(
                 return new \Nails\Invoice\Model\Payment();
             }
         },
+        'PaymentDriver' => function () {
+            if (class_exists('\App\Invoice\Model\PaymentDriver')) {
+                return new \App\Invoice\Model\PaymentDriver();
+            } else {
+                return new \Nails\Invoice\Model\PaymentDriver();
+            }
+        },
         'Tax' => function () {
             if (class_exists('\App\Invoice\Model\Tax')) {
                 return new \App\Invoice\Model\Tax();
             } else {
                 return new \Nails\Invoice\Model\Tax();
-            }
-        },
-        'Driver' => function () {
-            if (class_exists('\App\Invoice\Model\Driver')) {
-                return new \App\Invoice\Model\Driver();
-            } else {
-                return new \Nails\Invoice\Model\Driver();
             }
         },
         'PaymentEventHandler' => function () {

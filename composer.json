@@ -22,9 +22,7 @@
     "require":
     {
         "nailsapp/common": "dev-develop",
-        "nailsapp/module-auth": "dev-develop",
-        "nailsapp/driver-invoice-stripe": "dev-develop",
-        "nailsapp/driver-invoice-gocardless": "dev-develop"
+        "nailsapp/module-auth": "dev-develop"
     },
     "require-dev":
     {
@@ -39,7 +37,19 @@
         "nails" :
         {
             "moduleName": "invoice",
-            "type": "module"
+            "type": "module",
+            "data": {
+                "nailsapp/module-admin": {
+                    "autoload": {
+                        "assets": {
+                            "js": [
+                                ["admin.usersearch.min.js", "nailsapp/module-auth"]
+                            ]
+                        }
+                    }
+                }
+            }
         }
+
     }
 }

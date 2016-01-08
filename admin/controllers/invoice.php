@@ -14,9 +14,9 @@ namespace Nails\Admin\Invoice;
 
 use Nails\Factory;
 use Nails\Admin\Helper;
-use Nails\Admin\Controller\Base;
+use Nails\Invoice\Controller\BaseAdmin;
 
-class Invoice extends Base
+class Invoice extends BaseAdmin
 {
     protected $oInvoiceModel;
     protected $oTaxModel;
@@ -226,10 +226,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
-        $this->asset->library('KNOCKOUT');
-        $this->asset->library('MOMENT');
-        $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
+        $this->asset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
         $this->asset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
@@ -260,7 +257,8 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $this->data['invoice'] = $this->oInvoiceModel->getById($this->uri->segment(5));
+        $iInvoiceId = (int) $this->uri->segment(5);
+        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
 
         if (!$this->data['invoice'] || $this->data['invoice']->state != 'DRAFT') {
             show_404();
@@ -279,7 +277,7 @@ class Invoice extends Base
 
                 if ($this->oInvoiceModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
 
-                    $this->session->set_flashdata('success', lang('invoices_edit_ok'));
+                    $this->session->set_flashdata('success', 'Invoice was saved successfully.');
                     redirect('admin/invoice/invoice/index');
 
                 } else {
@@ -307,18 +305,29 @@ class Invoice extends Base
         if ($this->input->post()) {
 
             $aItems = $this->input->post('items') ?: array();
+            //  Tidy up post data as expected by JS
+            foreach ($aItems as &$aItem) {
+
+                $aItem['label'] = html_entity_decode($aItem['label'], ENT_QUOTES, 'UTF-8');
+                $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
+
+                $sUnitCost                     = $aItem['unit_cost'];
+                $aItem['unit_cost']            = new \stdClass();
+                $aItem['unit_cost']->localised = new \stdClass();
+                $aItem['unit_cost']->localised = !empty($sUnitCost) ? (float) $sUnitCost : null;
+
+                $aItem['tax'] = new \stdClass();
+                $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
+            }
 
         } else {
 
-            $aItems = $this->data['invoice']->items;
+            $aItems = $this->data['invoice']->items->data;
         }
 
         // --------------------------------------------------------------------------
 
-        $this->asset->load('nails.admin.module.invoice.css', 'NAILS');
-        $this->asset->library('KNOCKOUT');
-        $this->asset->library('MOMENT');
-        $this->asset->load('nails.admin.invoice.invoice.edit.min.js', 'NAILS');
+        $this->asset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
         $this->asset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
@@ -347,7 +356,9 @@ class Invoice extends Base
             unauthorised();
         }
 
-        $this->data['invoice'] = $this->oInvoiceModel->getById($this->uri->segment(5));
+        $iInvoiceId = (int) $this->uri->segment(5);
+        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
+
         if (!$this->data['invoice'] || $this->data['invoice']->state == 'DRAFT') {
             show_404();
         }
@@ -370,12 +381,12 @@ class Invoice extends Base
         $aRules = array(
             'ref'             => 'xss_clean|trim',
             'state'           => 'xss_clean|trim|required',
-            'dated'           => 'xss_clean|trim|valid_date',
+            'dated'           => 'xss_clean|trim|required|valid_date',
             'terms'           => 'xss_clean|trim|is_natural',
             'user_id'         => 'xss_clean|trim',
             'user_email'      => 'xss_clean|trim|valid_email',
             'additional_text' => 'xss_clean|trim',
-            'items'           => 'xss_clean'
+            'items'           => ''
         );
 
         if (!$this->input->post('user_id')) {
