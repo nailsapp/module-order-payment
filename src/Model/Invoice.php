@@ -266,6 +266,7 @@ class Invoice extends Base
 
             //  Always has a tax_id
             $aItem['tax_id'] = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
+            $aTaxIds[]       = $aItem['tax_id'];
 
             //  Give it an order
             $aItem['order'] = $iCounter;
@@ -313,6 +314,11 @@ class Invoice extends Base
         if ($aData['state'] !== self::STATE_DRAFT && empty($aData['items'])) {
             throw new \Exception('At least one line item must be provided if saving a non-draft invoice.', 1);
         }
+
+        //  Invalid Tax IDs
+        $aTaxRates = $oTaxModel->getByIds($aTaxIds);
+        if (count($aTaxRates) != count($aTaxIds))
+
 
         //  Check each item
         foreach ($aData['items'] as $aItem) {
