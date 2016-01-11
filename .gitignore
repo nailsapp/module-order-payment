@@ -4,3 +4,8 @@ vendor
 node_modules
 .idea
 assets/bower_components
+
+# Explicitly allow scripts which should be kept/are in use and not compiled
+!assets/bower_components/iframe-resizer/js/iframeResizer.contentWindow.min.js
+!assets/bower_components/iframe-resizer/js/iframeResizer.min.js
+!assets/bower_components/jquery.payment/lib/jquery.payment.js

@@ -17,7 +17,7 @@
         $aField = array(
             'key'      => 'state',
             'label'    => 'State',
-            'default'  => !empty($invoice->state) ? $invoice->state : '',
+            'default'  => !empty($invoice->state->id) ? $invoice->state->id : '',
             'class'    => 'select2',
             'required' => true,
             'id'       => 'invoice-state',
@@ -119,8 +119,7 @@
                                 options: $root.units,
                                 optionsText: 'label',
                                 optionsValue: 'slug',
-
-                                value: unit"></select>
+                                value: unit.id"></select>
                         </td>
                         <td>
                             <input type="text" placeholder="The line item's label" data-bind="attr: {name: 'items[' + $index() + '][label]'}, value: label" />
@@ -188,8 +187,11 @@
         </div>
     </fieldset>
     <p>
-        <button type="submit" class="btn btn-primary" data-bind="html: submitText(), attr: {'class': submitClass()}">
+        <button type="submit" class="btn btn-primary" data-bind="click: save, html: submitText(), attr: {'class': submitClass()}">
             Save Changes
+        </button>
+        <button type="button" class="btn btn-default pull-right" data-bind="click: preview">
+            Preview
         </button>
     </p>
     <?=form_close()?>

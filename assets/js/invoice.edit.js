@@ -58,7 +58,11 @@ var invoiceEdit = function(units, taxes, items) {
         if (items.hasOwnProperty(key)) {
             items[key].quantity  = ko.observable(items[key].quantity);
             items[key].unit_cost = ko.observable(items[key].unit_cost.localised);
-            items[key].tax_id    = ko.observable(items[key].tax.id);
+            if (items[key].tax !== null) {
+                items[key].tax_id = ko.observable(items[key].tax.id);
+            } else {
+                items[key].tax_id = ko.observable(null);
+            }
             base.items.push(items[key]);
         }
     }
@@ -264,6 +268,47 @@ var invoiceEdit = function(units, taxes, items) {
 
         return total;
     });
+
+    // --------------------------------------------------------------------------
+
+    base.save = function() {
+
+        if (base.state() === 'DRAFT') {
+
+            return true;
+
+        } else {
+
+            var dated = moment(base.dated(), 'YYYY-MM-DD');
+
+            if (dated.isAfter()) {
+
+                return confirm('Save changes and Schedule the invoice to be sent on ' + dated.format('MMM Do, YYYY') + '?');
+
+            } else {
+
+                return confirm('Save changes and send invoice now?');
+            }
+        }
+    };
+
+    // --------------------------------------------------------------------------
+
+    base.preview = function() {
+
+        $('<div>').html('Preview functionality coming soon.').dialog({
+            title: 'Work in Progress',
+            resizable: false,
+            draggable: false,
+            modal: true,
+            buttons:
+            {
+                OK: function() {
+                    $(this).dialog('close');
+                },
+            }
+        });
+    };
 
     // --------------------------------------------------------------------------
 

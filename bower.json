@@ -1,0 +1,22 @@
+{
+  "name": "nailsapp-module-invoice",
+  "description": "This is the \"Invoice & Payments\" module for Nails.",
+  "main": "",
+  "authors": [
+    "Nails Dev Team <hello@nailsapp.co.uk>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/nailsapp/module-invoice",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iframe-resizer": "~3.5.1",
+    "jquery.payment": "~1.3.2"
+  }
+}

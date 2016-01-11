@@ -22,4 +22,12 @@ class Tax extends Base
         $this->table       = NAILS_DB_PREFIX . 'invoice_tax';
         $this->tablePrefix = 't';
     }
+
+    // --------------------------------------------------------------------------
+
+    public function formatObject($oObj)
+    {
+        parent::formatObject($oObj);
+        $oObj->rate_decimal = $oObj->rate / 100;
+    }
 }

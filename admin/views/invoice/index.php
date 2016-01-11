@@ -35,18 +35,47 @@
                             <td class="ref">
                                 <?=$oInvoice->ref?>
                             </td>
-                            <td class="state">
-                                <?=$invoiceStates[$oInvoice->state]?>
-                            </td>
-                            <?=adminHelper('loadUserCell', $oInvoice->user->id)?>
+                            <?php
+
+                            if ($oInvoice->isOverdue) {
+
+                                $sClass = 'danger';
+                                $sText  = 'Overdue';
+                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due) . '</small>';
+
+                            } elseif ($oInvoice->isScheduled) {
+
+                                $sClass = 'warning';
+                                $sText  = 'Scheduled';
+                                $sText .= '<small>Sending: ' . toUserDate($oInvoice->dated) . '</small>';
+
+                            } elseif ($oInvoice->state->id == 'OPEN') {
+
+                                $sClass = 'success';
+                                $sText  = $oInvoice->state->label;
+                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due) . '</small>';
+
+                            } else {
+
+                                $sClass = '';
+                                $sText  = $oInvoice->state->label;
+                            }
+
+                            echo '<td class="state ' . $sClass . '">';
+                            echo $sText;
+                            echo '</td>';
+
+                            echo adminHelper('loadUserCell', $oInvoice->user->id);
+
+                            ?>
                             <td class="amount total">
-                                <?=$oInvoice->totals->localised->sub?>
+                                <?=$oInvoice->totals->localised_formatted->sub?>
                             </td>
                             <td class="amount tax">
-                                <?=$oInvoice->totals->localised->tax?>
+                                <?=$oInvoice->totals->localised_formatted->tax?>
                             </td>
                             <td class="amount grand">
-                                <?=$oInvoice->totals->localised->grand?>
+                                <?=$oInvoice->totals->localised_formatted->grand?>
                             </td>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->created)?>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->modified)?>
@@ -55,7 +84,7 @@
 
                                 if (userHasPermission('admin:invoice:invoice:edit')) {
 
-                                    if ($oInvoice->state == 'DRAFT') {
+                                    if ($oInvoice->state->id == 'DRAFT') {
 
                                         echo anchor(
                                             'admin/invoice/invoice/edit/' . $oInvoice->id,

@@ -67,8 +67,9 @@ class Invoice extends BaseAdmin
     {
         parent::__construct();
 
-        $this->oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $this->oTaxModel     = Factory::model('Tax', 'nailsapp/module-invoice');
+        $this->oInvoiceModel     = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $this->oInvoiceItemModel = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
+        $this->oTaxModel         = Factory::model('Tax', 'nailsapp/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -144,7 +145,6 @@ class Invoice extends BaseAdmin
         //  Get the items for the page
         $totalRows                   = $this->oInvoiceModel->countAll($data);
         $this->data['invoices']      = $this->oInvoiceModel->getAll($page, $perPage, $data);
-        $this->data['invoiceStates'] = $aStates;
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
@@ -207,7 +207,7 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Page data
-        $aItemUnits = $this->oInvoiceModel->getItemUnits();
+        $aItemUnits = $this->oInvoiceItemModel->getUnits();
         $aTaxes     = $this->oTaxModel->getAll();
 
         $this->data['invoiceStates'] = $this->oInvoiceModel->getSelectableStates();
@@ -260,7 +260,7 @@ class Invoice extends BaseAdmin
         $iInvoiceId = (int) $this->uri->segment(5);
         $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
 
-        if (!$this->data['invoice'] || $this->data['invoice']->state != 'DRAFT') {
+        if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
             show_404();
         }
 
@@ -294,7 +294,7 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Page data
-        $aItemUnits = $this->oInvoiceModel->getItemUnits();
+        $aItemUnits = $this->oInvoiceItemModel->getUnits();
         $aTaxes     = $this->oTaxModel->getAll();
 
         $this->data['invoiceStates'] = $this->oInvoiceModel->getSelectableStates();
@@ -318,6 +318,10 @@ class Invoice extends BaseAdmin
 
                 $aItem['tax'] = new \stdClass();
                 $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
+
+                $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
+                $aItem['unit']     = new \stdClass();
+                $aItem['unit']->id = $sUnit;
             }
 
         } else {
@@ -359,7 +363,7 @@ class Invoice extends BaseAdmin
         $iInvoiceId = (int) $this->uri->segment(5);
         $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
 
-        if (!$this->data['invoice'] || $this->data['invoice']->state == 'DRAFT') {
+        if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {
             show_404();
         }
 

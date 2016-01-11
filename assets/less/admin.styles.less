@@ -69,31 +69,50 @@
                         }
                     }
                 }
-                tfoot.add-item {
-                    .add-item {
-                        border-top: 1px solid #ECECEC;
-                        padding: 1em;
+            }
+        }
+        &.view {
+            table {
+                margin-bottom: 0;
+                border: 0;
+                tbody {
+                    td.header {
+                        font-weight: bold;
+                        width: 75px;
                     }
                 }
-                tfoot.invoice-total {
-                    .total-row {
-                        td {
-                            padding: 0.25em 0;
+            }
+        }
+        &.edit,
+        &.view {
+            table {
+                tfoot {
+                    &.add-item {
+                        .add-item {
+                            border-top: 1px solid #ECECEC;
+                            padding: 1em;
                         }
-                        &:first-child {
+                    }
+                    &.invoice-total {
+                        .total-row {
                             td {
-                                border-top: 1px solid #ECECEC;
+                                padding: 0.25em;
                             }
-                        }
-                        &:nth-child(2) {
-                            td {
-                                background: #F6F6F6;
+                            &:first-child {
+                                td {
+                                    border-top: 1px solid #ECECEC;
+                                }
                             }
-                        }
-                        span {
-                            display: inline-block;
-                            min-width: 100px;
-                            text-align: center;
+                            &:nth-child(2) {
+                                td {
+                                    background: #F6F6F6;
+                                }
+                            }
+                            span {
+                                display: inline-block;
+                                min-width: 100px;
+                                text-align: center;
+                            }
                         }
                     }
                 }

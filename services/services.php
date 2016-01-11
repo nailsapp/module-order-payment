@@ -46,11 +46,11 @@ return array(
         }
     ),
     'factories' => array(
-        'InvoiceBuilder' => function () {
-            if (class_exists('\App\Invoice\Model\InvoiceBuilder')) {
-                return new \App\Invoice\InvoiceBuilder();
+        'Card' => function () {
+            if (class_exists('\App\Invoice\Model\Card')) {
+                return new \App\Invoice\Model\Card();
             } else {
-                return new \Nails\Invoice\InvoiceBuilder();
+                return new \Nails\Invoice\Model\Card();
             }
         }
     )

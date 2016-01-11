@@ -29,11 +29,43 @@ class InvoiceItem extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * The various item quantity units
+     */
+    const UNIT_NONE   = 'NONE';
+    const UNIT_MINUTE = 'MINUTE';
+    const UNIT_HOUR   = 'HOUR';
+    const UNIT_DAY    = 'DAY';
+    const UNIT_WEEK   = 'WEEK';
+    const UNIT_MONTH  = 'MONTH';
+    const UNIT_YEAR   = 'YEAR';
+
+    // --------------------------------------------------------------------------
+
     public function __construct()
     {
         parent::__construct();
         $this->table       = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->tablePrefix = 'io';
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the item quantity units with human friendly names
+     * @return array
+     */
+    public function getUnits()
+    {
+        return array(
+            self::UNIT_NONE   => 'None',
+            self::UNIT_MINUTE => 'Minutes',
+            self::UNIT_HOUR   => 'Hours',
+            self::UNIT_DAY    => 'Days',
+            self::UNIT_WEEK   => 'Weeks',
+            self::UNIT_MONTH  => 'Months',
+            self::UNIT_YEAR   => 'Years'
+        );
     }
 
     // --------------------------------------------------------------------------
@@ -79,7 +111,7 @@ class InvoiceItem extends Base
 
     protected function formatObject($oObj, $aData)
     {
-        parent::formatObject($oObj, $aData, array('invoice_id', 'quantity', 'unit_cost'));
+        parent::formatObject($oObj, $aData, array('invoice_id', 'tax_id', 'unit_cost'), array(), array('quantity'));
 
         //  Unit Cost
         $iUnitCost = $oObj->unit_cost;
@@ -91,9 +123,9 @@ class InvoiceItem extends Base
         //  Totals
         $oObj->totals              = new \stdClass();
         $oObj->totals->base        = new \stdClass();
-        $oObj->totals->base->sub   = $oObj->sub_total;
-        $oObj->totals->base->tax   = $oObj->tax_total;
-        $oObj->totals->base->grand = $oObj->grand_total;
+        $oObj->totals->base->sub   = (int) $oObj->sub_total;
+        $oObj->totals->base->tax   = (int) $oObj->tax_total;
+        $oObj->totals->base->grand = (int) $oObj->grand_total;
 
         //  Localise to the User's preference; perform any currency conversions as required
         $oObj->totals->localised        = new \stdClass();
@@ -109,5 +141,13 @@ class InvoiceItem extends Base
         unset($oObj->sub_total);
         unset($oObj->tax_total);
         unset($oObj->grand_total);
+
+        //  Units
+        $sUnit  = $oObj->unit;
+        $aUnits = $this->getUnits();
+
+        $oObj->unit        = new \stdClass();
+        $oObj->unit->id    = $sUnit;
+        $oObj->unit->label = $aUnits[$sUnit];
     }
 }

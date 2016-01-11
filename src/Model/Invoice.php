@@ -33,17 +33,6 @@ class Invoice extends Base
     const STATE_WRITTEN_OFF    = 'WRITTEN_OFF';
 
     /**
-     * The various item quantity units
-     */
-    const ITEM_UNIT_NONE   = 'NONE';
-    const ITEM_UNIT_MINUTE = 'MINUTE';
-    const ITEM_UNIT_HOUR   = 'HOUR';
-    const ITEM_UNIT_DAY    = 'DAY';
-    const ITEM_UNIT_WEEK   = 'WEEK';
-    const ITEM_UNIT_MONTH  = 'MONTH';
-    const ITEM_UNIT_YEAR   = 'YEAR';
-
-    /**
      * Currency values
      * @todo  make this way more dynamic
      */
@@ -100,25 +89,6 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Returns the item quantity units with human friendly names
-     * @return array
-     */
-    public function getItemUnits()
-    {
-        return array(
-            self::ITEM_UNIT_NONE   => 'None',
-            self::ITEM_UNIT_MINUTE => 'Minutes',
-            self::ITEM_UNIT_HOUR   => 'Hours',
-            self::ITEM_UNIT_DAY    => 'Days',
-            self::ITEM_UNIT_WEEK   => 'Weeks',
-            self::ITEM_UNIT_MONTH  => 'Months',
-            self::ITEM_UNIT_YEAR   => 'Years'
-        );
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Retrieve all invoices from the databases
      * @param  int     $iPage           The page number to return
      * @param  int     $iPerPage        The number of results per page
@@ -131,6 +101,8 @@ class Invoice extends Base
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
 
         if (!empty($aItems)) {
+
+            $this->getSingleAssociatedItem($aItems, 'user_id', 'user', 'User', 'nailsapp/module-auth');
 
             if (!empty($aData['includeAll']) || !empty($aData['includePayments'])) {
                 $this->getManyAssociatedItems($aItems, 'payments', 'invoice_id', 'Payment', 'nailsapp/module-invoice');
@@ -199,7 +171,6 @@ class Invoice extends Base
             }
 
             if (!empty($aItems)) {
-                $iInvoiceId = $bReturnObject ? $mResult->id : $mResult;
                 $this->updateLineItems($iInvoiceId, $aItems);
             }
 
@@ -222,7 +193,9 @@ class Invoice extends Base
         $aData['ref'] = !empty($aData['ref']) ? $aData['ref'] : $this->generateValidRef();
 
         //  Always has a valid token
-        $aData['token'] = $this->generateValidToken($aData['ref']);
+        if (empty($iInvoiceId)) {
+            $aData['token'] = $this->generateValidToken($aData['ref']);
+        }
 
         //  Always has an uppercase state
         $aData['state'] = !empty($aData['state']) ? $aData['state'] : self::STATE_DRAFT;
@@ -254,8 +227,11 @@ class Invoice extends Base
         $aTaxIds  = array();
         foreach ($aData['items'] as &$aItem) {
 
+            //  Has an ID or is null
+            $aItem['id'] = (int) $aItem['id'] ?: null;
+
             //  Always has a unit
-            $aItem['unit'] = !empty($aItem['unit']) ? $aItem['unit'] : self::ITEM_UNIT_NONE;
+            $aItem['unit'] = !empty($aItem['unit']) ? $aItem['unit'] : null;
             $aItem['unit'] = strtoupper(trim($aItem['unit']));
 
             //  Always has a unit cost
@@ -266,7 +242,9 @@ class Invoice extends Base
 
             //  Always has a tax_id
             $aItem['tax_id'] = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
-            $aTaxIds[]       = $aItem['tax_id'];
+            if (!empty($aItem['tax_id'])) {
+                $aTaxIds[] = $aItem['tax_id'];
+            }
 
             //  Give it an order
             $aItem['order'] = $iCounter;
@@ -316,12 +294,18 @@ class Invoice extends Base
         }
 
         //  Invalid Tax IDs
-        $aTaxRates = $oTaxModel->getByIds($aTaxIds);
-        if (count($aTaxRates) != count($aTaxIds))
+        if (!empty($aTaxIds)) {
+            $oTaxModel = Factory::model('Tax', 'nailsapp/module-invoice');
+            $aTaxRates = $oTaxModel->getByIds($aTaxIds);
+            if (count($aTaxRates) != count($aTaxIds)) {
+                throw new \Exception('An invalid Tax Rate was supplied.', 1);
+            }
+        }
 
 
         //  Check each item
-        foreach ($aData['items'] as $aItem) {
+        $oItemModel = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
+        foreach ($aData['items'] as &$aItem) {
 
             //  Has a positive quantity
             if ($aItem['quantity'] <= 0) {
@@ -329,7 +313,7 @@ class Invoice extends Base
             }
 
             //  Has a valid unit
-            $aUnits = $this->getItemUnits();
+            $aUnits = $oItemModel->getUnits();
             if (!array_key_exists($aItem['unit'], $aUnits)) {
                 throw new \Exception('Unit "' . $aItem['unit'] . '" does not exist.', 1);
             }
@@ -337,14 +321,6 @@ class Invoice extends Base
             //  Has a label
             if (empty($aItem['label'])) {
                 throw new \Exception('Each item must be given a label.', 1);
-            }
-
-            //  Has a valid tax rate
-            if (!empty($aItem['tax_id'])) {
-                $oTaxModel = Factory::model('User', 'nailsapp/module-auth');
-                if (!$oTaxModel->getById($aItem['tax_id'])) {
-                    throw new \Exception('"' . $aItem['tax_id'] . '" is not a valid Tax Rate.', 1);
-                }
             }
         }
 
@@ -355,13 +331,32 @@ class Invoice extends Base
         $aData['sub_total'] = 0;
         $aData['tax_total'] = 0;
 
-        foreach ($aData['items'] as $aItem) {
+        foreach ($aData['items'] as &$aItem) {
+
+            //  Convert prices to pence
+            //  @todo: do this properly considering currencies etc
+            $aItem['unit_cost'] = $aItem['unit_cost'] * self::CURRENCY_LOCALISE_VALUE;
 
             //  Add to sub total
             $aItem['sub_total'] = $aItem['quantity'] * $aItem['unit_cost'];
 
             //  Calculate tax
-            $aItem['tax_total'] = ($aItem['quantity'] * $aItem['unit_cost']) * 0.2;
+            if (!empty($aItem['tax_id'])) {
+                foreach ($aTaxRates as $oTaxRate) {
+                    if ($oTaxRate->id == $aItem['tax_id']) {
+                        $aItem['tax_total'] = $aItem['sub_total'] * $oTaxRate->rate_decimal;
+                    }
+                }
+
+            } else {
+
+                $aItem['tax_total'] = 0;
+            }
+
+            //  Ensure integers
+            $aItem['unit_cost'] = intval($aItem['unit_cost']);
+            $aItem['sub_total'] = intval($aItem['sub_total']);
+            $aItem['tax_total'] = intval($aItem['tax_total']);
 
             //  Grand total
             $aItem['grand_total'] = $aItem['sub_total'] + $aItem['tax_total'];
@@ -371,9 +366,8 @@ class Invoice extends Base
             $aData['tax_total'] += $aItem['tax_total'];
 
         }
-        $aData['grand_total'] = $aData['sub_total'] + $aData['tax_total'];
 
-        dumpjson($aData);
+        $aData['grand_total'] = $aData['sub_total'] + $aData['tax_total'];
     }
 
     // --------------------------------------------------------------------------
@@ -402,7 +396,7 @@ class Invoice extends Base
             if (!empty($aItem['id'])) {
 
                 //  Update
-                if (!$oItemModel->update($aLineItem['id'], $aData)) {
+                if (!$oItemModel->update($aItem['id'], $aData)) {
 
                     throw new Exception('Failed to update invoice item.', 1);
 
@@ -546,14 +540,32 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
-    protected function formatObject($oObj)
+    protected function formatObject($oObj, $aData)
     {
-        //  User
-        $oObj->user = new \stdClass();
-        $oObj->user->id = $oObj->user_id;
-        $oObj->user->email = $oObj->user_email;
-        unset($oObj->user_id);
-        unset($oObj->user_email);
+        parent::formatObject($oObj, $aData, array('terms'));
+
+        //  Sate
+        $aStateLabels = $this->getStates();
+        $sState       = $oObj->state;
+
+        $oObj->state            = new \stdClass();
+        $oObj->state->id        = $sState;
+        $oObj->state->label     = $aStateLabels[$sState];
+
+        //  Compute boolean flags
+        $oNow   = Factory::factory('DateTime');
+        $oDated = new \DateTime($oObj->dated);
+        $oDue   = new \DateTime($oObj->due);
+
+        $oObj->isScheduled = false;
+        if ($oObj->state->id == self::STATE_OPEN && $oNow < $oDated) {
+            $oObj->isScheduled = true;
+        }
+
+        $oObj->isOverdue = false;
+        if ($oNow > $oDue) {
+            $oObj->isOverdue = true;
+        }
 
         //  Totals
         $oObj->totals              = new \stdClass();
@@ -577,9 +589,10 @@ class Invoice extends Base
         unset($oObj->tax_total);
         unset($oObj->grand_total);
 
-        //  URLS
+        //  URLs
         $oObj->urls           = new \stdClass();
         $oObj->urls->payment  = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/pay');
         $oObj->urls->download = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/download');
+        $oObj->urls->view     = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/view');
     }
 }
