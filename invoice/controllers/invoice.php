@@ -183,9 +183,21 @@ class Invoice extends NAILS_Controller
 
                     } else {
 
+                        $aExp = explode('/', $this->input->post('cc_exp'));
+                        $aExp = array_map('trim', $aExp);
+                        $sMonth = isset($aExp[0]) ? $aExp[0] : null;
+                        $sYear  = isset($aExp[1]) ? $aExp[1] : null;
+
+                        try {
+                            $oExp = new \DateTime($sYear . '-' . $sMonth . '-01');
+                        } catch (\Exception $e) {
+                            throw new NailsException('Invalid expiry date', 1);
+                        }
+
                         $oCard->setName($this->input->post('cc_name'));
                         $oCard->setNumber($this->input->post('cc_num'));
-                        $oCard->setExpiry($this->input->post('cc_exp'));
+                        $oCard->setExpMonth($oExp->format('m'));
+                        $oCard->setExpYear($oExp->format('Y'));
                         $oCard->setCvc($this->input->post('cc_cvc'));
                     }
 
@@ -196,21 +208,23 @@ class Invoice extends NAILS_Controller
                         $oDriver->slug
                     );
 
-                    dump($oCard);
-                    dumpanddie($oResult);
-
                     //  Handle saving the card, if needed
-                    //  @todo
+                    if ($this->input->post('cc_exp')) {
+                        //  @todo
+                    }
 
                     //  Handle redirect
                     //  If a redirect is required then send the user on their way, if no redirect is required then
                     //  send the user to the payment processing page
 
-                    if (!empty($oResult->isRedirect)) {
+                    if (!empty($oResult->isRedirect())) {
+
+                        dumpanddie($oResult->getRedirectUrl());
 
                     } else {
 
-
+                        //  Payment was successfull, create a new payment and attach it to the invoice
+                        dumpanddie($oResult);
                     }
 
                 } catch (\Exception $e) {

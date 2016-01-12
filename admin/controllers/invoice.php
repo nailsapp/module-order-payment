@@ -432,7 +432,8 @@ class Invoice extends BaseAdmin
             'user_id' => (int) $this->input->post('user_id') ?: null,
             'user_email' => $this->input->post('user_email') ?: null,
             'additional_text' => $this->input->post('additional_text') ?: null,
-            'items' => array()
+            'items' => array(),
+            'currency' => 'GBP'
         );
 
         foreach ($this->input->post('items') as $aItem) {

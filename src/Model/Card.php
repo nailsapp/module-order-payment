@@ -20,7 +20,8 @@ class Card
     protected $sToken;
     protected $sName;
     protected $sNumber;
-    protected $sExpiry;
+    protected $sExpMonth;
+    protected $sExpYear;
     protected $sCvc;
 
     // --------------------------------------------------------------------------
@@ -97,25 +98,49 @@ class Card
     // --------------------------------------------------------------------------
 
     /**
-     * Set the card's expiry date
-     * @param string $sExpiry The card's expiry date
+     * Set the card's expiry month
+     * @param string $sExpiry The card's expiry month
      */
-    public function setExpiry($sExpiry)
+    public function setExpMonth($sExpMonth)
     {
         //  Validate
-        $this->sExpiry = $sExpiry;
+        $this->sExpMonth = $sExpMonth;
         return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Get the card's expiry date'
-     * @return string The card's expiry date'
+     * Get the card's expiry month
+     * @return string The card's expiry month
      */
-    public function getExpiry()
+    public function getExpMonth()
     {
-        return $this->sExpiry;
+        return $this->sExpMonth;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the card's expiry year
+     * @param string $sExpiry The card's expiry year
+     */
+    public function setExpYear($sExpYear)
+    {
+        //  Validate
+        $this->sExpYear = $sExpYear;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the card's expiry year
+     * @return string The card's expiry year
+     */
+    public function getExpYear()
+    {
+        return $this->sExpYear;
     }
 
     // --------------------------------------------------------------------------
@@ -147,11 +172,12 @@ class Card
     public function toArray()
     {
         return array(
-            'token'  => $this->getToken(),
-            'name'   => $this->getName(),
-            'number' => $this->getNumber(),
-            'expiry' => $this->getExpiry(),
-            'cvc'    => $this->getCvc()
+            'token'     => $this->getToken(),
+            'name'      => $this->getName(),
+            'number'    => $this->getNumber(),
+            'exp_month' => $this->getExpMonth(),
+            'exp_year'  => $this->getExpYear(),
+            'cvc'       => $this->getCvc()
         );
     }
 
