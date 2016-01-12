@@ -52,6 +52,20 @@ return array(
             } else {
                 return new \Nails\Invoice\Model\Card();
             }
+        },
+        'ChargeResponse' => function () {
+            if (class_exists('\App\Invoice\Model\ChargeResponse')) {
+                return new \App\Invoice\Model\ChargeResponse();
+            } else {
+                return new \Nails\Invoice\Model\ChargeResponse();
+            }
+        },
+        'RefundResponse' => function () {
+            if (class_exists('\App\Invoice\Model\RefundResponse')) {
+                return new \App\Invoice\Model\RefundResponse();
+            } else {
+                return new \Nails\Invoice\Model\RefundResponse();
+            }
         }
     )
 );

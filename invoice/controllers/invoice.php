@@ -164,7 +164,7 @@ class Invoice extends NAILS_Controller
                     //  Set up card object
                     $oCard = Factory::factory('Card', 'nailsapp/module-invoice');
 
-                    if ($this->input->post('cc_saved')) {
+                    if ($this->input->post('cc_saved') && $this->input->post('cc_saved') !== 'NEW') {
 
                         //  Lookup card
                         $oSavedCard = null;
@@ -196,6 +196,7 @@ class Invoice extends NAILS_Controller
                         $oDriver->slug
                     );
 
+                    dump($oCard);
                     dumpanddie($oResult);
 
                     //  Handle saving the card, if needed
@@ -252,7 +253,7 @@ class Invoice extends NAILS_Controller
 
         //  @todo verify invoice and token
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoice      = $oInvoiceModel->getByRef($sInvoiceRef);
+        $oInvoice      = $oInvoiceModel->getByRef($sInvoiceRef, array('includeItems' => true));
 
         if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {
             show_404();

@@ -1,5 +1,5 @@
 <div class="nailsapp-invoice pay">
-    <?=form_open()?>
+    <?=form_open(null, 'id="js-main-form"')?>
     <div class="row">
         <div class="col-md-6">
             <div class="panel-group">
@@ -66,7 +66,7 @@
 
                                 ?>
                                 <div class="row">
-                                    <div class="col-xs-12">
+                                    <div class="col-xs-12" id="js-saved-cards">
                                         <div class="form-group">
                                             <label>Saved Cards</label>
                                             <ul class="list-group">
@@ -91,7 +91,7 @@
                                                             echo $sDisable ? '<span class="text-muted">Expired</span>' : '';
 
                                                             ?>
-                                                            <a href="#" class="text-danger pull-right">
+                                                            <a href="<?=site_url('invoice/card/delete/' . $oCard->id . '?return=' . urlencode(current_url()))?>" class="text-danger pull-right">
                                                                 <b class="glyphicon glyphicon-remove-sign"></b>
                                                             </a>
                                                         </label>
@@ -115,46 +115,48 @@
                             }
 
                             ?>
-                            <div id="js-add-card" class="panel panel-default <?=!empty($aCards) ? 'hidden' : ''?>">
-                                <div class="panel-body">
-                                    <div class="row">
-                                        <div class="col-xs-12">
-                                            <div class="form-group">
-                                                <label for="js-cc-name">Cardholder Name</label>
-                                                <input type="text" name="cc_name" class="form-control" id="js-cc-name" placeholder="Name" value="<?=set_value('cc_name', activeUser('first_name, last_name'))?>">
-                                                <?=form_error('cc_name', '<p class="alert alert-danger">', '</p>')?>
+                            <div id="js-add-card" class="<?=!empty($aCards) ? 'hidden' : ''?>">
+                                <div class="panel panel-default ">
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label for="js-cc-name">Cardholder Name</label>
+                                                    <input type="text" name="cc_name" class="form-control" id="js-cc-name" placeholder="Name" value="<?=set_value('cc_name', activeUser('first_name, last_name'))?>">
+                                                    <?=form_error('cc_name', '<p class="alert alert-danger">', '</p>')?>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-xs-12 col-md-6">
-                                            <div class="form-group">
-                                                <label for="js-cc-num">Card Number</label>
-                                                <input type="tel" name="cc_num" autocomplete="cc-number" class="form-control" id="js-cc-num" placeholder="•••• •••• •••• ••••" value="<?=set_value('cc_num')?>">
-                                                <?=form_error('cc_num', '<p class="alert alert-danger">', '</p>')?>
+                                        <div class="row">
+                                            <div class="col-xs-12 col-md-6">
+                                                <div class="form-group">
+                                                    <label for="js-cc-num">Card Number</label>
+                                                    <input type="tel" name="cc_num" autocomplete="cc-number" class="form-control cc-num" id="js-cc-num" placeholder="•••• •••• •••• ••••" value="<?=set_value('cc_num')?>">
+                                                    <?=form_error('cc_num', '<p class="alert alert-danger">', '</p>')?>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 col-md-3">
+                                                <div class="form-group">
+                                                    <label for="js-cc-exp">Expiry</label>
+                                                    <input type="tel" name="cc_exp" autocomplete="cc-exp" class="form-control" id="js-cc-exp" placeholder="•• / ••" value="<?=set_value('cc_exp')?>">
+                                                    <?=form_error('cc_exp', '<p class="alert alert-danger">', '</p>')?>
+                                                </div>
+                                            </div>
+                                            <div class="col-xs-6 col-md-3">
+                                                <div class="form-group">
+                                                    <label for="js-cc-cvc">CVC</label>
+                                                    <input type="tel" name="cc_cvc" autocomplete="off" class="form-control" id="js-cc-cvc" placeholder="•••" value="<?=set_value('cc_cvc')?>">
+                                                    <?=form_error('cc_cvc', '<p class="alert alert-danger">', '</p>')?>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-xs-6 col-md-3">
-                                            <div class="form-group">
-                                                <label for="js-cc-exp">Expiry</label>
-                                                <input type="tel" name="cc_exp" autocomplete="cc-exp" class="form-control" id="js-cc-exp" placeholder="•• / ••" value="<?=set_value('cc_exp')?>">
-                                                <?=form_error('cc_exp', '<p class="alert alert-danger">', '</p>')?>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <label>
+                                                    <?=form_checkbox('cc_save', true, set_radio('cc_save', true, true))?>
+                                                    Remember Card Details
+                                                </label>
                                             </div>
-                                        </div>
-                                        <div class="col-xs-6 col-md-3">
-                                            <div class="form-group">
-                                                <label for="js-cc-cvc">CVC</label>
-                                                <input type="tel" name="cc_cvc" autocomplete="off" class="form-control" id="js-cc-cvc" placeholder="•••" value="<?=set_value('cc_cvc')?>">
-                                                <?=form_error('cc_cvc', '<p class="alert alert-danger">', '</p>')?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-xs-12">
-                                            <label>
-                                                <?=form_checkbox('cc_save', true, set_radio('cc_save', true, true))?>
-                                                Remember Card Details
-                                            </label>
                                         </div>
                                     </div>
                                 </div>

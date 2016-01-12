@@ -144,12 +144,25 @@ class Card
 
     // --------------------------------------------------------------------------
 
+    public function toArray()
+    {
+        return array(
+            'token'  => $this->getToken(),
+            'name'   => $this->getName(),
+            'number' => $this->getNumber(),
+            'expiry' => $this->getExpiry(),
+            'cvc'    => $this->getCvc()
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
     /**
      * Attempts to charge the card
-     * @param  integer $iAmount   The amount to charge the card
-     * @param  string  $sCurrency The currency in which to charge
-     * @param  string  $sDriver   The payment driver to use
-     * @return \stdClas
+     * @param  integer   $iAmount   The amount to charge the card
+     * @param  string    $sCurrency The currency in which to charge
+     * @param  string    $sDriver   The payment driver to use
+     * @return \stdClass
      */
     public function charge($iAmount, $sCurrency, $sDriver)
     {
@@ -160,7 +173,7 @@ class Card
         $oDriver = false;
         foreach ($aDrivers as $oDriverConfig) {
             if ($oDriverConfig->slug == $sDriver) {
-                $oDriver = $oDriverConfig;
+                $oDriver = $oPaymentDriverModel->getInstance($oDriverConfig->slug);
                 break;
             }
         }
@@ -169,18 +182,22 @@ class Card
             throw new DriverException('Invalid Payment Driver', 1);
         }
 
-        $oOut                    = new \stdClass();
-        $oOut->request           = new \stdClass();
-        $oOut->response          = new \stdClass();
+        //  @todo: validate amount
+        //  @todo: validate currency
 
-        $oOut->request->amount   = $iAmount;
-        $oOut->request->currency = $sCurrency;
-        $oOut->request->driver   = $sDriver;
+        // --------------------------------------------------------------------------
 
-        //  @todo, provided by the driver
-        $oOut->response->isRedirect  = true;
-        $oOut->response->redirectUrl = 'http://google.com';
+        $oResponse = $oDriver->charge(
+            $this->toArray(),
+            $iAmount,
+            $sCurrency
+        );
 
-        return $oOut;
+        //  @todo: validate response
+
+        //  Lock the response so it cannot be altered
+        $oResponse->lock();
+
+        return $oResponse;
     }
 }
