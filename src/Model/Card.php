@@ -185,12 +185,13 @@ class Card
 
     /**
      * Attempts to charge the card
-     * @param  integer   $iAmount   The amount to charge the card
-     * @param  string    $sCurrency The currency in which to charge
-     * @param  string    $sDriver   The payment driver to use
+     * @param  integer   $iInvoiceId The invoice this charge should be attributed to
+     * @param  integer   $iAmount    The amount to charge the card
+     * @param  string    $sCurrency  The currency in which to charge
+     * @param  string    $sDriver    The payment driver to use
      * @return \stdClass
      */
-    public function charge($iAmount, $sCurrency, $sDriver)
+    public function charge($iInvoiceId, $iAmount, $sCurrency, $sDriver)
     {
         $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
         $aDrivers            = $oPaymentDriverModel->getEnabled();
@@ -213,6 +214,19 @@ class Card
 
         // --------------------------------------------------------------------------
 
+        //  Create a charge against the invoice
+        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $iPaymentId    = $oPaymentModel->create(
+            array(
+                'driver'        => $sDriver,
+                'invoice_id'    => $iInvoiceId,
+                'currency'      => $sCurrency,
+                'currency_base' => $sCurrency,
+                'amount'        => $iAmount,
+                'amount_base'   => $iAmount
+            )
+        );
+
         $oResponse = $oDriver->charge(
             $this->toArray(),
             $iAmount,
@@ -220,6 +234,17 @@ class Card
         );
 
         //  @todo: validate response
+
+        //  Update the payment
+        $oPaymentModel->update(
+            $iPaymentId,
+            array(
+                'status'   => $oResponse->getStatus(),
+                'txn_id'   => $oResponse->getTxnId(),
+                'fee'      => $oResponse->getFee(),
+                'fee_base' => $oResponse->getFee()
+            )
+        );
 
         //  Lock the response so it cannot be altered
         $oResponse->lock();

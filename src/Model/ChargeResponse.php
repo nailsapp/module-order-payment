@@ -14,6 +14,17 @@ namespace Nails\Invoice\Model;
 
 class ChargeResponse
 {
+    //  Statuses; these should match to the payment status DB column
+    const STATUS_PENDING = 'PENDING';
+    const STATUS_OK      = 'OK';
+    const STATUS_FAIL    = 'FAIL';
+
+    // --------------------------------------------------------------------------
+
+    //  Status
+    protected $aStatuses;
+    protected $sStatus;
+
     //  Locked
     protected $bIsLocked;
 
@@ -23,6 +34,127 @@ class ChargeResponse
 
     //  Successful charge variables
     protected $sTxnId;
+    protected $iFee;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Construct the model
+     */
+    public function __construct()
+    {
+        $this->sStatus     = self::STATUS_PENDING;
+        $this->iFee        = 0;
+        $this->bIsRedirect = false;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the current status of the charge request
+     * @return string
+     */
+    public function setStatus($sStatus)
+    {
+        if (!$this->bIsLocked) {
+            if (!in_array($sStatus, $this->getStatuses())) {
+                throw new DriverException('"' . $sStatus . '" is an invalid charge response status.', 1);
+            }
+
+            $this->sStatus = $sStatus;
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the status as pending
+     */
+    public function setStatusPending()
+    {
+        return $this->setStatus(self::STATUS_PENDING);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the status as OK
+     */
+    public function setStatusOk()
+    {
+        return $this->setStatus(self::STATUS_OK);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the status as failed
+     */
+    public function setStatusFail()
+    {
+        return $this->setStatus(self::STATUS_FAIL);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the current status of the charge request
+     * @return string
+     */
+    public function getStatus()
+    {
+        return $this->sStatus;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the available payment statuses
+     * @return array
+     */
+    public function getStatuses()
+    {
+        return array(
+            self::STATUS_PENDING => 'Pending',
+            self::STATUS_OK      => 'OK',
+            self::STATUS_FAIL    => 'Fail'
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns if the request was successful
+     * @return boolean
+     */
+    public function isOk()
+    {
+        return $this->getStatus() == self::STATUS_OK;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns if the request is pending
+     * @return boolean
+     */
+    public function isPending()
+    {
+        return $this->getStatus() == self::STATUS_PENDING;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns if the request failed
+     * @return boolean
+     */
+    public function isFail()
+    {
+        return $this->getStatus() == self::STATUS_FAIL;
+    }
 
     // --------------------------------------------------------------------------
 
@@ -37,10 +169,10 @@ class ChargeResponse
     // --------------------------------------------------------------------------
 
     /**
-     * Set the redirect URL
+     * Set whether the response is a redirect
      * @param boolean $bIsRedirect Whether the response is a redirect
      */
-    public function setIsRedirect($bIsRedirect)
+    protected function setIsRedirect($bIsRedirect)
     {
         if (!$this->bIsLocked) {
             $this->bIsRedirect = (bool) $bIsRedirect;
@@ -52,12 +184,13 @@ class ChargeResponse
 
     /**
      * Set the redirectUrl value
-     * @param boolean $bIsRedirect The Redirect URL
+     * @param string $bIsRedirect The Redirect URL
      */
     public function setRedirectUrl($sRedirectUrl)
     {
         if (!$this->bIsLocked) {
             $this->sRedirectUrl = $sRedirectUrl;
+            $this->setIsRedirect(!empty($sRedirectUrl));
         }
         return $this;
     }
@@ -76,7 +209,7 @@ class ChargeResponse
 
     /**
      * Set the transaction ID
-     * @param boolean $sTxnId The Redirect URL
+     * @param string $sTxnId The transaction ID
      */
     public function setTxnId($sTxnId)
     {
@@ -94,6 +227,30 @@ class ChargeResponse
      */
     public function getTxnId() {
         return $this->sTxnId;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the fee
+     * @param integer $iFee The fee incurred by the transaction, if known
+     */
+    public function setFee($iFee)
+    {
+        if (!$this->bIsLocked) {
+            $this->iFee = $iFee;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * The fee incurred by the transaction
+     * @return integer
+     */
+    public function getFee() {
+        return $this->iFee;
     }
 
     // --------------------------------------------------------------------------

@@ -81,7 +81,6 @@ class Invoice extends BaseAdmin
     public function index()
     {
         if (!userHasPermission('admin:invoice:invoice:manage')) {
-
             unauthorised();
         }
 
@@ -173,7 +172,6 @@ class Invoice extends BaseAdmin
     public function create()
     {
         if (!userHasPermission('admin:invoice:invoice:create')) {
-
             unauthorised();
         }
 
@@ -188,7 +186,12 @@ class Invoice extends BaseAdmin
 
             if ($this->validatePost()) {
 
-                if ($this->oInvoiceModel->create($this->getObjectFromPost())) {
+                $oInvoice = $this->oInvoiceModel->create($this->getObjectFromPost(), true);
+
+                if (!empty($oInvoice)) {
+
+                    //  Send invoice if needed
+                    $this->sendInvoice($oInvoice);
 
                     $this->session->set_flashdata('success', 'Invoice created successfully.');
                     redirect('admin/invoice/invoice/index');
@@ -218,6 +221,24 @@ class Invoice extends BaseAdmin
         if ($this->input->post()) {
 
             $aItems = $this->input->post('items') ?: array();
+            //  Tidy up post data as expected by JS
+            foreach ($aItems as &$aItem) {
+
+                $aItem['label'] = html_entity_decode($aItem['label'], ENT_QUOTES, 'UTF-8');
+                $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
+
+                $sUnitCost                     = $aItem['unit_cost'];
+                $aItem['unit_cost']            = new \stdClass();
+                $aItem['unit_cost']->localised = new \stdClass();
+                $aItem['unit_cost']->localised = !empty($sUnitCost) ? (float) $sUnitCost : null;
+
+                $aItem['tax'] = new \stdClass();
+                $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
+
+                $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
+                $aItem['unit']     = new \stdClass();
+                $aItem['unit']->id = $sUnit;
+            }
 
         } else {
 
@@ -251,7 +272,6 @@ class Invoice extends BaseAdmin
     public function edit()
     {
         if (!userHasPermission('admin:invoice:invoice:edit')) {
-
             unauthorised();
         }
 
@@ -276,6 +296,10 @@ class Invoice extends BaseAdmin
             if ($this->validatePost()) {
 
                 if ($this->oInvoiceModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
+
+                    //  Send invoice if needed
+                    $oInvoice = $this->oInvoiceModel->getById($this->data['invoice']->id);
+                    $this->sendInvoice($oInvoice);
 
                     $this->session->set_flashdata('success', 'Invoice was saved successfully.');
                     redirect('admin/invoice/invoice/index');
@@ -356,7 +380,6 @@ class Invoice extends BaseAdmin
     public function view()
     {
         if (!userHasPermission('admin:invoice:invoice:edit')) {
-
             unauthorised();
         }
 
@@ -394,7 +417,7 @@ class Invoice extends BaseAdmin
         );
 
         if (!$this->input->post('user_id')) {
-                $aRules['user_email'] .= '|required';
+            $aRules['user_email'] .= '|required';
         }
 
         $aRulesFV = array();
@@ -453,6 +476,30 @@ class Invoice extends BaseAdmin
 
     // --------------------------------------------------------------------------
 
+    protected function sendInvoice($oInvoice)
+    {
+        if (empty($oInvoice)) {
+            return false;
+        }
+
+        $sInvoiceClass = get_class($this->oInvoiceModel);
+
+        if ($oInvoice->state->id !== $sInvoiceClass::STATE_OPEN) {
+            return false;
+        }
+
+        $oNow   = Factory::factory('DateTime');
+        $oDated = new \DateTime($oInvoice->dated->raw);
+
+        if ($oNow->format('Y-m-d') != $oDated->format('Y-m-d')) {
+            return false;
+        }
+
+        return $this->oInvoiceModel->send($oInvoice->id);
+    }
+
+    // --------------------------------------------------------------------------
+
     /**
      * Delete an invoice
      * @return void
@@ -460,7 +507,6 @@ class Invoice extends BaseAdmin
     public function delete()
     {
         if (!userHasPermission('admin:invoice:invoice:delete')) {
-
             unauthorised();
         }
 

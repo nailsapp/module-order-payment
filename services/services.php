@@ -9,6 +9,13 @@ return array(
                 return new \Nails\Invoice\Model\Invoice();
             }
         },
+        'InvoiceEmail' => function () {
+            if (class_exists('\App\Invoice\Model\InvoiceEmail')) {
+                return new \App\Invoice\Model\InvoiceEmail();
+            } else {
+                return new \Nails\Invoice\Model\InvoiceEmail();
+            }
+        },
         'InvoiceItem' => function () {
             if (class_exists('\App\Invoice\Model\InvoiceItem')) {
                 return new \App\Invoice\Model\InvoiceItem();

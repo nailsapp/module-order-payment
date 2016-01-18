@@ -203,6 +203,7 @@ class Invoice extends NAILS_Controller
 
                     //  Attempt payment
                     $oResult = $oCard->charge(
+                        $oInvoice->id,
                         $oInvoice->totals->base->grand,
                         $oInvoice->currency,
                         $oDriver->slug
@@ -223,7 +224,7 @@ class Invoice extends NAILS_Controller
 
                     } else {
 
-                        //  Payment was successfull, create a new payment and attach it to the invoice
+                        //  Payment was successfull
                         dumpanddie($oResult);
                     }
 

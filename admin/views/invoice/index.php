@@ -41,19 +41,19 @@
 
                                 $sClass = 'danger';
                                 $sText  = 'Overdue';
-                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due) . '</small>';
+                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
 
                             } elseif ($oInvoice->isScheduled) {
 
                                 $sClass = 'warning';
                                 $sText  = 'Scheduled';
-                                $sText .= '<small>Sending: ' . toUserDate($oInvoice->dated) . '</small>';
+                                $sText .= '<small>Sending: ' . toUserDate($oInvoice->dated->raw) . '</small>';
 
                             } elseif ($oInvoice->state->id == 'OPEN') {
 
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
-                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due) . '</small>';
+                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
 
                             } else {
 
@@ -65,7 +65,8 @@
                             echo $sText;
                             echo '</td>';
 
-                            echo adminHelper('loadUserCell', $oInvoice->user->id);
+                            $iUserId = !empty($oInvoice->user->id) ? $oInvoice->user->id : null;
+                            echo adminHelper('loadUserCell', $iUserId);
 
                             ?>
                             <td class="amount total">

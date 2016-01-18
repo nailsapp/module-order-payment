@@ -50,9 +50,10 @@ class Invoice extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->table       = NAILS_DB_PREFIX . 'invoice_invoice';
-        $this->tablePrefix = 'i';
-        $this->tableItem   = NAILS_DB_PREFIX . 'invoice_invoice_item';
+        $this->table             = NAILS_DB_PREFIX . 'invoice_invoice';
+        $this->tablePrefix       = 'i';
+        $this->tableItem         = NAILS_DB_PREFIX . 'invoice_invoice_item';
+        $this->defaultSortColumn = 'created';
     }
 
     // --------------------------------------------------------------------------
@@ -103,6 +104,10 @@ class Invoice extends Base
         if (!empty($aItems)) {
 
             $this->getSingleAssociatedItem($aItems, 'user_id', 'user', 'User', 'nailsapp/module-auth');
+
+            if (!empty($aData['includeAll']) || !empty($aData['includeEmails'])) {
+                $this->getManyAssociatedItems($aItems, 'emails', 'invoice_id', 'InvoiceEmail', 'nailsapp/module-invoice');
+            }
 
             if (!empty($aData['includeAll']) || !empty($aData['includePayments'])) {
                 $this->getManyAssociatedItems($aItems, 'payments', 'invoice_id', 'Payment', 'nailsapp/module-invoice');
@@ -163,6 +168,7 @@ class Invoice extends Base
 
             $aItems = $aData['items'];
             unset($aData['items']);
+            unset($aData['token']);
 
             $bResult = parent::update($iInvoiceId, $aData);
 
@@ -540,6 +546,79 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    public function send($iInvoiceId, $sEmailOverride = null)
+    {
+        try {
+
+            $oInvoice = $this->getById($iInvoiceId);
+            if (empty($oInvoice)) {
+                throw new \Exception('Invalid Invoice ID', 1);
+            }
+
+                if ($oInvoice->state->id !== self::STATE_OPEN) {
+                    throw new \Exception('Invoice must be in an open state to send.', 1);
+                }
+
+            if (!empty($sEmailOverride)) {
+
+                //  @todo, validate email address (or addresses if an array)
+                $aEmails = array($sEmailOverride);
+
+            } elseif (!empty($oInvoice->user_email)) {
+
+                $aEmails = array($oInvoice->user_email);
+
+            } elseif (!empty($oInvoice->user->email)) {
+
+                $aEmails = array($oInvoice->user->email);
+
+            } else {
+
+                throw new \Exception('No email address to send the invoice to', 1);
+            }
+
+            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
+
+            $oEmail       = new \stdClass();
+            $oEmail->type = 'send_invoice';
+            $oEmail->data = array(
+                'invoice' => $oInvoice
+            );
+
+            foreach ($aEmails as $sEmail) {
+
+                $oEmail->to_email = $sEmail;
+
+                $oResult = $oEmailer->send($oEmail);
+
+                if (!empty($oResult)) {
+
+                    $oInvoiceEmailModel->create(
+                        array(
+                            'invoice_id' => $oInvoice->id,
+                            'email_id'   => $oResult->id,
+                            'email_type' => $oEmail->type,
+                            'recipient'  => $oEmail->to_email
+                        )
+                    );
+
+                } else {
+                    throw new \Exception($oEmailer->lastError(), 1);
+                }
+            }
+
+        } catch (\Exception $e) {
+
+            $this->setError($e->getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    // --------------------------------------------------------------------------
+
     protected function formatObject($oObj, $aData)
     {
         parent::formatObject($oObj, $aData, array('terms'));
@@ -552,10 +631,20 @@ class Invoice extends Base
         $oObj->state->id        = $sState;
         $oObj->state->label     = $aStateLabels[$sState];
 
+        //  Dated
+        $oDated = new \DateTime($oObj->dated);
+        $oObj->dated            = new \stdClass();
+        $oObj->dated->raw       = $oDated->format('Y-m-d');
+        $oObj->dated->formatted = $oDated->format('jS F, Y');
+
+        //  Due
+        $oDue = new \DateTime($oObj->due);
+        $oObj->due            = new \stdClass();
+        $oObj->due->raw       = $oDue->format('Y-m-d');
+        $oObj->due->formatted = $oDue->format('jS F, Y');
+
         //  Compute boolean flags
         $oNow   = Factory::factory('DateTime');
-        $oDated = new \DateTime($oObj->dated);
-        $oDue   = new \DateTime($oObj->due);
 
         $oObj->isScheduled = false;
         if ($oObj->state->id == self::STATE_OPEN && $oNow < $oDated) {

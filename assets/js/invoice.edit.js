@@ -98,7 +98,9 @@ var invoiceEdit = function(units, taxes, items) {
         var item = {
             'id': null,
             'quantity': ko.observable(1),
-            'unit': null,
+            'unit': {
+                'id': ''
+            },
             'label': '',
             'body': '',
             'unit_cost': ko.observable(null),

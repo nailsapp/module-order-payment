@@ -9,7 +9,7 @@
                     <tbody>
                         <tr>
                             <td class="header">Dated</td>
-                            <td><?=toUserDate($invoice->dated)?></td>
+                            <td><?=toUserDate($invoice->dated->raw)?></td>
                         </tr>
                         <tr>
                             <td class="header">Terms</td>
@@ -17,7 +17,7 @@
                         </tr>
                         <tr>
                             <td class="header">Due</td>
-                            <td><?=toUserDate($invoice->due)?></td>
+                            <td><?=toUserDate($invoice->due->raw)?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -32,7 +32,12 @@
                     <tbody>
                         <tr>
                             <td class="header">User</td>
-                            <?=adminHelper('loadUserCell', $invoice->user->id)?>
+                            <?php
+
+                            $iUserId = !empty($invoice->user->id) ? $invoice->user->id : null;
+                            echo adminHelper('loadUserCell', $iUserId);
+
+                            ?>
                         </tr>
                         <tr>
                             <td class="header">Sent To</td>
@@ -153,13 +158,131 @@
         </div>
         <?php
 
-        if ($invoice->payments->count > 0) {
+        if (userHasPermission('admin:invoice:payment:view') && $invoice->payments->count > 0) {
+
+            ?>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="text-center">ID</th>
+                            <th class="text-center">Status</th>
+                            <th>Gateway</th>
+                            <th>Reference</th>
+                            <th>Amount</th>
+                            <th>Fee</th>
+                            <th>Created</th>
+                            <th class="actions">Actions</th>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                        foreach ($invoice->payments->data as $oPayment) {
+
+                            ?>
+                            <tr>
+                                <td class="text-center"><?=$oPayment->id?></td>
+                                <td class="text-center"><?=$oPayment->status?></td>
+                                <td><?=$oPayment->driver->label?></td>
+                                <td><?=$oPayment->txn_id?></td>
+                                <td><?=$oPayment->amount->localised_formatted?></td>
+                                <td><?=$oPayment->fee->localised_formatted?></td>
+                                <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
+                                <td class="actions">
+                                    <?php
+
+                                    echo anchor(
+                                        'admin/invoice/payment/view/' . $oPayment->id,
+                                        'View',
+                                        'class="btn btn-xs btn-default"'
+                                    );
+
+                                    ?>
+                                </td>
+                            </tr>
+                            <?php
+
+                        }
+
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php
 
         } else {
 
             ?>
             <div class="panel-body text-muted">
                 No Associated Payments
+            </div>
+            <?php
+        }
+
+        ?>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Associated Emails</strong>
+        </div>
+        <?php
+
+        if ($invoice->emails->count > 0) {
+
+            ?>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Recipient</th>
+                            <th>Sent</th>
+                            <th class="text-center">Preview</th>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                        foreach ($invoice->emails->data as $oEmail) {
+
+                            ?>
+                            <tr>
+                                <td><?=$oEmail->email->type->label?></td>
+                                <td><?=$oEmail->recipient?></td>
+                                <?=adminHelper('loadDateTimeCell', $oEmail->created)?>
+                                <td class="text-center">
+                                    <?php
+
+                                    if (!empty($oEmail->email->preview_url)) {
+
+                                        echo anchor(
+                                            $oEmail->email->preview_url,
+                                            'Preview',
+                                            'class="btn btn-xs btn-primary fancybox"'
+                                        );
+
+                                    } else {
+
+                                        echo '<span class="text-muted">Not Available</span>';
+                                    }
+
+                                    ?>
+                                </td>
+                            </tr>
+                            <?php
+
+                        }
+
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php
+
+        } else {
+
+            ?>
+            <div class="panel-body text-muted">
+                No Associated Emails
             </div>
             <?php
         }

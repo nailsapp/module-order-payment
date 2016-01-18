@@ -32,7 +32,7 @@
         $aField = array(
             'key'      => 'dated',
             'label'    => 'Dated',
-            'default'  => !empty($invoice->dated) ? $invoice->dated : date('Y-m-d'),
+            'default'  => !empty($invoice->dated->raw) ? $invoice->dated->raw : date('Y-m-d'),
             'id'       => 'invoice-dated',
             'required' => true,
             'data'     => array(

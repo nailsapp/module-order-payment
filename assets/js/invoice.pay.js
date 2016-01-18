@@ -9,6 +9,7 @@ var invoicePay = function() {
         //  Bind to section buttons
         $('.js-goto-section').on('click', function() {
             base.gotoSection($(this).data('section'));
+            return false;
         });
 
         //  Toggle add card fields

@@ -30,12 +30,14 @@ class Payment extends BaseAdmin
      */
     public static function announce()
     {
-        if (userHasPermission('admin:invoice:payment:manage')) {
+        if (userHasPermission('admin:invoice:payment:view')) {
 
             $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
             $oNavGroup->setLabel('Invoices &amp; Payments');
             $oNavGroup->setIcon('fa-credit-card');
-            $oNavGroup->addAction('Manage Payments');
+            if (userHasPermission('admin:invoice:payment:view')) {
+                $oNavGroup->addAction('Manage Payments');
+            }
 
             return $oNavGroup;
         }
@@ -51,7 +53,7 @@ class Payment extends BaseAdmin
     {
         $permissions = parent::permissions();
 
-        $permissions['manage'] = 'Can manage payments';
+        $permissions['view'] = 'Can view payment details';
 
         return $permissions;
     }
@@ -78,8 +80,7 @@ class Payment extends BaseAdmin
      */
     public function index()
     {
-        if (!userHasPermission('admin:invoice:payment:manage')) {
-
+        if (!userHasPermission('admin:invoice:payment:view')) {
             unauthorised();
         }
 
@@ -103,12 +104,12 @@ class Payment extends BaseAdmin
 
         //  Define the sortable columns
         $sortColumns = array(
-            $sTablePrefix . '.created'        => 'Received Date',
-            $sTablePrefix . '.processor'      => 'Payment Processor',
-            $sTablePrefix . '.invoice_id'     => 'Invoice ID',
-            $sTablePrefix . '.transaction_id' => 'Transaction ID',
-            $sTablePrefix . '.amount'         => 'Amount',
-            $sTablePrefix . '.currency'       => 'Currency'
+            $sTablePrefix . '.created'    => 'Received Date',
+            $sTablePrefix . '.driver'     => 'Payment Gateway',
+            $sTablePrefix . '.invoice_id' => 'Invoice ID',
+            $sTablePrefix . '.txn_id'     => 'Transaction ID',
+            $sTablePrefix . '.amount'     => 'Amount',
+            $sTablePrefix . '.currency'   => 'Currency'
         );
 
         // --------------------------------------------------------------------------
@@ -120,15 +121,15 @@ class Payment extends BaseAdmin
 
         foreach ($aDrivers as $sSlug => $oDriver) {
             $aOptions[] = array(
-                $oDriver->getLabel(),
+                $oDriver->name,
                 $sSlug,
                 true
             );
         }
 
         $aCbFilters[] = Helper::searchFilterObject(
-            $sTablePrefix . '.processor',
-            'Processor',
+            $sTablePrefix . '.driver',
+            'Gateway',
             $aOptions
         );
 
@@ -146,7 +147,6 @@ class Payment extends BaseAdmin
         //  Get the items for the page
         $totalRows                   = $this->oPaymentModel->countAll($data);
         $this->data['payments']      = $this->oPaymentModel->getAll($page, $perPage, $data);
-        $this->data['drivers']       = $aDrivers;
         $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
 
         //  Set Search and Pagination objects for the view
@@ -177,7 +177,11 @@ class Payment extends BaseAdmin
      */
     public function view()
     {
-        $this->data['payment'] = $this->oInvoiceModel->getById($this->uri->segment(5));
+        if (!userHasPermission('admin:invoice:payment:view')) {
+            unauthorised();
+        }
+
+        $this->data['payment'] = $this->oPaymentModel->getById($this->uri->segment(5));
         if (!$this->data['payment']) {
             show_404();
         }

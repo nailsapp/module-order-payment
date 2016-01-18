@@ -37,7 +37,7 @@
                                 <a href="<?=$sUrlCancel?>" class="btn btn-danger">
                                     Cancel
                                 </a>
-                                <button class="btn btn-success pull-right js-goto-section" data-section="payment-details">
+                                <button type="button" class="btn btn-success pull-right js-goto-section" data-section="payment-details">
                                     Continue
                                 </button>
                             </div>
@@ -167,7 +167,7 @@
                             if (count($aDrivers) > 1) {
 
                                 ?>
-                                <button class="btn btn-danger js-goto-section" data-section="payment-method">
+                                <button type="button" class="btn btn-danger js-goto-section" data-section="payment-method">
                                     Back
                                 </button>
                                 <?php

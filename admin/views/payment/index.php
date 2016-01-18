@@ -12,8 +12,8 @@
         <table>
             <thead>
                 <tr>
-                    <th class="processor">Processor</th>
-                    <th class="trans-ref">Transaction Ref</th>
+                    <th class="driver">Gateway</th>
+                    <th class="transtxn-id">Transaction Ref</th>
                     <th class="invoice">Invoice</th>
                     <th class="amount">Amount</th>
                     <th class="amount fee">Fee</th>
@@ -31,53 +31,36 @@
 
                         ?>
                         <tr>
-                            <td class="processor">
-                                <?php
-
-                                if (empty($drivers[$oPayment->processor])) {
-                                    echo $oPayment->processor;
-                                    ?>
-                                    <small class="text-danger">
-                                        <b class="fa fa-exclamation-triangle"></b>
-                                        Payment Processor not installed
-                                    </small>
-                                    <?php
-
-                                } else {
-
-                                    echo $drivers[$oPayment->processor]->getLabel();
-                                }
-
-                                ?>
+                            <td class="driver">
+                                <?=$oPayment->driver->label?>
                             </td>
                             <td class="trans-ref">
-                                <?=$oPayment->transaction_ref?>
+                                <?=$oPayment->txn_id?>
                             </td>
                             <td class="invoice">
                                 <?php
 
-                                if ($oPayment->invoice_state == 'EDIT') {
+                                if ($oPayment->invoice_state == 'DRAFT') {
 
-                                    echo anchor(
-                                        'admin/invoice/invoice/edit/' . $oPayment->invoice_id,
-                                        $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
-                                    );
+                                    $sUrl = 'admin/invoice/invoice/edit/' . $oPayment->invoice_id;
 
                                 } else {
 
-                                    echo anchor(
-                                        'admin/invoice/invoice/view/' . $oPayment->invoice_id,
-                                        $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
-                                    );
+                                    $sUrl = 'admin/invoice/invoice/view/' . $oPayment->invoice_id;
                                 }
+
+                                echo anchor(
+                                    $sUrl,
+                                    $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
+                                );
 
                                 ?>
                             </td>
                             <td class="amount">
-                                <?=$oPayment->amount?>
+                                <?=$oPayment->amount->localised_formatted?>
                             </td>
                             <td class="amount fee">
-                                <?=$oPayment->fee?>
+                                <?=$oPayment->fee->localised_formatted?>
                             </td>
                             <td class="currency">
                                 <?=$oPayment->currency?>
