@@ -332,11 +332,29 @@ class Card
                 throw new CardException('No email address to send the invoice to', 1);
             }
 
-            $oEmailer = Factory::service('Emailer', 'nailsapp/module-email');
+            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
 
             foreach ($aEmails as $sEmail) {
+
                 $oEmail->to_email = $sEmail;
                 $oResult = $oEmailer->send($oEmail);
+
+                if (!empty($oResult)) {
+
+                    $oInvoiceEmailModel->create(
+                        array(
+                            'invoice_id' => $oInvoice->id,
+                            'email_id'   => $oResult->id,
+                            'email_type' => $oEmail->type,
+                            'recipient'  => $oEmail->to_email
+                        )
+                    );
+
+                } else {
+
+                    throw new CardException($oEmailer->lastError(), 1);
+                }
             }
         }
 

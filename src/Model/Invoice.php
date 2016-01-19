@@ -688,6 +688,7 @@ class Invoice extends Base
                     );
 
                 } else {
+
                     throw new InvoiceException($oEmailer->lastError(), 1);
                 }
             }
