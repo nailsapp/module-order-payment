@@ -65,6 +65,8 @@ class Settings extends BaseAdmin
             $aSettings = array(
 
                 //  General Settings
+                'saved_cards_enabled'     => (bool) $this->input->post('saved_cards_enabled'),
+                'saved_addresses_enabled' => (bool) $this->input->post('saved_addresses_enabled'),
 
                 //  Payment Drivers
                 'enabled_payment_drivers' => $this->input->post('enabled_payment_drivers') ?: array(),

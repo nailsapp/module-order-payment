@@ -13,7 +13,7 @@
 namespace Nails\Invoice\Model;
 
 use Nails\Factory;
-use Nails\Invoice\Exception\DriverException;
+use Nails\Invoice\Exception\CardException;
 
 class Card
 {
@@ -206,26 +206,52 @@ class Card
         }
 
         if (empty($oDriver)) {
-            throw new DriverException('"' . $sDriver . '" is not a valid payment driver.', 1);
+            throw new CardException('"' . $sDriver . '" is not a valid payment driver.', 1);
         }
 
-        //  @todo: validate amount
+        // --------------------------------------------------------------------------
+
+        //  Validate the invoice
+        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oInvoice      = $oInvoiceModel->getById($iInvoiceId);
+
+        if (empty($oInvoice)) {
+            throw new CardException('Invalid invoice ID.', 1);
+        }
+
+        // --------------------------------------------------------------------------
+
+        if (!is_int($iAmount) || $iAmount <= 0) {
+            throw new CardException('Amount must be a positive integer.', 1);
+        }
+
+        // --------------------------------------------------------------------------
+
         //  @todo: validate currency
 
         // --------------------------------------------------------------------------
 
         //  Create a charge against the invoice
         $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $iPaymentId    = $oPaymentModel->create(
+        $oPayment      = $oPaymentModel->create(
             array(
                 'driver'        => $sDriver,
                 'invoice_id'    => $iInvoiceId,
                 'currency'      => $sCurrency,
-                'currency_base' => $sCurrency,
                 'amount'        => $iAmount,
-                'amount_base'   => $iAmount
-            )
+            ),
+            true
         );
+
+        if (empty($oPayment)) {
+            throw new CardException('Failed to create new payment.', 1);
+        }
+
+        //  Call the PaymentEventHandler
+        $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+        $sPaymentClass        = get_class($oPaymentEventHandler);
+
+        $oPaymentEventHandler->trigger($sPaymentClass::EVENT_PAYMENT_CREATED, $oPayment);
 
         $oResponse = $oDriver->charge(
             $this->toArray(),
@@ -233,18 +259,86 @@ class Card
             $sCurrency
         );
 
-        //  @todo: validate response
+        //  Validate driver response
+        if (empty($oResponse)) {
+            throw new CardException('Response from driver was empty.', 1);
+        }
+
+        if (!($oResponse instanceof \Nails\Invoice\Model\ChargeResponse)) {
+            throw new CardException(
+                'Response from driver must be an instance of \Nails\Invoice\Model\ChargeResponse.',
+                1
+            );
+        }
 
         //  Update the payment
-        $oPaymentModel->update(
-            $iPaymentId,
+        $bResult = $oPaymentModel->update(
+            $oPayment->id,
             array(
-                'status'   => $oResponse->getStatus(),
-                'txn_id'   => $oResponse->getTxnId(),
-                'fee'      => $oResponse->getFee(),
-                'fee_base' => $oResponse->getFee()
+                'status' => $oResponse->getStatus(),
+                'txn_id' => $oResponse->getTxnId(),
+                'fee'    => $oResponse->getFee()
             )
         );
+
+        if (empty($bResult)) {
+            throw new CardException('Failed to update existing payment.', 1);
+        }
+
+        $oPaymentEventHandler->trigger(
+            $sPaymentClass::EVENT_PAYMENT_UPDATED,
+            $oPaymentModel->getById($oPayment->id)
+        );
+
+        //  Has the invoice been paid in full? If so, mark it as paid and fire the invoice.paid event
+        if ($oInvoice->totals->base->paid + $oPayment->amount->base >= $oInvoice->totals->base->grand) {
+
+            //  Mark Invoice as PAID
+            $oNow          = Factory::factory('DateTime');
+            $sInvoiceClass = get_class($oInvoiceModel);
+            $bResult       = $oInvoiceModel->update(
+                $oInvoice->id,
+                array(
+                    'state' => $sInvoiceClass::STATE_PAID,
+                    'paid'  => $oNow->format('Y-m-d')
+                )
+            );
+
+            if (!$bResult) {
+                throw new CardException('Failed to mark invoice as paid.', 1);
+            }
+
+            //  Call back event
+            $oPaymentEventHandler->trigger(
+                $sPaymentClass::EVENT_INVOICE_PAID,
+                $oInvoiceModel->getById($oInvoice->id)
+            );
+
+            //  Send receipt email
+            $oEmail        = new \stdClass();
+            $oEmail->type  = 'invoice_paid_receipt';
+            $oEmail->data  = new \stdClass();
+
+            if (!empty($oInvoice->user_email)) {
+
+                $aEmails = explode(',', $oInvoice->user_email);
+
+            } elseif (!empty($oInvoice->user->email)) {
+
+                $aEmails = array($oInvoice->user->email);
+
+            } else {
+
+                throw new CardException('No email address to send the invoice to', 1);
+            }
+
+            $oEmailer = Factory::service('Emailer', 'nailsapp/module-email');
+
+            foreach ($aEmails as $sEmail) {
+                $oEmail->to_email = $sEmail;
+                $oResult = $oEmailer->send($oEmail);
+            }
+        }
 
         //  Lock the response so it cannot be altered
         $oResponse->lock();

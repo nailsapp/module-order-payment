@@ -51,9 +51,34 @@ $oInput = nailsFactory('service', 'Input');
 
             ?>
             <div class="tab-page tab-misc">
-                <p class="alert alert-warning">
-                    <strong>@todo:</strong> Any misc settings.
-                </p>
+                <fieldset>
+                    <legend>Saved Cards</legend>
+                    <?php
+
+                        $field            = array();
+                        $field['key']     = 'saved_cards_enabled';
+                        $field['label']   = 'Enabled';
+                        $field['info']    = 'Allow users to save their cards for future use.';
+                        $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                        echo form_field_boolean($field);
+
+                    ?>
+                </fieldset>
+                <fieldset>
+                    <legend>Saved Addresses</legend>
+                    <?php
+
+                        $field            = array();
+                        $field['key']     = 'saved_addresses_enabled';
+                        $field['label']   = 'Enabled';
+                        $field['info']    = 'Allow users to save their billing addresses for future use.';
+                        $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                        echo form_field_boolean($field);
+
+                    ?>
+                </fieldset>
             </div>
             <?php
         }

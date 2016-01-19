@@ -62,7 +62,7 @@
                         <div class="panel-body">
                             <?php
 
-                            if (!empty($aCards)) {
+                            if ($bSavedCardsEnabled && !empty($aCards)) {
 
                                 ?>
                                 <div class="row">
@@ -115,7 +115,7 @@
                             }
 
                             ?>
-                            <div id="js-add-card" class="<?=!empty($aCards) ? 'hidden' : ''?>">
+                            <div id="js-add-card" class="<?=$bSavedCardsEnabled && !empty($aCards) ? 'hidden' : ''?>">
                                 <div class="panel panel-default ">
                                     <div class="panel-body">
                                         <div class="row">
@@ -150,14 +150,23 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-xs-12">
-                                                <label>
-                                                    <?=form_checkbox('cc_save', true, set_radio('cc_save', true, true))?>
-                                                    Remember Card Details
-                                                </label>
+                                        <?php
+
+                                        if ($bSavedCardsEnabled) {
+
+                                            ?>
+                                            <div class="row">
+                                                <div class="col-xs-12">
+                                                    <label>
+                                                        <?=form_checkbox('cc_save', true, set_radio('cc_save', true, true))?>
+                                                        Remember Card Details
+                                                    </label>
+                                                </div>
                                             </div>
-                                        </div>
+                                            <?php
+                                        }
+
+                                        ?>
                                     </div>
                                 </div>
                             </div>
@@ -179,7 +188,6 @@
                                     Cancel
                                 </a>
                                 <?php
-
                             }
 
                             ?>

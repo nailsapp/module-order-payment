@@ -448,27 +448,31 @@ class Invoice extends BaseAdmin
     protected function getObjectFromPost()
     {
         $aData = array(
-            'ref' => $this->input->post('ref') ?: null,
-            'state' => $this->input->post('state') ?: null,
-            'dated' => $this->input->post('dated') ?: null,
-            'terms' => (int) $this->input->post('terms') ?: 0,
-            'user_id' => (int) $this->input->post('user_id') ?: null,
-            'user_email' => $this->input->post('user_email') ?: null,
+            'ref'             => $this->input->post('ref') ?: null,
+            'state'           => $this->input->post('state') ?: null,
+            'dated'           => $this->input->post('dated') ?: null,
+            'terms'           => (int) $this->input->post('terms') ?: 0,
+            'user_id'         => (int) $this->input->post('user_id') ?: null,
+            'user_email'      => $this->input->post('user_email') ?: null,
             'additional_text' => $this->input->post('additional_text') ?: null,
-            'items' => array(),
-            'currency' => 'GBP'
+            'items'           => array(),
+            'currency'        => 'GBP'
         );
 
-        foreach ($this->input->post('items') as $aItem) {
-            $aData['items'][] = array(
-                'id' => array_key_exists('id', $aItem) ? $aItem['id'] : null,
-                'quantity' => array_key_exists('quantity', $aItem) ? $aItem['quantity'] : null,
-                'unit' => array_key_exists('unit', $aItem) ? $aItem['unit'] : null,
-                'label' => array_key_exists('label', $aItem) ? $aItem['label'] : null,
-                'body' => array_key_exists('body', $aItem) ? $aItem['body'] : null,
-                'unit_cost' => array_key_exists('unit_cost', $aItem) ? $aItem['unit_cost'] : null,
-                'tax_id' => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null
-            );
+        if ($this->input->post('items')) {
+            foreach ($this->input->post('items') as $aItem) {
+
+                //  @todo convert to pence using a model
+                $aData['items'][] = array(
+                    'id'        => array_key_exists('id', $aItem) ? $aItem['id'] : null,
+                    'quantity'  => array_key_exists('quantity', $aItem) ? $aItem['quantity'] : null,
+                    'unit'      => array_key_exists('unit', $aItem) ? $aItem['unit'] : null,
+                    'label'     => array_key_exists('label', $aItem) ? $aItem['label'] : null,
+                    'body'      => array_key_exists('body', $aItem) ? $aItem['body'] : null,
+                    'unit_cost' => array_key_exists('unit_cost', $aItem) ? intval($aItem['unit_cost']*100) : null,
+                    'tax_id'    => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null
+                );
+            }
         }
 
         return $aData;

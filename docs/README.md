@@ -13,3 +13,4 @@ It has been designed to be very generic and simple to expand, so that integratio
 - [Payments](docs/payments.md)
 - [Shipping](docs/shipping.md)
 - [Vouchers](docs/vouchers.md)
+- [Events](docs/events.md)

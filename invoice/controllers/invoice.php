@@ -80,8 +80,10 @@ class Invoice extends NAILS_Controller
             unauthorised();
         }
 
-        $this->data['oInvoice']   = $oInvoice;
-        $this->data['sUrlCancel'] = $this->input->get('cancel') ?: site_url();
+        $this->data['oInvoice']           = $oInvoice;
+        $this->data['sUrlCancel']         = $this->input->get('cancel') ?: site_url();
+        $this->data['bSavedCardsEnabled'] = appSetting('saved_cards_enabled', 'nailsapp/module-invoice');
+        $bSavedCardsEnabled               = $this->data['bSavedCardsEnabled'];
 
         // --------------------------------------------------------------------------
 
@@ -96,7 +98,7 @@ class Invoice extends NAILS_Controller
         // --------------------------------------------------------------------------
 
         //  Saved cards
-        if (isLoggedIn()) {
+        if ($bSavedCardsEnabled && isLoggedIn()) {
 
             $oUserMeta = Factory::model('UserMeta', 'nailsapp/module-auth');
             $oNow      = Factory::factory('DateTime');
@@ -210,7 +212,7 @@ class Invoice extends NAILS_Controller
                     );
 
                     //  Handle saving the card, if needed
-                    if ($this->input->post('cc_exp')) {
+                    if ($bSavedCardsEnabled && $this->input->post('cc_num')) {
                         //  @todo
                     }
 
