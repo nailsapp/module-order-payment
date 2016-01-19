@@ -187,7 +187,11 @@ class Invoice extends Base
 
             $this->prepareInvoice($aData);
 
+            if (!array_key_exists('ref', $aData)) {
+                $aData['ref'] = $this->generateValidRef();
+            }
             $aData['token'] = $this->generateValidToken($aData['ref']);
+
 
             $aItems = $aData['items'];
             unset($aData['items']);
@@ -269,11 +273,6 @@ class Invoice extends Base
 
     private function prepareInvoice(&$aData, $iInvoiceId = null)
     {
-        //  Always has a reference
-        if (array_key_exists('ref', $aData)) {
-            $aData['ref'] = !empty($aData['ref']) ? $aData['ref'] : $this->generateValidRef();
-        }
-
         //  Always has an uppercase state
         if (array_key_exists('state', $aData)) {
             $aData['state'] = !empty($aData['state']) ? $aData['state'] : self::STATE_DRAFT;

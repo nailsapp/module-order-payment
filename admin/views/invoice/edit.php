@@ -8,6 +8,8 @@
             'key'         => 'ref',
             'label'       => 'Reference',
             'default'     => !empty($invoice->ref) ? $invoice->ref : '',
+            'readonly'    => !empty($invoice->id),
+            'info'        => !empty($invoice->id) ? 'Once created, the invoice reference cannot be changed' : '',
             'placeholder' => 'Leave blank to generate automatically',
         );
         echo form_field($aField);

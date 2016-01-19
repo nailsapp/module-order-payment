@@ -475,6 +475,10 @@ class Invoice extends BaseAdmin
             }
         }
 
+        if ($this->uri->rsegment(5) == 'edit') {
+            unset($aData['ref']);
+        }
+
         return $aData;
     }
 
