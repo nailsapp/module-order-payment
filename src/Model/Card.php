@@ -206,7 +206,7 @@ class Card
         }
 
         if (empty($oDriver)) {
-            throw new DriverException('Invalid Payment Driver', 1);
+            throw new DriverException('"' . $sDriver . '" is not a valid payment driver.', 1);
         }
 
         //  @todo: validate amount

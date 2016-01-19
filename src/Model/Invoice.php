@@ -234,7 +234,7 @@ class Invoice extends Base
         foreach ($aData['items'] as &$aItem) {
 
             //  Has an ID or is null
-            $aItem['id'] = (int) $aItem['id'] ?: null;
+            $aItem['id'] = !empty($aItem['id']) ? (int) $aItem['id'] : null;
 
             //  Always has a unit
             $aItem['unit'] = !empty($aItem['unit']) ? $aItem['unit'] : null;
@@ -387,16 +387,16 @@ class Invoice extends Base
         foreach ($aItems as $aItem) {
 
             $aData = array(
-                'label'       => $aItem['label'],
-                'body'        => $aItem['body'],
-                'order'       => $aItem['order'],
-                'unit'        => $aItem['unit'],
-                'tax_id'      => $aItem['tax_id'],
-                'quantity'    => $aItem['quantity'],
-                'unit_cost'   => $aItem['unit_cost'],
-                'sub_total'   => $aItem['sub_total'],
-                'tax_total'   => $aItem['tax_total'],
-                'grand_total' => $aItem['grand_total']
+                'label'       => !empty($aItem['label']) ? $aItem['label'] : null,
+                'body'        => !empty($aItem['body']) ? $aItem['body'] : null,
+                'order'       => !empty($aItem['order']) ? $aItem['order'] : 0,
+                'unit'        => !empty($aItem['unit']) ? $aItem['unit'] : null,
+                'tax_id'      => !empty($aItem['tax_id']) ? $aItem['tax_id'] : null,
+                'quantity'    => !empty($aItem['quantity']) ? $aItem['quantity'] : 1,
+                'unit_cost'   => !empty($aItem['unit_cost']) ? $aItem['unit_cost'] : 0,
+                'sub_total'   => !empty($aItem['sub_total']) ? $aItem['sub_total'] : 0,
+                'tax_total'   => !empty($aItem['tax_total']) ? $aItem['tax_total'] : 0,
+                'grand_total' => !empty($aItem['grand_total']) ? $aItem['grand_total'] : 0
             );
 
             if (!empty($aItem['id'])) {
