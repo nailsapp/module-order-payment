@@ -24,8 +24,22 @@
                                         ?>
                                         <li class="list-group-item">
                                             <label class="driver-select">
-                                                <?=form_radio('driver', $oDriver->slug)?>
-                                                <?=$oDriver->name?>
+                                                <?php
+
+                                                echo form_radio('driver', $oDriver->getSlug());
+                                                echo $oDriver->getLabel();
+
+                                                $sLogoUrl = $oDriver->getLogoUrl(400, 20);
+                                                if (!empty($sLogoUrl)) {
+                                                    echo img(
+                                                        array(
+                                                            'src'   => $sLogoUrl,
+                                                            'class' => 'pull-right'
+                                                        )
+                                                    );
+                                                }
+
+                                                ?>
                                             </label>
                                         </li>
                                         <?php
@@ -47,7 +61,7 @@
 
                 } else {
 
-                    echo form_hidden('driver', $aDrivers[0]->slug);
+                    echo form_hidden('driver', $aDrivers[0]->getSlug());
                 }
 
                 ?>

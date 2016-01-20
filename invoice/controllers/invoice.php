@@ -71,7 +71,7 @@ class Invoice extends NAILS_Controller
     protected function pay($oInvoice)
     {
         //  Only open invoice can be paid
-        if ($oInvoice->state->id !== 'OPEN' && !$this->input->isScheduled) {
+        if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->isScheduled) {
             show_404();
         }
 
@@ -88,8 +88,11 @@ class Invoice extends NAILS_Controller
         // --------------------------------------------------------------------------
 
         //  Payment drivers
-        $oPaymentDriverModel    = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
-        $this->data['aDrivers'] = $oPaymentDriverModel->getEnabled();
+        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
+        $aDrivers            = $oPaymentDriverModel->getEnabled();
+        foreach ($aDrivers as $oDriver) {
+            $this->data['aDrivers'][] = $oPaymentDriverModel->getInstance($oDriver->slug);
+        }
 
         if (empty($this->data['aDrivers'])) {
             throw new DriverException('No enabled payment drivers', 1);
@@ -153,7 +156,7 @@ class Invoice extends NAILS_Controller
                     //  Validate the driver
                     $oDriver = false;
                     foreach ($this->data['aDrivers'] as $oDriverConfig) {
-                        if ($oDriverConfig->slug == $this->input->post('driver')) {
+                        if ($oDriverConfig->getSlug() == $this->input->post('driver')) {
                             $oDriver = $oDriverConfig;
                             break;
                         }
@@ -208,7 +211,7 @@ class Invoice extends NAILS_Controller
                         $oInvoice->id,
                         $oInvoice->totals->base->grand,
                         $oInvoice->currency,
-                        $oDriver->slug
+                        $oDriver->getSlug()
                     );
 
                     //  Handle saving the card, if needed

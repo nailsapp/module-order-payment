@@ -24,7 +24,7 @@
                 </h5>
             </div>
             <div class="panel-body">
-                <?php dump($oInvoice->totals->localised)?>
+                <?php dump($oInvoice->totals)?>
                 <?php dump($oInvoice->items->data)?>
             </div>
         </div>
