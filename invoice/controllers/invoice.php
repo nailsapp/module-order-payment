@@ -80,10 +80,8 @@ class Invoice extends NAILS_Controller
             unauthorised();
         }
 
-        $this->data['oInvoice']           = $oInvoice;
-        $this->data['sUrlCancel']         = $this->input->get('cancel') ?: site_url();
-        $this->data['bSavedCardsEnabled'] = appSetting('saved_cards_enabled', 'nailsapp/module-invoice');
-        $bSavedCardsEnabled               = $this->data['bSavedCardsEnabled'];
+        $this->data['oInvoice']   = $oInvoice;
+        $this->data['sUrlCancel'] = $this->input->get('cancel') ?: site_url();
 
         // --------------------------------------------------------------------------
 
@@ -100,36 +98,9 @@ class Invoice extends NAILS_Controller
 
         // --------------------------------------------------------------------------
 
-        //  Saved cards
-        if ($bSavedCardsEnabled && isLoggedIn()) {
-
-            $oUserMeta = Factory::model('UserMeta', 'nailsapp/module-auth');
-            $oNow      = Factory::factory('DateTime');
-
-            $this->data['aCardsFlat'] = array();
-            $this->data['aCards']     = $oUserMeta->getMany(
-                NAILS_DB_PREFIX . 'user_meta_invoice_card',
-                activeUser('id')
-            );
-
-            foreach ($this->data['aCards'] as $oCard) {
-
-                $oCard->label_formatted = $oCard->label . ' (' . $oCard->last_four . ')';
-
-                //  Expired?
-                $oExpiry          = new \DateTime($oCard->expiry);
-                $oCard->isExpired = $oNow > $oExpiry;
-            }
-
-        } else {
-
-            $this->data['aCards'] = array();
-        }
-
-        // --------------------------------------------------------------------------
-
         if ($this->input->post()) {
 
+            dumpanddie($_POST);
             $oFormValidation = Factory::service('FormValidation');
 
             if ($this->input->post('cc_saved') === 'NEW') {
@@ -247,12 +218,14 @@ class Invoice extends NAILS_Controller
         // --------------------------------------------------------------------------
 
         $oAsset = Factory::service('Asset');
-        $oAsset->load('iframe-resizer/js/iframeResizer.min.js', array('nailsapp/module-invoice', 'BOWER'));
         $oAsset->load('jquery.payment/lib/jquery.payment.js', array('nailsapp/module-invoice', 'BOWER'));
         $oAsset->load('invoice.pay.min.js', 'nailsapp/module-invoice');
         $oAsset->load('invoice.pay.css', 'nailsapp/module-invoice');
 
         // --------------------------------------------------------------------------
+
+        $this->data['header_override'] = 'structure/header/blank';
+        $this->data['footer_override'] = 'structure/footer/blank';
 
         $this->load->view('structure/header', $this->data);
         $this->load->view('invoice/pay/index', $this->data);
@@ -269,7 +242,7 @@ class Invoice extends NAILS_Controller
     {
         $sInvoiceRef   = $this->uri->rsegment(2);
         $sInvoiceToken = $this->uri->rsegment(3);
-        $sMethod       = $this->uri->rsegment(4) ?: 'view';
+        $sMethod       = $this->uri->rsegment(4);
 
         //  @todo verify invoice and token
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');

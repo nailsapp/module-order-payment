@@ -17,10 +17,6 @@ use Nails\Invoice\Exception\DriverException;
 
 class PaymentBase extends Base
 {
-    const PAYMENT_FIELDS_CARD = 'CARD';
-
-    // --------------------------------------------------------------------------
-
     /**
      * Returns whether the driver uses a redirect payment flow or not.
      * @return boolean
@@ -37,9 +33,9 @@ class PaymentBase extends Base
      * for basic credit card details.
      * @return mixed
      */
-    public function paymentFields()
+    public function getPaymentFields()
     {
-        throw new DriverException('Driver must implement the paymentFields() method', 1);
+        throw new DriverException('Driver must implement the getPaymentFields() method', 1);
     }
 
     // --------------------------------------------------------------------------
