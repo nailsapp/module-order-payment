@@ -1,78 +1,80 @@
 <div class="nailsapp-invoice pay">
     <?=form_open(null, 'id="js-main-form"')?>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6 col-md-offset-3">
+            <h2 class="text-center">
+                Invoice <?=$oInvoice->ref?>
+            </h2>
+            <hr>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
             <div class="panel-group">
-                <?php
+                <div class="panel panel-default js-section" id="js-panel-payment-method">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            Choose Payment Method
+                        </h4>
+                    </div>
+                    <div class="panel-collapse">
+                        <div class="panel-body">
+                            <ul class="list-group">
+                                <?php
 
-                if (count($aDrivers) > 1) {
+                                foreach ($aDrivers as $oDriver) {
 
-                    ?>
-                    <div class="panel panel-default js-section" id="js-panel-payment-method">
-                        <div class="panel-heading">
-                            <h4 class="panel-title">
-                                1. Choose Payment Method
-                            </h4>
-                        </div>
-                        <div class="panel-collapse">
-                            <div class="panel-body">
-                                <ul class="list-group">
-                                    <?php
+                                    $sHasFields  = json_encode(!empty($oDriver->paymentFields()));
+                                    $sIsRedirect = json_encode($oDriver->isRedirect());
 
-                                    foreach ($aDrivers as $oDriver) {
-
-                                        ?>
-                                        <li class="list-group-item">
-                                            <label class="driver-select">
-                                                <?php
-
-                                                echo form_radio('driver', $oDriver->getSlug());
-                                                echo $oDriver->getLabel();
-
-                                                $sLogoUrl = $oDriver->getLogoUrl(400, 20);
-                                                if (!empty($sLogoUrl)) {
-                                                    echo img(
-                                                        array(
-                                                            'src'   => $sLogoUrl,
-                                                            'class' => 'pull-right'
-                                                        )
-                                                    );
-                                                }
-
-                                                ?>
-                                            </label>
-                                        </li>
-                                        <?php
-                                    }
+                                    $aData = array(
+                                        'data-has-fields="' . $sHasFields . '"',
+                                        'data-is-redirect="' . $sIsRedirect . '"'
+                                    );
 
                                     ?>
-                                </ul>
-                                <hr />
-                                <a href="<?=$sUrlCancel?>" class="btn btn-danger">
-                                    Cancel
-                                </a>
-                                <button type="button" class="btn btn-success pull-right js-goto-section" data-section="payment-details">
-                                    Continue
-                                </button>
-                            </div>
+                                    <li class="list-group-item">
+                                        <label class="driver-select">
+                                            <?php
+
+                                            echo form_radio('driver', $oDriver->getSlug(), null, implode(' ', $aData));
+                                            echo $oDriver->getLabel();
+
+                                            $sLogoUrl = $oDriver->getLogoUrl(400, 20);
+                                            if (!empty($sLogoUrl)) {
+                                                echo img(
+                                                    array(
+                                                        'src'   => $sLogoUrl,
+                                                        'class' => 'pull-right'
+                                                    )
+                                                );
+                                            }
+
+                                            ?>
+                                        </label>
+                                    </li>
+                                    <?php
+                                }
+
+                                ?>
+                            </ul>
                         </div>
                     </div>
-                    <?php
+                </div>
+                <?php
 
-                } else {
+                foreach ($aDrivers as $oDriver) {
 
-                    echo form_hidden('driver', $aDrivers[0]->getSlug());
                 }
 
                 ?>
                 <div class="panel panel-default js-section" id="js-panel-payment-details">
                     <div class="panel-heading">
                         <h4 class="panel-title">
-                            <?=count($aDrivers) > 1 ? '2.' : ''?>
-                            Card details
+                            Payment Details
                         </h4>
                     </div>
-                    <div class="panel-collapse <?=count($aDrivers) > 1 ? 'collapse' : ''?>">
+                    <div class="panel-collapse">
                         <div class="panel-body">
                             <?php
 
@@ -114,12 +116,6 @@
                                                 }
 
                                                 ?>
-                                                <li class="list-group-item">
-                                                    <label class="card-select js-card-select">
-                                                        <?=form_radio('cc_saved', 'NEW', set_radio('cc_saved', 'NEW'))?>
-                                                        Add New Card
-                                                    </label>
-                                                </li>
                                             </ul>
                                             <?=form_error('cc_saved', '<p class="alert alert-danger">', '</p>')?>
                                         </div>
@@ -129,7 +125,7 @@
                             }
 
                             ?>
-                            <div id="js-add-card" class="<?=$bSavedCardsEnabled && !empty($aCards) ? 'hidden' : ''?>">
+                            <div id="js-add-card">
                                 <div class="panel panel-default ">
                                     <div class="panel-body">
                                         <div class="row">
@@ -184,27 +180,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <hr />
-                            <?php
-
-                            if (count($aDrivers) > 1) {
-
-                                ?>
-                                <button type="button" class="btn btn-danger js-goto-section" data-section="payment-method">
-                                    Back
-                                </button>
-                                <?php
-
-                            } else {
-
-                                ?>
-                                <a href="<?=$sUrlCancel?>" class="btn btn-danger">
-                                    Cancel
-                                </a>
-                                <?php
-                            }
-
-                            ?>
                         </div>
                     </div>
                 </div>
@@ -214,9 +189,6 @@
                     Pay Now
                 </button>
             </p>
-        </div>
-        <div class="col-md-6 hidden-xs hidden-sm">
-            <iframe src="<?=$oInvoice->urls->view?>?autosize=1" id="js-view-invoice" frameborder="0" width="100%" scrolling="no"></iframe>
         </div>
     </div>
     <?=form_close()?>

@@ -143,7 +143,7 @@
 
                     ?>
                     <tr>
-                        <td colspan="8" class="no-data">
+                        <td colspan="9" class="no-data">
                             No Invoices Found
                         </td>
                     </tr>
