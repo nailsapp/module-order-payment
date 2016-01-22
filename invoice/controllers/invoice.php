@@ -218,7 +218,7 @@ class Invoice extends NAILS_Controller
                         $oInvoice->id,
                         $oInvoice->totals->base->grand,
                         $oInvoice->currency,
-                        $oDriver->getSlug()
+                        $oSelectedDriver->getSlug()
                     );
 
                     if ($oResult->isOk()) {

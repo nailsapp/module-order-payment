@@ -37,6 +37,9 @@ class ChargeResponse
     protected $sTxnId;
     protected $iFee;
 
+    //  Successes
+    protected $sSuccessUrl;
+
     //  Errors
     protected $sError;
 
