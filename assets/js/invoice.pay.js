@@ -27,7 +27,7 @@ var invoicePay = function() {
             }
 
             //  Update button
-            var btnString = $(this).data('has-is-redirect') ? 'Pay Now' : 'Continue';
+            var btnString = $(this).data('is-redirect') ? 'Continue' : 'Pay Now';
             $('#js-invoice-pay-now')
                 .removeClass('btn-warning disabled')
                 .addClass('btn-success')
@@ -44,6 +44,32 @@ var invoicePay = function() {
         $('.js-invoice-cc-num').payment('formatCardNumber');
         $('.js-invoice-cc-exp').payment('formatCardExpiry');
         $('.js-invoice-cc-cvc').payment('formatCardCVC');
+
+        //  CVC Card type formatting
+        $('.js-invoice-cc-num').on('keyup', function() {
+
+            var cardNum  = $(this).val().trim();
+            var cardType = $.payment.cardType(cardNum);
+            var cardCvc = $(this).closest('.row').find('.js-invoice-cc-cvc');
+
+            cardCvc.removeClass('amex other');
+
+            if (cardNum.length > 0) {
+
+                switch (cardType)
+                {
+                    case 'amex':
+                        cardCvc.addClass('amex');
+                        break;
+
+                    default:
+                        cardCvc.addClass('other');
+                        break;
+                }
+            }
+        });
+
+        $('.js-invoice-cc-num').trigger('keyup');
 
         //  Validation
         $('#js-invoice-main-form').on('submit', function() {
@@ -62,7 +88,7 @@ var invoicePay = function() {
 
                     var val = $(this).val().trim();
 
-                    if ($(this).data('required') && val.length === 0) {
+                    if ($(this).data('is-required') && val.length === 0) {
 
                         isValid = false;
                         $(this).addClass('has-error');

@@ -112,6 +112,7 @@ class Migration0 extends Base
         $this->query("
             CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_payment` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `token` varchar(32) NOT NULL,
                 `driver` varchar(150) NOT NULL DEFAULT '',
                 `invoice_id` int(11) unsigned DEFAULT NULL,
                 `status` enum('PENDING','OK','FAILED') DEFAULT 'PENDING',

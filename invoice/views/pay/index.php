@@ -4,15 +4,27 @@
         <b class="glyphicon glyphicon-refresh"></b>
     </div>
     <div class="row">
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-8 col-md-offset-2">
             <h2 class="text-center">
                 Invoice <?=$oInvoice->ref?>
             </h2>
             <hr>
+            <?php
+
+            if (!empty($error)) {
+
+                ?>
+                <p class="alert alert-danger">
+                    <?=$error?>
+                </p>
+                <?php
+            }
+
+            ?>
         </div>
     </div>
     <div class="row shakeable">
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title">
@@ -41,7 +53,13 @@
                                 <label class="js-invoice-driver-select">
                                     <?php
 
-                                    echo form_radio('driver', $oDriver->getSlug(), null, implode(' ', $aData));
+                                    echo form_radio(
+                                        'driver',
+                                        $oDriver->getSlug(),
+                                        set_radio('driver', $oDriver->getSlug()),
+                                        implode(' ', $aData)
+                                    );
+
                                     echo $oDriver->getLabel();
 
                                     $sLogoUrl = $oDriver->getLogoUrl(400, 20);
@@ -62,6 +80,7 @@
 
                         ?>
                     </ul>
+                    <?=form_error('driver') ? '<p class="alert alert-danger">Please select an option.</p>' : ''?>
                 </div>
             </div>
             <?php
@@ -69,14 +88,14 @@
             $bShowCardFields = false;
             foreach ($aDrivers as $oDriver) {
 
-                $aFields    = $oDriver->getPaymentFields();
-                $sDriverKey = md5($oDriver->getSlug());
+                $mFields    = $oDriver->getPaymentFields();
+                $sDriverKey = $oDriver->getSlug();
 
-                if (!empty($aFields) && $aFields === 'CARD') {
+                if (!empty($mFields) && $mFields === 'CARD') {
 
                     $bShowCardFields = true;
 
-                } elseif (!empty($aFields)) {
+                } elseif (!empty($mFields)) {
 
                     ?>
                     <div class="panel panel-default hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
@@ -88,7 +107,7 @@
                         <div class="panel-body">
                             <?php
 
-                            foreach ($aFields as $aField) {
+                            foreach ($mFields as $aField) {
 
                                 ?>
                                 <div class="row">
@@ -97,10 +116,12 @@
                                             <?php
 
                                             $sKey         = $sDriverKey . '[' . $aField['key'] . ']';
+                                            $sDefault     = !empty($aField['default']) ? $aField['default'] : '';
                                             $sLabel       = !empty($aField['label']) ? $aField['label'] : '';
                                             $sType        = !empty($aField['type']) ? $aField['type'] : 'text';
                                             $sPlaceholder = !empty($aField['placeholder']) ? $aField['placeholder'] : '';
                                             $sRequired    = !empty($aField['required']) ? 'true' : 'false';
+                                            $sErrorClass  = form_error($sKey) ? 'has-error' : '';
 
                                             echo '<label>';
                                             echo $sLabel ;
@@ -113,7 +134,7 @@
                                                         null,
                                                         'class="form-control" ' .
                                                         'placeholder="' . $sPlaceholder . '" ' .
-                                                        'data-required="' . $sRequired . '"'
+                                                        'data-is-required="' . $sRequired . '"'
                                                     );
                                                     break;
 
@@ -122,9 +143,9 @@
                                                     echo form_input(
                                                         $sKey,
                                                         set_value($sKey),
-                                                        'class="form-control" ' .
+                                                        'class="form-control ' . $sErrorClass . '" ' .
                                                         'placeholder="' . $sPlaceholder . '" ' .
-                                                        'data-required="' . $sRequired . '"'
+                                                        'data-is-required="' . $sRequired . '"'
                                                     );
                                                     break;
                                             }
@@ -158,115 +179,113 @@
                         </h4>
                     </div>
                     <div class="panel-body">
-                        <div class="panel panel-default">
-                            <div class="panel-body">
-                                <div class="row">
-                                    <div class="col-xs-12">
-                                        <div class="form-group">
-                                            <label>
-                                                <?php
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label>
+                                        <?php
 
-                                                $sKey         = 'cc[name]';
-                                                $sDefault     = activeUser('first_name, last_name');
-                                                $sLabel       = 'Cardholder Name';
-                                                $sPlaceholder = '';
+                                        $sKey         = 'cc[name]';
+                                        $sDefault     = activeUser('first_name, last_name');
+                                        $sLabel       = 'Cardholder Name';
+                                        $sPlaceholder = '';
+                                        $sErrorClass  = form_error($sKey) ? 'has-error' : '';
 
-                                                echo $sLabel;
-                                                echo form_input(
-                                                    $sKey,
-                                                    set_value($sKey, $sDefault),
-                                                    'class="form-control" ' .
-                                                    'placeholder="' . $sPlaceholder . ' "' .
-                                                    'data-required="true" ' .
-                                                    'autocomplete="on"'
-                                                );
+                                        echo $sLabel;
+                                        echo form_input(
+                                            $sKey,
+                                            set_value($sKey, $sDefault),
+                                            'class="form-control js-invoice-cc-name ' . $sErrorClass . '" ' .
+                                            'placeholder="' . $sPlaceholder . ' "' .
+                                            'data-is-required="true" ' .
+                                            'autocomplete="on"'
+                                        );
 
-                                                echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
+                                        echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
 
-                                                ?>
-                                            </label>
-                                        </div>
-                                    </div>
+                                        ?>
+                                    </label>
                                 </div>
-                                <div class="row">
-                                    <div class="col-xs-12 col-sm-6">
-                                        <div class="form-group">
-                                            <label>
-                                                <?php
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6">
+                                <div class="form-group">
+                                    <label>
+                                        <?php
 
-                                                $sKey         = 'cc[num]';
-                                                $sDefault     = '';
-                                                $sLabel       = 'Card Number';
-                                                $sPlaceholder = '•••• •••• •••• ••••';
+                                        $sKey         = 'cc[num]';
+                                        $sDefault     = '';
+                                        $sLabel       = 'Card Number';
+                                        $sPlaceholder = '•••• •••• •••• ••••';
+                                        $sErrorClass  = form_error($sKey) ? 'has-error' : '';
 
-                                                echo $sLabel;
-                                                echo form_tel(
-                                                    $sKey,
-                                                    set_value($sKey, $sDefault),
-                                                    'class="form-control js-invoice-cc-num" ' .
-                                                    'placeholder="' . $sPlaceholder . '" ' .
-                                                    'data-cc-num="true" ' .
-                                                    'autocomplete="on"'
-                                                );
+                                        echo $sLabel;
+                                        echo form_tel(
+                                            $sKey,
+                                            set_value($sKey, $sDefault),
+                                            'class="form-control js-invoice-cc-num ' . $sErrorClass . '" ' .
+                                            'placeholder="' . $sPlaceholder . '" ' .
+                                            'data-cc-num="true" ' .
+                                            'autocomplete="on"'
+                                        );
 
-                                                echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
+                                        echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
 
-                                                ?>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-6 col-sm-3">
-                                        <div class="form-group">
-                                            <label>
-                                                <?php
+                                        ?>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-sm-3">
+                                <div class="form-group">
+                                    <label>
+                                        <?php
 
-                                                $sKey         = 'cc[exp]';
-                                                $sDefault     = '';
-                                                $sLabel       = 'Expiry';
-                                                $sPlaceholder = '•• / ••';
+                                        $sKey         = 'cc[exp]';
+                                        $sDefault     = '';
+                                        $sLabel       = 'Expiry';
+                                        $sPlaceholder = '•• / ••';
 
-                                                echo $sLabel;
-                                                echo form_tel(
-                                                    $sKey,
-                                                    set_value($sKey, $sDefault),
-                                                    'class="form-control js-invoice-cc-exp" ' .
-                                                    'placeholder="' . $sPlaceholder . '" ' .
-                                                    'data-cc-exp="true" ' .
-                                                    'autocomplete="on"'
-                                                );
+                                        echo $sLabel;
+                                        echo form_tel(
+                                            $sKey,
+                                            set_value($sKey, $sDefault),
+                                            'class="form-control js-invoice-cc-exp ' . $sErrorClass . '" ' .
+                                            'placeholder="' . $sPlaceholder . '" ' .
+                                            'data-cc-exp="true" ' .
+                                            'autocomplete="on"'
+                                        );
 
-                                                echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
+                                        echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
 
-                                                ?>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-6 col-sm-3">
-                                        <div class="form-group">
-                                            <label>
-                                                <?php
+                                        ?>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 col-sm-3">
+                                <div class="form-group">
+                                    <label>
+                                        <?php
 
-                                                $sKey         = 'cc[cvc]';
-                                                $sDefault     = '';
-                                                $sLabel       = 'CVC';
-                                                $sPlaceholder = '•••';
+                                        $sKey         = 'cc[cvc]';
+                                        $sDefault     = '';
+                                        $sLabel       = 'CVC';
+                                        $sPlaceholder = '•••';
 
-                                                echo $sLabel;
-                                                echo form_tel(
-                                                    $sKey,
-                                                    set_value($sKey, $sDefault),
-                                                    'class="form-control js-invoice-cc-cvc" ' .
-                                                    'placeholder="' . $sPlaceholder . '" ' .
-                                                    'data-cc-cvc="true" ' .
-                                                    'autocomplete="off"'
-                                                );
+                                        echo $sLabel;
+                                        echo form_tel(
+                                            $sKey,
+                                            set_value($sKey, $sDefault),
+                                            'class="form-control js-invoice-cc-cvc ' . $sErrorClass . '" ' .
+                                            'placeholder="' . $sPlaceholder . '" ' .
+                                            'data-cc-cvc="true" ' .
+                                            'autocomplete="off"'
+                                        );
 
-                                                echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
+                                        echo form_error($sKey, '<p class="alert alert-danger">', '</p>');
 
-                                                ?>
-                                            </label>
-                                        </div>
-                                    </div>
+                                        ?>
+                                    </label>
                                 </div>
                             </div>
                         </div>

@@ -70,9 +70,26 @@ class Invoice extends NAILS_Controller
      */
     protected function pay($oInvoice)
     {
+        $this->data['header_override'] = 'structure/header/blank';
+        $this->data['footer_override'] = 'structure/footer/blank';
+        $this->data['oInvoice']        = $oInvoice;
+
+        $oAsset = Factory::service('Asset');
+        $oAsset->load('invoice.pay.css', 'nailsapp/module-invoice');
+
         //  Only open invoice can be paid
         if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->isScheduled) {
-            show_404();
+            if ($oInvoice->state->id === 'PAID') {
+
+                $this->load->view('structure/header', $this->data);
+                $this->load->view('invoice/pay/paid', $this->data);
+                $this->load->view('structure/footer', $this->data);
+                return;
+
+            } else {
+
+                show_404();
+            }
         }
 
         //  If a user ID is specified, then the user must be logged in as that user
@@ -80,7 +97,6 @@ class Invoice extends NAILS_Controller
             unauthorised();
         }
 
-        $this->data['oInvoice']   = $oInvoice;
         $this->data['sUrlCancel'] = $this->input->get('cancel') ?: site_url();
 
         // --------------------------------------------------------------------------
@@ -100,108 +116,119 @@ class Invoice extends NAILS_Controller
 
         if ($this->input->post()) {
 
-            dumpanddie($_POST);
+            /**
+             * Validation works by looking at which driver has been chosen and then
+             * validating the respective fields accordingly. If the driver's fields
+             * is simply CARD then we validate the cc[] field.
+             */
+
             $oFormValidation = Factory::service('FormValidation');
 
-            if ($this->input->post('cc_saved') === 'NEW') {
+            $aRules = array(
+                'driver'   => array('xss_clean', 'trim', 'required'),
+                'cc[name]' => array('xss_clean', 'trim'),
+                'cc[num]'  => array('xss_clean', 'trim'),
+                'cc[exp]'  => array('xss_clean', 'trim'),
+                'cc[cvc]'  => array('xss_clean', 'trim')
+            );
 
-                $oFormValidation->set_rules('cc_saved', '', '');
-                $oFormValidation->set_rules('cc_name', '', 'xss_clean|required');
-                $oFormValidation->set_rules('cc_num', '', 'xss_clean|required');
-                $oFormValidation->set_rules('cc_exp', '', 'xss_clean|required');
-                $oFormValidation->set_rules('cc_cvc', '', 'xss_clean|required');
-                $oFormValidation->set_rules('cc_save', '', '');
+            $sSelectedDriver = $this->input->post('driver');
+            $oSelectedDriver = null;
 
-            } else {
+            foreach ($this->data['aDrivers'] as $oDriver) {
 
-                $oFormValidation->set_rules('cc_saved', '', 'xss_clean|is_natural_no_zero');
+                $sSlug   = $oDriver->getSlug();
+                $aFields = $oDriver->getPaymentFields();
+
+                if ($sSelectedDriver == $sSlug) {
+
+                    $oSelectedDriver = $oDriver;
+
+                    if ($aFields === 'CARD') {
+
+                        $aRules['cc[name]'][] = 'required';
+                        $aRules['cc[num]'][]  = 'required';
+                        $aRules['cc[exp]'][]  = 'required';
+                        $aRules['cc[cvc]'][]  = 'required';
+
+                    } elseif (!empty($aFields)) {
+
+                        foreach ($aFields as $aField) {
+                            $aRules[$sSlug . '[' . $aField['key'] . ']'] = array('xss_clean');
+                        }
+                    }
+
+                    break;
+                }
             }
 
-            $oFormValidation->set_message('required', lang('fv_required'));
-            $oFormValidation->set_message('is_natural_no_zero', lang('fv_required'));
+            foreach ($aRules as $sKey => $sRules) {
+                $oFormValidation->set_rules($sKey, '', implode('|', array_unique($sRules)));
+            }
 
             if ($oFormValidation->run()) {
 
                 try {
 
-                    //  Validate the driver
-                    $oDriver = false;
-                    foreach ($this->data['aDrivers'] as $oDriverConfig) {
-                        if ($oDriverConfig->getSlug() == $this->input->post('driver')) {
-                            $oDriver = $oDriverConfig;
-                            break;
-                        }
-                    }
-
-                    if (empty($oDriver)) {
-                        throw new NailsException('Invalid Payment Driver', 1);
-                    }
-
                     //  Set up card object
-                    $oCard = Factory::factory('Card', 'nailsapp/module-invoice');
+                    $oChargeRequest = Factory::factory('ChargeRequest', 'nailsapp/module-invoice');
 
-                    if ($this->input->post('cc_saved') && $this->input->post('cc_saved') !== 'NEW') {
+                    //  Set the driver to use for the charge
+                    $oChargeRequest->setDriver($sSelectedDriver);
 
-                        //  Lookup card
-                        $oSavedCard = null;
-                        foreach ($this->data['aCards'] as $oSavedCardConfig) {
-                            if ($oSavedCardConfig->id == $this->input->post('cc_saved')) {
-                                $oSavedCard = $oSavedCardConfig;
-                                break;
+                    //  If the driver expects card data then set it, if it expects custom data then set that
+                    $mPaymentFields = $oSelectedDriver->getPaymentFields();
+
+                    if (!empty($mPaymentFields) && $mPaymentFields == 'CARD') {
+
+                        $sName = !empty($_POST['cc']['name']) ? $_POST['cc']['name'] : '';
+                        $sNum  = !empty($_POST['cc']['num']) ? $_POST['cc']['num'] : '';
+                        $sExp  = !empty($_POST['cc']['exp']) ? $_POST['cc']['exp'] : '';
+                        $sCvc  = !empty($_POST['cc']['cvc']) ? $_POST['cc']['cvc'] : '';
+
+                        $aExp   = explode('/', $sExp);
+                        $aExp   = array_map('trim', $aExp);
+                        $sMonth = !empty($aExp[0]) ? $aExp[0] : null;
+                        $sYear  = !empty($aExp[1]) ? $aExp[1] : null;
+
+                        $oChargeRequest->setCardName($sName);
+                        $oChargeRequest->setCardNumber($sNum);
+                        $oChargeRequest->setCardExpMonth($sMonth);
+                        $oChargeRequest->setCardExpYear($sYear);
+                        $oChargeRequest->setCardCvc($sCvc);
+
+                    } elseif (!empty($mPaymentFields)) {
+
+                        foreach ($mPaymentFields as $aField) {
+
+                            if (!empty($_POST[$sSelectedDriver][$aField['key']])) {
+
+                                $sValue = $_POST[$sSelectedDriver][$aField['key']];
+
+                            } else {
+
+                                $sValue = null;
                             }
+                            $oChargeRequest->setCustom($aField['key'], $sValue);
                         }
-
-                        if (empty($oSavedCard)) {
-                            throw new NailsException('Invalid Saved Card', 1);
-                        }
-
-                        $oCard->setToken($oSavedCard->token);
-
-                    } else {
-
-                        $aExp = explode('/', $this->input->post('cc_exp'));
-                        $aExp = array_map('trim', $aExp);
-                        $sMonth = isset($aExp[0]) ? $aExp[0] : null;
-                        $sYear  = isset($aExp[1]) ? $aExp[1] : null;
-
-                        try {
-                            $oExp = new \DateTime($sYear . '-' . $sMonth . '-01');
-                        } catch (\Exception $e) {
-                            throw new NailsException('Invalid expiry date', 1);
-                        }
-
-                        $oCard->setName($this->input->post('cc_name'));
-                        $oCard->setNumber($this->input->post('cc_num'));
-                        $oCard->setExpMonth($oExp->format('m'));
-                        $oCard->setExpYear($oExp->format('Y'));
-                        $oCard->setCvc($this->input->post('cc_cvc'));
                     }
 
                     //  Attempt payment
-                    $oResult = $oCard->charge(
+                    $oResult = $oChargeRequest->charge(
                         $oInvoice->id,
                         $oInvoice->totals->base->grand,
                         $oInvoice->currency,
                         $oDriver->getSlug()
                     );
 
-                    //  Handle saving the card, if needed
-                    if ($bSavedCardsEnabled && $this->input->post('cc_num')) {
-                        //  @todo
-                    }
+                    if ($oResult->isOk()) {
 
-                    //  Handle redirect
-                    //  If a redirect is required then send the user on their way, if no redirect is required then
-                    //  send the user to the payment processing page
-
-                    if (!empty($oResult->isRedirect())) {
-
-                        dumpanddie($oResult->getRedirectUrl());
+                        //  Payment was successfull; head to wherever the charge response says to go
+                        redirect($oResult->getSuccessUrl());
 
                     } else {
 
-                        //  Payment was successfull
-                        dumpanddie($oResult);
+                        throw new NailsException('Payment request failed: ' . $oResult->getError(), 1);
                     }
 
                 } catch (\Exception $e) {
@@ -217,15 +244,10 @@ class Invoice extends NAILS_Controller
 
         // --------------------------------------------------------------------------
 
-        $oAsset = Factory::service('Asset');
         $oAsset->load('jquery.payment/lib/jquery.payment.js', array('nailsapp/module-invoice', 'BOWER'));
         $oAsset->load('invoice.pay.min.js', 'nailsapp/module-invoice');
-        $oAsset->load('invoice.pay.css', 'nailsapp/module-invoice');
 
         // --------------------------------------------------------------------------
-
-        $this->data['header_override'] = 'structure/header/blank';
-        $this->data['footer_override'] = 'structure/footer/blank';
 
         $this->load->view('structure/header', $this->data);
         $this->load->view('invoice/pay/index', $this->data);

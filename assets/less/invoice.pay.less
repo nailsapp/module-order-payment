@@ -79,6 +79,7 @@
                     &.has-error {
                         background-color: rgba(244, 67, 54, 0.2);
                         border-color: rgb(244, 67, 54);
+                        color: #BD291E;
                     }
                 }
             }
@@ -118,8 +119,26 @@
                 background-image: url(../img/cards-64x64/visa.png);
             }
         }
+        .js-invoice-cc-cvc {
+            padding-right: 50px;
+            background-size: 32px 32px;
+            background-repeat: no-repeat;
+            background-position: right 5px center;
+            &.amex {
+                background-image: url(../img/cvc-64x64/amex.png);
+            }
+            &.other {
+                background-image: url(../img/cvc-64x64/other.png);
+            }
+        }
         .cancel-payment {
             margin-top: 2.5em;
+        }
+    }
+    &.paid {
+        h3 {
+            margin: 0;
+            margin-bottom: 0.5em;
         }
     }
     @keyframes spin {

@@ -29,6 +29,9 @@ class Payment extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Construct the model
+     */
     public function __construct()
     {
         parent::__construct();
@@ -98,6 +101,117 @@ class Payment extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Create a new payment
+     * @param  array   $aData         The data to create the payment with
+     * @param  boolean $bReturnObject Whether to return the complete payment object
+     * @return mixed
+     */
+    public function create($aData = array(), $bReturnObject = false)
+    {
+        try {
+
+            $this->db->trans_begin();
+
+            $aData['token'] = $this->generateValidToken();
+
+            $oPayment = parent::create($aData, true);
+
+            if (!$oPayment) {
+                throw new Exception('Failed to create payment.', 1);
+            }
+
+            $this->db->trans_commit();
+
+            //  Trigger the payment.created event
+            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+            $sPaymentClass        = get_class($oPaymentEventHandler);
+
+            $oPaymentEventHandler->trigger($sPaymentClass::EVENT_PAYMENT_CREATED, $oPayment);
+
+            return $bReturnObject ? $oPayment : $oPayment->id;
+
+        } catch (\Exception $e) {
+
+            $this->db->trans_rollback();
+            $this->setError($e->getMessage());
+            return false;
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Update a payment
+     * @param  integer $iPaymentId The ID of the payment to update
+     * @param  array   $aData      The data to update the payment with
+     * @return boolean
+     */
+    public function update($iPaymentId, $aData = array())
+    {
+        try {
+
+            $this->db->trans_begin();
+
+            unset($aData['token']);
+
+            $bResult = parent::update($iPaymentId, $aData);
+
+            if (!$bResult) {
+                throw new Exception('Failed to update payment.', 1);
+            }
+
+            $this->db->trans_commit();
+
+            //  Trigger the payment.updated event
+            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+            $sPaymentClass        = get_class($oPaymentEventHandler);
+
+            $oPaymentEventHandler->trigger(
+                $sPaymentClass::EVENT_PAYMENT_UPDATED,
+                $this->getById($iPaymentId)
+            );
+
+            return $bResult;
+
+        } catch (\Exception $e) {
+
+            $this->db->trans_rollback();
+            $this->setError($e->getMessage());
+            return false;
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Generates a valid payment token
+     * @return string
+     */
+    public function generateValidToken()
+    {
+        Factory::helper('string');
+
+        do {
+
+            //  @todo: use more secure token generation, like random_bytes();
+            $sToken = md5(microtime(true) . APP_PRIVATE_KEY);
+            $this->db->where('token', $sToken);
+            $bTokenExists = (bool) $this->db->count_all_results($this->table);
+
+        } while ($bTokenExists);
+
+        return $sToken;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Format a payment object
+     * @param  \stdClass $oObj  The object to format
+     * @param  array     $aData Any data passed to getAll
+     * @return void
+     */
     protected function formatObject($oObj, $aData = array())
     {
         parent::formatObject($oObj, $aData, array('invoice_id', 'amount', 'amount_base', 'fee', 'fee_base'));

@@ -179,6 +179,12 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Create a new invoice
+     * @param  array   $aData         The data to create the invoice with
+     * @param  boolean $bReturnObject Whether to return the complete invoice object
+     * @return mixed
+     */
     public function create($aData = array(), $bReturnObject = false)
     {
         try {
@@ -226,6 +232,12 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Update an invoice
+     * @param  integer $iInvoiceId The ID of the invoice to update
+     * @param  array   $aData      The data to update the invoice with
+     * @return boolean
+     */
     public function update($iInvoiceId, $aData = array())
     {
         try {
@@ -274,6 +286,12 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Format and validate passed data
+     * @param  array   &$aData     The data to format/validate
+     * @param  integer $iInvoiceId The invoice ID
+     * @return void
+     */
     private function prepareInvoice(&$aData, $iInvoiceId = null)
     {
         //  Always has an uppercase state
@@ -465,6 +483,12 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Update the line items of an invoice
+     * @param  integer $iInvoiceId The invoice ID
+     * @param  array   $aItems     The items to update
+     * @return void
+     */
     private function updateLineItems($iInvoiceId, $aItems)
     {
         $oItemModel  = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
@@ -524,8 +548,6 @@ class Invoice extends Base
                 throw new Exception('Failed to delete old invoice items.', 1);
             }
         }
-
-        return true;
     }
 
     // --------------------------------------------------------------------------
@@ -633,6 +655,12 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Send an invoice by email
+     * @param  integer $iInvoiceId     The ID of the invoice to send
+     * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
+     * @return boolean
+     */
     public function send($iInvoiceId, $sEmailOverride = null)
     {
         try {
@@ -707,6 +735,12 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Format an invoice object
+     * @param  \stdClass $oObj  The object to format
+     * @param  array     $aData Any data passed to getAll
+     * @return void
+     */
     protected function formatObject($oObj, $aData)
     {
         parent::formatObject($oObj, $aData, array('terms'));

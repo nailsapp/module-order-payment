@@ -53,11 +53,11 @@ return array(
         }
     ),
     'factories' => array(
-        'Card' => function () {
-            if (class_exists('\App\Invoice\Model\Card')) {
-                return new \App\Invoice\Model\Card();
+        'ChargeRequest' => function () {
+            if (class_exists('\App\Invoice\Model\ChargeRequest')) {
+                return new \App\Invoice\Model\ChargeRequest();
             } else {
-                return new \Nails\Invoice\Model\Card();
+                return new \Nails\Invoice\Model\ChargeRequest();
             }
         },
         'ChargeResponse' => function () {

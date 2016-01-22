@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Card Exception
+ * Charge Request Exception
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -14,6 +14,6 @@ namespace Nails\Invoice\Exception;
 
 use Nails\Common\Exception\NailsException;
 
-class CardException extends NailsException
+class ChargeRequestException extends NailsException
 {
 }

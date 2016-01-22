@@ -31,10 +31,14 @@ class ChargeResponse
     //  Redirect variables
     protected $bIsRedirect;
     protected $sRedirectUrl;
+    protected $aRedirectPostData;
 
     //  Successful charge variables
     protected $sTxnId;
     protected $iFee;
+
+    //  Errors
+    protected $sError;
 
     // --------------------------------------------------------------------------
 
@@ -92,8 +96,9 @@ class ChargeResponse
     /**
      * Set the status as failed
      */
-    public function setStatusFail()
+    public function setStatusFail($sReason)
     {
+        $this->sError = trim($sReason);
         return $this->setStatus(self::STATUS_FAIL);
     }
 
@@ -158,6 +163,13 @@ class ChargeResponse
 
     // --------------------------------------------------------------------------
 
+    public function getError()
+    {
+        return $this->sError;
+    }
+
+    // --------------------------------------------------------------------------
+
     /**
      * Whether the response is a redirect
      * @return boolean
@@ -184,7 +196,7 @@ class ChargeResponse
 
     /**
      * Set the redirectUrl value
-     * @param string $bIsRedirect The Redirect URL
+     * @param string $sRedirectUrl The Redirect URL
      */
     public function setRedirectUrl($sRedirectUrl)
     {
@@ -203,6 +215,55 @@ class ChargeResponse
      */
     public function getRedirectUrl() {
         return $this->sRedirectUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the sSuccessUrl value
+     * @param string $sSuccessUrl The URL to go to on successful payment
+     */
+    public function setSuccessUrl($sSuccessUrl)
+    {
+        if (!$this->bIsLocked) {
+            $this->sSuccessUrl = $sSuccessUrl;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * The URL to redirect to on successsful payment
+     * @return string
+     */
+    public function getSuccessUrl() {
+        return $this->sSuccessUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set any data which should be POST'ed to the endpoint
+     * @param array $aRedirectPostData The data to post
+     */
+    public function setRedirectPostData($aRedirectPostData)
+    {
+        if (!$this->bIsLocked) {
+            $this->aRedirectPostData = $aRedirectPostData;
+            $this->setIsRedirect(!empty($aRedirectPostData));
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Any data which should be POST'ed to the endpoint
+     * @return string
+     */
+    public function getRedirectPostData() {
+        return $this->aRedirectPostData;
     }
 
     // --------------------------------------------------------------------------
