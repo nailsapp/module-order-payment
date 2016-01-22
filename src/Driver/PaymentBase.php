@@ -53,16 +53,42 @@ class PaymentBase extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Take a payment
-     * @param  array   $aData      Any data to use for processing the transaction, e.g., card details
-     * @param  integer $iAmount    The amount to charge
-     * @param  string  $sCurrency  The currency to charge in
-     * @param  string  $sReturnUrl The return URL (if redirecting)
+     * Initiate a payment
+     * @param  integer   $iAmount      The payment amount
+     * @param  string    $sCurrency    The payment currency
+     * @param  array     $aData        An array of driver data
+     * @param  string    $sDescription The charge description
+     * @param  \stdClass $oPayment     The payment object
+     * @param  \stdClass $oInvoice     The invoice object
+     * @param  string    $sSuccessUrl  The URL to go to after successfull payment
+     * @param  string    $sFailUrl     The URL to go to after failed payment
      * @return \Nails\Invoice\Model\ChargeResponse
      */
-    public function charge($aData, $iAmount, $sCurrency, $sReturnUrl)
+    public function charge(
+        $iAmount,
+        $sCurrency,
+        $aData,
+        $sDescription,
+        $oPayment,
+        $oInvoice,
+        $sSuccessUrl,
+        $sFailUrl
+    )
     {
         throw new DriverException('Driver must implement the charge() method', 1);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Complete the payment
+     * @param  array $aGetVars  Any $_GET variables passed from the redirect flow
+     * @param  array $aPostVars Any $_POST variables passed from the redirect flow
+     * @return \Nails\Invoice\Model\CompleteResponse
+     */
+    public function complete($aGetVars, $aPostVars)
+    {
+        throw new DriverException('Driver must implement the complete() method', 1);
     }
 
     // --------------------------------------------------------------------------

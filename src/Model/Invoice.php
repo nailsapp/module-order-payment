@@ -205,7 +205,7 @@ class Invoice extends Base
             $oInvoice = parent::create($aData, true);
 
             if (!$oInvoice) {
-                throw new Exception('Failed to create invoice.', 1);
+                throw new InvoiceException('Failed to create invoice.', 1);
             }
 
             if (!empty($aItems)) {
@@ -256,7 +256,7 @@ class Invoice extends Base
             $bResult = parent::update($iInvoiceId, $aData);
 
             if (!$bResult) {
-                throw new Exception('Failed to update invoice.', 1);
+                throw new InvoiceException('Failed to update invoice.', 1);
             }
 
             if (!empty($aItems)) {
@@ -515,7 +515,7 @@ class Invoice extends Base
                 //  Update
                 if (!$oItemModel->update($aItem['id'], $aData)) {
 
-                    throw new Exception('Failed to update invoice item.', 1);
+                    throw new InvoiceException('Failed to update invoice item.', 1);
 
                 } else {
 
@@ -531,7 +531,7 @@ class Invoice extends Base
 
                 if (!$iItemId) {
 
-                    throw new Exception('Failed to create invoice item.', 1);
+                    throw new InvoiceException('Failed to create invoice item.', 1);
 
                 } else {
 
@@ -545,7 +545,7 @@ class Invoice extends Base
             $this->db->where_not_in('id', $aTouchedIds);
             $this->db->where('invoice_id', $iInvoiceId);
             if (!$this->db->delete($oItemModel->getTableName())) {
-                throw new Exception('Failed to delete old invoice items.', 1);
+                throw new InvoiceException('Failed to delete old invoice items.', 1);
             }
         }
     }
@@ -666,13 +666,14 @@ class Invoice extends Base
         try {
 
             $oInvoice = $this->getById($iInvoiceId);
+
             if (empty($oInvoice)) {
                 throw new InvoiceException('Invalid Invoice ID', 1);
             }
 
-                if ($oInvoice->state->id !== self::STATE_OPEN) {
-                    throw new InvoiceException('Invoice must be in an open state to send.', 1);
-                }
+            if ($oInvoice->state->id !== self::STATE_OPEN) {
+                throw new InvoiceException('Invoice must be in an open state to send.', 1);
+            }
 
             if (!empty($sEmailOverride)) {
 
@@ -731,6 +732,121 @@ class Invoice extends Base
         }
 
         return true;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Send invoice receipt
+     * @param  integer $iInvoiceId     The ID of the payment
+     * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
+     * @return boolean
+     */
+    public function sendReceipt($iInvoiceId, $sEmailOverride = null)
+    {
+        try {
+
+            $oInvoice = $this->getById($iInvoiceId);
+
+            if (empty($oInvoice)) {
+                throw new InvoiceException('Invalid Invoice ID', 1);
+            }
+
+            if ($oInvoice->state->id !== self::STATE_PAID) {
+                throw new InvoiceException('Invoice must be in a paid state to send receipt.', 1);
+            }
+
+            $oEmail       = new \stdClass();
+            $oEmail->type = 'invoice_paid_receipt';
+            $oEmail->data = new \stdClass();
+
+            if (!empty($sEmailOverride)) {
+
+                //  @todo, validate email address (or addresses if an array)
+                $aEmails = explode(',', $sEmailOverride);
+
+            } elseif (!empty($oInvoice->user_email)) {
+
+                $aEmails = explode(',', $oInvoice->user_email);
+
+            } elseif (!empty($oInvoice->user->email)) {
+
+                $aEmails = array($oInvoice->user->email);
+
+            } else {
+
+                throw new InvoiceException('No email address to send the invoice to.', 1);
+            }
+
+            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
+
+            foreach ($aEmails as $sEmail) {
+
+                $oEmail->to_email = $sEmail;
+                $oResult = $oEmailer->send($oEmail);
+
+                if (!empty($oResult)) {
+
+                    $oInvoiceEmailModel->create(
+                        array(
+                            'invoice_id' => $oInvoice->id,
+                            'email_id'   => $oResult->id,
+                            'email_type' => $oEmail->type,
+                            'recipient'  => $oEmail->to_email
+                        )
+                    );
+
+                } else {
+
+                    throw new ChargeRequestException($oEmailer->lastError(), 1);
+                }
+            }
+
+        } catch (\Exception $e) {
+
+            $this->setError($e->getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether an invoice has been fully paid or not
+     * @param  integer  $iInvoiceId The Invoice to query
+     * @return boolean
+     */
+    public function isPaid($iInvoiceId)
+    {
+        $oInvoice = $this->getById($iInvoiceId);
+        if (!empty($oInvoice)) {
+
+            return $oInvoice->totals->base->paid >= $oInvoice->totals->base->grand;
+        }
+
+        return false;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set an invoice as paid
+     * @param  integer  $iInvoiceId The Invoice to query
+     * @return boolean
+     */
+    public function setPaid($iInvoiceId)
+    {
+        $oNow = Factory::factory('DateTime');
+        return $this->update(
+            $iInvoiceId,
+            array(
+                'state' => self::STATE_PAID,
+                'paid'  => $oNow->format('Y-m-d')
+            )
+        );
     }
 
     // --------------------------------------------------------------------------
@@ -812,9 +928,9 @@ class Invoice extends Base
 
         //  URLs
         $oObj->urls           = new \stdClass();
-        $oObj->urls->payment  = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/pay');
-        $oObj->urls->download = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/download');
-        $oObj->urls->view     = site_url('invoice/' . $oObj->ref . '/' . $oObj->token . '/view');
+        $oObj->urls->payment  = site_url('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/pay');
+        $oObj->urls->download = site_url('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/download');
+        $oObj->urls->view     = site_url('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/view');
 
         //  Callback data
         $oObj->callback_data = json_decode($oObj->callback_data);

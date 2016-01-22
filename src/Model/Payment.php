@@ -17,6 +17,13 @@ use Nails\Common\Model\Base;
 
 class Payment extends Base
 {
+    //  Statuses
+    const STATUS_PENDING = 'PENDING';
+    const STATUS_OK      = 'OK';
+    const STATUS_FAILED  = 'FAILED';
+
+    // --------------------------------------------------------------------------
+
     /**
      * Currency values
      * @todo  make this way more dynamic
@@ -118,7 +125,7 @@ class Payment extends Base
             $oPayment = parent::create($aData, true);
 
             if (!$oPayment) {
-                throw new Exception('Failed to create payment.', 1);
+                throw new \Exception('Failed to create payment.', 1);
             }
 
             $this->db->trans_commit();
@@ -158,7 +165,7 @@ class Payment extends Base
             $bResult = parent::update($iPaymentId, $aData);
 
             if (!$bResult) {
-                throw new Exception('Failed to update payment.', 1);
+                throw new \Exception('Failed to update payment.', 1);
             }
 
             $this->db->trans_commit();
@@ -207,6 +214,40 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Set a payment as OK
+     * @param  integer  $iPaymentId The Payment to update
+     * @return boolean
+     */
+    public function setOk($iPaymentId)
+    {
+        return $this->update(
+            $iPaymentId,
+            array(
+                'state' => self::STATUS_OK
+            )
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a payment as FAILED
+     * @param  integer  $iPaymentId The Payment to update
+     * @return boolean
+     */
+    public function setFailed($iPaymentId)
+    {
+        return $this->update(
+            $iPaymentId,
+            array(
+                'state' => self::STATUS_FAILED
+            )
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Format a payment object
      * @param  \stdClass $oObj  The object to format
      * @param  array     $aData Any data passed to getAll
@@ -214,7 +255,7 @@ class Payment extends Base
      */
     protected function formatObject($oObj, $aData = array())
     {
-        parent::formatObject($oObj, $aData, array('invoice_id', 'amount', 'amount_base', 'fee', 'fee_base'));
+        parent::formatObject($oObj, $aData, array('invoice_id', 'amount'));
 
         //  Driver
         $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
@@ -241,11 +282,8 @@ class Payment extends Base
         $oObj->amount->localised           = (float) number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
         $oObj->amount->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
 
-        //  Fee
-        $iFee = $oObj->fee;
-        $oObj->fee                      = new \stdClass();
-        $oObj->fee->base                = $iFee;
-        $oObj->fee->localised           = (float) number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->fee->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        //  URLs
+        $oObj->urls           = new \stdClass();
+        $oObj->urls->complete = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
     }
 }

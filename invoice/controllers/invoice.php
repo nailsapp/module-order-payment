@@ -170,11 +170,17 @@ class Invoice extends NAILS_Controller
 
                 try {
 
-                    //  Set up card object
+                    //  Set up ChargeRequest object
                     $oChargeRequest = Factory::factory('ChargeRequest', 'nailsapp/module-invoice');
 
-                    //  Set the driver to use for the charge
+                    //  Set the driver to use for the request
                     $oChargeRequest->setDriver($sSelectedDriver);
+
+                    //  Describe the charge
+                    $oChargeRequest->setDescription('Payment for invoice #' . $oInvoice->ref);
+
+                    //  Set the invoice we're charging against
+                    $oChargeRequest->setInvoice($oInvoice->id);
 
                     //  If the driver expects card data then set it, if it expects custom data then set that
                     $mPaymentFields = $oSelectedDriver->getPaymentFields();
@@ -215,10 +221,8 @@ class Invoice extends NAILS_Controller
 
                     //  Attempt payment
                     $oResult = $oChargeRequest->charge(
-                        $oInvoice->id,
                         $oInvoice->totals->base->grand,
-                        $oInvoice->currency,
-                        $oSelectedDriver->getSlug()
+                        $oInvoice->currency
                     );
 
                     if ($oResult->isOk()) {
@@ -226,9 +230,13 @@ class Invoice extends NAILS_Controller
                         //  Payment was successfull; head to wherever the charge response says to go
                         redirect($oResult->getSuccessUrl());
 
+                    } elseif ($oResult->isFail()) {
+
+                        throw new NailsException('Payment failed: ' . $oResult->getError()->user, 1);
+
                     } else {
 
-                        throw new NailsException('Payment request failed: ' . $oResult->getError(), 1);
+                        throw new NailsException('Payment failed.', 1);
                     }
 
                 } catch (\Exception $e) {
@@ -257,7 +265,7 @@ class Invoice extends NAILS_Controller
     // --------------------------------------------------------------------------
 
     /**
-     * Remaps all requests to the viewInvoice method unless the *real* method exists
+     * Remap requests for valid payments to the appropriate controller method
      * @return void
      */
     public function _remap()
@@ -265,8 +273,6 @@ class Invoice extends NAILS_Controller
         $sInvoiceRef   = $this->uri->rsegment(2);
         $sInvoiceToken = $this->uri->rsegment(3);
         $sMethod       = $this->uri->rsegment(4);
-
-        //  @todo verify invoice and token
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
         $oInvoice      = $oInvoiceModel->getByRef($sInvoiceRef, array('includeItems' => true));
 

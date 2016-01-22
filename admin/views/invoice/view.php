@@ -170,7 +170,6 @@
                             <th>Gateway</th>
                             <th>Reference</th>
                             <th>Amount</th>
-                            <th>Fee</th>
                             <th>Created</th>
                             <th class="actions">Actions</th>
                     </thead>
@@ -186,7 +185,6 @@
                                 <td><?=$oPayment->driver->label?></td>
                                 <td><?=$oPayment->txn_id?></td>
                                 <td><?=$oPayment->amount->localised_formatted?></td>
-                                <td><?=$oPayment->fee->localised_formatted?></td>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
                                 <td class="actions">
                                     <?php

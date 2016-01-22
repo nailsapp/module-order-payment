@@ -13,10 +13,9 @@
             <thead>
                 <tr>
                     <th class="driver">Gateway</th>
-                    <th class="transtxn-id">Transaction Ref</th>
+                    <th class="txn-ref">Transaction Ref</th>
                     <th class="invoice">Invoice</th>
                     <th class="amount">Amount</th>
-                    <th class="amount fee">Fee</th>
                     <th class="currency">Currency</th>
                     <th class="datetime">Received</th>
                     <th class="actions">Actions</th>
@@ -34,7 +33,7 @@
                             <td class="driver">
                                 <?=$oPayment->driver->label?>
                             </td>
-                            <td class="trans-ref">
+                            <td class="txn-ref">
                                 <?=$oPayment->txn_id?>
                             </td>
                             <td class="invoice">
@@ -59,9 +58,6 @@
                             <td class="amount">
                                 <?=$oPayment->amount->localised_formatted?>
                             </td>
-                            <td class="amount fee">
-                                <?=$oPayment->fee->localised_formatted?>
-                            </td>
                             <td class="currency">
                                 <?=$oPayment->currency?>
                             </td>
@@ -85,7 +81,7 @@
 
                     ?>
                     <tr>
-                        <td colspan="8" class="no-data">
+                        <td colspan="7" class="no-data">
                             No Payments Found
                         </td>
                     </tr>

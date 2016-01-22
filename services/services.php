@@ -67,6 +67,27 @@ return array(
                 return new \Nails\Invoice\Model\ChargeResponse();
             }
         },
+        'CompleteRequest' => function () {
+            if (class_exists('\App\Invoice\Model\CompleteRequest')) {
+                return new \App\Invoice\Model\CompleteRequest();
+            } else {
+                return new \Nails\Invoice\Model\CompleteRequest();
+            }
+        },
+        'CompleteResponse' => function () {
+            if (class_exists('\App\Invoice\Model\CompleteResponse')) {
+                return new \App\Invoice\Model\CompleteResponse();
+            } else {
+                return new \Nails\Invoice\Model\CompleteResponse();
+            }
+        },
+        'RefundRequest' => function () {
+            if (class_exists('\App\Invoice\Model\RefundRequest')) {
+                return new \App\Invoice\Model\RefundRequest();
+            } else {
+                return new \Nails\Invoice\Model\RefundRequest();
+            }
+        },
         'RefundResponse' => function () {
             if (class_exists('\App\Invoice\Model\RefundResponse')) {
                 return new \App\Invoice\Model\RefundResponse();
