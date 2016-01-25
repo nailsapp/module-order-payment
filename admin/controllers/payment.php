@@ -160,7 +160,7 @@ class Payment extends BaseAdmin
 
             Helper::addHeaderButton(
                 'admin/invoice/invoice/create',
-                'Request Payment'
+                'Create Invoice'
             );
         }
 

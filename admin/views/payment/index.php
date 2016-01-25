@@ -14,6 +14,7 @@
                 <tr>
                     <th class="driver">Gateway</th>
                     <th class="txn-ref">Transaction Ref</th>
+                    <th class="status">Status</th>
                     <th class="invoice">Invoice</th>
                     <th class="amount">Amount</th>
                     <th class="currency">Currency</th>
@@ -35,6 +36,9 @@
                             </td>
                             <td class="txn-ref">
                                 <?=$oPayment->txn_id?>
+                            </td>
+                            <td class="state">
+                                <?=$oPayment->status->label?>
                             </td>
                             <td class="invoice">
                                 <?php
@@ -81,7 +85,7 @@
 
                     ?>
                     <tr>
-                        <td colspan="7" class="no-data">
+                        <td colspan="8" class="no-data">
                             No Payments Found
                         </td>
                     </tr>

@@ -50,13 +50,13 @@ class Migration0 extends Base
         $this->query("
             CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-                `ref` char(20) NOT NULL DEFAULT '',
-                `token` varchar(32) NOT NULL,
+                `ref` char(15) NOT NULL DEFAULT '',
+                `token` char(32) NOT NULL,
                 `state` enum('DRAFT','OPEN','PENDING','PARTIALLY_PAID','PAID','WRITTEN_OFF') NOT NULL DEFAULT 'DRAFT',
                 `dated` date NOT NULL,
                 `terms` int(11) unsigned NOT NULL DEFAULT '0',
                 `due` date NOT NULL,
-                `paid` date DEFAULT NULL,
+                `paid` datetime DEFAULT NULL,
                 `user_id` int(11) unsigned DEFAULT NULL,
                 `user_email` varchar(255) DEFAULT NULL,
                 `currency` char(3) NOT NULL DEFAULT '',
@@ -112,11 +112,12 @@ class Migration0 extends Base
         $this->query("
             CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_payment` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-                `token` varchar(32) NOT NULL,
+                `ref` char(15) NOT NULL DEFAULT '',
+                `token` char(32) NOT NULL,
                 `driver` varchar(150) NOT NULL DEFAULT '',
                 `invoice_id` int(11) unsigned DEFAULT NULL,
                 `description` varchar(255) DEFAULT NULL,
-                `status` enum('PENDING','OK','FAILED') NOT NULL DEFAULT 'PENDING',
+                `status` enum('PENDING','PROCESSING','COMPLETE','FAILED') NOT NULL DEFAULT 'PENDING',
                 `txn_id` varchar(255) DEFAULT NULL,
                 `fail_msg` varchar(255) DEFAULT NULL,
                 `fail_code` int(11) DEFAULT NULL,

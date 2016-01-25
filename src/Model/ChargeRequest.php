@@ -13,12 +13,11 @@
 namespace Nails\Invoice\Model;
 
 use Nails\Factory;
+use Nails\Invoice\Model\RequestBase;
 use Nails\Invoice\Exception\ChargeRequestException;
 
-class ChargeRequest
+class ChargeRequest extends RequestBase
 {
-    protected $oDriver;
-    protected $oInvoice;
     protected $oCard;
     protected $oCustom;
     protected $sDescription;
@@ -30,6 +29,8 @@ class ChargeRequest
      */
     public function __construct()
     {
+        parent::__construct();
+
         //  Card details
         $this->oCard             = new \stdClass();
         $this->oCard->name       = null;
@@ -41,53 +42,6 @@ class ChargeRequest
 
         //  Container for custom variables
         $this->oCustom = new \stdClass();
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the driver to be used for the charge
-     * @param string $sDriverSlug The driver's slug
-     */
-    public function setDriver($sDriverSlug)
-    {
-        //  Validate the driver
-        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
-        $aDrivers            = $oPaymentDriverModel->getEnabled();
-        $oDriver             = null;
-
-        foreach ($aDrivers as $oDriverConfig) {
-            if ($oDriverConfig->slug == $sDriverSlug) {
-                $oDriver = $oPaymentDriverModel->getInstance($oDriverConfig->slug);
-                break;
-            }
-        }
-
-        if (empty($oDriver)) {
-            throw new ChargeRequestException('"' . $sDriverSlug . '" is not a valid payment driver.', 1);
-        }
-
-        $this->oDriver = $oDriver;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the invoice object
-     * @param integer $iInvoiceId The invoice ID to charge against
-     */
-    public function setInvoice($iInvoiceId)
-    {
-        //  Validate
-        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoice      = $oInvoiceModel->getById($iInvoiceId);
-
-        if (empty($oInvoice)) {
-            throw new ChargeRequestException('Invalid invoice ID.', 1);
-        }
-
-        $this->oInvoice = $oInvoice;
-        return $this;
     }
 
     // --------------------------------------------------------------------------
@@ -346,22 +300,23 @@ class ChargeRequest
 
         // --------------------------------------------------------------------------
 
-        //  Create a charge against the invoice
-        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $sPaymentClass = get_class($oPaymentModel);
-        $oPayment      = $oPaymentModel->create(
-            array(
-                'driver'      => $this->oDriver->getSlug(),
-                'description' => $this->getDescription(),
-                'invoice_id'  => $this->oInvoice->id,
-                'currency'    => $sCurrency,
-                'amount'      => $iAmount,
-            ),
-            true
-        );
+        //  Create a charge against the invoice if one hasn't been specified
+        if (empty($this->oPayment)) {
 
-        if (empty($oPayment)) {
-            throw new ChargeRequestException('Failed to create new payment.', 1);
+            $this->oPayment = $this->oPaymentModel->create(
+                array(
+                    'driver'      => $this->oDriver->getSlug(),
+                    'description' => $this->getDescription(),
+                    'invoice_id'  => $this->oInvoice->id,
+                    'currency'    => $sCurrency,
+                    'amount'      => $iAmount,
+                ),
+                true
+            );
+
+            if (empty($this->oPayment)) {
+                throw new ChargeRequestException('Failed to create new payment.', 1);
+            }
         }
 
         $aDriverData = array();
@@ -377,8 +332,8 @@ class ChargeRequest
         }
 
         //  Return URL for drivers which implement a redirect flow
-        $sSuccessUrl = $oPayment->urls->complete;
-        $sFailUrl    = site_url('invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
+        $sSuccessUrl = site_url('invoice/payment/' . $this->oPayment->id . '/' . $this->oPayment->token . '/complete');
+        $sFailUrl    = site_url('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
 
         //  Execute the charge
         $oChargeResponse = $this->oDriver->charge(
@@ -386,7 +341,7 @@ class ChargeRequest
             $sCurrency,
             $aDriverData,
             $this->getDescription(),
-            $oPayment->id,
+            $this->oPayment->id,
             $this->oInvoice,
             $sSuccessUrl,
             $sFailUrl
@@ -404,12 +359,13 @@ class ChargeRequest
             );
         }
 
-        /**
-         * If we need to do a redirect then handle it; if the payment is OK, i.e cleared, then
-         * update the things and send the receipts.
-         */
-
+        //  Handle the response
         if ($oChargeResponse->isRedirect()) {
+
+            /**
+             * Driver uses a redirect flow, determine whether we can use a basic header redirect,
+             * or if we need to POST some data to the endpoint
+             */
 
             $sRedirectUrl = $oChargeResponse->getRedirectUrl();
             $aPostData    = $oChargeResponse->getRedirectPostData();
@@ -421,6 +377,7 @@ class ChargeRequest
             } else {
 
                 $oCi = get_instance();
+                echo $oCi->load->view('structure/header/blank', getControllerData(), true);
                 echo $oCi->load->view(
                     'invoice/pay/post',
                     array(
@@ -429,52 +386,34 @@ class ChargeRequest
                     ),
                     true
                 );
+                echo $oCi->load->view('structure/footer/blank', getControllerData(), true);
                 exit();
             }
 
-        } elseif ($oChargeResponse->isOk()) {
+        } elseif ($oChargeResponse->isProcessing()) {
 
-            //  Update the payment
-            $bResult = $oPaymentModel->update(
-                $oPayment->id,
-                array(
-                    'status' => $sPaymentClass::STATUS_OK,
-                    'txn_id' => $oChargeResponse->getTxnId()
-                )
+            //  Driver has started processing the charge, but it hasn't been confirmed yet
+            $this->setPaymentProcessing(
+                $oChargeResponse->getTxnId()
             );
 
-            if (empty($bResult)) {
-                throw new ChargeRequestException('Failed to update existing payment.', 1);
-            }
+        } elseif ($oChargeResponse->isComplete()) {
 
-            //  Has the invoice been paid in full? If so, mark it as paid and fire the invoice.paid event
-            $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+            //  Driver has confirmed that payment has been taken.
+            $this->setPaymentComplete(
+                $oChargeResponse->getTxnId()
+            );
 
-            if ($oInvoiceModel->isPaid($this->oInvoice->id)) {
+        } elseif ($oChargeResponse->isFailed()) {
 
-                //  Mark Invoice as PAID
-                if (!$oInvoiceModel->setPaid($this->oInvoice->id)) {
-                    throw new ChargeRequestException('Failed to mark invoice as paid.', 1);
-                }
-
-                //  Call back event
-                $oPaymentEventHandler      = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
-                $sPaymentEventHandlerClass = get_class($oPaymentEventHandler);
-
-                $oPaymentEventHandler->trigger(
-                    $sPaymentEventHandlerClass::EVENT_INVOICE_PAID,
-                    $oInvoiceModel->getById($this->oInvoice->id, array('includeAll' => true))
-                );
-
-                //  Send receipt email
-                $oInvoiceModel->sendReceipt($this->oInvoice->id);
-            }
-
-        } elseif ($oChargeResponse->isFail()) {
+            /**
+             * Payment failed
+             */
 
             //  Update the payment
-            $bResult = $oPaymentModel->update(
-                $oPayment->id,
+            $sPaymentClass = get_class($this->oPaymentModel);
+            $bResult       = $this->oPaymentModel->update(
+                $this->oPayment->id,
                 array(
                     'status'    => $sPaymentClass::STATUS_FAILED,
                     'fail_msg'  => $oChargeResponse->getError()->msg,
@@ -487,15 +426,9 @@ class ChargeRequest
             }
         }
 
-        //  Set the success URL if it's currently blank
-        if (empty($oChargeResponse->getSuccessUrl())) {
-            $oChargeResponse->setSuccessUrl($sSuccessUrl);
-        }
-
-        //  Set the fail URL if it's currently blank
-        if (empty($oChargeResponse->getFailUrl())) {
-            $oChargeResponse->setFailUrl($sFailUrl);
-        }
+        //  Set the success and fail URLs
+        $oChargeResponse->setSuccessUrl($sSuccessUrl);
+        $oChargeResponse->setFailUrl($sFailUrl);
 
         //  Lock the response so it cannot be altered
         $oChargeResponse->lock();

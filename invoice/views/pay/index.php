@@ -1,4 +1,5 @@
 <div class="nailsapp-invoice pay container" id="js-invoice">
+    <?=$this->load->view('invoice/_component/logo', array(), true)?>
     <?=form_open(null, 'id="js-invoice-main-form"')?>
     <div class="mask" id="js-invoice-mask">
         <b class="glyphicon glyphicon-refresh"></b>
@@ -56,7 +57,7 @@
                                     echo form_radio(
                                         'driver',
                                         $oDriver->getSlug(),
-                                        set_radio('driver', $oDriver->getSlug()),
+                                        set_radio('driver', $oDriver->getSlug(), count($aDrivers) === 1),
                                         implode(' ', $aData)
                                     );
 
@@ -121,12 +122,26 @@
                                             $sType        = !empty($aField['type']) ? $aField['type'] : 'text';
                                             $sPlaceholder = !empty($aField['placeholder']) ? $aField['placeholder'] : '';
                                             $sRequired    = !empty($aField['required']) ? 'true' : 'false';
+                                            $aOptions     = !empty($aField['options']) ? $aField['options'] : array();
                                             $sErrorClass  = form_error($sKey) ? 'has-error' : '';
 
                                             echo '<label>';
                                             echo $sLabel ;
 
                                             switch ($sType) {
+
+                                                case 'dropdown':
+                                                case 'select':
+
+                                                    echo form_dropdown(
+                                                        $sKey,
+                                                        $aOptions,
+                                                        set_value($sKey),
+                                                        'class="form-control" ' .
+                                                        'placeholder="' . $sPlaceholder . '" ' .
+                                                        'data-is-required="' . $sRequired . '"'
+                                                    );
+                                                    break;
 
                                                 case 'password':
                                                     echo form_password(

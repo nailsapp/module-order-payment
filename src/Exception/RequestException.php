@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Complete Response Exception
+ * Request Exception
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -14,6 +14,6 @@ namespace Nails\Invoice\Exception;
 
 use Nails\Common\Exception\NailsException;
 
-class CompleteResponseException extends NailsException
+class RequestException extends NailsException
 {
 }

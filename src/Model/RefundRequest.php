@@ -12,6 +12,8 @@
 
 namespace Nails\Invoice\Model;
 
-class RefundRequest
+use Nails\Invoice\Model\RequestBase;
+
+class RefundRequest extends RequestBase
 {
 }

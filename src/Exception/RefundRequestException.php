@@ -12,8 +12,8 @@
 
 namespace Nails\Invoice\Exception;
 
-use Nails\Common\Exception\NailsException;
+use Nails\Invoice\Exception\RequestException;
 
-class RefundRequestException extends NailsException
+class RefundRequestException extends RequestException
 {
 }

@@ -181,7 +181,7 @@
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oPayment->id?></td>
-                                <td class="text-center"><?=$oPayment->status?></td>
+                                <td class="text-center"><?=$oPayment->status->label?></td>
                                 <td><?=$oPayment->driver->label?></td>
                                 <td><?=$oPayment->txn_id?></td>
                                 <td><?=$oPayment->amount->localised_formatted?></td>

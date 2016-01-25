@@ -18,7 +18,7 @@ class Invoice extends NAILS_Controller
 {
     /**
      * Download a single invoice
-     * @param  object $oInvoice The invoice object
+     * @param  \stdClass $oInvoice The invoice object
      * @return void
      */
     protected function download($oInvoice)
@@ -31,26 +31,12 @@ class Invoice extends NAILS_Controller
 
     /**
      * View a single invoice
-     * @param  object $oInvoice The invoice object
+     * @param  \stdClass $oInvoice The invoice object
      * @return void
      */
     protected function view($oInvoice)
     {
-        $this->data['oInvoice'] = $oInvoice;
-
-        // --------------------------------------------------------------------------
-
-        if ($this->input->get('autosize')) {
-
-            $oAsset = Factory::service('Asset');
-            $oAsset->load(
-                'iframe-resizer/js/iframeResizer.contentWindow.min.js',
-                array('nailsapp/module-invoice', 'BOWER')
-            );
-        }
-
-        // --------------------------------------------------------------------------
-
+        $this->data['oInvoice']       = $oInvoice;
         $this->data['headerOverride'] = 'structure/header/blank';
         $this->data['footerOverride'] = 'structure/footer/blank';
 
@@ -65,20 +51,21 @@ class Invoice extends NAILS_Controller
 
     /**
      * Pay a single invoice
-     * @param  object $oInvoice The invoice object
+     * @param  \stdClass $oInvoice The invoice object
      * @return void
      */
     protected function pay($oInvoice)
     {
-        $this->data['header_override'] = 'structure/header/blank';
-        $this->data['footer_override'] = 'structure/footer/blank';
-        $this->data['oInvoice']        = $oInvoice;
+        $this->data['oInvoice']       = $oInvoice;
+        $this->data['headerOverride'] = 'structure/header/blank';
+        $this->data['footerOverride'] = 'structure/footer/blank';
 
         $oAsset = Factory::service('Asset');
         $oAsset->load('invoice.pay.css', 'nailsapp/module-invoice');
 
         //  Only open invoice can be paid
         if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->isScheduled) {
+
             if ($oInvoice->state->id === 'PAID') {
 
                 $this->load->view('structure/header', $this->data);
@@ -101,11 +88,37 @@ class Invoice extends NAILS_Controller
 
         // --------------------------------------------------------------------------
 
+        //  If there are payments against this invoice which are processing, then deny payment
+        if ($oInvoice->hasProcessingPayments) {
+
+            $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+            $sPaymentClass = get_class($oPaymentModel);
+
+            $this->data['aProcessingPayments'] = array();
+            foreach ($oInvoice->payments->data as $oPayment) {
+                if ($oPayment->status->id === $sPaymentClass::STATUS_PROCESSING) {
+                    $this->data['aProcessingPayments'][] = $oPayment;
+                }
+            }
+
+            $this->load->view('structure/header', $this->data);
+            $this->load->view('invoice/pay/hasProcessing', $this->data);
+            $this->load->view('structure/footer', $this->data);
+            return;
+        }
+
+        // --------------------------------------------------------------------------
+
         //  Payment drivers
         $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
         $aDrivers            = $oPaymentDriverModel->getEnabled();
         foreach ($aDrivers as $oDriver) {
-            $this->data['aDrivers'][] = $oPaymentDriverModel->getInstance($oDriver->slug);
+
+            $oDriverInstance = $oPaymentDriverModel->getInstance($oDriver->slug);
+
+            if ($oDriverInstance->isAvailable($oInvoice)) {
+                $this->data['aDrivers'][] = $oDriverInstance;
+            }
         }
 
         if (empty($this->data['aDrivers'])) {
@@ -220,21 +233,37 @@ class Invoice extends NAILS_Controller
                     }
 
                     //  Attempt payment
-                    $oResult = $oChargeRequest->charge(
+                    $oChargeResponse = $oChargeRequest->charge(
                         $oInvoice->totals->base->grand,
                         $oInvoice->currency
                     );
 
-                    if ($oResult->isOk()) {
+                    //  Handle response
+                    if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete())  {
 
-                        //  Payment was successfull; head to wherever the charge response says to go
-                        redirect($oResult->getSuccessUrl());
+                        /**
+                         * Payment was successfull (but potentially unconfirmed). Send the user off to
+                         * complete the request.
+                         */
 
-                    } elseif ($oResult->isFail()) {
+                        redirect($oChargeResponse->getSuccessUrl());
 
-                        throw new NailsException('Payment failed: ' . $oResult->getError()->user, 1);
+                    } elseif ($oChargeResponse->isFailed()) {
+
+                        /**
+                         * Payment failed, throw an error which will be caught and displayed to the user
+                         */
+
+                        throw new NailsException(
+                            'Payment failed: ' . $oChargeResponse->getError()->user,
+                            1
+                        );
 
                     } else {
+
+                        /**
+                         * Something which we've not accounted for went wrong.
+                         */
 
                         throw new NailsException('Payment failed.', 1);
                     }
@@ -274,7 +303,7 @@ class Invoice extends NAILS_Controller
         $sInvoiceToken = $this->uri->rsegment(3);
         $sMethod       = $this->uri->rsegment(4);
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoice      = $oInvoiceModel->getByRef($sInvoiceRef, array('includeItems' => true));
+        $oInvoice      = $oInvoiceModel->getByRef($sInvoiceRef, array('includeItems' => true, 'includePayments' => true));
 
         if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {
             show_404();

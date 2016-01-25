@@ -84,7 +84,7 @@ var invoicePay = function() {
             var selectedDriver = $('.js-invoice-driver-select input:checked');
             if (selectedDriver.length !== 0) {
 
-                $('.js-invoice-panel-payment-details:not(.hidden) input').each(function() {
+                $('.js-invoice-panel-payment-details:not(.hidden) :input').each(function() {
 
                     var val = $(this).val().trim();
 

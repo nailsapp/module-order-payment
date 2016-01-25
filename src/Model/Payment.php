@@ -18,9 +18,10 @@ use Nails\Common\Model\Base;
 class Payment extends Base
 {
     //  Statuses
-    const STATUS_PENDING = 'PENDING';
-    const STATUS_OK      = 'OK';
-    const STATUS_FAILED  = 'FAILED';
+    const STATUS_PENDING    = 'PENDING';
+    const STATUS_PROCESSING = 'PROCESSING';
+    const STATUS_COMPLETE   = 'COMPLETE';
+    const STATUS_FAILED     = 'FAILED';
 
     // --------------------------------------------------------------------------
 
@@ -45,6 +46,38 @@ class Payment extends Base
         $this->table             = NAILS_DB_PREFIX . 'invoice_payment';
         $this->tablePrefix       = 'p';
         $this->defaultSortColumn = 'created';
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns all the statuses as an array
+     * @return array
+     */
+    public function getStatuses()
+    {
+        return array(
+            self::STATUS_PENDING,
+            self::STATUS_PROCESSING,
+            self::STATUS_COMPLETE,
+            self::STATUS_FAILED
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns an array of statsues with human friendly labels
+     * @return array
+     */
+    public function getStatusesHuman()
+    {
+        return array(
+            self::STATUS_PENDING    => 'Pending',
+            self::STATUS_PROCESSING => 'Processing',
+            self::STATUS_COMPLETE   => 'Complete',
+            self::STATUS_FAILED     => 'Failed'
+        );
     }
 
     // --------------------------------------------------------------------------
@@ -120,6 +153,10 @@ class Payment extends Base
 
             $this->db->trans_begin();
 
+            if (empty($aData['ref'])) {
+                $aData['ref'] = $this->generateValidRef();
+            }
+
             $aData['token'] = $this->generateValidToken();
 
             $oPayment = parent::create($aData, true);
@@ -160,6 +197,7 @@ class Payment extends Base
 
             $this->db->trans_begin();
 
+            unset($aData['ref']);
             unset($aData['token']);
 
             $bResult = parent::update($iPaymentId, $aData);
@@ -192,6 +230,29 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Generates a valid invoice ref
+     * @return string
+     */
+    public function generateValidRef()
+    {
+        Factory::helper('string');
+
+        $oNow = Factory::factory('DateTime');
+
+        do {
+
+            $sRef = $oNow->format('Ym') .'-' . strtoupper(random_string('alnum'));
+            $this->db->where('ref', $sRef);
+            $bRefExists = (bool) $this->db->count_all_results($this->table);
+
+        } while ($bRefExists);
+
+        return $sRef;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Generates a valid payment token
      * @return string
      */
@@ -214,16 +275,50 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Set a payment as OK
+     * Set a payment as PENDING
      * @param  integer  $iPaymentId The Payment to update
      * @return boolean
      */
-    public function setOk($iPaymentId)
+    public function setPending($iPaymentId)
     {
         return $this->update(
             $iPaymentId,
             array(
-                'state' => self::STATUS_OK
+                'state' => self::STATUS_PENDING
+            )
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a payment as PROCESSING
+     * @param  integer  $iPaymentId The Payment to update
+     * @return boolean
+     */
+    public function setProcessing($iPaymentId)
+    {
+        return $this->update(
+            $iPaymentId,
+            array(
+                'state' => self::STATUS_PROCESSING
+            )
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a payment as COMPLETE
+     * @param  integer  $iPaymentId The Payment to update
+     * @return boolean
+     */
+    public function setComplete($iPaymentId)
+    {
+        return $this->update(
+            $iPaymentId,
+            array(
+                'state' => self::STATUS_COMPLETE
             )
         );
     }
@@ -257,6 +352,14 @@ class Payment extends Base
     {
         parent::formatObject($oObj, $aData, array('invoice_id', 'amount'));
 
+        //  Status
+        $aStatuses = $this->getStatuses();
+        $sStatus   = $oObj->status;
+
+        $oObj->status        = new \stdClass();
+        $oObj->status->id    = $sStatus;
+        $oObj->status->label = !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus));
+
         //  Driver
         $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
         $sDriver = $oObj->driver;
@@ -283,7 +386,9 @@ class Payment extends Base
         $oObj->amount->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
 
         //  URLs
-        $oObj->urls           = new \stdClass();
-        $oObj->urls->complete = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
+        $oObj->urls             = new \stdClass();
+        $oObj->urls->complete   = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
+        $oObj->urls->thanks     = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
+        $oObj->urls->processing = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
     }
 }

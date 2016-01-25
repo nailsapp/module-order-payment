@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Refund Response Exception
+ * Response Exception
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -14,6 +14,6 @@ namespace Nails\Invoice\Exception;
 
 use Nails\Common\Exception\NailsException;
 
-class RefundResponseException extends NailsException
+class ResponseException extends NailsException
 {
 }

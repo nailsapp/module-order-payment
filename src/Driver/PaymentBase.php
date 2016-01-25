@@ -18,24 +18,24 @@ use Nails\Invoice\Exception\DriverException;
 class PaymentBase extends Base
 {
     /**
+     * Returns whether the driver is available to be used against the selected iinvoice
+     * @param \stdClass $oInvoice The invoice being charged
+     * @return boolean
+     */
+    public function isAvailable($oInvoice)
+    {
+        throw new DriverException('Driver must implement the isAvailable() method', 1);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Returns whether the driver uses a redirect payment flow or not.
      * @return boolean
      */
     public function isRedirect()
     {
         throw new DriverException('Driver must implement the isRedirect() method', 1);
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Returns any data which should be POSTED to the endpoint as part of a redirect
-     * flow; if empty a header redirect is used instead.
-     * @return array
-     */
-    public function getRedirectPostData()
-    {
-        throw new DriverException('Driver must implement the getRedirectPostData() method', 1);
     }
 
     // --------------------------------------------------------------------------
@@ -82,11 +82,13 @@ class PaymentBase extends Base
 
     /**
      * Complete the payment
-     * @param  array $aGetVars  Any $_GET variables passed from the redirect flow
-     * @param  array $aPostVars Any $_POST variables passed from the redirect flow
+     * @param  \stdClass $oPayment  The Payment object
+     * @param  \stdClass $oInvoice  The Invoice object
+     * @param  array     $aGetVars  Any $_GET variables passed from the redirect flow
+     * @param  array     $aPostVars Any $_POST variables passed from the redirect flow
      * @return \Nails\Invoice\Model\CompleteResponse
      */
-    public function complete($aGetVars, $aPostVars)
+    public function complete($oPayment, $oInvoice, $aGetVars, $aPostVars)
     {
         throw new DriverException('Driver must implement the complete() method', 1);
     }

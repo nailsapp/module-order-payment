@@ -105,6 +105,10 @@ class Invoice extends Base
     public function getAll($iPage = null, $iPerPage = null, $aData = array(), $bIncludeDeleted = false)
     {
         if (empty($aData['select'])) {
+
+            $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+            $sPaymentClass = get_class($oPaymentModel);
+
             $aData['select'] = array(
                 $this->tablePrefix . '.id',
                 $this->tablePrefix . '.ref',
@@ -126,8 +130,16 @@ class Invoice extends Base
                         FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->tablePrefix . '.id
-                        AND status = \'OK\'
+                        AND status = \'' . $sPaymentClass::STATUS_COMPLETE . '\'
                 ) paid_total',
+                '(
+                    SELECT
+                        COUNT(id)
+                        FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
+                        WHERE
+                        invoice_id = ' . $this->tablePrefix . '.id
+                        AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
+                ) processing_payments',
                 $this->tablePrefix . '.additional_text',
                 $this->tablePrefix . '.callback_data',
                 $this->tablePrefix . '.created',
@@ -196,8 +208,8 @@ class Invoice extends Base
             if (empty($aData['ref'])) {
                 $aData['ref'] = $this->generateValidRef();
             }
-            $aData['token'] = $this->generateValidToken($aData['ref']);
 
+            $aData['token'] = $this->generateValidToken($aData['ref']);
 
             $aItems = $aData['items'];
             unset($aData['items']);
@@ -251,6 +263,7 @@ class Invoice extends Base
                 unset($aData['items']);
             }
 
+            unset($aData['ref']);
             unset($aData['token']);
 
             $bResult = parent::update($iInvoiceId, $aData);
@@ -758,7 +771,9 @@ class Invoice extends Base
 
             $oEmail       = new \stdClass();
             $oEmail->type = 'invoice_paid_receipt';
-            $oEmail->data = new \stdClass();
+            $oEmail->data = array(
+                'invoice' => $oInvoice
+            );
 
             if (!empty($sEmailOverride)) {
 
@@ -822,8 +837,8 @@ class Invoice extends Base
     public function isPaid($iInvoiceId)
     {
         $oInvoice = $this->getById($iInvoiceId);
-        if (!empty($oInvoice)) {
 
+        if (!empty($oInvoice)) {
             return $oInvoice->totals->base->paid >= $oInvoice->totals->base->grand;
         }
 
@@ -844,7 +859,7 @@ class Invoice extends Base
             $iInvoiceId,
             array(
                 'state' => self::STATE_PAID,
-                'paid'  => $oNow->format('Y-m-d')
+                'paid'  => $oNow->format('Y-m-d H:i:s')
             )
         );
     }
@@ -899,6 +914,9 @@ class Invoice extends Base
         if ($oObj->state->id == self::STATE_OPEN && $oNow > $oDue) {
             $oObj->isOverdue = true;
         }
+
+        $oObj->hasProcessingPayments = $oObj->processing_payments > 0;
+        unset($oObj->processing_payments);
 
         //  Totals
         $oObj->totals              = new \stdClass();

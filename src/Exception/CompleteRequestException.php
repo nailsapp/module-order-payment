@@ -12,8 +12,8 @@
 
 namespace Nails\Invoice\Exception;
 
-use Nails\Common\Exception\NailsException;
+use Nails\Invoice\Exception\RequestException;
 
-class CompleteRequestException extends NailsException
+class CompleteRequestException extends RequestException
 {
 }
