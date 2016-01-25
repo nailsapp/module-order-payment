@@ -84,7 +84,9 @@ class Settings extends BaseAdmin
 
             if ($oFormValidation->run()) {
 
-                $this->db->trans_begin();
+                $oDb = Factory::service('Database');
+
+                $oDb->trans_begin();
                 $bRollback = false;
 
                 //  Normal settings
@@ -103,12 +105,12 @@ class Settings extends BaseAdmin
 
                 if (empty($bRollback)) {
 
-                    $this->db->trans_commit();
+                    $oDb->trans_commit();
                     $this->data['success'] = 'Invoice &amp; Payment settings were saved.';
 
                 } else {
 
-                    $this->db->trans_rollback();
+                    $oDb->trans_rollback();
                     $this->data['error'] = 'There was a problem saving settings. ' . $sError;
                 }
 

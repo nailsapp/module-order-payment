@@ -37,9 +37,34 @@
                             <td class="txn-ref">
                                 <?=$oPayment->txn_id?>
                             </td>
-                            <td class="state">
-                                <?=$oPayment->status->label?>
-                            </td>
+                            <?php
+
+                            if ($oPayment->status->id == 'PROCESSING') {
+
+                                $sClass = 'warning';
+                                $sText  = $oPayment->status->label;
+
+                            } elseif ($oPayment->status->id == 'COMPLETE') {
+
+                                $sClass = 'success';
+                                $sText  = $oPayment->status->label;
+
+                            } elseif ($oPayment->status->id == 'FAILED') {
+
+                                $sClass = 'danger';
+                                $sText  = $oPayment->status->label;
+
+                            } else {
+
+                                $sClass = '';
+                                $sText  = $oPayment->status->label;
+                            }
+
+                            echo '<td class="status ' . $sClass . '">';
+                            echo $sText;
+                            echo '</td>';
+
+                            ?>
                             <td class="invoice">
                                 <?php
 

@@ -132,10 +132,11 @@ class Payment extends Base
      **/
     protected function getCountCommon($data = array())
     {
+        $oDb           = Factory::service('Database');
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
 
-        $this->db->select($this->tablePrefix . '.*, i.ref invoice_ref, i.state invoice_state');
-        $this->db->join($oInvoiceModel->getTableName() . ' i', $this->tablePrefix . '.invoice_id = i.id');
+        $oDb->select($this->tablePrefix . '.*, i.ref invoice_ref, i.state invoice_state');
+        $oDb->join($oInvoiceModel->getTableName() . ' i', $this->tablePrefix . '.invoice_id = i.id');
         parent::getCountCommon($data);
     }
 
@@ -149,9 +150,11 @@ class Payment extends Base
      */
     public function create($aData = array(), $bReturnObject = false)
     {
+        $oDb = Factory::service('Database');
+
         try {
 
-            $this->db->trans_begin();
+            $oDb->trans_begin();
 
             if (empty($aData['ref'])) {
                 $aData['ref'] = $this->generateValidRef();
@@ -165,7 +168,7 @@ class Payment extends Base
                 throw new \Exception('Failed to create payment.', 1);
             }
 
-            $this->db->trans_commit();
+            $oDb->trans_commit();
 
             //  Trigger the payment.created event
             $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
@@ -177,7 +180,7 @@ class Payment extends Base
 
         } catch (\Exception $e) {
 
-            $this->db->trans_rollback();
+            $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -193,9 +196,11 @@ class Payment extends Base
      */
     public function update($iPaymentId, $aData = array())
     {
+        $oDb = Factory::service('Database');
+
         try {
 
-            $this->db->trans_begin();
+            $oDb->trans_begin();
 
             unset($aData['ref']);
             unset($aData['token']);
@@ -206,7 +211,7 @@ class Payment extends Base
                 throw new \Exception('Failed to update payment.', 1);
             }
 
-            $this->db->trans_commit();
+            $oDb->trans_commit();
 
             //  Trigger the payment.updated event
             $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
@@ -221,7 +226,7 @@ class Payment extends Base
 
         } catch (\Exception $e) {
 
-            $this->db->trans_rollback();
+            $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -237,13 +242,14 @@ class Payment extends Base
     {
         Factory::helper('string');
 
+        $oDb  = Factory::service('Database');
         $oNow = Factory::factory('DateTime');
 
         do {
 
             $sRef = $oNow->format('Ym') .'-' . strtoupper(random_string('alnum'));
-            $this->db->where('ref', $sRef);
-            $bRefExists = (bool) $this->db->count_all_results($this->table);
+            $oDb->where('ref', $sRef);
+            $bRefExists = (bool) $oDb->count_all_results($this->table);
 
         } while ($bRefExists);
 
@@ -260,12 +266,14 @@ class Payment extends Base
     {
         Factory::helper('string');
 
+        $oDb = Factory::service('Database');
+
         do {
 
             //  @todo: use more secure token generation, like random_bytes();
             $sToken = md5(microtime(true) . APP_PRIVATE_KEY);
-            $this->db->where('token', $sToken);
-            $bTokenExists = (bool) $this->db->count_all_results($this->table);
+            $oDb->where('token', $sToken);
+            $bTokenExists = (bool) $oDb->count_all_results($this->table);
 
         } while ($bTokenExists);
 

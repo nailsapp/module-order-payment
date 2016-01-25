@@ -199,9 +199,11 @@ class Invoice extends Base
      */
     public function create($aData = array(), $bReturnObject = false)
     {
+        $oDb = Factory::service('Database');
+
         try {
 
-            $this->db->trans_begin();
+            $oDb->trans_begin();
 
             $this->prepareInvoice($aData);
 
@@ -224,7 +226,7 @@ class Invoice extends Base
                 $this->updateLineItems($oInvoice->id, $aItems);
             }
 
-            $this->db->trans_commit();
+            $oDb->trans_commit();
 
             //  Trigger the invoice.created event
             $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
@@ -236,7 +238,7 @@ class Invoice extends Base
 
         } catch (\Exception $e) {
 
-            $this->db->trans_rollback();
+            $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -252,9 +254,11 @@ class Invoice extends Base
      */
     public function update($iInvoiceId, $aData = array())
     {
+        $oDb = Factory::service('Database');
+
         try {
 
-            $this->db->trans_begin();
+            $oDb->trans_begin();
 
             $this->prepareInvoice($aData, $iInvoiceId);
 
@@ -276,7 +280,7 @@ class Invoice extends Base
                 $this->updateLineItems($iInvoiceId, $aItems);
             }
 
-            $this->db->trans_commit();
+            $oDb->trans_commit();
 
             //  Trigger the invoice.updated event
             $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
@@ -291,7 +295,7 @@ class Invoice extends Base
 
         } catch (\Exception $e) {
 
-            $this->db->trans_rollback();
+            $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -555,9 +559,11 @@ class Invoice extends Base
 
         //  Delete those we no longer require
         if (!empty($aTouchedIds)) {
-            $this->db->where_not_in('id', $aTouchedIds);
-            $this->db->where('invoice_id', $iInvoiceId);
-            if (!$this->db->delete($oItemModel->getTableName())) {
+
+            $oDb = Factory::service('Database');
+            $oDb->where_not_in('id', $aTouchedIds);
+            $oDb->where('invoice_id', $iInvoiceId);
+            if (!$oDb->delete($oItemModel->getTableName())) {
                 throw new InvoiceException('Failed to delete old invoice items.', 1);
             }
         }
@@ -631,13 +637,14 @@ class Invoice extends Base
     {
         Factory::helper('string');
 
+        $oDb  = Factory::service('Database');
         $oNow = Factory::factory('DateTime');
 
         do {
 
             $sRef = $oNow->format('Ym') .'-' . strtoupper(random_string('alnum'));
-            $this->db->where('ref', $sRef);
-            $bRefExists = (bool) $this->db->count_all_results($this->table);
+            $oDb->where('ref', $sRef);
+            $bRefExists = (bool) $oDb->count_all_results($this->table);
 
         } while ($bRefExists);
 
@@ -654,12 +661,14 @@ class Invoice extends Base
     {
         Factory::helper('string');
 
+        $oDb = Factory::service('Database');
+
         do {
 
             //  @todo: use more secure token generation, like random_bytes();
             $sToken = md5(microtime(true) . $sRef . APP_PRIVATE_KEY);
-            $this->db->where('token', $sToken);
-            $bTokenExists = (bool) $this->db->count_all_results($this->table);
+            $oDb->where('token', $sToken);
+            $bTokenExists = (bool) $oDb->count_all_results($this->table);
 
         } while ($bTokenExists);
 

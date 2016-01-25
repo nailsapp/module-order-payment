@@ -133,6 +133,12 @@ class Payment extends BaseAdmin
             $aOptions
         );
 
+        $aCbFilters[] = Helper::searchFilterObject(
+            $sTablePrefix . '.status',
+            'Status',
+            $this->oPaymentModel->getStatusesHuman()
+        );
+
         // --------------------------------------------------------------------------
 
         //  Define the $data variable for the queries

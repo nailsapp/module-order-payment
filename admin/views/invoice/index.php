@@ -55,6 +55,12 @@
                                 $sText  = $oInvoice->state->label;
                                 $sText .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
 
+                            } elseif ($oInvoice->state->id == 'PAID') {
+
+                                $sClass = 'success';
+                                $sText  = $oInvoice->state->label;
+                                $sText .= '<small>paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
+
                             } else {
 
                                 $sClass = '';
@@ -93,6 +99,8 @@
                                             'class="btn btn-xs btn-primary"'
                                         );
 
+                                    } elseif ($oInvoice->state->id == 'DRAFT') {
+
                                     } else {
 
                                         echo anchor(
@@ -107,19 +115,13 @@
                                             'class="btn btn-xs btn-primary" target="_blank"'
                                         );
 
-                                        if (empty($oInvoice->payments)) {
+                                        if (empty($oInvoice->payments->count)) {
 
                                             echo anchor(
                                                 'admin/invoice/invoice/make_draft/' . $oInvoice->id,
                                                 'Make Draft',
                                                 'class="btn btn-xs btn-warning"'
                                             );
-
-                                        } else {
-
-                                            echo '<a href="#" class="btn btn-xs btn-warning" disabled rel="tipsy" title="An invoice with associated payments cannot be edited">';
-                                                echo 'Make Draft';
-                                            echo '</a>';
                                         }
                                     }
                                 }

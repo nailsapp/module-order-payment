@@ -137,8 +137,9 @@ class Invoice extends BaseAdmin
             'sort' => array(
                 array($sortOn, $sortOrder)
             ),
-            'keywords' => $keywords,
-            'cbFilters' => $aCbFilters
+            'includePayments' => true,
+            'keywords'        => $keywords,
+            'cbFilters'       => $aCbFilters
         );
 
         //  Get the items for the page
