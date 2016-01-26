@@ -21,6 +21,8 @@ class ChargeRequest extends RequestBase
     protected $oCard;
     protected $oCustom;
     protected $sDescription;
+    protected $bAutoRedirect;
+    protected $sContinueUrl;
 
     // --------------------------------------------------------------------------
 
@@ -42,6 +44,9 @@ class ChargeRequest extends RequestBase
 
         //  Container for custom variables
         $this->oCustom = new \stdClass();
+
+        //  Auto redirect by default
+        $this->bAutoRedirect = true;
     }
 
     // --------------------------------------------------------------------------
@@ -109,7 +114,10 @@ class ChargeRequest extends RequestBase
             $iMonth = (int) $sCardExpMonth;
             if ($iMonth < 1 || $iMonth >  12) {
 
-                throw new ChargeRequestException('Invalid Expiry Month; must be in the range 1-12.', 1);
+                throw new ChargeRequestException(
+                    '"' . $sCardExpMonth . '" is an invalid expiry month; must be in the range 1-12.',
+                    1
+                );
 
             } else {
 
@@ -119,7 +127,10 @@ class ChargeRequest extends RequestBase
 
         } else {
 
-            throw new ChargeRequestException('Invalid Expiry Month; must be numeric.', 1);
+            throw new ChargeRequestException(
+                '"' . $sCardExpMonth . '" is an invalid expiry month; must be numeric.',
+                1
+            );
         }
 
         $this->oCard->exp->month = $sCardExpMonth;
@@ -163,7 +174,7 @@ class ChargeRequest extends RequestBase
 
                 if ($oNow->format('Y') > $iYear) {
                     throw new ChargeRequestException(
-                        'Invalid Expiry Year; must ' . $oNow->format('Y') . ' be or later.',
+                        '"' . $sCardExpYear . '" is an invalid expiry year; must be ' . $oNow->format('Y') . ' or later.',
                         1
                     );
                 }
@@ -173,12 +184,18 @@ class ChargeRequest extends RequestBase
 
             } else {
 
-                throw new ChargeRequestException('Invalid Expiry Year; must be 2 or 4 digits.', 1);
+                throw new ChargeRequestException(
+                    '"' . $sCardExpYear . '" is an invalid expiry year; must be 2 or 4 digits.',
+                    1
+                );
             }
 
         } else {
 
-            throw new ChargeRequestException('Invalid Expiry Month; must be numeric.', 1);
+            throw new ChargeRequestException(
+                '"' . $sCardExpYear . '" is an invalid expiry year; must be numeric.',
+                1
+            );
         }
 
         $this->oCard->exp->year = $sCardExpYear;
@@ -271,6 +288,53 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Set whether the charge should automatically redirect
+     * @param boolean $bAutoRedirect Whetehr to auto redirect or not
+     */
+    public function setAutoRedirect($bAutoRedirect)
+    {
+        $this->bAutoRedirect = (bool) $bAutoRedirect;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the charge request will automatically redirect in the case of a
+     * driver requestring a redirect flow.
+     * @return boolean
+     */
+    public function isAutoRedirect()
+    {
+        return $this->bAutoRedirect;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the URL to go to when a payment is completed
+     * @param string $sContinueUrl the URL to go to when payment is completed
+     */
+    public function setContinueUrl($sContinueUrl)
+    {
+        $this->sContinueUrl = $sContinueUrl;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the URL to go to when a payment is completed
+     * @return string
+     */
+    public function getContinueUrl()
+    {
+        return $this->sContinueUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Start the charge
      * @param  integer   $iAmount    The amount to charge the card
      * @param  string    $sCurrency  The currency in which to charge
@@ -305,11 +369,12 @@ class ChargeRequest extends RequestBase
 
             $this->oPayment = $this->oPaymentModel->create(
                 array(
-                    'driver'      => $this->oDriver->getSlug(),
-                    'description' => $this->getDescription(),
-                    'invoice_id'  => $this->oInvoice->id,
-                    'currency'    => $sCurrency,
-                    'amount'      => $iAmount,
+                    'driver'       => $this->oDriver->getSlug(),
+                    'description'  => $this->getDescription(),
+                    'invoice_id'   => $this->oInvoice->id,
+                    'currency'     => $sCurrency,
+                    'amount'       => $iAmount,
+                    'url_continue' => $this->getContinueUrl()
                 ),
                 true
             );
@@ -344,7 +409,8 @@ class ChargeRequest extends RequestBase
             $this->oPayment->id,
             $this->oInvoice,
             $sSuccessUrl,
-            $sFailUrl
+            $sFailUrl,
+            $this->getContinueUrl()
         );
 
         //  Validate driver response
@@ -360,7 +426,7 @@ class ChargeRequest extends RequestBase
         }
 
         //  Handle the response
-        if ($oChargeResponse->isRedirect()) {
+        if ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
 
             /**
              * Driver uses a redirect flow, determine whether we can use a basic header redirect,
@@ -429,6 +495,7 @@ class ChargeRequest extends RequestBase
         //  Set the success and fail URLs
         $oChargeResponse->setSuccessUrl($sSuccessUrl);
         $oChargeResponse->setFailUrl($sFailUrl);
+        $oChargeResponse->setContinueUrl($this->getContinueUrl());
 
         //  Lock the response so it cannot be altered
         $oChargeResponse->lock();

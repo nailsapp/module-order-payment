@@ -14,6 +14,7 @@ namespace Nails\Invoice\Model;
 
 use Nails\Factory;
 use Nails\Common\Model\Base;
+use Nails\Invoice\Exception\PaymentException;
 
 class Payment extends Base
 {
@@ -165,7 +166,7 @@ class Payment extends Base
             $oPayment = parent::create($aData, true);
 
             if (!$oPayment) {
-                throw new \Exception('Failed to create payment.', 1);
+                throw new PaymentException('Failed to create payment.', 1);
             }
 
             $oDb->trans_commit();
@@ -208,7 +209,7 @@ class Payment extends Base
             $bResult = parent::update($iPaymentId, $aData);
 
             if (!$bResult) {
-                throw new \Exception('Failed to update payment.', 1);
+                throw new PaymentException('Failed to update payment.', 1);
             }
 
             $oDb->trans_commit();
@@ -264,8 +265,6 @@ class Payment extends Base
      */
     public function generateValidToken()
     {
-        Factory::helper('string');
-
         $oDb = Factory::service('Database');
 
         do {
@@ -351,6 +350,98 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Send payment receipt
+     * @param  integer $iPaymentId     The ID of the payment
+     * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
+     * @return boolean
+     */
+    public function sendReceipt($iPaymentId, $sEmailOverride = null)
+    {
+        try {
+
+            $oPayment = $this->getById($iPaymentId, array('includeInvoice' => true));
+
+            if (empty($oPayment)) {
+                throw new PaymentException('Invalid Payment ID', 1);
+            }
+
+            if (!in_array($oPayment->status->id, array(self::STATUS_PROCESSING, self::STATUS_COMPLETE))) {
+                throw new PaymentException('Payment must be in a paid or processing state to send receipt.', 1);
+            }
+
+            $oEmail = new \stdClass();
+
+            if ($oPayment->status->id == self::STATUS_COMPLETE) {
+
+                $oEmail->type = 'payment_complete_receipt';
+
+            } else {
+
+                $oEmail->type = 'payment_processing_receipt';
+            }
+
+            $oEmail->data = array(
+                'payment' => $oPayment
+            );
+
+            if (!empty($sEmailOverride)) {
+
+                //  @todo, validate email address (or addresses if an array)
+                $aEmails = explode(',', $sEmailOverride);
+
+            } elseif (!empty($oPayment->invoice->user_email)) {
+
+                $aEmails = explode(',', $oPayment->invoice->user_email);
+
+            } elseif (!empty($oPayment->invoice->user->email)) {
+
+                $aEmails = array($oPayment->invoice->user->email);
+
+            } else {
+
+                throw new PaymentException('No email address to send the invoice to.', 1);
+            }
+
+            $aEmails = array_unique($aEmails);
+            $aEmails = array_filter($aEmails);
+
+            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
+
+            foreach ($aEmails as $sEmail) {
+
+                $oEmail->to_email = $sEmail;
+                $oResult = $oEmailer->send($oEmail);
+
+                if (!empty($oResult)) {
+
+                    $oInvoiceEmailModel->create(
+                        array(
+                            'invoice_id' => $oPayment->invoice->id,
+                            'email_id'   => $oResult->id,
+                            'email_type' => $oEmail->type,
+                            'recipient'  => $oEmail->to_email
+                        )
+                    );
+
+                } else {
+
+                    throw new PaymentException($oEmailer->lastError(), 1);
+                }
+            }
+
+        } catch (\Exception $e) {
+
+            $this->setError($e->getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Format a payment object
      * @param  \stdClass $oObj  The object to format
      * @param  array     $aData Any data passed to getAll
@@ -398,5 +489,6 @@ class Payment extends Base
         $oObj->urls->complete   = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
         $oObj->urls->thanks     = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
         $oObj->urls->processing = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
+        $oObj->urls->continue   = !empty($oObj->url_continue) ? site_url($oObj->url_continue) : null;
     }
 }

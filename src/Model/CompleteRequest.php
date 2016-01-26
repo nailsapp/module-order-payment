@@ -18,6 +18,33 @@ use Nails\Invoice\Exception\CompleteRequestException;
 
 class CompleteRequest extends RequestBase
 {
+    protected $sContinueUrl;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the URL to go to when a payment is completed
+     * @param string $sContinueUrl the URL to go to when payment is completed
+     */
+    public function setContinueUrl($sContinueUrl)
+    {
+        $this->sContinueUrl = $sContinueUrl;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the URL to go to when a payment is completed
+     * @return string
+     */
+    public function getContinueUrl()
+    {
+        return $this->sContinueUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
     /**
      * Complete the payment
      * @param  array $aGetVars  Any $_GET variables passed from the redirect flow

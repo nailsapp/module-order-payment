@@ -129,6 +129,18 @@ class RequestBase
         if (empty($bResult)) {
             throw new RequestException('Failed to update existing payment.', 1);
         }
+
+        //  Has the invoice been paid in full? If so, mark it as paid and fire the invoice.paid.processing event
+        if ($this->oInvoiceModel->isPaid($this->oInvoice->id, true)) {
+
+            //  Mark Invoice as PAID_PROCESSING
+            if (!$this->oInvoiceModel->setPaidProcessing($this->oInvoice->id)) {
+                throw new RequestException('Failed to mark invoice as paid (processing).', 1);
+            }
+        }
+
+        //  Send receipt email
+        $this->oPaymentModel->sendReceipt($this->oPayment->id);
     }
 
     // --------------------------------------------------------------------------
@@ -170,17 +182,9 @@ class RequestBase
             if (!$this->oInvoiceModel->setPaid($this->oInvoice->id)) {
                 throw new RequestException('Failed to mark invoice as paid.', 1);
             }
-
-            //  Call back event
-            $sPaymentEventHandlerClass = get_class($this->oPaymentEventHandler);
-
-            $this->oPaymentEventHandler->trigger(
-                $sPaymentEventHandlerClass::EVENT_INVOICE_PAID,
-                $this->oInvoiceModel->getById($this->oInvoice->id, array('includeAll' => true))
-            );
-
-            //  Send receipt email
-            $this->oInvoiceModel->sendReceipt($this->oInvoice->id);
         }
+
+        //  Send receipt email
+        $this->oPaymentModel->sendReceipt($this->oPayment->id);
     }
 }

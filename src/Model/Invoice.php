@@ -29,11 +29,12 @@ class Invoice extends Base
     /**
      * The various states that an invoice can be in
      */
-    const STATE_DRAFT          = 'DRAFT';
-    const STATE_OPEN           = 'OPEN';
-    const STATE_PARTIALLY_PAID = 'PARTIALLY_PAID';
-    const STATE_PAID           = 'PAID';
-    const STATE_WRITTEN_OFF    = 'WRITTEN_OFF';
+    const STATE_DRAFT           = 'DRAFT';
+    const STATE_OPEN            = 'OPEN';
+    const STATE_PAID_PARTIAL    = 'PAID_PARTIAL';
+    const STATE_PAID_PROCESSING = 'PAID_PROCESSING';
+    const STATE_PAID            = 'PAID';
+    const STATE_WRITTEN_OFF     = 'WRITTEN_OFF';
 
     // --------------------------------------------------------------------------
 
@@ -70,11 +71,12 @@ class Invoice extends Base
     public function getStates()
     {
         return array(
-            self::STATE_DRAFT          => 'Draft',
-            self::STATE_OPEN           => 'Open',
-            self::STATE_PARTIALLY_PAID => 'Partially Paid',
-            self::STATE_PAID           => 'Paid',
-            self::STATE_WRITTEN_OFF    => 'Written Off'
+            self::STATE_DRAFT           => 'Draft',
+            self::STATE_OPEN            => 'Open',
+            self::STATE_PAID_PARTIAL    => 'Partially Paid',
+            self::STATE_PAID_PROCESSING => 'Paid (payments processing)',
+            self::STATE_PAID            => 'Paid',
+            self::STATE_WRITTEN_OFF     => 'Written Off'
         );
     }
 
@@ -132,6 +134,14 @@ class Invoice extends Base
                         invoice_id = ' . $this->tablePrefix . '.id
                         AND status = \'' . $sPaymentClass::STATUS_COMPLETE . '\'
                 ) paid_total',
+                '(
+                    SELECT
+                        SUM(amount)
+                        FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
+                        WHERE
+                        invoice_id = ' . $this->tablePrefix . '.id
+                        AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
+                ) processing_total',
                 '(
                     SELECT
                         COUNT(id)
@@ -229,10 +239,7 @@ class Invoice extends Base
             $oDb->trans_commit();
 
             //  Trigger the invoice.created event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
-            $sPaymentClass        = get_class($oPaymentEventHandler);
-
-            $oPaymentEventHandler->trigger($sPaymentClass::EVENT_INVOICE_CREATED, $oInvoice);
+            $this->triggerEvent('EVENT_INVOICE_CREATED', $oInvoice->id);
 
             return $bReturnObject ? $oInvoice : $oInvoice->id;
 
@@ -283,13 +290,7 @@ class Invoice extends Base
             $oDb->trans_commit();
 
             //  Trigger the invoice.updated event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
-            $sPaymentClass        = get_class($oPaymentEventHandler);
-
-            $oPaymentEventHandler->trigger(
-                $sPaymentClass::EVENT_INVOICE_UPDATED,
-                $this->getById($iInvoiceId)
-            );
+            $this->triggerEvent('EVENT_INVOICE_UPDATED', $iInvoiceId);
 
             return $bResult;
 
@@ -659,8 +660,6 @@ class Invoice extends Base
      */
     public function generateValidToken($sRef)
     {
-        Factory::helper('string');
-
         $oDb = Factory::service('Database');
 
         do {
@@ -759,96 +758,23 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Send invoice receipt
-     * @param  integer $iInvoiceId     The ID of the payment
-     * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
-     * @return boolean
-     */
-    public function sendReceipt($iInvoiceId, $sEmailOverride = null)
-    {
-        try {
-
-            $oInvoice = $this->getById($iInvoiceId);
-
-            if (empty($oInvoice)) {
-                throw new InvoiceException('Invalid Invoice ID', 1);
-            }
-
-            if ($oInvoice->state->id !== self::STATE_PAID) {
-                throw new InvoiceException('Invoice must be in a paid state to send receipt.', 1);
-            }
-
-            $oEmail       = new \stdClass();
-            $oEmail->type = 'invoice_paid_receipt';
-            $oEmail->data = array(
-                'invoice' => $oInvoice
-            );
-
-            if (!empty($sEmailOverride)) {
-
-                //  @todo, validate email address (or addresses if an array)
-                $aEmails = explode(',', $sEmailOverride);
-
-            } elseif (!empty($oInvoice->user_email)) {
-
-                $aEmails = explode(',', $oInvoice->user_email);
-
-            } elseif (!empty($oInvoice->user->email)) {
-
-                $aEmails = array($oInvoice->user->email);
-
-            } else {
-
-                throw new InvoiceException('No email address to send the invoice to.', 1);
-            }
-
-            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
-
-            foreach ($aEmails as $sEmail) {
-
-                $oEmail->to_email = $sEmail;
-                $oResult = $oEmailer->send($oEmail);
-
-                if (!empty($oResult)) {
-
-                    $oInvoiceEmailModel->create(
-                        array(
-                            'invoice_id' => $oInvoice->id,
-                            'email_id'   => $oResult->id,
-                            'email_type' => $oEmail->type,
-                            'recipient'  => $oEmail->to_email
-                        )
-                    );
-
-                } else {
-
-                    throw new ChargeRequestException($oEmailer->lastError(), 1);
-                }
-            }
-
-        } catch (\Exception $e) {
-
-            $this->setError($e->getMessage());
-            return false;
-        }
-
-        return true;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Whether an invoice has been fully paid or not
-     * @param  integer  $iInvoiceId The Invoice to query
+     * @param  integer $iInvoiceId         The Invoice to query
+     * @param  boolean $bIncludeProcessing Whether to include payments which are still processing
      * @return boolean
      */
-    public function isPaid($iInvoiceId)
+    public function isPaid($iInvoiceId, $bIncludeProcessing = false)
     {
         $oInvoice = $this->getById($iInvoiceId);
 
         if (!empty($oInvoice)) {
-            return $oInvoice->totals->base->paid >= $oInvoice->totals->base->grand;
+
+            $iPaid = $oInvoice->totals->base->paid;
+            if ($bIncludeProcessing) {
+                $iPaid += $oInvoice->totals->base->processing;
+            }
+
+            return $iPaid >= $oInvoice->totals->base->grand;
         }
 
         return false;
@@ -863,13 +789,61 @@ class Invoice extends Base
      */
     public function setPaid($iInvoiceId)
     {
-        $oNow = Factory::factory('DateTime');
-        return $this->update(
+        $oNow    = Factory::factory('DateTime');
+        $bResult = $this->update(
             $iInvoiceId,
             array(
                 'state' => self::STATE_PAID,
                 'paid'  => $oNow->format('Y-m-d H:i:s')
             )
+        );
+
+        //  Trigger the invoice.paid event
+        $this->triggerEvent('EVENT_INVOICE_PAID', $iInvoiceId);
+
+        return $bResult;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set an invoice as paid but with processing payments
+     * @param  integer  $iInvoiceId The Invoice to query
+     * @return boolean
+     */
+    public function setPaidProcessing($iInvoiceId)
+    {
+        $oNow    = Factory::factory('DateTime');
+        $bResult = $this->update(
+            $iInvoiceId,
+            array(
+                'state' => self::STATE_PAID_PROCESSING,
+                'paid'  => $oNow->format('Y-m-d H:i:s')
+            )
+        );
+
+        //  Trigger the invoice.paid.processing event
+        $this->triggerEvent('EVENT_INVOICE_PAID_PROCESSING', $iInvoiceId);
+
+        return $bResult;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Trigger a callback event for an invoice
+     * @param  string  $sEvent     The event to trigger (the name of the constant)
+     * @param  integer $iInvoiceId The invoice ID
+     * @return void
+     */
+    protected function triggerEvent($sEvent, $iInvoiceId)
+    {
+        $oPEH   = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+        $oClass = new \ReflectionClass($oPEH);
+
+        $oPEH->trigger(
+            $oClass->getConstant($sEvent),
+            $this->getById($iInvoiceId, array('includeAll' => true))
         );
     }
 
@@ -928,30 +902,34 @@ class Invoice extends Base
         unset($oObj->processing_payments);
 
         //  Totals
-        $oObj->totals              = new \stdClass();
-        $oObj->totals->base        = new \stdClass();
-        $oObj->totals->base->sub   = (int) $oObj->sub_total;
-        $oObj->totals->base->tax   = (int) $oObj->tax_total;
-        $oObj->totals->base->grand = (int) $oObj->grand_total;
-        $oObj->totals->base->paid  = (int) $oObj->paid_total;
+        $oObj->totals                  = new \stdClass();
+        $oObj->totals->base            = new \stdClass();
+        $oObj->totals->base->sub       = (int) $oObj->sub_total;
+        $oObj->totals->base->tax       = (int) $oObj->tax_total;
+        $oObj->totals->base->grand     = (int) $oObj->grand_total;
+        $oObj->totals->base->paid      = (int) $oObj->paid_total;
+        $oObj->totals->base->processing = (int) $oObj->processing_total;
 
         //  Localise to the User's preference; perform any currency conversions as required
-        $oObj->totals->localised        = new \stdClass();
-        $oObj->totals->localised->sub   = (float) number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->totals->localised->tax   = (float) number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->totals->localised->grand = (float) number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->totals->localised->paid  = (float) number_format($oObj->totals->base->paid/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->totals->localised             = new \stdClass();
+        $oObj->totals->localised->sub        = (float) number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->totals->localised->tax        = (float) number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->totals->localised->grand      = (float) number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->totals->localised->paid       = (float) number_format($oObj->totals->base->paid/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->totals->localised->processing = (float) number_format($oObj->totals->base->processing/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
 
-        $oObj->totals->localised_formatted        = new \stdClass();
-        $oObj->totals->localised_formatted->sub   = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->totals->localised_formatted->tax   = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->totals->localised_formatted->grand = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->totals->localised_formatted->paid  = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->paid /self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised_formatted             = new \stdClass();
+        $oObj->totals->localised_formatted->sub        = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised_formatted->tax        = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised_formatted->grand      = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised_formatted->paid       = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->paid /self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals->localised_formatted->processing = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->processing /self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
 
         unset($oObj->sub_total);
         unset($oObj->tax_total);
         unset($oObj->grand_total);
         unset($oObj->paid_total);
+        unset($oObj->processing_total);
 
         //  URLs
         $oObj->urls           = new \stdClass();

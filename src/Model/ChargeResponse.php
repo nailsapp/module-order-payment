@@ -25,6 +25,7 @@ class ChargeResponse extends ResponseBase
     //  Urls
     protected $sSuccessUrl;
     protected $sFailUrl;
+    protected $sContinueUrl;
 
     // --------------------------------------------------------------------------
 
@@ -103,6 +104,16 @@ class ChargeResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
+     * The URL to redirect to on successsful payment
+     * @return string
+     */
+    public function getSuccessUrl() {
+        return $this->sSuccessUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * The URL to redirect to on failed payment
      * @return string
      */
@@ -127,11 +138,26 @@ class ChargeResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * The URL to redirect to on successsful payment
+     * Set the URL to go to when a payment is completed
+     * @param string $sContinueUrl the URL to go to when payment is completed
+     */
+    public function setContinueUrl($sContinueUrl)
+    {
+        if (!$this->bIsLocked) {
+            $this->sContinueUrl = $sContinueUrl;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the URL to go to when a payment is completed
      * @return string
      */
-    public function getSuccessUrl() {
-        return $this->sSuccessUrl;
+    public function getContinueUrl()
+    {
+        return $this->sContinueUrl;
     }
 
     // --------------------------------------------------------------------------

@@ -59,6 +59,9 @@ class Payment extends NAILS_Controller
                 //  Set the invoice we're completing
                 $oCompleteRequest->setInvoice($oPayment->invoice->id);
 
+                //  Set the complete URL, if there is one
+                $oCompleteRequest->setContinueUrl($oPayment->urls->continue);
+
                 //  Attempt completion
                 $oCompleteResponse = $oCompleteRequest->complete(
                     $this->input->get(),
@@ -68,12 +71,26 @@ class Payment extends NAILS_Controller
                 if ($oCompleteResponse->isProcessing()) {
 
                     //  Payment was successfull but has not been confirmed
-                    redirect($oPayment->urls->processing);
+                    if ($oCompleteRequest->getContinueUrl()) {
+
+                        redirect($oCompleteRequest->getContinueUrl());
+
+                    } else {
+
+                        redirect($oPayment->urls->processing);
+                    }
 
                 } elseif ($oCompleteResponse->isComplete()) {
 
                     //  Payment has completed fully
-                    redirect($oPayment->urls->thanks);
+                    if ($oCompleteRequest->getContinueUrl()) {
+
+                        redirect($oCompleteRequest->getContinueUrl());
+
+                    } else {
+
+                        redirect($oPayment->urls->thanks);
+                    }
 
                 } elseif ($oCompleteResponse->isFailed()) {
 

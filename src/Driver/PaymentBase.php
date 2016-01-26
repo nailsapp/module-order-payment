@@ -62,6 +62,7 @@ class PaymentBase extends Base
      * @param  \stdClass $oInvoice     The invoice object
      * @param  string    $sSuccessUrl  The URL to go to after successfull payment
      * @param  string    $sFailUrl     The URL to go to after failed payment
+     * @param  string    $sContinueUrl The URL to go to after payment is completed
      * @return \Nails\Invoice\Model\ChargeResponse
      */
     public function charge(
@@ -72,7 +73,8 @@ class PaymentBase extends Base
         $oPayment,
         $oInvoice,
         $sSuccessUrl,
-        $sFailUrl
+        $sFailUrl,
+        $sContinueUrl
     )
     {
         throw new DriverException('Driver must implement the charge() method', 1);

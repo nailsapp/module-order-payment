@@ -22,13 +22,23 @@ $config['email_types'] = array(
         'default_subject'  => 'Invoice {{invoice.ref}}'
     ),
     (object) array(
-        'slug'             => 'invoice_paid_receipt',
-        'name'             => 'Invoice & Payments: Invoice Paid Receipt',
-        'description'      => 'Email sent with invoice attached',
+        'slug'             => 'payment_complete_receipt',
+        'name'             => 'Invoice & Payments: Payment Receipt (complete)',
+        'description'      => 'Email sent when a payment is completed',
         'isUnsubscribable' => false,
         'template_header'  => '',
-        'template_body'    => 'invoice/email/invoice_paid_receipt',
+        'template_body'    => 'invoice/email/payment_complete_receipt',
         'template_footer'  => '',
-        'default_subject'  => 'Thank you for your payment - Invoice {{invoice.ref}}'
+        'default_subject'  => 'Thank you for your payment - Invoice {{payment.invoice.ref}}'
+    ),
+    (object) array(
+        'slug'             => 'payment_processing_receipt',
+        'name'             => 'Invoice & Payments: Payment Receipt (Processing)',
+        'description'      => 'Email sent when a payment is processing',
+        'isUnsubscribable' => false,
+        'template_header'  => '',
+        'template_body'    => 'invoice/email/payment_processing_receipt',
+        'template_footer'  => '',
+        'default_subject'  => 'We are processing your payment - Invoice {{payment.invoice.ref}}'
     )
 );

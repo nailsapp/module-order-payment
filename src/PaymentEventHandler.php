@@ -20,9 +20,11 @@ class PaymentEventHandler
     const EVENT_PAYMENT_UPDATED = 'payment.updated';
 
     //  Invoice Events
-    const EVENT_INVOICE_CREATED = 'invoice.created';
-    const EVENT_INVOICE_UPDATED = 'invoice.updated';
-    const EVENT_INVOICE_PAID    = 'invoice.paid';
+    const EVENT_INVOICE_CREATED         = 'invoice.created';
+    const EVENT_INVOICE_UPDATED         = 'invoice.updated';
+    const EVENT_INVOICE_PAID            = 'invoice.paid';
+    const EVENT_INVOICE_PAID_PARTIAL    = 'invoice.paid.partial';
+    const EVENT_INVOICE_PAID_PROCESSING = 'invoice.paid.processing';
 
     // --------------------------------------------------------------------------
 
