@@ -407,7 +407,7 @@ class Invoice extends Base
         }
 
         //  Invalid user email
-        if (array_key_exists('user_email', $aData)){
+        if (array_key_exists('user_email', $aData)) {
             if (!empty($aData['user_email']) && !valid_email($aData['user_email'])) {
                 throw new InvoiceException('"' . $aData['user_email'] . '" is not a valid email address.', 1);
             }
@@ -850,14 +850,29 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Format an invoice object
-     * @param  \stdClass $oObj  The object to format
-     * @param  array     $aData Any data passed to getAll
+     * Formats a single object
+     *
+     * The getAll() method iterates over each returned item with this method so as to
+     * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
+     *
+     * @param  object $oObj      A reference to the object being formatted.
+     * @param  array  $aData     The same data array which is passed to _getcount_common, for reference if needed
+     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
+     * @param  array  $aBools    Fields which should be cast as booleans if not null
+     * @param  array  $aFloats   Fields which should be cast as floats if not null
      * @return void
      */
-    protected function formatObject($oObj, $aData)
-    {
-        parent::formatObject($oObj, $aData, array('terms'));
+    protected function formatObject(
+        &$oObj,
+        $aData = array(),
+        $aIntegers = array(),
+        $aBools = array(),
+        $aFloats = array()
+    ) {
+
+        $aIntegers[] = 'terms';
+
+        parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
         //  Sate
         $aStateLabels = $this->getStates();

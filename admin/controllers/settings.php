@@ -87,19 +87,21 @@ class Settings extends BaseAdmin
                 $oDb = Factory::service('Database');
 
                 $oDb->trans_begin();
-                $bRollback = false;
+
+                $bRollback        = false;
+                $oAppSettingModel = Factory::model('AppSetting');
 
                 //  Normal settings
-                if (!$this->app_setting_model->set($aSettings, 'nailsapp/module-invoice')) {
+                if (!$oAppSettingModel->set($aSettings, 'nailsapp/module-invoice')) {
 
-                    $sError    = $this->app_setting_model->lastError();
+                    $sError    = $oAppSettingModel->lastError();
                     $bRollback = true;
                 }
 
                 //  Encrypted settings
-                if (!$this->app_setting_model->set($aSettingsEncrypted, 'nailsapp/module-invoice', null, true)) {
+                if (!$oAppSettingModel->set($aSettingsEncrypted, 'nailsapp/module-invoice', null, true)) {
 
-                    $sError    = $this->app_setting_model->lastError();
+                    $sError    = $oAppSettingModel->lastError();
                     $bRollback = true;
                 }
 
