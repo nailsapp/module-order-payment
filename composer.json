@@ -38,6 +38,7 @@
         {
             "moduleName": "invoice",
             "type": "module",
+            "namespace": "Nails\\Invoice\\",
             "data": {
                 "nailsapp/module-admin": {
                     "autoload": {
