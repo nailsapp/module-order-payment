@@ -376,6 +376,9 @@ class Invoice extends Base
                 $aItem['order'] = $iCounter;
                 $iCounter++;
             }
+
+            $aTaxIds = array_unique($aTaxIds);
+            $aTaxIds = array_filter($aTaxIds);
         }
 
         // --------------------------------------------------------------------------
