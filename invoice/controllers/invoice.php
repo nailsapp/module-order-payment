@@ -16,6 +16,10 @@ use Nails\Invoice\Exception\DriverException;
 
 class Invoice extends NAILS_Controller
 {
+    const DEFAULT_INVOICE_SKIN = 'nailsapp/skin-invoice-classic';
+
+    // --------------------------------------------------------------------------
+
     /**
      * Download a single invoice
      * @param  \stdClass $oInvoice The invoice object
@@ -23,8 +27,17 @@ class Invoice extends NAILS_Controller
      */
     protected function download($oInvoice)
     {
-        dump('Download Invoice');
-        dump($oInvoice);
+        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
+        $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
+        $this->data['invoice'] = $oInvoice;
+        $this->data['isPdf']   = true;
+        $sHtml                 = $oInvoiceSkinModel->view($sEnabledSkin, 'render', $this->data, true);
+
+        $oPdf = Factory::service('Pdf', 'nailsapp/module-pdf');
+        $oPdf->setPaperSize('A4', 'portrait');
+        $oPdf->load_html($sHtml);
+
+        $oPdf->download('INVOICE-' . $oInvoice->ref . '.pdf');
     }
 
     // --------------------------------------------------------------------------
@@ -36,15 +49,12 @@ class Invoice extends NAILS_Controller
      */
     protected function view($oInvoice)
     {
-        $this->data['oInvoice']       = $oInvoice;
-        $this->data['headerOverride'] = 'structure/header/blank';
-        $this->data['footerOverride'] = 'structure/footer/blank';
+        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
+        $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
+        $this->data['invoice'] = $oInvoice;
+        $this->data['isPdf']   = false;
 
-        // --------------------------------------------------------------------------
-
-        $this->load->view('structure/header', $this->data);
-        $this->load->view('invoice/view/index', $this->data);
-        $this->load->view('structure/footer', $this->data);
+        $oInvoiceSkinModel->view($sEnabledSkin, 'render', $this->data);
     }
 
     // --------------------------------------------------------------------------
@@ -309,6 +319,6 @@ class Invoice extends NAILS_Controller
             show_404();
         }
 
-        $this->{$sMethod}($oInvoice);
+        return call_user_func(array($this, $sMethod), $oInvoice);
     }
 }

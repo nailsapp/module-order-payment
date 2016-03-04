@@ -15,6 +15,7 @@ namespace Nails\Admin\Invoice;
 use Nails\Factory;
 use Nails\Admin\Helper;
 use Nails\Invoice\Controller\BaseAdmin;
+use Nails\Common\Exception\NailsException;
 
 class Settings extends BaseAdmin
 {
@@ -45,8 +46,9 @@ class Settings extends BaseAdmin
     {
         $permissions = parent::permissions();
 
-        $permissions['misc']   = 'Can update miscallaneous settings';
-        $permissions['driver'] = 'Can update driver settings';
+        $permissions['misc']        = 'Can update miscallaneous settings';
+        $permissions['driver']      = 'Can update driver settings';
+        $permissions['invoiceskin'] = 'Can update the invoice skin';
 
         return $permissions;
     }
@@ -54,66 +56,62 @@ class Settings extends BaseAdmin
     // --------------------------------------------------------------------------
 
     /**
-     * Manage Email settings
+     * Manage invoice settings
      * @return void
      */
     public function index()
     {
+        if (!userHasPermission('admin:invoice:settings:*')) {
+            unauthorised();
+        }
+
+        $oDb                 = Factory::service('Database');
+        $oAppSettingModel    = Factory::model('AppSetting');
+        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
+        $oInvoiceSkinModel   = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
+
         //  Process POST
         if ($this->input->post()) {
 
-            $aSettings = array(
-
-                //  General Settings
-                'saved_cards_enabled'     => (bool) $this->input->post('saved_cards_enabled'),
-                'saved_addresses_enabled' => (bool) $this->input->post('saved_addresses_enabled'),
-
-                //  Payment Drivers
-                'enabled_payment_drivers' => $this->input->post('enabled_payment_drivers') ?: array(),
-            );
-
-            $aSettingsEncrypted = array(
-            );
-
-            // --------------------------------------------------------------------------
+            //  Settings keys
+            $sKeyPaymentDriver = $oPaymentDriverModel->getSettingKey();
+            $sKeyInvoiceSkin   = $oInvoiceSkinModel->getSettingKey();
 
             //  Validation
             $oFormValidation = Factory::service('FormValidation');
 
-            $oFormValidation->set_rules('enabled_payment_drivers', '', '');
+            $oFormValidation->set_rules('saved_cards_enabled', '', '');
+            $oFormValidation->set_rules('saved_addresses_enabled', '', '');
+            $oFormValidation->set_rules($sKeyPaymentDriver, '', '');
+            $oFormValidation->set_rules($sKeyInvoiceSkin, '', '');
 
             if ($oFormValidation->run()) {
 
-                $oDb = Factory::service('Database');
+                try {
 
-                $oDb->trans_begin();
+                    $aSettings = array(
+                        'saved_cards_enabled'     => (bool) $this->input->post('saved_cards_enabled'),
+                        'saved_addresses_enabled' => (bool) $this->input->post('saved_addresses_enabled')
+                    );
 
-                $bRollback        = false;
-                $oAppSettingModel = Factory::model('AppSetting');
+                    $oDb->trans_begin();
 
-                //  Normal settings
-                if (!$oAppSettingModel->set($aSettings, 'nailsapp/module-invoice')) {
+                    //  Normal settings
+                    if (!$oAppSettingModel->set($aSettings, 'nailsapp/module-invoice')) {
+                        throw new NailsException($oAppSettingModel->lastError(), 1);
+                    }
 
-                    $sError    = $oAppSettingModel->lastError();
-                    $bRollback = true;
-                }
-
-                //  Encrypted settings
-                if (!$oAppSettingModel->set($aSettingsEncrypted, 'nailsapp/module-invoice', null, true)) {
-
-                    $sError    = $oAppSettingModel->lastError();
-                    $bRollback = true;
-                }
-
-                if (empty($bRollback)) {
+                    //  Drivers & Skins
+                    $oPaymentDriverModel->saveEnabled($this->input->post($sKeyPaymentDriver));
+                    $oInvoiceSkinModel->saveEnabled($this->input->post($sKeyInvoiceSkin));
 
                     $oDb->trans_commit();
                     $this->data['success'] = 'Invoice &amp; Payment settings were saved.';
 
-                } else {
+                } catch (\Exception $e) {
 
                     $oDb->trans_rollback();
-                    $this->data['error'] = 'There was a problem saving settings. ' . $sError;
+                    $this->data['error'] = 'There was a problem saving settings. ' . $e->getMessage();
                 }
 
             } else {
@@ -126,11 +124,6 @@ class Settings extends BaseAdmin
 
         //  Get data
         $this->data['settings'] = appSetting(null, 'nailsapp/module-invoice', true);
-
-        //  Payment drivers
-        $oDriverModel                          = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
-        $this->data['payment_drivers']         = $oDriverModel->getAll();
-        $this->data['payment_drivers_enabled'] = $oDriverModel->getEnabledSlugs();
 
         Helper::loadView('index');
     }

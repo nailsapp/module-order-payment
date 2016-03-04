@@ -42,6 +42,15 @@ $oInput = nailsFactory('service', 'Input');
             <?php
         }
 
+        if (userHasPermission('admin:invoice:settings:invoiceskin')) {
+
+            ?>
+            <li class="tab">
+                <a href="#" data-tab="tab-invoice-skin">Invoice Skin</a>
+            </li>
+            <?php
+        }
+
         ?>
     </ul>
     <section class="tabs">
@@ -100,9 +109,21 @@ $oInput = nailsFactory('service', 'Input');
             <div class="tab-page tab-drivers">
                 <?=adminHelper(
                     'loadSettingsDriverTable',
-                    'enabled_payment_drivers',
-                    $payment_drivers,
-                    $payment_drivers_enabled
+                    'PaymentDriver',
+                    'nailsapp/module-invoice'
+                )?>
+            </div>
+            <?php
+        }
+
+        if (userHasPermission('admin:invoice:settings:invoiceskin')) {
+
+            ?>
+            <div class="tab-page tab-invoice-skin">
+                <?=adminHelper(
+                    'loadSettingsDriverTable',
+                    'InvoiceSkin',
+                    'nailsapp/module-invoice'
                 )?>
             </div>
             <?php

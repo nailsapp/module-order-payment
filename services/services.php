@@ -23,6 +23,13 @@ return array(
                 return new \Nails\Invoice\Model\InvoiceItem();
             }
         },
+        'InvoiceSkin' => function () {
+            if (class_exists('\App\Invoice\Model\InvoiceSkin')) {
+                return new \App\Invoice\Model\InvoiceSkin();
+            } else {
+                return new \Nails\Invoice\Model\InvoiceSkin();
+            }
+        },
         'Payment' => function () {
             if (class_exists('\App\Invoice\Model\Payment')) {
                 return new \App\Invoice\Model\Payment();
