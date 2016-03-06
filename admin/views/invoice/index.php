@@ -2,12 +2,8 @@
     <p>
         Browse invoices which have been raised.
     </p>
-    <?php
-
-        echo adminHelper('loadSearch', $search);
-        echo adminHelper('loadPagination', $pagination);
-
-    ?>
+    <?=adminHelper('loadSearch', $search)?>
+    <?=adminHelper('loadPagination', $pagination)?>
     <div class="table-responsive">
         <table>
             <thead>
@@ -156,10 +152,5 @@
             </tbody>
         </table>
     </div>
-    <?php
-
-        echo adminHelper('loadPagination', $pagination);
-        echo adminHelper('loadPagination', $pagination);
-
-    ?>
+    <?=adminHelper('loadPagination', $pagination)?>
 </div>

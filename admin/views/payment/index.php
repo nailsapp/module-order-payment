@@ -2,12 +2,8 @@
     <p>
         Browse payments received by the site.
     </p>
-    <?php
-
-        echo adminHelper('loadSearch', $search);
-        echo adminHelper('loadPagination', $pagination);
-
-    ?>
+    <?=adminHelper('loadSearch', $search)?>
+    <?=adminHelper('loadPagination', $pagination)?>
     <div class="table-responsive">
         <table>
             <thead>
@@ -121,9 +117,5 @@
             </tbody>
         </table>
     </div>
-    <?php
-
-        echo adminHelper('loadPagination', $pagination);
-
-    ?>
+    <?=adminHelper('loadPagination', $pagination)?>
 </div>

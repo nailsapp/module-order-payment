@@ -2,6 +2,13 @@
 
 return array(
     'models' => array(
+        'Customer' => function () {
+            if (class_exists('\App\Invoice\Model\Customer')) {
+                return new \App\Invoice\Model\Customer();
+            } else {
+                return new \Nails\Invoice\Model\Customer();
+            }
+        },
         'Invoice' => function () {
             if (class_exists('\App\Invoice\Model\Invoice')) {
                 return new \App\Invoice\Model\Invoice();
