@@ -45,7 +45,7 @@
                     "autoload": {
                         "assets": {
                             "js": [
-                                ["admin.usersearch.min.js", "nailsapp/module-auth"]
+                                ["admin.customersearch.min.js", "nailsapp/module-invoice"]
                             ]
                         }
                     }

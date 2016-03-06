@@ -314,6 +314,28 @@ var invoiceEdit = function(units, taxes, items) {
 
     // --------------------------------------------------------------------------
 
+    base.createCustomer = function()
+    {
+        $('<div>').html('You will lose unsaved changes.').dialog({
+            title: 'Are you sure?',
+            resizable: false,
+            draggable: false,
+            modal: true,
+            dialogClass: 'no-close',
+            buttons:
+            {
+                'OK': function() {
+                    window.location.href = window.SITE_URL + 'admin/invoice/customer/create';
+                },
+                'Cancel': function() {
+                    $(this).dialog('close');
+                }
+            }
+        });
+    };
+
+    // --------------------------------------------------------------------------
+
     /**
      * Write a log to the console
      * @param  {String} message The message to log

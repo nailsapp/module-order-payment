@@ -61,16 +61,77 @@ $oInput = nailsFactory('service', 'Input');
             ?>
             <div class="tab-page tab-misc">
                 <fieldset>
+                    <legend>Business Information</legend>
+                    <?php
+
+                    $field            = array();
+                    $field['key']     = 'business_name';
+                    $field['label']   = 'Name';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                    echo form_field($field);
+
+                    $field            = array();
+                    $field['key']     = 'business_address';
+                    $field['label']   = 'Address';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                    echo form_field_textarea($field);
+
+                    $field            = array();
+                    $field['key']     = 'business_phone';
+                    $field['label']   = 'Telephone';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                    echo form_field($field);
+
+                    $field            = array();
+                    $field['key']     = 'business_email';
+                    $field['label']   = 'Email';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                    echo form_field($field);
+
+                    $field            = array();
+                    $field['key']     = 'business_vat_number';
+                    $field['label']   = 'VAT Number';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                    echo form_field($field);
+
+                    ?>
+                </fieldset>
+                <fieldset>
+                    <legend>Defaults</legend>
+                    <?php
+
+                    $field            = array();
+                    $field['key']     = 'default_additional_text';
+                    $field['label']   = 'Invoice Additional Text';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                    echo form_field_textarea($field);
+
+                    $field            = array();
+                    $field['key']     = 'default_payment_terms';
+                    $field['label']   = 'Invoice Payment Terms';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+
+                    echo form_field_number($field);
+
+                    ?>
+                </fieldset>
+                <fieldset>
                     <legend>Saved Cards</legend>
                     <?php
 
-                        $field            = array();
-                        $field['key']     = 'saved_cards_enabled';
-                        $field['label']   = 'Enabled';
-                        $field['info']    = 'Allow users to save their cards for future use.';
-                        $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+                    $field            = array();
+                    $field['key']     = 'saved_cards_enabled';
+                    $field['label']   = 'Enabled';
+                    $field['info']    = 'Allow users to save their cards for future use.';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
 
-                        echo form_field_boolean($field);
+                    echo form_field_boolean($field);
 
                     ?>
                 </fieldset>
@@ -78,13 +139,13 @@ $oInput = nailsFactory('service', 'Input');
                     <legend>Saved Addresses</legend>
                     <?php
 
-                        $field            = array();
-                        $field['key']     = 'saved_addresses_enabled';
-                        $field['label']   = 'Enabled';
-                        $field['info']    = 'Allow users to save their billing addresses for future use.';
-                        $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
+                    $field            = array();
+                    $field['key']     = 'saved_addresses_enabled';
+                    $field['label']   = 'Enabled';
+                    $field['info']    = 'Allow users to save their billing addresses for future use.';
+                    $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
 
-                        echo form_field_boolean($field);
+                    echo form_field_boolean($field);
 
                     ?>
                 </fieldset>

@@ -389,13 +389,13 @@ class Payment extends Base
                 //  @todo, validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
 
-            } elseif (!empty($oPayment->invoice->user_email)) {
+            } elseif (!empty($oPayment->invoice->customer->billing_email)) {
 
-                $aEmails = explode(',', $oPayment->invoice->user_email);
+                $aEmails = explode(',', $oPayment->invoice->customer->billing_email);
 
-            } elseif (!empty($oPayment->invoice->user->email)) {
+            } elseif (!empty($oPayment->invoice->customer->email)) {
 
-                $aEmails = array($oPayment->invoice->user->email);
+                $aEmails = array($oPayment->invoice->customer->email);
 
             } else {
 

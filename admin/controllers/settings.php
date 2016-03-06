@@ -80,16 +80,33 @@ class Settings extends BaseAdmin
             //  Validation
             $oFormValidation = Factory::service('FormValidation');
 
+            $oFormValidation->set_rules('business_name', '', '');
+            $oFormValidation->set_rules('business_address', '', '');
+            $oFormValidation->set_rules('business_phone', '', '');
+            $oFormValidation->set_rules('business_email', '', 'valid_email');
+            $oFormValidation->set_rules('business_vat_number', '', '');
+            $oFormValidation->set_rules('business_', '', '');
+            $oFormValidation->set_rules('default_additional_text', '', '');
+            $oFormValidation->set_rules('default_payment_terms', '', '');
             $oFormValidation->set_rules('saved_cards_enabled', '', '');
             $oFormValidation->set_rules('saved_addresses_enabled', '', '');
             $oFormValidation->set_rules($sKeyPaymentDriver, '', '');
             $oFormValidation->set_rules($sKeyInvoiceSkin, '', '');
+
+            $oFormValidation->set_message('valid_email', lang('fv_valid_email'));
 
             if ($oFormValidation->run()) {
 
                 try {
 
                     $aSettings = array(
+                        'business_name'           => trim(strip_tags($this->input->post('business_name'))),
+                        'business_address'        => trim(strip_tags($this->input->post('business_address'))),
+                        'business_phone'          => trim(strip_tags($this->input->post('business_phone'))),
+                        'business_email'          => trim(strip_tags($this->input->post('business_email'))),
+                        'business_vat_number'     => trim(strip_tags($this->input->post('business_vat_number'))),
+                        'default_additional_text' => trim(strip_tags($this->input->post('default_additional_text'))),
+                        'default_payment_terms'   => (int) $this->input->post('default_payment_terms'),
                         'saved_cards_enabled'     => (bool) $this->input->post('saved_cards_enabled'),
                         'saved_addresses_enabled' => (bool) $this->input->post('saved_addresses_enabled')
                     );

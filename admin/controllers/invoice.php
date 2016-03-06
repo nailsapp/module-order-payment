@@ -137,6 +137,7 @@ class Invoice extends BaseAdmin
             'sort' => array(
                 array($sortOn, $sortOrder)
             ),
+            'includeCustomer' => true,
             'includePayments' => true,
             'keywords'        => $keywords,
             'cbFilters'       => $aCbFilters
@@ -411,15 +412,10 @@ class Invoice extends BaseAdmin
             'state'           => 'xss_clean|trim|required',
             'dated'           => 'xss_clean|trim|required|valid_date',
             'terms'           => 'xss_clean|trim|is_natural',
-            'user_id'         => 'xss_clean|trim',
-            'user_email'      => 'xss_clean|trim|valid_email',
+            'customer_id'     => 'xss_clean|trim',
             'additional_text' => 'xss_clean|trim',
             'items'           => ''
         );
-
-        if (!$this->input->post('user_id')) {
-            $aRules['user_email'] .= '|required';
-        }
 
         $aRulesFV = array();
         foreach ($aRules as $sKey => $sRules) {
@@ -453,8 +449,7 @@ class Invoice extends BaseAdmin
             'state'           => $this->input->post('state') ?: null,
             'dated'           => $this->input->post('dated') ?: null,
             'terms'           => (int) $this->input->post('terms') ?: 0,
-            'user_id'         => (int) $this->input->post('user_id') ?: null,
-            'user_email'      => $this->input->post('user_email') ?: null,
+            'customer_id'     => (int) $this->input->post('customer_id') ?: null,
             'additional_text' => $this->input->post('additional_text') ?: null,
             'items'           => array(),
             'currency'        => 'GBP'
@@ -510,6 +505,48 @@ class Invoice extends BaseAdmin
     // --------------------------------------------------------------------------
 
     /**
+     * Make an invoice a draft
+     * @return void
+     */
+    public function make_draft()
+    {
+        if (!userHasPermission('admin:invoice:invoice:edit')) {
+            unauthorised();
+        }
+
+        // --------------------------------------------------------------------------
+
+        $oInvoice = $this->oInvoiceModel->getById($this->uri->segment(5));
+        if (!$oInvoice) {
+            show_404();
+        }
+
+        // --------------------------------------------------------------------------
+
+        //  Allow getting a constant
+        $oInvoiceModel = $this->oInvoiceModel;
+
+        $aData = array(
+            'state' => $oInvoiceModel::STATE_DRAFT,
+        );
+        if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
+
+            $sStatus  = 'success';
+            $sMessage = 'Invoice updated successfully!';
+
+        } else {
+
+            $sStatus  = 'error';
+            $sMessage = 'Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError();
+        }
+
+        $this->session->set_flashdata($sStatus, $sMessage);
+        redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Delete an invoice
      * @return void
      */
@@ -523,7 +560,6 @@ class Invoice extends BaseAdmin
 
         $oInvoice = $this->oInvoiceModel->getById($this->uri->segment(5));
         if (!$oInvoice) {
-
             show_404();
         }
 

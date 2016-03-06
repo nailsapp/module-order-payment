@@ -27,6 +27,14 @@ class Invoice extends NAILS_Controller
      */
     protected function download($oInvoice)
     {
+        //  Business details
+        $this->data['business']             = new \stdClass();
+        $this->data['business']->name       = appSetting('business_name', 'nailsapp/module-invoice');
+        $this->data['business']->address    = appSetting('business_address', 'nailsapp/module-invoice');
+        $this->data['business']->telephone  = appSetting('business_telephone', 'nailsapp/module-invoice');
+        $this->data['business']->email      = appSetting('business_email', 'nailsapp/module-invoice');
+        $this->data['business']->vat_number = appSetting('business_vat_number', 'nailsapp/module-invoice');
+
         $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
         $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
@@ -49,6 +57,14 @@ class Invoice extends NAILS_Controller
      */
     protected function view($oInvoice)
     {
+        //  Business details
+        $this->data['business']             = new \stdClass();
+        $this->data['business']->name       = appSetting('business_name', 'nailsapp/module-invoice');
+        $this->data['business']->address    = appSetting('business_address', 'nailsapp/module-invoice');
+        $this->data['business']->telephone  = appSetting('business_telephone', 'nailsapp/module-invoice');
+        $this->data['business']->email      = appSetting('business_email', 'nailsapp/module-invoice');
+        $this->data['business']->vat_number = appSetting('business_vat_number', 'nailsapp/module-invoice');
+
         $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
         $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
@@ -74,7 +90,7 @@ class Invoice extends NAILS_Controller
         $oAsset->load('invoice.pay.css', 'nailsapp/module-invoice');
 
         //  Only open invoice can be paid
-        if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->isScheduled) {
+        if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->is_scheduled) {
 
             if ($oInvoice->state->id === 'PAID') {
 
@@ -99,7 +115,7 @@ class Invoice extends NAILS_Controller
         // --------------------------------------------------------------------------
 
         //  If there are payments against this invoice which are processing, then deny payment
-        if ($oInvoice->hasProcessingPayments) {
+        if ($oInvoice->has_processing_payments) {
 
             $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
             $sPaymentClass = get_class($oPaymentModel);
@@ -313,7 +329,14 @@ class Invoice extends NAILS_Controller
         $sInvoiceToken = $this->uri->rsegment(3);
         $sMethod       = $this->uri->rsegment(4);
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoice      = $oInvoiceModel->getByRef($sInvoiceRef, array('includeItems' => true, 'includePayments' => true));
+        $oInvoice      = $oInvoiceModel->getByRef(
+            $sInvoiceRef,
+            array(
+                'includeCustomer' => true,
+                'includeItems' => true,
+                'includePayments' => true
+            )
+        );
 
         if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {
             show_404();

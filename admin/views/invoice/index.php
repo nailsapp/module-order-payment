@@ -10,7 +10,7 @@
                 <tr>
                     <th class="ref">Ref</th>
                     <th class="state">State</th>
-                    <th class="user">Customer</th>
+                    <th class="customer">Customer</th>
                     <th class="amount sub">Sub Total</th>
                     <th class="amount tax">Tax</th>
                     <th class="amount grand">Grand Total</th>
@@ -33,13 +33,13 @@
                             </td>
                             <?php
 
-                            if ($oInvoice->isOverdue) {
+                            if ($oInvoice->is_overdue) {
 
                                 $sClass = 'danger';
                                 $sText  = 'Overdue';
                                 $sText .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
 
-                            } elseif ($oInvoice->isScheduled) {
+                            } elseif ($oInvoice->is_scheduled) {
 
                                 $sClass = 'warning';
                                 $sText  = 'Scheduled';
@@ -67,10 +67,25 @@
                             echo $sText;
                             echo '</td>';
 
-                            $iUserId = !empty($oInvoice->user->id) ? $oInvoice->user->id : null;
-                            echo adminHelper('loadUserCell', $iUserId);
-
                             ?>
+                            <td class="customer">
+                                <?=anchor('admin/invoice/customer/edit/' . $oInvoice->customer->id, $oInvoice->customer->label)?>
+                                <small>
+                                    <?php
+
+                                    if (!empty($oInvoice->customer->first_name)) {
+                                        echo $oInvoice->customer->first_name . ' ' . $oInvoice->customer->last_name . '<br />';
+                                    }
+
+                                    if (!empty($oInvoice->customer->billing_email)) {
+                                        echo mailto($oInvoice->customer->billing_email);
+                                    } else {
+                                        echo mailto($oInvoice->customer->email);
+                                    }
+
+                                    ?>
+                                </small>
+                            </td>
                             <td class="amount total">
                                 <?=$oInvoice->totals->localised_formatted->sub?>
                             </td>
@@ -122,7 +137,7 @@
                                     }
                                 }
 
-                                if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state == 'DRAFT') {
+                                if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == 'DRAFT') {
 
                                     echo anchor(
                                         'admin/invoice/invoice/delete/' . $oInvoice->id,

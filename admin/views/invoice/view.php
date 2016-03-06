@@ -26,28 +26,25 @@
         <div class="col-md-4">
             <div class="panel panel-default match-height">
                 <div class="panel-heading">
-                    <strong>Recipient</strong>
+                    <strong>Customer</strong>
                 </div>
                 <table>
                     <tbody>
                         <tr>
-                            <td class="header">User</td>
-                            <?php
-
-                            $iUserId = !empty($invoice->user->id) ? $invoice->user->id : null;
-                            echo adminHelper('loadUserCell', $iUserId);
-
-                            ?>
+                            <td class="header">Organisation</td>
+                            <td>
+                                <?=anchor('admin/invoice/customer/edit/' . $invoice->customer->id, $invoice->customer->label)?>
+                            </td>
                         </tr>
                         <tr>
                             <td class="header">Sent To</td>
                             <td>
                                 <?php
 
-                                if (!empty($invoice->user_email)) {
-                                    echo mailto($invoice->user_email);
+                                if (!empty($invoice->customer->billing_email)) {
+                                    echo mailto($invoice->customer->billing_email);
                                 } else {
-                                    echo mailto($invoice->user->email);
+                                    echo mailto($invoice->customer->email);
                                 }
 
                                 ?>

@@ -120,8 +120,7 @@ class Invoice extends Base
                 $this->tablePrefix . '.terms',
                 $this->tablePrefix . '.due',
                 $this->tablePrefix . '.paid',
-                $this->tablePrefix . '.user_id',
-                $this->tablePrefix . '.user_email',
+                $this->tablePrefix . '.customer_id',
                 $this->tablePrefix . '.currency',
                 $this->tablePrefix . '.sub_total',
                 $this->tablePrefix . '.tax_total',
@@ -163,7 +162,16 @@ class Invoice extends Base
 
         if (!empty($aItems)) {
 
-            $this->getSingleAssociatedItem($aItems, 'user_id', 'user', 'User', 'nailsapp/module-auth');
+            if (!empty($aData['includeAll']) || !empty($aData['includeCustomer'])) {
+
+                $this->getSingleAssociatedItem(
+                    $aItems,
+                    'customer_id',
+                    'customer',
+                    'Customer',
+                    'nailsapp/module-invoice'
+                );
+            }
 
             if (!empty($aData['includeAll']) || !empty($aData['includeEmails'])) {
                 $this->getManyAssociatedItems(
@@ -402,17 +410,10 @@ class Invoice extends Base
         }
 
         //  Inavlid user ID
-        if (array_key_exists('user_id', $aData) && !empty($aData['user_id'])) {
-            $oUserModel = Factory::model('User', 'nailsapp/module-auth');
-            if (!$oUserModel->getById($aData['user_id'])) {
-                throw new InvoiceException('"' . $aData['user_id'] . '" is not a valid user ID.', 1);
-            }
-        }
-
-        //  Invalid user email
-        if (array_key_exists('user_email', $aData)) {
-            if (!empty($aData['user_email']) && !valid_email($aData['user_email'])) {
-                throw new InvoiceException('"' . $aData['user_email'] . '" is not a valid email address.', 1);
+        if (array_key_exists('customer_id', $aData) && !empty($aData['customer_id'])) {
+            $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+            if (!$oCustomerModel->getById($aData['customer_id'])) {
+                throw new InvoiceException('"' . $aData['customer_id'] . '" is not a valid customer ID.', 1);
             }
         }
 
@@ -704,13 +705,13 @@ class Invoice extends Base
                 //  @todo, validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
 
-            } elseif (!empty($oInvoice->user_email)) {
+            } elseif (!empty($oInvoice->customer->billing_email)) {
 
-                $aEmails = explode(',', $oInvoice->user_email);
+                $aEmails = explode(',', $oInvoice->customer->billing_email);
 
-            } elseif (!empty($oInvoice->user->email)) {
+            } elseif (!empty($oInvoice->customer->email)) {
 
-                $aEmails = array($oInvoice->user->email);
+                $aEmails = array($oInvoice->customer->email);
 
             } else {
 
@@ -886,13 +887,13 @@ class Invoice extends Base
         $oObj->state->label     = $aStateLabels[$sState];
 
         //  Dated
-        $oDated = new \DateTime($oObj->dated);
+        $oDated = new \DateTime($oObj->dated . ' 00:00:00');
         $oObj->dated            = new \stdClass();
         $oObj->dated->raw       = $oDated->format('Y-m-d');
         $oObj->dated->formatted = toUserDate($oDated);
 
         //  Due
-        $oDue = new \DateTime($oObj->due);
+        $oDue = new \DateTime($oObj->due . ' 23:59:59');
         $oObj->due            = new \stdClass();
         $oObj->due->raw       = $oDue->format('Y-m-d');
         $oObj->due->formatted = toUserDate($oDue);
@@ -904,19 +905,19 @@ class Invoice extends Base
         $oObj->paid->formatted = toUserDateTime($oPaid);
 
         //  Compute boolean flags
-        $oNow   = Factory::factory('DateTime');
+        $oNow  = Factory::factory('DateTime');
 
-        $oObj->isScheduled = false;
+        $oObj->is_scheduled = false;
         if ($oObj->state->id == self::STATE_OPEN && $oNow < $oDated) {
-            $oObj->isScheduled = true;
+            $oObj->is_scheduled = true;
         }
 
-        $oObj->isOverdue = false;
+        $oObj->is_overdue = false;
         if ($oObj->state->id == self::STATE_OPEN && $oNow > $oDue) {
-            $oObj->isOverdue = true;
+            $oObj->is_overdue = true;
         }
 
-        $oObj->hasProcessingPayments = $oObj->processing_payments > 0;
+        $oObj->has_processing_payments = $oObj->processing_payments > 0;
         unset($oObj->processing_payments);
 
         //  Totals

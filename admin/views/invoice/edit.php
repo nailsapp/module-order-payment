@@ -5,6 +5,17 @@
         <?php
 
         $aField = array(
+            'key'     => 'customer_id',
+            'label'   => 'Customer',
+            'default' => !empty($invoice->customer->id) ? $invoice->customer->id : '',
+            'class'   => 'customer-search',
+            'info'    => '<a href="#" class="btn btn-xs btn-primary" data-bind="click: createCustomer">Create Customer</a>'
+        );
+        echo form_field($aField);
+
+        // --------------------------------------------------------------------------
+
+        $aField = array(
             'key'         => 'ref',
             'label'       => 'Reference',
             'default'     => !empty($invoice->ref) ? $invoice->ref : '',
@@ -48,7 +59,7 @@
         $aField = array(
             'key'         => 'terms',
             'label'       => 'Payment Terms',
-            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('defaultTerms', 'nailsapp/module-invoice'),
+            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', 'nailsapp/module-invoice'),
             'info'        => '<span data-bind="html: termsText()"></span>',
             'id'          => 'invoice-terms',
             'placeholder' => 'Leave blank to set the invoice to be due on receipt',
@@ -61,32 +72,10 @@
         // --------------------------------------------------------------------------
 
         $aField = array(
-            'key'     => 'user_id',
-            'label'   => 'User',
-            'default' => !empty($invoice->user->id) ? $invoice->user->id : '',
-            'class'   => 'user-search'
-        );
-        echo form_field($aField);
-
-        // --------------------------------------------------------------------------
-
-        $aField = array(
-            'key'     => 'user_email',
-            'label'   => 'User Email',
-            'default' => !empty($invoice->user_email) ? $invoice->user_email : '',
-            'info'    => '<span class="alert alert-info">If a user is selected above, setting this field will ' .
-                         'override the email address to which this invoice is sent. If no user is specified ' .
-                         'above then this field is required.</span>'
-        );
-        echo form_field_email($aField);
-
-        // --------------------------------------------------------------------------
-
-        $aField = array(
             'key'         => 'additional_text',
             'label'       => 'Additional Text',
             'placeholder' => 'Any additional text you\'d like to show on the invoice',
-            'default'     => !empty($invoice->additional_text) ? $invoice->additional_text : ''
+            'default'     => !empty($invoice->additional_text) ? $invoice->additional_text : appSetting('default_additional_text', 'nailsapp/module-invoice')
         );
         echo form_field_textarea($aField);
 

@@ -7,7 +7,7 @@
                     Invoice <?=$oInvoice->ref?>
                     <?php
 
-                    if ($oInvoice->isOverdue) {
+                    if ($oInvoice->is_overdue) {
 
                         $sText  = 'Overdue';
                         $sClass = 'danger';
