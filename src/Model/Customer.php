@@ -99,26 +99,16 @@ class Customer extends Base
     {
         try {
 
-            if (!empty($aData['organisation']) || !empty($aData['first_name']) || !empty($aData['last_name'])) {
-
-                //  Compile the label
-                $aData['label'] = $this->compileLabel($aData);
-                if (!empty($aData['organisation'])) {
-
-                    $aData['label'] = $aData['organisation'];
-
-                } else {
-
-                    $aData['label']   = array();
-                    $aData['label'][] = !empty($adata['first_name']) ? trim($aData['first_name']) : '';
-                    $aData['label'][] = !empty($adata['last_name']) ? trim($aData['last_name']) : '';
-
-                    $aData['label'] = array_filter($aData['label']);
-                    $aData['label'] = implode(' ', $aData['label']);
+            if (array_key_exists('organisation', $aData) && array_key_exists('first_name', $aData) && array_key_exists('last_name', $aData)) {
+                if (empty($aData['organisation']) && empty($aData['first_name']) && empty($aData['last_name'])) {
+                    throw new InvoiceException('"organisation", "first_name" and "last_name" cannot all be empty.', 1);
                 }
             }
 
-            return parent::create($aData, true);
+            //  Compile the label
+            $aData['label'] = $this->compileLabel($aData);
+
+            return parent::update($iCustomerId, $aData);
 
         } catch (\Exception $e) {
 
