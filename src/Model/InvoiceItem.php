@@ -45,8 +45,9 @@ class InvoiceItem extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->table       = NAILS_DB_PREFIX . 'invoice_invoice_item';
-        $this->tablePrefix = 'io';
+        $this->table             = NAILS_DB_PREFIX . 'invoice_invoice_item';
+        $this->tablePrefix       = 'io';
+        $this->defaultSortColumn = 'order';
     }
 
     // --------------------------------------------------------------------------

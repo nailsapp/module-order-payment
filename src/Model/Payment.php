@@ -105,7 +105,8 @@ class Payment extends Base
                     'Invoice',
                     'nailsapp/module-invoice',
                     array(
-                        'includeCustomer' => true
+                        'includeCustomer' => true,
+                        'includeItems'    => true
                     )
                 );
             }

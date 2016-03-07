@@ -333,24 +333,34 @@ class Invoice extends Base
             $aData['state'] = strtoupper(trim($aData['state']));
         }
 
+        //  Always has terms
+        if (array_key_exists('terms', $aData)) {
+            $aData['terms'] = !empty($aData['terms']) ? $aData['terms'] : 0;
+        }
+
         //  Always has a date
         if (array_key_exists('dated', $aData) && empty($aData['dated'])) {
             $oDate = Factory::factory('DateTime');
             $aData['dated'] = $oDate->format('Y-m-d');
         }
 
-        //  Always has terms
-        if (array_key_exists('terms', $aData)) {
-            $aData['terms'] = !empty($aData['terms']) ? $aData['terms'] : 0;
-        }
+        //  Calculate the due date
+        if (!array_key_exists('due', $aData) && !empty($aData['dated'])) {
 
-        //  Calculate the Due date
-        if (!empty($aData['terms'])) {
+            if (!array_key_exists('terms', $aData)) {
+
+                $iTerms = (int) $aData['terms'];
+
+            } else {
+
+                $iTerms = (int) appSetting('default_payment_terms', 'nailsapp/module-invoice');
+            }
 
             $oDate = new \DateTime($aData['dated']);
-            $oDate->add(new \DateInterval('P' . $aData['terms'] . 'D'));
+            $oDate->add(new \DateInterval('P' . $iTerms . 'D'));
             $aData['due'] = $oDate->format('Y-m-d');
         }
+
 
         //  Always has a currency
         if (array_key_exists('currency', $aData)) {
