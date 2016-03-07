@@ -347,7 +347,7 @@ class Invoice extends Base
         //  Calculate the due date
         if (!array_key_exists('due', $aData) && !empty($aData['dated'])) {
 
-            if (!array_key_exists('terms', $aData)) {
+            if (array_key_exists('terms', $aData)) {
 
                 $iTerms = (int) $aData['terms'];
 
@@ -427,7 +427,7 @@ class Invoice extends Base
             }
         }
 
-        //  Inavlid user ID
+        //  Inavlid Customer ID
         if (array_key_exists('customer_id', $aData) && !empty($aData['customer_id'])) {
             $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
             if (!$oCustomerModel->getById($aData['customer_id'])) {
