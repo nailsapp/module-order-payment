@@ -62,6 +62,100 @@ class Customer extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Create a new customer
+     * @param  array   $aData         The data to create the customer with
+     * @param  boolean $bReturnObject Whether to return the complete customer object
+     * @return mixed
+     */
+    public function create($aData = array(), $bReturnObject = false)
+    {
+        try {
+
+            if (empty($aData['organisation']) && empty($aData['first_name']) && empty($aData['last_name'])) {
+                throw new InvoiceException('"organisation", "first_name" or "last_name" must be supplied.', 1);
+            }
+
+            //  Compile the label
+            $aData['label'] = $this->compileLabel($aData);
+
+            return parent::create($aData, $bReturnObject);
+
+        } catch (\Exception $e) {
+
+            $this->setError($e->getMessage());
+            return false;
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Update an existing customer
+     * @param  integer $iCustomerId The ID of the customer to update
+     * @param  array   $aData       The data to update the customer with
+     * @return mixed
+     */
+    public function update($iCustomerId, $aData = array())
+    {
+        try {
+
+            if (!empty($aData['organisation']) || !empty($aData['first_name']) || !empty($aData['last_name'])) {
+
+                //  Compile the label
+                $aData['label'] = $this->compileLabel($aData);
+                if (!empty($aData['organisation'])) {
+
+                    $aData['label'] = $aData['organisation'];
+
+                } else {
+
+                    $aData['label']   = array();
+                    $aData['label'][] = !empty($adata['first_name']) ? trim($aData['first_name']) : '';
+                    $aData['label'][] = !empty($adata['last_name']) ? trim($aData['last_name']) : '';
+
+                    $aData['label'] = array_filter($aData['label']);
+                    $aData['label'] = implode(' ', $aData['label']);
+                }
+            }
+
+            return parent::create($aData, true);
+
+        } catch (\Exception $e) {
+
+            $this->setError($e->getMessage());
+            return false;
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Compile the customer label
+     * @param  array $aData The data passed to create() or update()
+     * @return string
+     */
+    protected function compileLabel($aData)
+    {
+        if (!empty($aData['organisation'])) {
+
+            $sLabel = trim($aData['organisation']);
+
+        } else {
+
+            $aLabel   = array();
+            $aLabel[] = !empty($aData['first_name']) ? trim($aData['first_name']) : '';
+            $aLabel[] = !empty($aData['last_name']) ? trim($aData['last_name']) : '';
+
+            $aLabel = array_filter($aLabel);
+            $sLabel = implode(' ', $aLabel);
+        }
+
+        return $sLabel;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Formats the business object
      * @param object $oObj An object containing business data
      * @return void

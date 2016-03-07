@@ -281,7 +281,6 @@ class Customer extends BaseAdmin
     protected function prepPostData()
     {
         $aData = array(
-            'label'                    => '',
             'first_name'               => trim(strip_tags($this->input->post('first_name'))),
             'last_name'                => trim(strip_tags($this->input->post('last_name'))),
             'organisation'             => trim(strip_tags($this->input->post('organisation'))),
@@ -296,16 +295,6 @@ class Customer extends BaseAdmin
             'billing_address_postcode' => trim(strip_tags($this->input->post('billing_address_postcode'))),
             'billing_address_country'  => trim(strip_tags($this->input->post('billing_address_country')))
         );
-
-        //  Compile the label
-        if (!empty($aData['organisation'])) {
-
-            $aData['label'] = $aData['organisation'];
-
-        } else {
-
-            $aData['label'] = $aData['first_name'] . ' ' . $aData['last_name'];
-        }
 
         return $aData;
     }

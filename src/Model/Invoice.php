@@ -217,13 +217,14 @@ class Invoice extends Base
      */
     public function create($aData = array(), $bReturnObject = false)
     {
+        $oDb = Factory::service('Database');
+
         try {
 
             if (empty($aData['customer_id'])) {
                 throw new InvoiceException('"customer_id" is a required field.', 1);
             }
 
-            $oDb = Factory::service('Database');
             $oDb->trans_begin();
 
             $this->prepareInvoice($aData);
