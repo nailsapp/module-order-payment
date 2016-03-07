@@ -5,3 +5,8 @@
 <p>
     You will receive an email when payment has been processed fully and debited from your account.
 </p>
+<p>
+    <a href="{{payment.invoice.urls.download}}" class="btn btn-default">
+        Download Invoice
+    </a>
+</p>

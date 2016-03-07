@@ -23,22 +23,21 @@ class Payment extends NAILS_Controller
     protected function complete($oPayment)
     {
         $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $sPaymentClass = get_class($oPaymentModel);
 
         $this->data['oPayment'] = $oPayment;
         $this->data['oInvoice'] = $oPayment->invoice;
 
-        if ($oPayment->status->id === $sPaymentClass::STATUS_FAILED) {
+        if ($oPayment->status->id === $oPaymentModel::STATUS_FAILED) {
 
             //  Payments which FAILED should be ignored
             show_404();
 
-        } elseif ($oPayment->status->id === $sPaymentClass::STATUS_COMPLETE) {
+        } elseif ($oPayment->status->id === $oPaymentModel::STATUS_COMPLETE) {
 
             //  Payment is already complete
             redirect($oPayment->urls->thanks);
 
-        } elseif ($oPayment->status->id === $sPaymentClass::STATUS_PROCESSING) {
+        } elseif ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
 
             //  Payment is already complete and is being processed
             redirect($oPayment->urls->processing);

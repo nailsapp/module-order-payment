@@ -76,7 +76,7 @@ class RequestBase
     public function setInvoice($iInvoiceId)
     {
         //  Validate
-        $oInvoice = $this->oInvoiceModel->getById($iInvoiceId);
+        $oInvoice = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
 
         if (empty($oInvoice)) {
             throw new RequestException('Invalid invoice ID.', 1);

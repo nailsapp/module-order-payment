@@ -217,10 +217,13 @@ class Invoice extends Base
      */
     public function create($aData = array(), $bReturnObject = false)
     {
-        $oDb = Factory::service('Database');
-
         try {
 
+            if (empty($aData['customer_id'])) {
+                throw new InvoiceException('"customer_id" is a required field.', 1);
+            }
+
+            $oDb = Factory::service('Database');
             $oDb->trans_begin();
 
             $this->prepareInvoice($aData);
@@ -269,10 +272,13 @@ class Invoice extends Base
      */
     public function update($iInvoiceId, $aData = array())
     {
-        $oDb = Factory::service('Database');
-
         try {
 
+            if (array_key_exists('customer_id', $aData) && empty($aData['customer_id'])) {
+                throw new InvoiceException('"customer_id" cannot be empty.', 1);
+            }
+
+            $oDb = Factory::service('Database');
             $oDb->trans_begin();
 
             $this->prepareInvoice($aData, $iInvoiceId);
@@ -338,7 +344,8 @@ class Invoice extends Base
         }
 
         //  Calculate the Due date
-        if (array_key_exists('dated', $aData) && array_key_exists('terms', $aData)) {
+        if (!empty($aData['terms'])) {
+
             $oDate = new \DateTime($aData['dated']);
             $oDate->add(new \DateInterval('P' . $aData['terms'] . 'D'));
             $aData['due'] = $oDate->format('Y-m-d');
@@ -474,6 +481,7 @@ class Invoice extends Base
 
                 //  Calculate tax
                 if (!empty($aItem['tax_id'])) {
+
                     foreach ($aTaxRates as $oTaxRate) {
                         if ($oTaxRate->id == $aItem['tax_id']) {
                             $aItem['tax_total'] = $aItem['sub_total'] * $oTaxRate->rate_decimal;
@@ -496,7 +504,6 @@ class Invoice extends Base
                 //  Update invoice total
                 $aData['sub_total'] += $aItem['sub_total'];
                 $aData['tax_total'] += $aItem['tax_total'];
-
             }
 
             $aData['grand_total'] = $aData['sub_total'] + $aData['tax_total'];

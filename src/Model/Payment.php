@@ -98,7 +98,16 @@ class Payment extends Base
         if (!empty($aItems)) {
 
             if (!empty($aData['includeAll']) || !empty($aData['includeInvoice'])) {
-                $this->getSingleAssociatedItem($aItems, 'invoice_id', 'invoice', 'Invoice', 'nailsapp/module-invoice');
+                $this->getSingleAssociatedItem(
+                    $aItems,
+                    'invoice_id',
+                    'invoice',
+                    'Invoice',
+                    'nailsapp/module-invoice',
+                    array(
+                        'includeCustomer' => true
+                    )
+                );
             }
         }
 
