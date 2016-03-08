@@ -173,6 +173,10 @@ class Payment extends Base
 
             $aData['token'] = $this->generateValidToken();
 
+            if (array_key_exists('custom_data', $aData)) {
+                $aData['custom_data'] = json_encode($aData['custom_data']);
+            }
+
             $oPayment = parent::create($aData, true);
 
             if (!$oPayment) {
@@ -215,6 +219,10 @@ class Payment extends Base
 
             unset($aData['ref']);
             unset($aData['token']);
+
+            if (array_key_exists('custom_data', $aData)) {
+                $aData['custom_data'] = json_encode($aData['custom_data']);
+            }
 
             $bResult = parent::update($iPaymentId, $aData);
 
@@ -516,5 +524,8 @@ class Payment extends Base
         $oObj->urls->thanks     = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
         $oObj->urls->processing = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
         $oObj->urls->continue   = !empty($oObj->url_continue) ? site_url($oObj->url_continue) : null;
+
+        //  Custom data
+        $oObj->custom_data = json_decode($oObj->custom_data);
     }
 }

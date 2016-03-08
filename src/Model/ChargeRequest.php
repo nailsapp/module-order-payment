@@ -19,7 +19,8 @@ use Nails\Invoice\Exception\ChargeRequestException;
 class ChargeRequest extends RequestBase
 {
     protected $oCard;
-    protected $oCustom;
+    protected $oCustomField;
+    protected $oCustomData;
     protected $sDescription;
     protected $bAutoRedirect;
     protected $sContinueUrl;
@@ -42,8 +43,9 @@ class ChargeRequest extends RequestBase
         $this->oCard->exp->year  = null;
         $this->oCard->cvc        = null;
 
-        //  Container for custom variables
-        $this->oCustom = new \stdClass();
+        //  Container for custom fields and data
+        $this->oCustomField = new \stdClass();
+        $this->oCustomData  = new \stdClass();
 
         //  Auto redirect by default
         $this->bAutoRedirect = true;
@@ -240,13 +242,38 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Define a custom field
+     * @param string $sProperty The property to set
+     * @param mixed  $mValue    The value to set
+     */
+    public function setCustomField($sProperty, $mValue)
+    {
+        $this->oCustomField->{$sProperty} = $mValue;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Retrieve a custom field
+     * @param  string $sProperty The property to retrieve
+     * @return mixed
+     */
+    public function getCustomField($sProperty)
+    {
+        return property_exists($this->oCustomField, $sProperty) ? $this->oCustomField->{$sProperty} : null;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set a custom value
      * @param string $sProperty The property to set
      * @param mixed  $mValue    The value to set
      */
-    public function setCustom($sProperty, $mValue)
+    public function setCustomData($sProperty, $mValue)
     {
-        $this->oCustom->{$sProperty} = $mValue;
+        $this->oCustomData->{$sProperty} = $mValue;
         return $this;
     }
 
@@ -257,9 +284,9 @@ class ChargeRequest extends RequestBase
      * @param  string $sProperty The property to retrieve
      * @return mixed
      */
-    public function getCustom($sProperty)
+    public function getCustomData($sProperty)
     {
-        return property_exists($this->oCustom, $sProperty) ? $this->oCustom->{$sProperty} : null;
+        return property_exists($this->oCustomData, $sProperty) ? $this->oCustomData->{$sProperty} : null;
     }
 
     // --------------------------------------------------------------------------
@@ -374,7 +401,8 @@ class ChargeRequest extends RequestBase
                     'invoice_id'   => $this->oInvoice->id,
                     'currency'     => $sCurrency,
                     'amount'       => $iAmount,
-                    'url_continue' => $this->getContinueUrl()
+                    'url_continue' => $this->getContinueUrl(),
+                    'custom_data'  => $this->oCustomData
                 ),
                 true
             );
@@ -384,16 +412,12 @@ class ChargeRequest extends RequestBase
             }
         }
 
-        $aDriverData = array();
-        $mFields     = $this->oDriver->getPaymentFields();
+        $mFields = $this->oDriver->getPaymentFields();
 
         if (!empty($mFields) && $mFields == 'CARD') {
-
-            $aDriverData = $this->oCard;
-
-        } elseif (!empty($mFields)) {
-
-            $aDriverData = $this->oCustom;
+            $oDriverData = $this->oCard;
+        } else {
+            $oDriverData = $this->oCustomField;
         }
 
         //  Return URL for drivers which implement a redirect flow
@@ -404,7 +428,8 @@ class ChargeRequest extends RequestBase
         $oChargeResponse = $this->oDriver->charge(
             $iAmount,
             $sCurrency,
-            $aDriverData,
+            $oDriverData,
+            $this->oCustomData,
             $this->getDescription(),
             $this->oPayment->id,
             $this->oInvoice,

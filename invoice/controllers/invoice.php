@@ -254,7 +254,7 @@ class Invoice extends NAILS_Controller
 
                                 $sValue = null;
                             }
-                            $oChargeRequest->setCustom($aField['key'], $sValue);
+                            $oChargeRequest->setCustomField($aField['key'], $sValue);
                         }
                     }
 
