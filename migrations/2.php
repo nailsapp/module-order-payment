@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Migration:   1
- * Started:     04/03/2016
+ * Migration:   2
+ * Started:     17/03/2016
  * Finalised:   17/03/2016
  *
  * @package     Nails
@@ -16,7 +16,7 @@ namespace Nails\Database\Migration\Nailsapp\ModuleInvoice;
 
 use Nails\Common\Console\Migrate\Base;
 
-class Migration1 extends Base
+class Migration2 extends Base
 {
     /**
      * Execute the migration
@@ -24,6 +24,6 @@ class Migration1 extends Base
      */
     public function execute()
     {
-        $this->query("UPDATE `{{NAILS_DB_PREFIX}}app_setting` SET `key` = 'enabled_driver_payment' WHERE `key` = 'enabled_payment_drivers' AND `grouping` = 'nailsapp/module-invoice';");
+        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `fee` INT(11)  NULL  DEFAULT NULL  AFTER `amount`;");
     }
 }

@@ -3,7 +3,7 @@
 /**
  * Migration:   0
  * Started:     16/01/2016
- * Finalised:
+ * Finalised:   17/03/2016
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -149,6 +149,7 @@ class Migration0 extends Base
                 `currency` char(3) NOT NULL DEFAULT '',
                 `amount` int(11) NOT NULL DEFAULT '0',
                 `url_continue` varchar(255) DEFAULT NULL,
+                `custom_data` text,
                 `created` datetime NOT NULL,
                 `created_by` int(11) unsigned DEFAULT NULL,
                 `modified` datetime NOT NULL,

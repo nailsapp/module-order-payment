@@ -485,14 +485,16 @@ class ChargeRequest extends RequestBase
 
             //  Driver has started processing the charge, but it hasn't been confirmed yet
             $this->setPaymentProcessing(
-                $oChargeResponse->getTxnId()
+                $oChargeResponse->getTxnId(),
+                $oChargeResponse->getFee()
             );
 
         } elseif ($oChargeResponse->isComplete()) {
 
             //  Driver has confirmed that payment has been taken.
             $this->setPaymentComplete(
-                $oChargeResponse->getTxnId()
+                $oChargeResponse->getTxnId(),
+                $oChargeResponse->getFee()
             );
 
         } elseif ($oChargeResponse->isFailed()) {

@@ -109,22 +109,28 @@ class RequestBase
 
     /**
      * Set a payment as PROCESSING
-     * @param string $sTxnId The payment's transaction ID
+     * @param string  $sTxnId The payment's transaction ID
+     * @param integer $iFee   The fee charged by the processor, if known
      */
-    protected function setPaymentProcessing($sTxnId = null)
+    protected function setPaymentProcessing($sTxnId = null, $iFee = null)
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
             throw new RequestException('No payment selected.', 1);
         }
+
+        //  Update the payment
         $sPaymentClass = get_class($this->oPaymentModel);
-        $bResult       = $this->oPaymentModel->update(
-            $this->oPayment->id,
-            array(
-                'status' => $sPaymentClass::STATUS_PROCESSING,
-                'txn_id' => $sTxnId ? $sTxnId : null
-            )
+        $aData = array(
+            'status' => $sPaymentClass::STATUS_PROCESSING,
+            'txn_id' => $sTxnId ? $sTxnId : null
         );
+
+        if (!is_null($iFee)) {
+            $aData['fee'] = $iFee;
+        }
+
+        $bResult = $this->oPaymentModel->update($this->oPayment->id, $aData);
 
         if (empty($bResult)) {
             throw new RequestException('Failed to update existing payment.', 1);
@@ -147,9 +153,10 @@ class RequestBase
 
     /**
      * Set a payment as COMPLETE, and mark the invoice as paid if so
-     * @param string $sTxnId The payment's transaction ID
+     * @param string  $sTxnId The payment's transaction ID
+     * @param integer $iFee   The fee charged by the processor, if known
      */
-    protected function setPaymentComplete($sTxnId = null)
+    protected function setPaymentComplete($sTxnId = null, $iFee)
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
@@ -163,13 +170,16 @@ class RequestBase
 
         //  Update the payment
         $sPaymentClass = get_class($this->oPaymentModel);
-        $bResult       = $this->oPaymentModel->update(
-            $this->oPayment->id,
-            array(
-                'status' => $sPaymentClass::STATUS_COMPLETE,
-                'txn_id' => $sTxnId ? $sTxnId : null
-            )
+        $aData = array(
+            'status' => $sPaymentClass::STATUS_COMPLETE,
+            'txn_id' => $sTxnId ? $sTxnId : null
         );
+
+        if (!is_null($iFee)) {
+            $aData['fee'] = $iFee;
+        }
+
+        $bResult = $this->oPaymentModel->update($this->oPayment->id, $aData);
 
         if (empty($bResult)) {
             throw new RequestException('Failed to update existing payment.', 1);

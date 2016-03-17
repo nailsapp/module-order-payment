@@ -37,6 +37,7 @@ class ResponseBase
 
     //  Transaction Variables
     protected $sTxnId;
+    protected $iFee;
 
     // --------------------------------------------------------------------------
 
@@ -241,6 +242,30 @@ class ResponseBase
      */
     public function getTxnId() {
         return $this->sTxnId;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the fee charged by the payment processor
+     * @param integer $iFee The fee charged by the payment processor
+     */
+    public function setFee($iFee)
+    {
+        if (!$this->bIsLocked) {
+            $this->iFee = (int) $iFee;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * The fee charged by the payment processor
+     * @return integer
+     */
+    public function getFee() {
+        return $this->iFee;
     }
 
     // --------------------------------------------------------------------------
