@@ -205,17 +205,5 @@ class Migration0 extends Base
                 CONSTRAINT `{{NAILS_DB_PREFIX}}user_meta_invoice_card_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
-        $this->query("
-            CREATE TABLE `{{NAILS_DB_PREFIX}}user_meta_invoice_gocardless_mandate` (
-                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-                `user_id` int(11) unsigned NOT NULL,
-                `label` varchar(150) NOT NULL DEFAULT '',
-                `mandate_id` varchar(50) NOT NULL DEFAULT '',
-                `created` datetime NOT NULL,
-                PRIMARY KEY (`id`),
-                KEY `user_id` (`user_id`),
-                CONSTRAINT `{{NAILS_DB_PREFIX}}user_meta_invoice_gocardless_mandate_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-        ");
     }
 }
