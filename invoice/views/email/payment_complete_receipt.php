@@ -1,4 +1,4 @@
-<p>
+<p style="font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #111111;">
     This email confirms receipt of <strong>{{{payment.amount.localised_formatted}}}</strong> against invoice
     <strong>{{payment.invoice.ref}}</strong>. The payment has been given reference <strong>{{payment.ref}}</strong>.
 </p>
@@ -17,13 +17,13 @@
                                                 <tbody>
                                                     <tr>
                                                         <td>
-                                                            <h1 style="text-align:left;font-size:25px;">
+                                                            <h1 style="text-align:left;font-size:25px;font-family: Helvetica, Arial, sans-serif;">
                                                                 Invoice {{payment.ref}}
                                                             </h1>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td>
+                                                        <td style="font-family: Helvetica, Arial, sans-serif;">
                                                             {{payment.invoice.customer.label}}
                                                             {{#payment.invoice.customer.address.line_1}}
                                                                 <br>{{payment.invoice.customer.address.line_1}}
@@ -63,26 +63,26 @@
                                                                 <tbody>
                                                                     {{#payment.invoice.items.data}}
                                                                         <tr>
-                                                                            <td style="border-top: #eee 1px solid;padding:10px;">
+                                                                            <td style="border-top: #eee 1px solid;padding:10px;font-family: Helvetica, Arial, sans-serif;">
                                                                                 {{label}}
                                                                                 <small style="display: block;margin-top: 0.5em;">{{body}}</small>
                                                                             </td>
-                                                                            <td class="alignright" style="border-top: #eee 1px solid;padding:10px;text-align:right;">
+                                                                            <td class="alignright" style="border-top: #eee 1px solid;padding:10px;text-align:right;font-family: Helvetica, Arial, sans-serif;">
                                                                                 {{{totals.localised_formatted.sub}}}
                                                                             </td>
                                                                         </tr>
                                                                     {{/payment.invoice.items.data}}
 
                                                                     <tr>
-                                                                        <td class="alignright" width="80%" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">VAT</td>
-                                                                        <td class="alignright" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">
+                                                                        <td class="alignright" width="80%" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;font-family: Helvetica, Arial, sans-serif;">VAT</td>
+                                                                        <td class="alignright" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;font-family: Helvetica, Arial, sans-serif;">
                                                                             {{{payment.invoice.totals.localised_formatted.tax}}}
                                                                         </td>
                                                                     </tr>
 
                                                                     <tr>
-                                                                        <td class="alignright" width="80%" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">Total</td>
-                                                                        <td class="alignright" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">
+                                                                        <td class="alignright" width="80%" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;font-family: Helvetica, Arial, sans-serif;">Total</td>
+                                                                        <td class="alignright" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;font-family: Helvetica, Arial, sans-serif;">
                                                                             {{{payment.invoice.totals.localised_formatted.grand}}}
                                                                         </td>
                                                                     </tr>
@@ -99,9 +99,19 @@
                                                             <table border="0" cellspacing="0" cellpadding="0">
                                                                 <tr>
                                                                     <td align="center">
-                                                                        <a href="{{payment.invoice.urls.download}}" class="btn">
-                                                                            Download
-                                                                        </a>
+                                                                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                                                            <tr>
+                                                                                <td align="center">
+                                                                                    <table border="0" cellspacing="0" cellpadding="0">
+                                                                                        <tr>
+                                                                                            <td align="center" style="-webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;" bgcolor="#e50058">
+                                                                                                <a href="{{payment.invoice.urls.download}}" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; font-weight:bold; text-decoration: none; text-decoration: none; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; padding: 12px 18px; border: 1px solid #e50058; display: inline-block;">Download</a>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </table>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </table>
                                                                     </td>
                                                                 </tr>
                                                             </table>
@@ -127,7 +137,7 @@
                                                 <table style="margin: 0;text-align: left;width: 100%;border-top: 1px solid #EFEFEF; background: #FBFBFB">
                                                     <tbody>
                                                         <tr>
-                                                            <td style="font-size:0.7em; line-height: 160%; padding: 25px 50px">
+                                                            <td style="font-size:0.7em; line-height: 160%; padding: 25px 50px;font-family: Helvetica, Arial, sans-serif;">
                                                                 <?=implode('<br>', $aDetails)?>
                                                             </td>
                                                         </tr>
