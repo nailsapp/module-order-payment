@@ -25,7 +25,7 @@ class Migration0 extends Base
     public function execute()
     {
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}invoice_customer` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_customer` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `label` varchar(255) DEFAULT NULL,
                 `organisation` varchar(255) DEFAULT NULL,
@@ -49,12 +49,12 @@ class Migration0 extends Base
                 PRIMARY KEY (`id`),
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_customer_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_customer_ibfk_2` FOREIGN KEY (`modified_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_customer_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_customer_ibfk_2` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}invoice_email` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_email` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `invoice_id` int(11) unsigned NOT NULL,
                 `email_id` int(11) unsigned DEFAULT NULL,
@@ -69,14 +69,14 @@ class Migration0 extends Base
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
                 KEY `email_id` (`email_id`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_email_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{naiLs_db_prefix}}invoice_invoice` (`id`) ON DELETE CASCADE,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_email_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_email_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_email_ibfk_4` FOREIGN KEY (`email_id`) REFERENCES `{{naiLs_db_prefix}}email_archive` (`id`) ON DELETE SET NULL
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_email_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_invoice` (`id`) ON DELETE CASCADE,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_email_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_email_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_email_ibfk_4` FOREIGN KEY (`email_id`) REFERENCES `{{NAILS_DB_PREFIX}}email_archive` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}invoice_invoice` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `ref` char(15) NOT NULL DEFAULT '',
                 `token` char(32) NOT NULL,
@@ -100,13 +100,13 @@ class Migration0 extends Base
                 KEY `user_id` (`customer_id`),
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_invoice_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `{{naiLs_db_prefix}}invoice_customer` (`id`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_invoice_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_invoice_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_customer` (`id`),
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}invoice_invoice_item` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_invoice_item` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `invoice_id` int(11) unsigned NOT NULL,
                 `label` varchar(255) NOT NULL,
@@ -128,14 +128,14 @@ class Migration0 extends Base
                 KEY `tax_id` (`tax_id`),
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_invoice_item_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{naiLs_db_prefix}}invoice_invoice` (`id`) ON DELETE CASCADE,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_invoice_item_ibfk_2` FOREIGN KEY (`tax_id`) REFERENCES `{{naiLs_db_prefix}}invoice_tax` (`id`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_invoice_item_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_invoice_item_ibfk_4` FOREIGN KEY (`modified_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_item_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_invoice` (`id`) ON DELETE CASCADE,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_item_ibfk_2` FOREIGN KEY (`tax_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_tax` (`id`),
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_item_ibfk_3` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_invoice_item_ibfk_4` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}invoice_payment` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_payment` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `ref` char(15) NOT NULL DEFAULT '',
                 `token` char(32) NOT NULL,
@@ -157,13 +157,13 @@ class Migration0 extends Base
                 KEY `order_id` (`invoice_id`),
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_payment_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{naiLs_db_prefix}}invoice_invoice` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_payment_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_payment_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_payment_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_invoice` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_payment_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_payment_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}invoice_tax` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_tax` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `label` varchar(150) NOT NULL DEFAULT '',
                 `rate` int(11) unsigned DEFAULT '0',
@@ -174,18 +174,18 @@ class Migration0 extends Base
                 PRIMARY KEY (`id`),
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_tax_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}invoice_tax_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_tax_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_tax_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}user_meta_invoice_address` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}user_meta_invoice_address` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}user_meta_invoice_card` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}user_meta_invoice_card` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `user_id` int(11) unsigned NOT NULL,
                 `token` varchar(150) DEFAULT NULL,
@@ -200,13 +200,13 @@ class Migration0 extends Base
                 KEY `user_id` (`user_id`),
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
-                CONSTRAINT `{{naiLs_db_prefix}}user_meta_invoice_card_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE CASCADE,
-                CONSTRAINT `{{naiLs_db_prefix}}user_meta_invoice_card_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{naiLs_db_prefix}}user_meta_invoice_card_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE SET NULL
+                CONSTRAINT `{{NAILS_DB_PREFIX}}user_meta_invoice_card_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE CASCADE,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}user_meta_invoice_card_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}user_meta_invoice_card_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
         $this->query("
-            CREATE TABLE `{{naiLs_db_prefix}}user_meta_invoice_gocardless_mandate` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}user_meta_invoice_gocardless_mandate` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `user_id` int(11) unsigned NOT NULL,
                 `label` varchar(150) NOT NULL DEFAULT '',
@@ -214,7 +214,7 @@ class Migration0 extends Base
                 `created` datetime NOT NULL,
                 PRIMARY KEY (`id`),
                 KEY `user_id` (`user_id`),
-                CONSTRAINT `{{naiLs_db_prefix}}user_meta_invoice_gocardless_mandate_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `{{naiLs_db_prefix}}user` (`id`) ON DELETE CASCADE
+                CONSTRAINT `{{NAILS_DB_PREFIX}}user_meta_invoice_gocardless_mandate_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
     }

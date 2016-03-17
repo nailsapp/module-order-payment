@@ -24,6 +24,6 @@ class Migration1 extends Base
      */
     public function execute()
     {
-        $this->query("UPDATE `nails_app_setting` SET `key` = 'enabled_driver_payment' WHERE `key` = 'enabled_payment_drivers' AND `grouping` = 'nailsapp/module-invoice';");
+        $this->query("UPDATE `{{NAILS_DB_PREFIX}}app_setting` SET `key` = 'enabled_driver_payment' WHERE `key` = 'enabled_payment_drivers' AND `grouping` = 'nailsapp/module-invoice';");
     }
 }
