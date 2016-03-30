@@ -167,7 +167,9 @@
                             <th>Gateway</th>
                             <th>Reference</th>
                             <th>Amount</th>
+                            <th>Fee</th>
                             <th>Created</th>
+                            <th>Modified</th>
                             <th class="actions">Actions</th>
                     </thead>
                     <tbody>
@@ -181,8 +183,32 @@
                                 <td class="text-center"><?=$oPayment->status->label?></td>
                                 <td><?=$oPayment->driver->label?></td>
                                 <td><?=$oPayment->txn_id?></td>
-                                <td><?=$oPayment->amount->localised_formatted?></td>
+                                <td>
+                                    <?php
+
+                                    echo $oPayment->amount->localised_formatted;
+                                    if ($oPayment->amount_refunded->base) {
+                                        echo '<small>';
+                                        echo 'Refunded: ' . $oPayment->amount_refunded->localised_formatted;
+                                        echo '</small>';
+                                    }
+
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php
+
+                                    echo $oPayment->fee->localised_formatted;
+                                    if ($oPayment->fee_refunded->base) {
+                                        echo '<small>';
+                                        echo 'Refunded: ' . $oPayment->fee_refunded->localised_formatted;
+                                        echo '</small>';
+                                    }
+
+                                    ?>
+                                </td>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
+                                <?=adminHelper('loadDateTimeCell', $oPayment->modified)?>
                                 <td class="actions">
                                     <?php
 
@@ -191,6 +217,22 @@
                                         'View',
                                         'class="btn btn-xs btn-default"'
                                     );
+
+                                    if ($oPayment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
+
+                                        $aAttr = array(
+                                            'class="btn btn-xs btn-danger js-confirm-refund"',
+                                            'data-max="' . $oPayment->available_for_refund->localised . '"',
+                                            'data-max-formatted="' . $oPayment->available_for_refund->localised_formatted . '"',
+                                            'data-return-to="' . urlencode(current_url()) . '"',
+                                        );
+
+                                        echo anchor(
+                                            'admin/invoice/payment/refund/' . $oPayment->id,
+                                            'Refund',
+                                            implode(' ', $aAttr)
+                                        );
+                                    }
 
                                     ?>
                                 </td>

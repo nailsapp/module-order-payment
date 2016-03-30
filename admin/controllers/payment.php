@@ -15,6 +15,7 @@ namespace Nails\Admin\Invoice;
 use Nails\Factory;
 use Nails\Admin\Helper;
 use Nails\Invoice\Controller\BaseAdmin;
+use Nails\Common\Exception\NailsException;
 
 class Payment extends BaseAdmin
 {
@@ -53,23 +54,10 @@ class Payment extends BaseAdmin
     {
         $permissions = parent::permissions();
 
-        $permissions['view'] = 'Can view payment details';
+        $permissions['view']   = 'Can view payment details';
+        $permissions['refund'] = 'Can refund payments';
 
         return $permissions;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Construct the controller
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $this->oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $this->oDriverModel  = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -91,7 +79,13 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $sTablePrefix = $this->oPaymentModel->getTablePrefix();
+        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oDriverModel  = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
+
+        // --------------------------------------------------------------------------
+
+        $sTablePrefix = $oPaymentModel->getTablePrefix();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
@@ -117,7 +111,7 @@ class Payment extends BaseAdmin
         //  Define the filters
         $aCbFilters = array();
         $aOptions   = array();
-        $aDrivers   = $this->oDriverModel->getAll();
+        $aDrivers   = $oDriverModel->getAll();
 
         foreach ($aDrivers as $sSlug => $oDriver) {
             $aOptions[] = array(
@@ -136,7 +130,7 @@ class Payment extends BaseAdmin
         $aCbFilters[] = Helper::searchFilterObject(
             $sTablePrefix . '.status',
             'Status',
-            $this->oPaymentModel->getStatusesHuman()
+            $oPaymentModel->getStatusesHuman()
         );
 
         // --------------------------------------------------------------------------
@@ -151,9 +145,9 @@ class Payment extends BaseAdmin
         );
 
         //  Get the items for the page
-        $totalRows                   = $this->oPaymentModel->countAll($data);
-        $this->data['payments']      = $this->oPaymentModel->getAll($page, $perPage, $data);
-        $this->data['invoiceStates'] = $this->oInvoiceModel->getStates();
+        $totalRows                   = $oPaymentModel->countAll($data);
+        $this->data['payments']      = $oPaymentModel->getAll($page, $perPage, $data);
+        $this->data['invoiceStates'] = $oInvoiceModel->getStates();
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
@@ -187,7 +181,13 @@ class Payment extends BaseAdmin
             unauthorised();
         }
 
-        $this->data['payment'] = $this->oPaymentModel->getById($this->uri->segment(5));
+        // --------------------------------------------------------------------------
+
+        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+
+        // --------------------------------------------------------------------------
+
+        $this->data['payment'] = $oPaymentModel->getById($this->uri->segment(5), array('includeRefunds' => true));
         if (!$this->data['payment']) {
             show_404();
         }
@@ -195,5 +195,55 @@ class Payment extends BaseAdmin
         $this->data['page']->title = 'View Payment &rsaquo; ' . $this->data['payment']->id;
 
         Helper::loadView('view');
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * View a single payment
+     * @return void
+     */
+    public function refund()
+    {
+        if (!userHasPermission('admin:invoice:payment:refund')) {
+            unauthorised();
+        }
+
+        // --------------------------------------------------------------------------
+
+        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $iPaymentId    = $this->uri->segment(5);
+        $sAmount       = $this->input->post('amount') ?: null;
+        $sReason       = $this->input->post('reason') ?: null;
+        $sRedirect     = urldecode($this->input->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
+
+        // --------------------------------------------------------------------------
+
+        //  Convert the amount to its smallest unit
+        //  @todo do this automatically
+        $iAmount = intval($sAmount * 100);
+
+        // dumpanddie($iAmount, $sReason);
+
+        // --------------------------------------------------------------------------
+
+        try {
+
+            if (!$oPaymentModel->refund($iPaymentId, $iAmount, $sReason)) {
+                throw new NailsException('Failed to refund payment. ' . $oPaymentModel->lastError(), 1);
+            }
+
+            $sStatus  = 'success';
+            $sMessage = 'Payment refunded successfully.';
+
+        } catch (NailsException $e) {
+
+            $sStatus  = 'error';
+            $sMessage = $e->getMessage();
+        }
+
+        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession->set_flashdata($sStatus, $sMessage);
+        redirect($sRedirect);
     }
 }

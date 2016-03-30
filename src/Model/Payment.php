@@ -19,10 +19,12 @@ use Nails\Invoice\Exception\PaymentException;
 class Payment extends Base
 {
     //  Statuses
-    const STATUS_PENDING    = 'PENDING';
-    const STATUS_PROCESSING = 'PROCESSING';
-    const STATUS_COMPLETE   = 'COMPLETE';
-    const STATUS_FAILED     = 'FAILED';
+    const STATUS_PENDING          = 'PENDING';
+    const STATUS_PROCESSING       = 'PROCESSING';
+    const STATUS_COMPLETE         = 'COMPLETE';
+    const STATUS_FAILED           = 'FAILED';
+    const STATUS_REFUNDED         = 'REFUNDED';
+    const STATUS_REFUNDED_PARTIAL = 'REFUNDED_PARTIAL';
 
     // --------------------------------------------------------------------------
 
@@ -61,7 +63,9 @@ class Payment extends Base
             self::STATUS_PENDING,
             self::STATUS_PROCESSING,
             self::STATUS_COMPLETE,
-            self::STATUS_FAILED
+            self::STATUS_FAILED,
+            self::STATUS_REFUNDED,
+            self::STATUS_REFUNDED_PARTIAL
         );
     }
 
@@ -74,10 +78,12 @@ class Payment extends Base
     public function getStatusesHuman()
     {
         return array(
-            self::STATUS_PENDING    => 'Pending',
-            self::STATUS_PROCESSING => 'Processing',
-            self::STATUS_COMPLETE   => 'Complete',
-            self::STATUS_FAILED     => 'Failed'
+            self::STATUS_PENDING          => 'Pending',
+            self::STATUS_PROCESSING       => 'Processing',
+            self::STATUS_COMPLETE         => 'Complete',
+            self::STATUS_FAILED           => 'Failed',
+            self::STATUS_REFUNDED         => 'Refunded',
+            self::STATUS_REFUNDED_PARTIAL => 'Partially Refunded'
         );
     }
 
@@ -108,6 +114,16 @@ class Payment extends Base
                         'includeCustomer' => true,
                         'includeItems'    => true
                     )
+                );
+            }
+
+            if (!empty($aData['includeAll']) || !empty($aData['includeRefunds'])) {
+                $this->getManyAssociatedItems(
+                    $aItems,
+                    'refunds',
+                    'payment_id',
+                    'PaymentRefund',
+                    'nailsapp/module-invoice'
                 );
             }
         }
@@ -143,10 +159,43 @@ class Payment extends Base
      **/
     protected function getCountCommon($data = array())
     {
-        $oDb           = Factory::service('Database');
-        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oDb                 = Factory::service('Database');
+        $oInvoiceModel       = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oPaymentRefundModel = Factory::model('PaymentRefund', 'nailsapp/module-invoice');
 
         $oDb->select($this->tablePrefix . '.*, i.ref invoice_ref, i.state invoice_state');
+
+        $oDb->select('
+            (
+                SELECT
+                    SUM(amount)
+                FROM ' . NAILS_DB_PREFIX . 'invoice_payment_refund r
+                WHERE
+                r.payment_id = ' . $this->tablePrefix . '.id
+                AND
+                (
+                    status = "' . $oPaymentRefundModel::STATUS_COMPLETE . '"
+                    OR
+                    status = "' . $oPaymentRefundModel::STATUS_PROCESSING . '"
+                )
+            ) amount_refunded
+        ');
+        $oDb->select('
+            (
+                SELECT
+                    SUM(fee)
+                FROM ' . NAILS_DB_PREFIX . 'invoice_payment_refund r
+                WHERE
+                r.payment_id = ' . $this->tablePrefix . '.id
+                AND
+                (
+                    status = "' . $oPaymentRefundModel::STATUS_COMPLETE . '"
+                    OR
+                    status = "' . $oPaymentRefundModel::STATUS_PROCESSING . '"
+                )
+            ) fee_refunded
+        ');
+
         $oDb->join($oInvoiceModel->getTableName() . ' i', $this->tablePrefix . '.invoice_id = i.id');
         parent::getCountCommon($data);
     }
@@ -368,6 +417,40 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Set a payment as REFUNDED
+     * @param  integer  $iPaymentId The Payment to update
+     * @return boolean
+     */
+    public function setRefunded($iPaymentId)
+    {
+        return $this->update(
+            $iPaymentId,
+            array(
+                'state' => self::STATUS_REFUNDED
+            )
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a payment as REFUNDED_PARTIAL
+     * @param  integer  $iPaymentId The Payment to update
+     * @return boolean
+     */
+    public function setRefundedPartial($iPaymentId)
+    {
+        return $this->update(
+            $iPaymentId,
+            array(
+                'state' => self::STATUS_REFUNDED_PARTIAL
+            )
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Send payment receipt
      * @param  integer $iPaymentId     The ID of the payment
      * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
@@ -459,6 +542,69 @@ class Payment extends Base
 
     // --------------------------------------------------------------------------
 
+    public function refund($iPaymentId, $iAmount = null, $sReason = null)
+    {
+        try {
+
+            //  Validate payment
+            $oPayment = $this->getById($iPaymentId, array('includeInvoice' => true));
+            if (!$oPayment) {
+                throw new PaymentException('Invalid payment ID.', 1);
+            }
+
+            //  Set up RefundRequest object
+            $oRefundRequest = Factory::factory('RefundRequest', 'nailsapp/module-invoice');
+
+            //  Set the driver to use for the request
+            $oRefundRequest->setDriver($oPayment->driver->slug);
+
+            //  Describe the charge
+            $oRefundRequest->setReason($sReason);
+
+            //  Set the payment we're refunding against
+            $oRefundRequest->setPayment($oPayment->id);
+
+            //  Set the invoice we're refunding against
+            $oRefundRequest->setInvoice($oPayment->invoice->id);
+
+            //  Attempt the refund
+            $oRefundResponse = $oRefundRequest->refund($iAmount);
+
+            if ($oRefundResponse->isProcessing() || $oRefundResponse->isComplete()) {
+
+                //  It's all good
+
+            } elseif ($oRefundResponse->isFailed()) {
+
+                /**
+                 * Refund failed, throw an error which will be caught and displayed to the user
+                 */
+
+                throw new PaymentException(
+                    'Refund failed: ' . $oRefundResponse->getError()->user,
+                    1
+                );
+
+            } else {
+
+                /**
+                 * Something which we've not accounted for went wrong.
+                 */
+
+                throw new PaymentException('Refund failed.', 1);
+            }
+
+            return true;
+
+        } catch (PaymentException $e) {
+
+            $this->setError($e->getMessage());
+            return false;
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
     /**
      * Formats a single object
      *
@@ -482,6 +628,9 @@ class Payment extends Base
 
         $aIntegers[] = 'invoice_id';
         $aIntegers[] = 'amount';
+        $aIntegers[] = 'amount_refunded';
+        $aIntegers[] = 'fee';
+        $aIntegers[] = 'fee_refunded';
 
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
@@ -515,8 +664,41 @@ class Payment extends Base
         $iAmount = $oObj->amount;
         $oObj->amount                      = new \stdClass();
         $oObj->amount->base                = $iAmount;
-        $oObj->amount->localised           = (float) number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->amount->localised           = (float) number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
         $oObj->amount->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+
+        $iAmountRefunded = $oObj->amount_refunded;
+        $oObj->amount_refunded                      = new \stdClass();
+        $oObj->amount_refunded->base                = $iAmountRefunded;
+        $oObj->amount_refunded->localised           = (float) number_format($oObj->amount_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->amount_refunded->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->amount_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+
+        $iFee = $oObj->fee;
+        $oObj->fee                      = new \stdClass();
+        $oObj->fee->base                = $iFee;
+        $oObj->fee->localised           = (float) number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->fee->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+
+        $iFeeRefunded = $oObj->fee_refunded;
+        $oObj->fee_refunded                      = new \stdClass();
+        $oObj->fee_refunded->base                = $iFeeRefunded;
+        $oObj->fee_refunded->localised           = (float) number_format($oObj->fee_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->fee_refunded->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->fee_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+
+
+        $iAvailableForRefund = $oObj->amount->base - $oObj->amount_refunded->base;
+        $oObj->available_for_refund                      = new \stdClass();
+        $oObj->available_for_refund->base                = $iAvailableForRefund;
+        $oObj->available_for_refund->localised           = (float) number_format($oObj->available_for_refund->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
+        $oObj->available_for_refund->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->available_for_refund->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+
+        //  Can this payment be refunded?
+        $aValidStates  = array(
+            self::STATUS_PROCESSING,
+            self::STATUS_COMPLETE,
+            self::STATUS_REFUNDED_PARTIAL
+        );
+        $oObj->is_refundable = in_array($oObj->status->id, $aValidStates) && $oObj->available_for_refund->base > 0;
 
         //  URLs
         $oObj->urls             = new \stdClass();

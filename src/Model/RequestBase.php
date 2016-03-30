@@ -156,7 +156,7 @@ class RequestBase
      * @param string  $sTxnId The payment's transaction ID
      * @param integer $iFee   The fee charged by the processor, if known
      */
-    protected function setPaymentComplete($sTxnId = null, $iFee)
+    protected function setPaymentComplete($sTxnId = null, $iFee = null)
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
@@ -196,5 +196,49 @@ class RequestBase
 
         //  Send receipt email
         $this->oPaymentModel->sendReceipt($this->oPayment->id);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a payment refund as COMPLETE
+     * @param string  $sTxnId       The refund's transaction ID
+     * @param integer $iFeeRefunded The fee refunded by the processor, if known
+     */
+    protected function setPaymentRefundComplete($sTxnId = null, $iFeeRefunded = null)
+    {
+        //  Ensure we have a payment
+        if (empty($this->oPaymentRefund)) {
+            throw new RequestException('No payment refund selected.', 1);
+        }
+
+        //  Update the payment
+        $sPaymentClass = get_class($this->oPaymentRefundModel);
+        $aData = array(
+            'status' => $sPaymentClass::STATUS_COMPLETE,
+            'txn_id' => $sTxnId ? $sTxnId : null
+        );
+
+        if (!is_null($iFeeRefunded)) {
+            $aData['fee'] = $iFeeRefunded;
+        }
+
+        $bResult = $this->oPaymentRefundModel->update($this->oPaymentRefund->id, $aData);
+
+        if (empty($bResult)) {
+            throw new RequestException('Failed to update existing payment refund.', 1);
+        }
+
+        //  Has the payment been refunded in full?
+        if ($this->oInvoiceModel->isPaid($this->oInvoice->id)) {
+
+            //  Mark Invoice as PAID
+            if (!$this->oInvoiceModel->setPaid($this->oInvoice->id)) {
+                throw new RequestException('Failed to mark invoice as paid.', 1);
+            }
+        }
+
+        //  Send receipt email
+        $this->oPaymentRefundModel->sendReceipt($this->oPayment->id);
     }
 }

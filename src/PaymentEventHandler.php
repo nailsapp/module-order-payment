@@ -19,6 +19,10 @@ class PaymentEventHandler
     const EVENT_PAYMENT_CREATED = 'payment.created';
     const EVENT_PAYMENT_UPDATED = 'payment.updated';
 
+    //  Refund events
+    const EVENT_PAYMENT_REFUND_CREATED = 'payment.refund.created';
+    const EVENT_PAYMENT_REFUND_UPDATED = 'payment.refund.updated';
+
     //  Invoice Events
     const EVENT_INVOICE_CREATED         = 'invoice.created';
     const EVENT_INVOICE_UPDATED         = 'invoice.updated';

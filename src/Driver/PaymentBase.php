@@ -75,8 +75,7 @@ class PaymentBase extends Base
         $sSuccessUrl,
         $sFailUrl,
         $sContinueUrl
-    )
-    {
+    ) {
         throw new DriverException('Driver must implement the charge() method', 1);
     }
 
@@ -99,10 +98,24 @@ class PaymentBase extends Base
 
     /**
      * Issue a refund for a payment
-     * @return boolean
+     * @param  string    $sTxnId       The transaction's ID
+     * @param  integer   $iAmount      The amount to refund
+     * @param  string    $sCurrency    The currency in which to refund
+     * @param  \stdClass $oCustomData  The custom data object
+     * @param  string    $sReason      The refund's reason
+     * @param  \stdClass $oPayment     The payment object
+     * @param  \stdClass $oInvoice     The invoice object
+     * @return \Nails\Invoice\Model\RefundResponse
      */
-    public function refund()
-    {
+    public function refund(
+        $sTxnId,
+        $iAmount,
+        $sCurrency,
+        $oCustomData,
+        $sReason,
+        $oPayment,
+        $oInvoice
+    ) {
         throw new DriverException('Driver must implement the refund() method', 1);
     }
 }

@@ -143,7 +143,7 @@ class InvoiceItem extends Base
         $iUnitCost = $oObj->unit_cost;
         $oObj->unit_cost                      = new \stdClass();
         $oObj->unit_cost->base                = $iUnitCost;
-        $oObj->unit_cost->localised           = (float) number_format($oObj->unit_cost->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->unit_cost->localised           = (float) number_format($oObj->unit_cost->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
         $oObj->unit_cost->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->unit_cost->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
 
         //  Totals

@@ -50,7 +50,7 @@ _INVOICE_CUSTOMERSEARCH = function()
                         },
                         dataType: 'json'
                     }).done(function(data) {
-                        console.log('init', data);
+
                         var out = {
                             'id': data.data.id,
                             'text': data.data.label

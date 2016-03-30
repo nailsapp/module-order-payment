@@ -265,7 +265,7 @@ class Invoice extends NAILS_Controller
                     );
 
                     //  Handle response
-                    if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete())  {
+                    if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete()) {
 
                         /**
                          * Payment was successfull (but potentially unconfirmed). Send the user off to

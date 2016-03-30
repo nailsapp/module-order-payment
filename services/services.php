@@ -44,6 +44,13 @@ return array(
                 return new \Nails\Invoice\Model\Payment();
             }
         },
+        'PaymentRefund' => function () {
+            if (class_exists('\App\Invoice\Model\PaymentRefund')) {
+                return new \App\Invoice\Model\PaymentRefund();
+            } else {
+                return new \Nails\Invoice\Model\PaymentRefund();
+            }
+        },
         'PaymentDriver' => function () {
             if (class_exists('\App\Invoice\Model\PaymentDriver')) {
                 return new \App\Invoice\Model\PaymentDriver();

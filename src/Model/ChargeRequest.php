@@ -499,10 +499,6 @@ class ChargeRequest extends RequestBase
 
         } elseif ($oChargeResponse->isFailed()) {
 
-            /**
-             * Payment failed
-             */
-
             //  Update the payment
             $sPaymentClass = get_class($this->oPaymentModel);
             $bResult       = $this->oPaymentModel->update(
