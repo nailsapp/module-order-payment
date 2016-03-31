@@ -50,7 +50,7 @@ class RefundRequest extends RequestBase
      * @param  integer $iAmount The amount to refund
      * @return \Nails\Invoice\Model\ChargeResponse
      */
-    public function refund($iAmount)
+    public function execute($iAmount)
     {
         //  Ensure we have a driver
         if (empty($this->oDriver)) {

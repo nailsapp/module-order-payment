@@ -547,7 +547,7 @@ class Payment extends Base
             $oRefundRequest->setPayment($oPayment->id);
 
             //  Attempt the refund
-            $oRefundResponse = $oRefundRequest->refund($iAmount);
+            $oRefundResponse = $oRefundRequest->execute($iAmount);
 
             if ($oRefundResponse->isProcessing() || $oRefundResponse->isComplete()) {
 

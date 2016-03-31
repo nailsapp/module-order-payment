@@ -62,7 +62,7 @@ class Payment extends NAILS_Controller
                 $oCompleteRequest->setContinueUrl($oPayment->urls->continue);
 
                 //  Attempt completion
-                $oCompleteResponse = $oCompleteRequest->complete(
+                $oCompleteResponse = $oCompleteRequest->execute(
                     $this->input->get(),
                     $this->input->post()
                 );

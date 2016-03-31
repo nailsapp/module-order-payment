@@ -51,7 +51,7 @@ class CompleteRequest extends RequestBase
      * @param  array $aPostVars Any $_POST variables passed from the redirect flow
      * @return \Nails\Invoice\Model\CompleteResponse
      */
-    public function complete($aGetVars, $aPostVars)
+    public function execute($aGetVars, $aPostVars)
     {
         //  Ensure we have a driver
         if (empty($this->oDriver)) {

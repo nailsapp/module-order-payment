@@ -259,7 +259,7 @@ class Invoice extends NAILS_Controller
                     }
 
                     //  Attempt payment
-                    $oChargeResponse = $oChargeRequest->charge(
+                    $oChargeResponse = $oChargeRequest->execute(
                         $oInvoice->totals->base->grand,
                         $oInvoice->currency
                     );

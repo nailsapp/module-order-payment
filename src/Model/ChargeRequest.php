@@ -362,12 +362,12 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Start the charge
+     * execute the charge
      * @param  integer   $iAmount    The amount to charge the card
      * @param  string    $sCurrency  The currency in which to charge
      * @return \Nails\Invoice\Model\ChargeResponse
      */
-    public function charge($iAmount, $sCurrency)
+    public function execute($iAmount, $sCurrency)
     {
         //  Ensure we have a driver
         if (empty($this->oDriver)) {
