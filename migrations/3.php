@@ -3,7 +3,7 @@
 /**
  * Migration:   3
  * Started:     30/03/2016
- * Finalised:
+ * Finalised:   31/03/2016
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -25,14 +25,14 @@ class Migration3 extends Base
     public function execute()
     {
         $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` CHANGE `status` `status` ENUM('PENDING','PROCESSING','COMPLETE','FAILED','REFUNDED','REFUNDED_PARTIAL')  CHARACTER SET utf8  COLLATE utf8_general_ci  NOT NULL  DEFAULT 'PENDING';");
-
         $this->query("
-            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_payment_refund` (
+            CREATE TABLE `{{NAILS_DB_PREFIX}}invoice_refund` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `payment_id` int(11) unsigned NOT NULL,
+                `invoice_id` int(11) unsigned NOT NULL,
                 `ref` char(15) NOT NULL DEFAULT '',
                 `reason` varchar(255) DEFAULT NULL,
-                `status` enum('PENDING','PROCESSING','COMPLETE','FAILED','REFUNDED') NOT NULL DEFAULT 'PENDING',
+                `status` enum('PENDING','PROCESSING','COMPLETE','FAILED') NOT NULL DEFAULT 'PENDING',
                 `txn_id` varchar(255) DEFAULT NULL,
                 `fail_msg` varchar(255) DEFAULT NULL,
                 `fail_code` int(11) DEFAULT NULL,
@@ -47,9 +47,11 @@ class Migration3 extends Base
                 KEY `created_by` (`created_by`),
                 KEY `modified_by` (`modified_by`),
                 KEY `payment_id` (`payment_id`),
-                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_payment_refund_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_payment_refund_ibfk_3` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
-                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_payment_refund_ibfk_4` FOREIGN KEY (`payment_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_payment` (`id`) ON DELETE CASCADE
+                KEY `invoice_id` (`invoice_id`),
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_refund_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_refund_ibfk_2` FOREIGN KEY (`modified_by`) REFERENCES `{{NAILS_DB_PREFIX}}user` (`id`) ON DELETE SET NULL,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_refund_ibfk_3` FOREIGN KEY (`payment_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_payment` (`id`) ON DELETE CASCADE,
+                CONSTRAINT `{{NAILS_DB_PREFIX}}invoice_refund_ibfk_4` FOREIGN KEY (`invoice_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_invoice` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         ");
     }
