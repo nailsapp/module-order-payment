@@ -193,6 +193,16 @@ class Invoice extends Base
                 );
             }
 
+            if (!empty($aData['includeAll']) || !empty($aData['includeRefunds'])) {
+                $this->getManyAssociatedItems(
+                    $aItems,
+                    'refunds',
+                    'invoice_id',
+                    'Refund',
+                    'nailsapp/module-invoice'
+                );
+            }
+
             if (!empty($aData['includeAll']) || !empty($aData['includeItems'])) {
                 $this->getManyAssociatedItems(
                     $aItems,

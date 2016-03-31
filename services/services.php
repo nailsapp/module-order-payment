@@ -44,11 +44,11 @@ return array(
                 return new \Nails\Invoice\Model\Payment();
             }
         },
-        'PaymentRefund' => function () {
-            if (class_exists('\App\Invoice\Model\PaymentRefund')) {
-                return new \App\Invoice\Model\PaymentRefund();
+        'Refund' => function () {
+            if (class_exists('\App\Invoice\Model\Refund')) {
+                return new \App\Invoice\Model\Refund();
             } else {
-                return new \Nails\Invoice\Model\PaymentRefund();
+                return new \Nails\Invoice\Model\Refund();
             }
         },
         'PaymentDriver' => function () {

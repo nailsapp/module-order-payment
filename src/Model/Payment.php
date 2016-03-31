@@ -122,7 +122,7 @@ class Payment extends Base
                     $aItems,
                     'refunds',
                     'payment_id',
-                    'PaymentRefund',
+                    'Refund',
                     'nailsapp/module-invoice'
                 );
             }
@@ -159,9 +159,9 @@ class Payment extends Base
      **/
     protected function getCountCommon($data = array())
     {
-        $oDb                 = Factory::service('Database');
-        $oInvoiceModel       = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oPaymentRefundModel = Factory::model('PaymentRefund', 'nailsapp/module-invoice');
+        $oDb           = Factory::service('Database');
+        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oRefundModel  = Factory::model('Refund', 'nailsapp/module-invoice');
 
         $oDb->select($this->tablePrefix . '.*, i.ref invoice_ref, i.state invoice_state');
 
@@ -169,14 +169,14 @@ class Payment extends Base
             (
                 SELECT
                     SUM(amount)
-                FROM ' . NAILS_DB_PREFIX . 'invoice_payment_refund r
+                FROM ' . $oRefundModel->getTableName() . ' r
                 WHERE
                 r.payment_id = ' . $this->tablePrefix . '.id
                 AND
                 (
-                    status = "' . $oPaymentRefundModel::STATUS_COMPLETE . '"
+                    status = "' . $oRefundModel::STATUS_COMPLETE . '"
                     OR
-                    status = "' . $oPaymentRefundModel::STATUS_PROCESSING . '"
+                    status = "' . $oRefundModel::STATUS_PROCESSING . '"
                 )
             ) amount_refunded
         ');
@@ -184,14 +184,14 @@ class Payment extends Base
             (
                 SELECT
                     SUM(fee)
-                FROM ' . NAILS_DB_PREFIX . 'invoice_payment_refund r
+                FROM ' . $oRefundModel->getTableName() . ' r
                 WHERE
                 r.payment_id = ' . $this->tablePrefix . '.id
                 AND
                 (
-                    status = "' . $oPaymentRefundModel::STATUS_COMPLETE . '"
+                    status = "' . $oRefundModel::STATUS_COMPLETE . '"
                     OR
-                    status = "' . $oPaymentRefundModel::STATUS_PROCESSING . '"
+                    status = "' . $oRefundModel::STATUS_PROCESSING . '"
                 )
             ) fee_refunded
         ');
@@ -350,102 +350,84 @@ class Payment extends Base
 
     /**
      * Set a payment as PENDING
-     * @param  integer  $iPaymentId The Payment to update
+     * @param  integer  $iPaymentId The payment to update
+     * @param  array    $aData      Any additional data to save to the transaction
      * @return boolean
      */
-    public function setPending($iPaymentId)
+    public function setPending($iPaymentId, $aData = array())
     {
-        return $this->update(
-            $iPaymentId,
-            array(
-                'state' => self::STATUS_PENDING
-            )
-        );
+        $aData['status'] = self::STATUS_PENDING;
+        return $this->update($iPaymentId, $aData);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set a payment as PROCESSING
-     * @param  integer  $iPaymentId The Payment to update
+     * @param  integer  $iPaymentId The payment to update
+     * @param  array    $aData      Any additional data to save to the transaction
      * @return boolean
      */
-    public function setProcessing($iPaymentId)
+    public function setProcessing($iPaymentId, $aData = array())
     {
-        return $this->update(
-            $iPaymentId,
-            array(
-                'state' => self::STATUS_PROCESSING
-            )
-        );
+        $aData['status'] = self::STATUS_PROCESSING;
+        return $this->update($iPaymentId, $aData);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set a payment as COMPLETE
-     * @param  integer  $iPaymentId The Payment to update
+     * @param  integer  $iPaymentId The payment to update
+     * @param  array    $aData      Any additional data to save to the transaction
      * @return boolean
      */
-    public function setComplete($iPaymentId)
+    public function setComplete($iPaymentId, $aData = array())
     {
-        return $this->update(
-            $iPaymentId,
-            array(
-                'state' => self::STATUS_COMPLETE
-            )
-        );
+        $aData['status'] = self::STATUS_COMPLETE;
+        return $this->update($iPaymentId, $aData);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set a payment as FAILED
-     * @param  integer  $iPaymentId The Payment to update
+     * @param  integer  $iPaymentId The payment to update
+     * @param  array    $aData      Any additional data to save to the transaction
      * @return boolean
      */
-    public function setFailed($iPaymentId)
+    public function setFailed($iPaymentId, $aData = array())
     {
-        return $this->update(
-            $iPaymentId,
-            array(
-                'state' => self::STATUS_FAILED
-            )
-        );
+        $aData['status'] = self::STATUS_FAILED;
+        return $this->update($iPaymentId, $aData);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set a payment as REFUNDED
-     * @param  integer  $iPaymentId The Payment to update
+     * @param  integer  $iPaymentId The payment to update
+     * @param  array    $aData      Any additional data to save to the transaction
      * @return boolean
      */
-    public function setRefunded($iPaymentId)
+    public function setRefunded($iPaymentId, $aData = array())
     {
-        return $this->update(
-            $iPaymentId,
-            array(
-                'state' => self::STATUS_REFUNDED
-            )
-        );
+        $aData['status'] = self::STATUS_REFUNDED;
+        return $this->update($iPaymentId, $aData);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set a payment as REFUNDED_PARTIAL
-     * @param  integer  $iPaymentId The Payment to update
+     * @param  integer  $iPaymentId The payment to update
+     * @param  array    $aData      Any additional data to save to the transaction
      * @return boolean
      */
-    public function setRefundedPartial($iPaymentId)
+    public function setRefundedPartial($iPaymentId, $aData = array())
     {
-        return $this->update(
-            $iPaymentId,
-            array(
-                'state' => self::STATUS_REFUNDED_PARTIAL
-            )
-        );
+        $aData['status'] = self::STATUS_REFUNDED_PARTIAL;
+        return $this->update($iPaymentId, $aData);
     }
 
     // --------------------------------------------------------------------------
@@ -500,7 +482,7 @@ class Payment extends Base
 
             } else {
 
-                throw new PaymentException('No email address to send the invoice to.', 1);
+                throw new PaymentException('No email address to send the receipt to.', 1);
             }
 
             $aEmails = array_unique($aEmails);
@@ -563,9 +545,6 @@ class Payment extends Base
 
             //  Set the payment we're refunding against
             $oRefundRequest->setPayment($oPayment->id);
-
-            //  Set the invoice we're refunding against
-            $oRefundRequest->setInvoice($oPayment->invoice->id);
 
             //  Attempt the refund
             $oRefundResponse = $oRefundRequest->refund($iAmount);
@@ -635,7 +614,7 @@ class Payment extends Base
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
         //  Status
-        $aStatuses = $this->getStatuses();
+        $aStatuses = $this->getStatusesHuman();
         $sStatus   = $oObj->status;
 
         $oObj->status        = new \stdClass();

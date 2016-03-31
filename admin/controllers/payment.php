@@ -187,12 +187,12 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $this->data['payment'] = $oPaymentModel->getById($this->uri->segment(5), array('includeRefunds' => true));
+        $this->data['payment'] = $oPaymentModel->getById($this->uri->segment(5), array('includeAll' => true));
         if (!$this->data['payment']) {
             show_404();
         }
 
-        $this->data['page']->title = 'View Payment &rsaquo; ' . $this->data['payment']->id;
+        $this->data['page']->title = 'View Payment &rsaquo; ' . $this->data['payment']->ref;
 
         Helper::loadView('view');
     }

@@ -333,8 +333,9 @@ class Invoice extends NAILS_Controller
             $sInvoiceRef,
             array(
                 'includeCustomer' => true,
-                'includeItems' => true,
-                'includePayments' => true
+                'includeItems'    => true,
+                'includePayments' => true,
+                'includeRefunds'  => true
             )
         );
 

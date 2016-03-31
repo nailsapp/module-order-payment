@@ -19,18 +19,6 @@ use Nails\Invoice\Exception\RefundRequestException;
 class RefundRequest extends RequestBase
 {
     protected $sReason;
-    protected $oPaymentRefund;
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Construct the request
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->oPaymentRefundModel = Factory::model('PaymentRefund', 'nailsapp/module-invoice');
-    }
 
     // --------------------------------------------------------------------------
 
@@ -58,25 +46,6 @@ class RefundRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Set the payment refund  object
-     * @param integer $iPaymentRefundId The payment refund to use for the request
-     */
-    public function setPaymentRefund($iPaymentRefundId)
-    {
-        //  Validate
-        $oPaymentRefund = $this->oPaymentRefundModel->getById($iPaymentRefundId);
-
-        if (empty($oPayment)) {
-            throw new RequestException('Invalid payment refund ID.', 1);
-        }
-
-        $this->oPayment = $oPayment;
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Execute the refund
      * @param  integer $iAmount The amount to refund
      * @return \Nails\Invoice\Model\ChargeResponse
@@ -91,6 +60,11 @@ class RefundRequest extends RequestBase
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
             throw new RefundRequestException('No payment selected.', 1);
+        }
+
+        //  Ensure we have an invoice
+        if (empty($this->oInvoice)) {
+            $this->setInvoice($this->oPayment->invoice->id);
         }
 
         //  Validate ability to refund
@@ -122,21 +96,23 @@ class RefundRequest extends RequestBase
         }
 
         //  Create a refund against the payment if one hasn't been specified
-        if (empty($this->oPaymentRefund)) {
+        if (empty($this->oRefund)) {
 
-            $this->oPaymentRefund = $this->oPaymentRefundModel->create(
+            $iRefundId = $this->oRefundModel->create(
                 array(
                     'reason'     => $this->getReason(),
                     'payment_id' => $this->oPayment->id,
+                    'invoice_id' => $this->oInvoice->id,
                     'currency'   => $this->oPayment->currency,
                     'amount'     => $iRefundAmount
-                ),
-                true
+                )
             );
 
-            if (empty($this->oPaymentRefund)) {
-                throw new RefundRequestException('Failed to create new payment refund.', 1);
+            if (empty($iRefundId)) {
+                throw new RefundRequestException('Failed to create new refund.', 1);
             }
+
+            $this->setRefund($iRefundId);
         }
 
         //  Execute the refund
@@ -165,7 +141,7 @@ class RefundRequest extends RequestBase
         if ($oRefundResponse->isComplete()) {
 
             //  Driver has confirmed that the refund was accepted
-            $this->setPaymentRefundComplete(
+            $this->setRefundComplete(
                 $oRefundResponse->getTxnId(),
                 $oRefundResponse->getFee()
             );
@@ -174,11 +150,11 @@ class RefundRequest extends RequestBase
         } elseif ($oRefundResponse->isFailed()) {
 
             //  Update the payment
-            $sPaymentRefundClass = get_class($this->oPaymentRefundModel);
-            $bResult             = $this->oPaymentRefundModel->update(
-                $this->oPaymentRefund->id,
+            $sRefundClass = get_class($this->oRefundModel);
+            $bResult             = $this->oRefundModel->update(
+                $this->oRefund->id,
                 array(
-                    'status'    => $sPaymentRefundClass::STATUS_FAILED,
+                    'status'    => $sRefundClass::STATUS_FAILED,
                     'fail_msg'  => $oRefundResponse->getError()->msg,
                     'fail_code' => $oRefundResponse->getError()->code
                 )

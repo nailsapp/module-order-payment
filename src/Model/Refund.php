@@ -16,7 +16,7 @@ use Nails\Factory;
 use Nails\Common\Model\Base;
 use Nails\Invoice\Exception\PaymentException;
 
-class PaymentRefund extends Base
+class Refund extends Base
 {
     //  Statuses
     const STATUS_PENDING    = 'PENDING';
@@ -44,7 +44,7 @@ class PaymentRefund extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->table             = NAILS_DB_PREFIX . 'invoice_payment_refund';
+        $this->table             = NAILS_DB_PREFIX . 'invoice_refund';
         $this->tablePrefix       = 'pr';
         $this->defaultSortColumn = 'created';
     }
@@ -110,6 +110,16 @@ class PaymentRefund extends Base
                     )
                 );
             }
+
+            if (!empty($aData['includeAll']) || !empty($aData['includePayment'])) {
+                $this->getSingleAssociatedItem(
+                    $aItems,
+                    'payment_id',
+                    'payment',
+                    'Payment',
+                    'nailsapp/module-invoice'
+                );
+            }
         }
 
         return $aItems;
@@ -118,9 +128,9 @@ class PaymentRefund extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Create a new payment refund
-     * @param  array   $aData         The data to create the payment refund with
-     * @param  boolean $bReturnObject Whether to return the complete payment refund object
+     * Create a new refund
+     * @param  array   $aData         The data to create the refund with
+     * @param  boolean $bReturnObject Whether to return the complete refund object
      * @return mixed
      */
     public function create($aData = array(), $bReturnObject = false)
@@ -135,10 +145,10 @@ class PaymentRefund extends Base
                 $aData['ref'] = $this->generateValidRef();
             }
 
-            $oPaymentRefund = parent::create($aData, true);
+            $oRefund = parent::create($aData, true);
 
-            if (!$oPaymentRefund) {
-                throw new PaymentException('Failed to create payment refund.', 1);
+            if (!$oRefund) {
+                throw new PaymentException('Failed to create refund.', 1);
             }
 
             $oDb->trans_commit();
@@ -147,9 +157,9 @@ class PaymentRefund extends Base
             $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
             $sPaymentClass        = get_class($oPaymentEventHandler);
 
-            $oPaymentEventHandler->trigger($sPaymentClass::EVENT_PAYMENT_REFUND_CREATED, $oPaymentRefund);
+            $oPaymentEventHandler->trigger($sPaymentClass::EVENT_PAYMENT_REFUND_CREATED, $oRefund);
 
-            return $bReturnObject ? $oPaymentRefund : $oPaymentRefund->id;
+            return $bReturnObject ? $oRefund : $oRefund->id;
 
         } catch (\Exception $e) {
 
@@ -163,11 +173,11 @@ class PaymentRefund extends Base
 
     /**
      * Update a payment
-     * @param  integer $iPaymentRefundId The ID of the payment refund to update
-     * @param  array   $aData            The data to update the payment with
+     * @param  integer $iRefundId The ID of the refund to update
+     * @param  array   $aData     The data to update the payment with
      * @return boolean
      */
-    public function update($iPaymentRefundId, $aData = array())
+    public function update($iRefundId, $aData = array())
     {
         $oDb = Factory::service('Database');
 
@@ -177,10 +187,10 @@ class PaymentRefund extends Base
 
             unset($aData['ref']);
 
-            $bResult = parent::update($iPaymentRefundId, $aData);
+            $bResult = parent::update($iRefundId, $aData);
 
             if (!$bResult) {
-                throw new PaymentException('Failed to update payment refund.', 1);
+                throw new PaymentException('Failed to update refund.', 1);
             }
 
             $oDb->trans_commit();
@@ -191,7 +201,7 @@ class PaymentRefund extends Base
 
             $oPaymentEventHandler->trigger(
                 $sPaymentClass::EVENT_PAYMENT_REFUND_UPDATED,
-                $this->getById($iPaymentRefundId)
+                $this->getById($iRefundId)
             );
 
             return $bResult;
@@ -230,9 +240,144 @@ class PaymentRefund extends Base
 
     // --------------------------------------------------------------------------
 
-    public function sendReceipt($iPaymentRefundId, $sEmailOverride = null)
+    /**
+     * Set a refund as PENDING
+     * @param  integer  $iRefundId The refund to update
+     * @param  array    $aData     Any additional data to save to the transaction
+     * @return boolean
+     */
+    public function setPending($iRefundId, $aData = array())
     {
-        //  @todo
+        $aData['status'] = self::STATUS_PENDING;
+        return $this->update($iRefundId, $aData);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a refund as PROCESSING
+     * @param  integer  $iRefundId The refund to update
+     * @param  array    $aData     Any additional data to save to the transaction
+     * @return boolean
+     */
+    public function setProcessing($iRefundId, $aData = array())
+    {
+        $aData['status'] = self::STATUS_PROCESSING;
+        return $this->update($iRefundId, $aData);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a refund as COMPLETE
+     * @param  integer  $iRefundId The refund to update
+     * @param  array    $aData     Any additional data to save to the transaction
+     * @return boolean
+     */
+    public function setComplete($iRefundId, $aData = array())
+    {
+        $aData['status'] = self::STATUS_COMPLETE;
+        return $this->update($iRefundId, $aData);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a refund as FAILED
+     * @param  integer  $iRefundId The refund to update
+     * @param  array    $aData     Any additional data to save to the transaction
+     * @return boolean
+     */
+    public function setFailed($iRefundId, $aData = array())
+    {
+        $aData['status'] = self::STATUS_FAILED;
+        return $this->update($iRefundId, $aData);
+    }
+
+    // --------------------------------------------------------------------------
+
+    public function sendReceipt($iRefundId, $sEmailOverride = null)
+    {
+        try {
+
+            $oRefund = $this->getById($iRefundId, array('includeInvoice' => true, 'includePayment' => true));
+
+            if (empty($oRefund)) {
+                throw new PaymentException('Invalid Payment ID', 1);
+            }
+
+            if (!in_array($oRefund->status->id, array(self::STATUS_PROCESSING, self::STATUS_COMPLETE))) {
+                throw new PaymentException('Refund must be in a paid or processing state to send receipt.', 1);
+            }
+
+            $oEmail = new \stdClass();
+
+            if ($oRefund->status->id == self::STATUS_COMPLETE) {
+
+                $oEmail->type = 'refund_complete_receipt';
+
+            } else {
+
+                $oEmail->type = 'refund_processing_receipt';
+            }
+
+            $oEmail->data = array(
+                'refund' => $oRefund
+            );
+
+            if (!empty($sEmailOverride)) {
+
+                //  @todo, validate email address (or addresses if an array)
+                $aEmails = explode(',', $sEmailOverride);
+
+            } elseif (!empty($oRefund->invoice->customer->billing_email)) {
+
+                $aEmails = explode(',', $oRefund->invoice->customer->billing_email);
+
+            } elseif (!empty($oRefund->invoice->customer->email)) {
+
+                $aEmails = array($oRefund->invoice->customer->email);
+
+            } else {
+
+                throw new PaymentException('No email address to send the receipt to.', 1);
+            }
+
+            $aEmails = array_unique($aEmails);
+            $aEmails = array_filter($aEmails);
+
+            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
+
+            foreach ($aEmails as $sEmail) {
+
+                $oEmail->to_email = $sEmail;
+                $oResult = $oEmailer->send($oEmail);
+
+                if (!empty($oResult)) {
+
+                    $oInvoiceEmailModel->create(
+                        array(
+                            'invoice_id' => $oRefund->invoice->id,
+                            'email_id'   => $oResult->id,
+                            'email_type' => $oEmail->type,
+                            'recipient'  => $oEmail->to_email
+                        )
+                    );
+
+                } else {
+
+                    throw new PaymentException($oEmailer->lastError(), 1);
+                }
+            }
+
+        } catch (\Exception $e) {
+
+            $this->setError($e->getMessage());
+            return false;
+        }
+
+        return true;
     }
 
     // --------------------------------------------------------------------------
@@ -265,7 +410,7 @@ class PaymentRefund extends Base
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
         //  Status
-        $aStatuses = $this->getStatuses();
+        $aStatuses = $this->getStatusesHuman();
         $sStatus   = $oObj->status;
 
         $oObj->status        = new \stdClass();
