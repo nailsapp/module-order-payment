@@ -249,8 +249,9 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $this->asset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
-        $this->asset->inline(
+        $oAsset = Factory::service('Asset');
+        $oAsset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
+        $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
                     ' . json_encode($aItemUnits) . ',
@@ -357,8 +358,9 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $this->asset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
-        $this->asset->inline(
+        $oAsset = Factory::service('Asset');
+        $oAsset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
+        $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
                     ' . json_encode($aItemUnits) . ',
@@ -393,6 +395,9 @@ class Invoice extends BaseAdmin
         }
 
         $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
+
+        $oAsset = Factory::service('Asset');
+        $oAsset->load('admin.invoice.view.min.js', 'nailsapp/module-invoice');
 
         Helper::loadView('view');
     }

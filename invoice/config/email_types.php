@@ -40,5 +40,25 @@ $config['email_types'] = array(
         'template_body'    => 'invoice/email/payment_processing_receipt',
         'template_footer'  => '',
         'default_subject'  => 'We are processing your payment - Invoice {{payment.invoice.ref}}'
+    ),
+    (object) array(
+        'slug'             => 'refund_complete_receipt',
+        'name'             => 'Invoice & Payments: Refund Receipt',
+        'description'      => 'Email sent when a refund is sent',
+        'isUnsubscribable' => false,
+        'template_header'  => '',
+        'template_body'    => 'invoice/email/refund_complete_receipt',
+        'template_footer'  => '',
+        'default_subject'  => 'You have been refunded'
+    ),
+    (object) array(
+        'slug'             => 'refund_processing_receipt',
+        'name'             => 'Invoice & Payments: Refund Receipt (Processing)',
+        'description'      => 'Email sent when a refund is processing',
+        'isUnsubscribable' => false,
+        'template_header'  => '',
+        'template_body'    => 'invoice/email/refund_processing_receipt',
+        'template_footer'  => '',
+        'default_subject'  => 'We are processing your refund'
     )
 );

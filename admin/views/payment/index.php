@@ -13,6 +13,7 @@
                     <th class="status">Status</th>
                     <th class="invoice">Invoice</th>
                     <th class="amount">Amount</th>
+                    <th class="amount">Fee</th>
                     <th class="currency">Currency</th>
                     <th class="datetime">Received</th>
                     <th class="actions">Actions</th>
@@ -75,13 +76,34 @@
 
                                 echo anchor(
                                     $sUrl,
-                                    $oPayment->invoice_ref . ' (' . $invoiceStates[$oPayment->invoice_state] . ')'
+                                    $oPayment->invoice_ref . ' &mdash; ' . $invoiceStates[$oPayment->invoice_state]
                                 );
 
                                 ?>
                             </td>
                             <td class="amount">
-                                <?=$oPayment->amount->localised_formatted?>
+                                <?php
+
+                                echo $oPayment->amount->localised_formatted;
+                                if ($oPayment->amount_refunded->base) {
+                                    echo '<small>';
+                                    echo 'Refunded: ' . $oPayment->amount_refunded->localised_formatted;
+                                    echo '</small>';
+                                }
+
+                                ?>
+                            </td>
+                            <td class="fee">
+                                <?php
+
+                                echo $oPayment->fee->localised_formatted;
+                                if ($oPayment->fee_refunded->base) {
+                                    echo '<small>';
+                                    echo 'Refunded: ' . $oPayment->fee_refunded->localised_formatted;
+                                    echo '</small>';
+                                }
+
+                                ?>
                             </td>
                             <td class="currency">
                                 <?=$oPayment->currency?>

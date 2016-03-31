@@ -167,7 +167,9 @@
                             <th>Gateway</th>
                             <th>Reference</th>
                             <th>Amount</th>
+                            <th>Fee</th>
                             <th>Created</th>
+                            <th>Modified</th>
                             <th class="actions">Actions</th>
                     </thead>
                     <tbody>
@@ -181,8 +183,32 @@
                                 <td class="text-center"><?=$oPayment->status->label?></td>
                                 <td><?=$oPayment->driver->label?></td>
                                 <td><?=$oPayment->txn_id?></td>
-                                <td><?=$oPayment->amount->localised_formatted?></td>
+                                <td>
+                                    <?php
+
+                                    echo $oPayment->amount->localised_formatted;
+                                    if ($oPayment->amount_refunded->base) {
+                                        echo '<small>';
+                                        echo 'Refunded: ' . $oPayment->amount_refunded->localised_formatted;
+                                        echo '</small>';
+                                    }
+
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php
+
+                                    echo $oPayment->fee->localised_formatted;
+                                    if ($oPayment->fee_refunded->base) {
+                                        echo '<small>';
+                                        echo 'Refunded: ' . $oPayment->fee_refunded->localised_formatted;
+                                        echo '</small>';
+                                    }
+
+                                    ?>
+                                </td>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
+                                <?=adminHelper('loadDateTimeCell', $oPayment->modified)?>
                                 <td class="actions">
                                     <?php
 
@@ -192,8 +218,98 @@
                                         'class="btn btn-xs btn-default"'
                                     );
 
+                                    if ($oPayment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
+
+                                        $aAttr = array(
+                                            'class="btn btn-xs btn-danger js-confirm-refund"',
+                                            'data-max="' . $oPayment->available_for_refund->localised . '"',
+                                            'data-max-formatted="' . $oPayment->available_for_refund->localised_formatted . '"',
+                                            'data-return-to="' . urlencode(current_url()) . '"',
+                                        );
+
+                                        echo anchor(
+                                            'admin/invoice/payment/refund/' . $oPayment->id,
+                                            'Refund',
+                                            implode(' ', $aAttr)
+                                        );
+                                    }
+
                                     ?>
                                 </td>
+                            </tr>
+                            <?php
+
+                        }
+
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php
+
+        } else {
+
+            ?>
+            <div class="panel-body text-muted">
+                No Associated Payments
+            </div>
+            <?php
+        }
+
+        ?>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Associated Refunds</strong>
+        </div>
+        <?php
+
+        if (userHasPermission('admin:invoice:payment:view') && $invoice->refunds->count > 0) {
+
+            ?>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="text-center">ID</th>
+                            <th class="text-center">Status</th>
+                            <th>Reference</th>
+                            <th>Amount</th>
+                            <th>Fee</th>
+                            <th>Created</th>
+                            <th>Modified</th>
+                    </thead>
+                    <tbody>
+                        <?php
+
+                        foreach ($invoice->refunds->data as $oRefund) {
+
+                            ?>
+                            <tr>
+                                <td class="text-center"><?=$oRefund->id?></td>
+                                <td class="text-center">
+                                    <?php
+
+                                    echo $oRefund->status->label;
+
+                                    if (!empty($oRefund->fail_msg)) {
+
+                                        echo '<small class="text-danger">';
+                                        echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
+                                        echo '</small>';
+                                    }
+
+                                    ?>
+                                </td>
+                                <td><?=$oRefund->txn_id?></td>
+                                <td>
+                                    <?=$oRefund->amount->localised_formatted?>
+                                </td>
+                                <td>
+                                    <?=$oRefund->fee->localised_formatted?>
+                                </td>
+                                <?=adminHelper('loadDateTimeCell', $oRefund->created)?>
+                                <?=adminHelper('loadDateTimeCell', $oRefund->modified)?>
                             </tr>
                             <?php
 

@@ -44,7 +44,8 @@ class ChargeResponse extends ResponseBase
      * Whether the response is a redirect
      * @return boolean
      */
-    public function isRedirect() {
+    public function isRedirect()
+    {
         return $this->bIsRedirect;
     }
 
@@ -83,7 +84,8 @@ class ChargeResponse extends ResponseBase
      * The URL to redirect to
      * @return string
      */
-    public function getRedirectUrl() {
+    public function getRedirectUrl()
+    {
         return $this->sRedirectUrl;
     }
 
@@ -107,7 +109,8 @@ class ChargeResponse extends ResponseBase
      * The URL to redirect to on successsful payment
      * @return string
      */
-    public function getSuccessUrl() {
+    public function getSuccessUrl()
+    {
         return $this->sSuccessUrl;
     }
 
@@ -117,7 +120,8 @@ class ChargeResponse extends ResponseBase
      * The URL to redirect to on failed payment
      * @return string
      */
-    public function getFailUrl() {
+    public function getFailUrl()
+    {
         return $this->sFailUrl;
     }
 
@@ -181,7 +185,8 @@ class ChargeResponse extends ResponseBase
      * Any data which should be POST'ed to the endpoint
      * @return string
      */
-    public function getRedirectPostData() {
+    public function getRedirectPostData()
+    {
         return $this->aRedirectPostData;
     }
 }

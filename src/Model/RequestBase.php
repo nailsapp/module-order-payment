@@ -26,6 +26,9 @@ class RequestBase
     protected $oPayment;
     protected $oPaymentModel;
 
+    protected $oRefund;
+    protected $oRefundModel;
+
     protected $oPaymentEventHandler;
 
     // --------------------------------------------------------------------------
@@ -38,6 +41,7 @@ class RequestBase
         $this->oDriverModel         = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
         $this->oInvoiceModel        = Factory::model('Invoice', 'nailsapp/module-invoice');
         $this->oPaymentModel        = Factory::model('Payment', 'nailsapp/module-invoice');
+        $this->oRefundModel         = Factory::model('Refund', 'nailsapp/module-invoice');
         $this->oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
     }
 
@@ -108,6 +112,25 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Set the refund  object
+     * @param integer $iRefundId The refund to use for the request
+     */
+    public function setRefund($iRefundId)
+    {
+        //  Validate
+        $oRefund = $this->oRefundModel->getById($iRefundId);
+
+        if (empty($oRefund)) {
+            throw new RequestException('Invalid refund ID.', 1);
+        }
+
+        $this->oRefund = $oRefund;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set a payment as PROCESSING
      * @param string  $sTxnId The payment's transaction ID
      * @param integer $iFee   The fee charged by the processor, if known
@@ -120,19 +143,13 @@ class RequestBase
         }
 
         //  Update the payment
-        $sPaymentClass = get_class($this->oPaymentModel);
-        $aData = array(
-            'status' => $sPaymentClass::STATUS_PROCESSING,
-            'txn_id' => $sTxnId ? $sTxnId : null
-        );
+        $aData = array('txn_id' => $sTxnId ? $sTxnId : null);
 
         if (!is_null($iFee)) {
             $aData['fee'] = $iFee;
         }
 
-        $bResult = $this->oPaymentModel->update($this->oPayment->id, $aData);
-
-        if (empty($bResult)) {
+        if (!$this->oPaymentModel->setComplete($this->oPayment->id, $aData)) {
             throw new RequestException('Failed to update existing payment.', 1);
         }
 
@@ -156,7 +173,7 @@ class RequestBase
      * @param string  $sTxnId The payment's transaction ID
      * @param integer $iFee   The fee charged by the processor, if known
      */
-    protected function setPaymentComplete($sTxnId = null, $iFee)
+    protected function setPaymentComplete($sTxnId = null, $iFee = null)
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
@@ -169,19 +186,13 @@ class RequestBase
         }
 
         //  Update the payment
-        $sPaymentClass = get_class($this->oPaymentModel);
-        $aData = array(
-            'status' => $sPaymentClass::STATUS_COMPLETE,
-            'txn_id' => $sTxnId ? $sTxnId : null
-        );
+        $aData = array('txn_id' => $sTxnId ? $sTxnId : null);
 
         if (!is_null($iFee)) {
             $aData['fee'] = $iFee;
         }
 
-        $bResult = $this->oPaymentModel->update($this->oPayment->id, $aData);
-
-        if (empty($bResult)) {
+        if (!$this->oPaymentModel->setComplete($this->oPayment->id, $aData)) {
             throw new RequestException('Failed to update existing payment.', 1);
         }
 
@@ -196,5 +207,45 @@ class RequestBase
 
         //  Send receipt email
         $this->oPaymentModel->sendReceipt($this->oPayment->id);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a refund as COMPLETE
+     * @param string  $sTxnId       The refund's transaction ID
+     * @param integer $iFeeRefunded The fee refunded by the processor, if known
+     */
+    protected function setRefundComplete($sTxnId = null, $iFeeRefunded = null)
+    {
+        //  Ensure we have a payment
+        if (empty($this->oRefund)) {
+            throw new RequestException('No refund selected.', 1);
+        }
+
+        //  Update the refund
+        $aData = array('txn_id' => $sTxnId ? $sTxnId : null);
+
+        if (!is_null($iFeeRefunded)) {
+            $aData['fee'] = $iFeeRefunded;
+        }
+
+        if (!$this->oRefundModel->setComplete($this->oRefund->id, $aData)) {
+            throw new RequestException('Failed to update existing refund.', 1);
+        }
+
+        // Update the associated payment, if the payment is fully refunded then mark it so
+        $oPayment = $this->oPaymentModel->getById($this->oRefund->payment_id);
+        if ($oPayment->available_for_refund->base > 0) {
+
+            $this->oPaymentModel->setRefundedPartial($oPayment->id);
+
+        } else {
+
+            $this->oPaymentModel->setRefunded($oPayment->id);
+        }
+
+        //  Send receipt email
+        $this->oRefundModel->sendReceipt($this->oRefund->id);
     }
 }

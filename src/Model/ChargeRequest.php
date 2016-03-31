@@ -394,7 +394,7 @@ class ChargeRequest extends RequestBase
         //  Create a charge against the invoice if one hasn't been specified
         if (empty($this->oPayment)) {
 
-            $this->oPayment = $this->oPaymentModel->create(
+            $iPaymentId = $this->oPaymentModel->create(
                 array(
                     'driver'       => $this->oDriver->getSlug(),
                     'description'  => $this->getDescription(),
@@ -403,13 +403,14 @@ class ChargeRequest extends RequestBase
                     'amount'       => $iAmount,
                     'url_continue' => $this->getContinueUrl(),
                     'custom_data'  => $this->oCustomData
-                ),
-                true
+                )
             );
 
-            if (empty($this->oPayment)) {
+            if (empty($iPaymentId)) {
                 throw new ChargeRequestException('Failed to create new payment.', 1);
             }
+
+            $this->setPayment($iPaymentId);
         }
 
         $mFields = $this->oDriver->getPaymentFields();
@@ -498,10 +499,6 @@ class ChargeRequest extends RequestBase
             );
 
         } elseif ($oChargeResponse->isFailed()) {
-
-            /**
-             * Payment failed
-             */
 
             //  Update the payment
             $sPaymentClass = get_class($this->oPaymentModel);
