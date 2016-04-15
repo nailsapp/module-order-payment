@@ -60,6 +60,7 @@ class Invoice extends Base
         $this->tablePrefix       = 'i';
         $this->tableItem         = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'created';
+        $this->searchableFields  = array('id', 'ref');
     }
 
     // --------------------------------------------------------------------------

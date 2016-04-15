@@ -66,7 +66,7 @@ class Customer extends Base
      */
     public function getId($iId = null)
     {
-        $iId = (int) $this->input->get('id');
+        $iId = (int) $iId ?: (int) $this->input->get('id');
 
         if (empty($iId)) {
             return array(
