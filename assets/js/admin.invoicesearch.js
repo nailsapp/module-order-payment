@@ -8,7 +8,7 @@ _INVOICE_INVOICESEARCH = function()
     base.__construct =function() {
 
         $('input.invoice-search').select2({
-            placeholder: "Search for a user",
+            placeholder: "Search for an invoice",
             minimumInputLength: 3,
             ajax: {
                 url: window.SITE_URL + 'api/invoice/invoice/search',
