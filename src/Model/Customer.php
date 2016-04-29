@@ -62,6 +62,45 @@ class Customer extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * This method applies the conditionals which are common across the get_*()
+     * methods and the count() method.
+     * @param string $data Data passed from the calling method
+     * @return void
+     */
+    protected function getCountCommon($data = array())
+    {
+        //  If there's a search term, then we better get %LIKING%
+        if (!empty($data['keywords'])) {
+
+            if (empty($data['or_like'])) {
+
+                $data['or_like'] = array();
+            }
+
+            $keywordAsId = (int) preg_replace('/[^0-9]/', '', $data['keywords']);
+
+            if ($keywordAsId) {
+
+                $data['or_like'][] = array(
+                    'column' => $this->tablePrefix . '.id',
+                    'value'  => $keywordAsId
+                );
+            }
+            $data['or_like'][] = array(
+                'column' => $this->tablePrefix . '.label',
+                'value'  => $data['keywords']
+            );
+        }
+
+        // --------------------------------------------------------------------------
+
+        //  Let the parent method handle sorting, etc
+        parent::getCountCommon($data);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Create a new customer
      * @param  array   $aData         The data to create the customer with
      * @param  boolean $bReturnObject Whether to return the complete customer object
