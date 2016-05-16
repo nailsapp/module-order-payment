@@ -28,30 +28,47 @@
                 <div class="panel-heading">
                     <strong>Customer</strong>
                 </div>
-                <table>
-                    <tbody>
-                        <tr>
-                            <td class="header">Organisation</td>
-                            <td>
-                                <?=anchor('admin/invoice/customer/edit/' . $invoice->customer->id, $invoice->customer->label)?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="header">Sent To</td>
-                            <td>
-                                <?php
+                <?php
 
-                                if (!empty($invoice->customer->billing_email)) {
-                                    echo mailto($invoice->customer->billing_email);
-                                } else {
-                                    echo mailto($invoice->customer->email);
-                                }
+                if (!empty($invoice->customer)) {
 
-                                ?>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    ?>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td class="header">Organisation</td>
+                                <td>
+                                    <?=anchor('admin/invoice/customer/edit/' . $invoice->customer->id, $invoice->customer->label)?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="header">Sent To</td>
+                                <td>
+                                    <?php
+
+                                    if (!empty($invoice->customer->billing_email)) {
+                                        echo mailto($invoice->customer->billing_email);
+                                    } else {
+                                        echo mailto($invoice->customer->email);
+                                    }
+
+                                    ?>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <?php
+
+                } else {
+
+                    ?>
+                    <div class="panel-body text-muted">
+                        Unknown
+                    </div>
+                    <?php
+                }
+
+                ?>
             </div>
         </div>
         <div class="col-md-5">

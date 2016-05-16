@@ -69,12 +69,19 @@
 
                             ?>
                             <td class="customer">
-                                <?=anchor('admin/invoice/customer/edit/' . $oInvoice->customer->id, $oInvoice->customer->label)?>
-                                <small>
-                                    <?php
+                                <?php
 
+                                if (!empty($oInvoice->customer)) {
+
+                                    echo anchor(
+                                        'admin/invoice/customer/edit/' . $oInvoice->customer->id,
+                                        $oInvoice->customer->label
+                                    );
+
+                                    echo '<small>';
                                     if (!empty($oInvoice->customer->first_name)) {
-                                        echo $oInvoice->customer->first_name . ' ' . $oInvoice->customer->last_name . '<br />';
+                                        echo $oInvoice->customer->first_name . ' ' . $oInvoice->customer->last_name;
+                                        echo '<br />';
                                     }
 
                                     if (!empty($oInvoice->customer->billing_email)) {
@@ -82,9 +89,14 @@
                                     } else {
                                         echo mailto($oInvoice->customer->email);
                                     }
+                                    echo '</small>';
 
-                                    ?>
-                                </small>
+                                } else {
+
+                                    echo '<span class="text-muted">Unknown</span>';
+                                }
+
+                                ?>
                             </td>
                             <td class="amount total">
                                 <?=$oInvoice->totals->localised_formatted->sub?>

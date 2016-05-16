@@ -60,7 +60,7 @@ class Invoice extends Base
         $this->tablePrefix       = 'i';
         $this->tableItem         = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'created';
-        $this->searchableFields  = array('id', 'ref');
+        $this->searchableFields  = array($this->tablePrefix . '.id', $this->tablePrefix . '.ref', 'c.label');
     }
 
     // --------------------------------------------------------------------------
@@ -93,6 +93,17 @@ class Invoice extends Base
             self::STATE_DRAFT => 'Draft',
             self::STATE_OPEN  => 'Open'
         );
+    }
+
+    // --------------------------------------------------------------------------
+
+    public function getAllRawQuery($iPage = null, $iPerPage = null, $aData = array(), $bIncludeDeleted = false)
+    {
+        $oDb            = Factory::service('Database');
+        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oDb->join($oCustomerModel->getTableName() . ' c', $this->tablePrefix . '.customer_id = c.id', 'LEFT');
+
+        return parent::getAllRawQuery($iPage, $iPerPage, $aData, $bIncludeDeleted);
     }
 
     // --------------------------------------------------------------------------
@@ -157,6 +168,21 @@ class Invoice extends Base
                 $this->tablePrefix . '.modified',
                 $this->tablePrefix . '.modified_by'
             );
+        }
+
+        //  If keywords are included then apply the search conditionals
+        if (!empty($aData['keywords'])) {
+
+            if (empty($aData['or_like'])) {
+                $aData['or_like'] = array();
+            }
+
+            foreach ($this->searchableFields as $mField) {
+                $aData['or_like'][] = array(
+                    'column' => $mField,
+                    'value'  => $aData['keywords']
+                );
+            }
         }
 
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
