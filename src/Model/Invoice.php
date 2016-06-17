@@ -890,6 +890,30 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Set an invoice as paid but with processing payments
+     * @param  integer  $iInvoiceId The Invoice to query
+     * @return boolean
+     */
+    public function setWrittenOff($iInvoiceId)
+    {
+        $oNow    = Factory::factory('DateTime');
+        $bResult = $this->update(
+            $iInvoiceId,
+            array(
+                'state'       => self::STATE_WRITTEN_OFF,
+                'written_off' => $oNow->format('Y-m-d H:i:s')
+            )
+        );
+
+        //  Trigger the invoice.paid.processing event
+        $this->triggerEvent('EVENT_INVOICE_WRITTEN_OFF', $iInvoiceId);
+
+        return $bResult;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Trigger a callback event for an invoice
      * @param  string  $sEvent     The event to trigger (the name of the constant)
      * @param  integer $iInvoiceId The invoice ID
