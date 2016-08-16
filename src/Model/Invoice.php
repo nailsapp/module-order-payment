@@ -133,6 +133,7 @@ class Invoice extends Base
                 $this->tablePrefix . '.due',
                 $this->tablePrefix . '.paid',
                 $this->tablePrefix . '.customer_id',
+                $this->tablePrefix . '.email',
                 $this->tablePrefix . '.currency',
                 $this->tablePrefix . '.sub_total',
                 $this->tablePrefix . '.tax_total',
@@ -258,8 +259,8 @@ class Invoice extends Base
 
         try {
 
-            if (empty($aData['customer_id'])) {
-                throw new InvoiceException('"customer_id" is a required field.', 1);
+            if (empty($aData['customer_id']) && empty($aData['email'])) {
+                throw new InvoiceException('Either "customer_id" or "email" field must be supplied.', 1);
             }
 
             $oDb->trans_begin();
@@ -312,8 +313,22 @@ class Invoice extends Base
     {
         try {
 
+            if (array_key_exists('customer_id', $aData) && array_key_exists('email', $aData)) {
+                throw new InvoiceException('An invoice cannot be assigned to both an email and a customer.', 1);
+            }
+
             if (array_key_exists('customer_id', $aData) && empty($aData['customer_id'])) {
-                throw new InvoiceException('"customer_id" cannot be empty.', 1);
+                throw new InvoiceException('If supplied, "customer_id" cannot be empty.', 1);
+            } elseif (array_key_exists('customer_id', $aData)) {
+                //  Ensure the email field is empty
+                $aData['email'] = null;
+            }
+
+            if (array_key_exists('email', $aData) && empty($aData['email'])) {
+                throw new InvoiceException('If supplied, "email" cannot be empty.', 1);
+            } elseif (array_key_exists('email', $aData)) {
+                //  Ensure the customer_id field is empty
+                $aData['customer_id'] = null;
             }
 
             $oDb = Factory::service('Database');
@@ -464,11 +479,19 @@ class Invoice extends Base
             }
         }
 
-        //  Inavlid Customer ID
+        //  Invalid Customer ID
         if (array_key_exists('customer_id', $aData) && !empty($aData['customer_id'])) {
             $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
             if (!$oCustomerModel->getById($aData['customer_id'])) {
                 throw new InvoiceException('"' . $aData['customer_id'] . '" is not a valid customer ID.', 1);
+            }
+        }
+
+        //  Invalid Email
+        if (array_key_exists('email', $aData) && !empty($aData['email'])) {
+            Factory::helper('email');
+            if (!valid_email($aData['email'])) {
+                throw new InvoiceException('"' . $aData['email'] . '" is not a valid email address.', 1);
             }
         }
 
@@ -767,6 +790,10 @@ class Invoice extends Base
             } elseif (!empty($oInvoice->customer->email)) {
 
                 $aEmails = array($oInvoice->customer->email);
+
+            } elseif (!empty($oInvoice->email)) {
+
+                $aEmails = array($oInvoice->email);
 
             } else {
 

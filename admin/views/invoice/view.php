@@ -59,6 +59,22 @@
                     </table>
                     <?php
 
+                } elseif (!empty($invoice->email)) {
+
+                    ?>
+                    <table>
+                        <tbody>
+
+                        <tr>
+                            <td class="header">Sent To</td>
+                            <td>
+                                <?=mailto($invoice->email)?>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <?php
+
                 } else {
 
                     ?>

@@ -480,6 +480,10 @@ class Payment extends Base
 
                 $aEmails = array($oPayment->invoice->customer->email);
 
+            } elseif (!empty($oPayment->invoice->email)) {
+
+                $aEmails = array($oPayment->invoice->email);
+
             } else {
 
                 throw new PaymentException('No email address to send the receipt to.', 1);

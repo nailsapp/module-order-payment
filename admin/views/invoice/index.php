@@ -91,6 +91,10 @@
                                     }
                                     echo '</small>';
 
+                                } elseif (!empty($oInvoice->email)) {
+
+                                    echo mailto($oInvoice->email);
+
                                 } else {
 
                                     echo '<span class="text-muted">Unknown</span>';
