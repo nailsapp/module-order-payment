@@ -85,7 +85,7 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $sTablePrefix = $oPaymentModel->getTablePrefix();
+        $sTablePrefix = $oPaymentModel->getTableAlias();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;

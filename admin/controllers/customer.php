@@ -89,7 +89,7 @@ class Customer extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-        $sTablePrefix   = $oCustomerModel->getTablePrefix();
+        $sTablePrefix   = $oCustomerModel->getTableAlias();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;

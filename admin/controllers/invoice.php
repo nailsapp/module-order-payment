@@ -91,7 +91,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $sTablePrefix = $this->oInvoiceModel->getTablePrefix();
+        $sTablePrefix = $this->oInvoiceModel->getTableAlias();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
