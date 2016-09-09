@@ -89,12 +89,12 @@ class Customer extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-        $sTablePrefix   = $oCustomerModel->getTableAlias();
+        $sTableAlias   = $oCustomerModel->getTableAlias();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
         $perPage   = $this->input->get('perPage')   ? $this->input->get('perPage')   : 50;
-        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTablePrefix . '.organisation';
+        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTableAlias . '.organisation';
         $sortOrder = $this->input->get('sortOrder') ? $this->input->get('sortOrder') : 'asc';
         $keywords  = $this->input->get('keywords')  ? $this->input->get('keywords')  : '';
 
@@ -102,10 +102,10 @@ class Customer extends BaseAdmin
 
         //  Define the sortable columns
         $sortColumns = array(
-            $sTablePrefix . '.organisation' => 'Organisation',
-            $sTablePrefix . '.first_name'   => 'Customer Name',
-            $sTablePrefix . '.created'      => 'Created Date',
-            $sTablePrefix . '.modified'     => 'Last Modified Date'
+            $sTableAlias . '.organisation' => 'Organisation',
+            $sTableAlias . '.first_name'   => 'Customer Name',
+            $sTableAlias . '.created'      => 'Created Date',
+            $sTableAlias . '.modified'     => 'Last Modified Date'
         );
 
         // --------------------------------------------------------------------------

@@ -24,7 +24,7 @@ class Customer extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_customer';
-        $this->tablePrefix       = 'c';
+        $this->tableAlias       = 'c';
         $this->defaultSortColumn = 'first_name';
         $this->destructiveDelete = false;
     }
@@ -82,12 +82,12 @@ class Customer extends Base
             if ($keywordAsId) {
 
                 $data['or_like'][] = array(
-                    'column' => $this->tablePrefix . '.id',
+                    'column' => $this->tableAlias . '.id',
                     'value'  => $keywordAsId
                 );
             }
             $data['or_like'][] = array(
-                'column' => $this->tablePrefix . '.label',
+                'column' => $this->tableAlias . '.label',
                 'value'  => $data['keywords']
             );
         }

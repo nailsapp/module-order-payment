@@ -46,7 +46,7 @@ class InvoiceItem extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice_item';
-        $this->tablePrefix       = 'io';
+        $this->tableAlias       = 'io';
         $this->defaultSortColumn = 'order';
     }
 

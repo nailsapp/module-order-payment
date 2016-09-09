@@ -47,7 +47,7 @@ class Payment extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_payment';
-        $this->tablePrefix       = 'p';
+        $this->tableAlias       = 'p';
         $this->defaultSortColumn = 'created';
     }
 
@@ -163,7 +163,7 @@ class Payment extends Base
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
         $oRefundModel  = Factory::model('Refund', 'nailsapp/module-invoice');
 
-        $oDb->select($this->tablePrefix . '.*, i.ref invoice_ref, i.state invoice_state');
+        $oDb->select($this->tableAlias . '.*, i.ref invoice_ref, i.state invoice_state');
 
         $oDb->select('
             (
@@ -171,7 +171,7 @@ class Payment extends Base
                     SUM(amount)
                 FROM ' . $oRefundModel->getTableName() . ' r
                 WHERE
-                r.payment_id = ' . $this->tablePrefix . '.id
+                r.payment_id = ' . $this->tableAlias . '.id
                 AND
                 (
                     status = "' . $oRefundModel::STATUS_COMPLETE . '"
@@ -186,7 +186,7 @@ class Payment extends Base
                     SUM(fee)
                 FROM ' . $oRefundModel->getTableName() . ' r
                 WHERE
-                r.payment_id = ' . $this->tablePrefix . '.id
+                r.payment_id = ' . $this->tableAlias . '.id
                 AND
                 (
                     status = "' . $oRefundModel::STATUS_COMPLETE . '"
@@ -196,7 +196,7 @@ class Payment extends Base
             ) fee_refunded
         ');
 
-        $oDb->join($oInvoiceModel->getTableName() . ' i', $this->tablePrefix . '.invoice_id = i.id');
+        $oDb->join($oInvoiceModel->getTableName() . ' i', $this->tableAlias . '.invoice_id = i.id');
         parent::getCountCommon($data);
     }
 

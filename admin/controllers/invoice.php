@@ -91,12 +91,12 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $sTablePrefix = $this->oInvoiceModel->getTableAlias();
+        $sTableAlias = $this->oInvoiceModel->getTableAlias();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
         $perPage   = $this->input->get('perPage')   ? $this->input->get('perPage')   : 50;
-        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTablePrefix . '.created';
+        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTableAlias . '.created';
         $sortOrder = $this->input->get('sortOrder') ? $this->input->get('sortOrder') : 'desc';
         $keywords  = $this->input->get('keywords')  ? $this->input->get('keywords')  : '';
 
@@ -104,9 +104,9 @@ class Invoice extends BaseAdmin
 
         //  Define the sortable columns
         $sortColumns = array(
-            $sTablePrefix . '.created'  => 'Created Date',
-            $sTablePrefix . '.modified' => 'Modified Date',
-            $sTablePrefix . '.state'    => 'Invoice State',
+            $sTableAlias . '.created'  => 'Created Date',
+            $sTableAlias . '.modified' => 'Modified Date',
+            $sTableAlias . '.state'    => 'Invoice State',
         );
 
         // --------------------------------------------------------------------------
@@ -125,7 +125,7 @@ class Invoice extends BaseAdmin
         }
 
         $aCbFilters[] = Helper::searchFilterObject(
-            $sTablePrefix . '.state',
+            $sTableAlias . '.state',
             'State',
             $aOptions
         );

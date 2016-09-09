@@ -57,10 +57,10 @@ class Invoice extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice';
-        $this->tablePrefix       = 'i';
+        $this->tableAlias       = 'i';
         $this->tableItem         = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'created';
-        $this->searchableFields  = array($this->tablePrefix . '.id', $this->tablePrefix . '.ref', 'c.label');
+        $this->searchableFields  = array($this->tableAlias . '.id', $this->tableAlias . '.ref', 'c.label');
     }
 
     // --------------------------------------------------------------------------
@@ -101,7 +101,7 @@ class Invoice extends Base
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-        $oDb->join($oCustomerModel->getTableName() . ' c', $this->tablePrefix . '.customer_id = c.id', 'LEFT');
+        $oDb->join($oCustomerModel->getTableName() . ' c', $this->tableAlias . '.customer_id = c.id', 'LEFT');
 
         return parent::getAllRawQuery($iPage, $iPerPage, $aData, $bIncludeDeleted);
     }
@@ -124,26 +124,26 @@ class Invoice extends Base
             $sPaymentClass = get_class($oPaymentModel);
 
             $aData['select'] = array(
-                $this->tablePrefix . '.id',
-                $this->tablePrefix . '.ref',
-                $this->tablePrefix . '.token',
-                $this->tablePrefix . '.state',
-                $this->tablePrefix . '.dated',
-                $this->tablePrefix . '.terms',
-                $this->tablePrefix . '.due',
-                $this->tablePrefix . '.paid',
-                $this->tablePrefix . '.customer_id',
-                $this->tablePrefix . '.email',
-                $this->tablePrefix . '.currency',
-                $this->tablePrefix . '.sub_total',
-                $this->tablePrefix . '.tax_total',
-                $this->tablePrefix . '.grand_total',
+                $this->tableAlias . '.id',
+                $this->tableAlias . '.ref',
+                $this->tableAlias . '.token',
+                $this->tableAlias . '.state',
+                $this->tableAlias . '.dated',
+                $this->tableAlias . '.terms',
+                $this->tableAlias . '.due',
+                $this->tableAlias . '.paid',
+                $this->tableAlias . '.customer_id',
+                $this->tableAlias . '.email',
+                $this->tableAlias . '.currency',
+                $this->tableAlias . '.sub_total',
+                $this->tableAlias . '.tax_total',
+                $this->tableAlias . '.grand_total',
                 '(
                     SELECT
                         SUM(amount)
                         FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
                         WHERE
-                        invoice_id = ' . $this->tablePrefix . '.id
+                        invoice_id = ' . $this->tableAlias . '.id
                         AND status = \'' . $sPaymentClass::STATUS_COMPLETE . '\'
                 ) paid_total',
                 '(
@@ -151,7 +151,7 @@ class Invoice extends Base
                         SUM(amount)
                         FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
                         WHERE
-                        invoice_id = ' . $this->tablePrefix . '.id
+                        invoice_id = ' . $this->tableAlias . '.id
                         AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
                 ) processing_total',
                 '(
@@ -159,15 +159,15 @@ class Invoice extends Base
                         COUNT(id)
                         FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
                         WHERE
-                        invoice_id = ' . $this->tablePrefix . '.id
+                        invoice_id = ' . $this->tableAlias . '.id
                         AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
                 ) processing_payments',
-                $this->tablePrefix . '.additional_text',
-                $this->tablePrefix . '.callback_data',
-                $this->tablePrefix . '.created',
-                $this->tablePrefix . '.created_by',
-                $this->tablePrefix . '.modified',
-                $this->tablePrefix . '.modified_by'
+                $this->tableAlias . '.additional_text',
+                $this->tableAlias . '.callback_data',
+                $this->tableAlias . '.created',
+                $this->tableAlias . '.created_by',
+                $this->tableAlias . '.modified',
+                $this->tableAlias . '.modified_by'
             );
         }
 
@@ -670,7 +670,7 @@ class Invoice extends Base
             $aData['where'] = array();
         }
 
-        $aData['where'][] = array($this->tablePrefix . '.ref', $sRef);
+        $aData['where'][] = array($this->tableAlias . '.ref', $sRef);
 
         $aResult = $this->getAll(null, null, $aData);
 
@@ -699,7 +699,7 @@ class Invoice extends Base
             $aData['where'] = array();
         }
 
-        $aData['where'][] = array($this->tablePrefix . '.token', $sToken);
+        $aData['where'][] = array($this->tableAlias . '.token', $sToken);
 
         $aResult = $this->getAll(null, null, $aData);
 

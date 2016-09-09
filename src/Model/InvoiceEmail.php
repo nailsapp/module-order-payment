@@ -21,7 +21,7 @@ class InvoiceEmail extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_email';
-        $this->tablePrefix       = 'ie';
+        $this->tableAlias       = 'ie';
         $this->defaultSortColumn = 'created';
     }
 
@@ -37,14 +37,14 @@ class InvoiceEmail extends Base
     {
         if (empty($aData['select'])) {
             $aData['select'] = array(
-                $this->tablePrefix . '.*',
+                $this->tableAlias . '.*',
                 'ea.ref email_ref'
             );
         }
 
         //  Common joins
         $oDb = Factory::service('Database');
-        $oDb->join(NAILS_DB_PREFIX . 'email_archive ea', $this->tablePrefix . '.email_id = ea.id', 'LEFT');
+        $oDb->join(NAILS_DB_PREFIX . 'email_archive ea', $this->tableAlias . '.email_id = ea.id', 'LEFT');
 
         parent::getCountCommon($aData);
     }

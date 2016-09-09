@@ -85,12 +85,12 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $sTablePrefix = $oPaymentModel->getTableAlias();
+        $sTableAlias = $oPaymentModel->getTableAlias();
 
         //  Get pagination and search/sort variables
         $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
         $perPage   = $this->input->get('perPage')   ? $this->input->get('perPage')   : 50;
-        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTablePrefix . '.created';
+        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTableAlias . '.created';
         $sortOrder = $this->input->get('sortOrder') ? $this->input->get('sortOrder') : 'desc';
         $keywords  = $this->input->get('keywords')  ? $this->input->get('keywords')  : '';
 
@@ -98,12 +98,12 @@ class Payment extends BaseAdmin
 
         //  Define the sortable columns
         $sortColumns = array(
-            $sTablePrefix . '.created'    => 'Received Date',
-            $sTablePrefix . '.driver'     => 'Payment Gateway',
-            $sTablePrefix . '.invoice_id' => 'Invoice ID',
-            $sTablePrefix . '.txn_id'     => 'Transaction ID',
-            $sTablePrefix . '.amount'     => 'Amount',
-            $sTablePrefix . '.currency'   => 'Currency'
+            $sTableAlias . '.created'    => 'Received Date',
+            $sTableAlias . '.driver'     => 'Payment Gateway',
+            $sTableAlias . '.invoice_id' => 'Invoice ID',
+            $sTableAlias . '.txn_id'     => 'Transaction ID',
+            $sTableAlias . '.amount'     => 'Amount',
+            $sTableAlias . '.currency'   => 'Currency'
         );
 
         // --------------------------------------------------------------------------
@@ -122,13 +122,13 @@ class Payment extends BaseAdmin
         }
 
         $aCbFilters[] = Helper::searchFilterObject(
-            $sTablePrefix . '.driver',
+            $sTableAlias . '.driver',
             'Gateway',
             $aOptions
         );
 
         $aCbFilters[] = Helper::searchFilterObject(
-            $sTablePrefix . '.status',
+            $sTableAlias . '.status',
             'Status',
             $oPaymentModel->getStatusesHuman()
         );
