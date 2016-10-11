@@ -23,7 +23,7 @@
                         ?>
                         <li class="list-group-item">
                             <strong><?=$oPayment->ref?></strong>
-                            &ndash; <?=$oPayment->amount->localised_formatted?>
+                            &ndash; <?=$oPayment->amount->formatted?>
                         </li>
                         <?php
                     }

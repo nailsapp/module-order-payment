@@ -23,6 +23,7 @@
     {
         "nailsapp/common": "dev-develop",
         "nailsapp/module-auth": "dev-develop",
+        "nailsapp/module-currency": "dev-develop",
         "nailsapp/skin-invoice-classic": "dev-develop"
     },
     "require-dev":

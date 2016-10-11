@@ -57,14 +57,35 @@
         // --------------------------------------------------------------------------
 
         $aField = array(
+            'key'      => 'currency',
+            'label'    => 'Currency',
+            'default'  => !empty($invoice->currency->code) ? $invoice->currency->code : date('Y-m-d'),
+            'id'       => 'invoice-currency',
+            'class'    => 'select2',
+            'required' => true,
+            'data'     => array(
+                'bind' => 'event: {change: currencyChanged()}'
+            )
+        );
+
+        $aOptions = array();
+        foreach ($currencies as $oCurrency) {
+            $aOptions[$oCurrency->code] = $oCurrency->code . ' - ' . $oCurrency->label;
+        }
+
+        echo form_field_dropdown($aField, $aOptions);
+
+        // --------------------------------------------------------------------------
+
+        $aField = array(
             'key'         => 'terms',
             'label'       => 'Payment Terms',
-            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', 'nailsapp/module-invoice'),
+            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', 'nailsapp/module-invoice') ?: '',
             'info'        => '<span data-bind="html: termsText()"></span>',
             'id'          => 'invoice-terms',
             'placeholder' => 'Leave blank to set the invoice to be due on receipt',
             'data'        => array(
-                'bind' => 'event: {change: termsChanged()}'
+                'bind' => 'event: {keyup: termsChanged()}'
             )
         );
         echo form_field_number($aField);
@@ -117,7 +138,7 @@
                             <textarea placeholder="The line item's description" data-bind="attr: {name: 'items[' + $index() + '][body]'}, html: body"></textarea>
                         </td>
                         <td class="price text-center">
-                            <input type="number", step="0.01" min="0" data-bind="attr: {name: 'items[' + $index() + '][unit_cost]'}, textInput: unit_cost" />
+                            <input type="number" step="0.01" min="0" data-bind="attr: {name: 'items[' + $index() + '][unit_cost]'}, textInput: unit_cost" />
                         </td>
                         <td class="tax">
                             <select data-bind="
@@ -148,19 +169,19 @@
                     <tr class="total-row">
                         <td colspan="6" class="text-right">
                             <strong>Sub Total:</strong>
-                            <span data-bind="html: '&pound;' + _nails_admin.numberFormat(calculateSubTotal(), 2)"></span>
+                            <span data-bind="html: currencySymbolBefore() + _nails_admin.numberFormat(calculateSubTotal(), 2) + currencySymbolAfter()"></span>
                         </td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="6" class="text-right">
                             <strong>Tax:</strong>
-                            <span data-bind="html: '&pound;' + _nails_admin.numberFormat(calculateTax(), 2)"></span>
+                            <span data-bind="html: currencySymbolBefore() + _nails_admin.numberFormat(calculateTax(), 2) + currencySymbolAfter()"></span>
                         </td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="6" class="text-right">
                             <strong>Grand Total:</strong>
-                            <span data-bind="html: '&pound;' + _nails_admin.numberFormat(calculateGrandTotal(), 2)"></span>
+                            <span data-bind="html: currencySymbolBefore() + _nails_admin.numberFormat(calculateGrandTotal(), 2) + currencySymbolAfter()"></span>
                         </td>
                     </tr>
                 </tfoot>

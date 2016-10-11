@@ -16,7 +16,7 @@
         </tr>
         <tr>
             <td style="padding: 5px;">Amount:</td>
-            <td style="padding: 5px;">{{{refund.payment.amount.localised_formatted}}}</td>
+            <td style="padding: 5px;">{{{refund.payment.amount.formatted}}}</td>
         </tr>
     </tbody>
 </table>
@@ -37,7 +37,7 @@
         {{/refund.reason}}
         <tr>
             <td style="padding: 5px;">Amount:</td>
-            <td style="padding: 5px;">{{{refund.amount.localised_formatted}}}</td>
+            <td style="padding: 5px;">{{{refund.amount.formatted}}}</td>
         </tr>
     </tbody>
 </table>

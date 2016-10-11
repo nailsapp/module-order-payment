@@ -217,17 +217,19 @@ class Payment extends BaseAdmin
         $sReason       = $this->input->post('reason') ?: null;
         $sRedirect     = urldecode($this->input->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
 
-        // --------------------------------------------------------------------------
-
-        //  Convert the amount to its smallest unit
-        //  @todo do this automatically
-        $iAmount = intval($sAmount * 100);
-
-        // dumpanddie($iAmount, $sReason);
-
-        // --------------------------------------------------------------------------
-
         try {
+
+            $oPayment = $oPaymentModel->getById($iPaymentId);
+            if (empty($oPaymentModel)) {
+                throw new NailsException('Invalid payment ID.');
+            }
+
+            // --------------------------------------------------------------------------
+
+            //  Convert the amount to its smallest unit
+            $iAmount = intval($sAmount * pow(10, $oPayment->currency->decimal_precision));
+
+            // --------------------------------------------------------------------------
 
             if (!$oPaymentModel->refund($iPaymentId, $iAmount, $sReason)) {
                 throw new NailsException('Failed to refund payment. ' . $oPaymentModel->lastError(), 1);
@@ -238,6 +240,7 @@ class Payment extends BaseAdmin
 
         } catch (NailsException $e) {
 
+            dumpanddie($e->getMessage());
             $sStatus  = 'error';
             $sMessage = $e->getMessage();
         }

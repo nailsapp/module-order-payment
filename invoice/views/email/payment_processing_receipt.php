@@ -1,5 +1,5 @@
 <p>
-    This email confirms that we are processing a payment of <strong>{{{payment.amount.localised_formatted}}}</strong>
+    This email confirms that we are processing a payment of <strong>{{{payment.amount.formatted}}}</strong>
     against invoice <strong>{{payment.invoice.ref}}</strong>. The payment has been given reference <strong>{{payment.ref}}</strong>.
 </p>
 <p>
@@ -71,7 +71,7 @@
                                                                                 <small style="display: block;margin-top: 0.5em;">{{body}}</small>
                                                                             </td>
                                                                             <td class="alignright" style="border-top: #eee 1px solid;padding:10px;text-align:right;">
-                                                                                {{{totals.localised_formatted.sub}}}
+                                                                                {{{totals.formatted.sub}}}
                                                                             </td>
                                                                         </tr>
                                                                     {{/payment.invoice.items.data}}
@@ -79,14 +79,14 @@
                                                                     <tr>
                                                                         <td class="alignright" width="80%" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">VAT</td>
                                                                         <td class="alignright" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">
-                                                                            {{{payment.invoice.totals.localised_formatted.tax}}}
+                                                                            {{{payment.invoice.totals.formatted.tax}}}
                                                                         </td>
                                                                     </tr>
 
                                                                     <tr>
                                                                         <td class="alignright" width="80%" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">Total</td>
                                                                         <td class="alignright" style="border-top: 2px solid #333;border-bottom: 2px solid #333;font-weight: 700;padding:10px;text-align:right;">
-                                                                            {{{payment.invoice.totals.localised_formatted.grand}}}
+                                                                            {{{payment.invoice.totals.formatted.grand}}}
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>

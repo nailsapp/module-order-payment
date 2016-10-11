@@ -27,6 +27,14 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * The Currency library
+     * @var Nails\Currency\Library\Currency
+     */
+    protected $oCurrency;
+
+    // --------------------------------------------------------------------------
+
+    /**
      * The various states that an invoice can be in
      */
     const STATE_DRAFT           = 'DRAFT';
@@ -35,18 +43,6 @@ class Invoice extends Base
     const STATE_PAID_PROCESSING = 'PAID_PROCESSING';
     const STATE_PAID            = 'PAID';
     const STATE_WRITTEN_OFF     = 'WRITTEN_OFF';
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Currency values
-     * @todo  make this way more dynamic
-     */
-    const CURRENCY_DECIMAL_PLACES = 2;
-    const CURRENCY_CODE           = 'GBP';
-    const CURRENCY_SYMBOL_HTML    = '&pound;';
-    const CURRENCY_SYMBOL_TEXT    = '£';
-    const CURRENCY_LOCALISE_VALUE = 100;
 
     // --------------------------------------------------------------------------
 
@@ -61,6 +57,7 @@ class Invoice extends Base
         $this->tableItem         = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'created';
         $this->searchableFields  = array($this->tableAlias . '.id', $this->tableAlias . '.ref', 'c.label');
+        $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
     }
 
     // --------------------------------------------------------------------------
@@ -311,27 +308,31 @@ class Invoice extends Base
      */
     public function update($iInvoiceId, $aData = array())
     {
+        $oDb = Factory::service('Database');
+
         try {
 
-            if (array_key_exists('customer_id', $aData) && array_key_exists('email', $aData)) {
+            $sKeyExistsCustomerId = array_key_exists('customer_id', $aData);
+            $sKeyExistsEmail      = array_key_exists('email', $aData);
+
+            if ($sKeyExistsCustomerId && $sKeyExistsEmail) {
                 throw new InvoiceException('An invoice cannot be assigned to both an email and a customer.', 1);
             }
 
-            if (array_key_exists('customer_id', $aData) && empty($aData['customer_id'])) {
+            if ($sKeyExistsCustomerId && empty($aData['customer_id'])) {
                 throw new InvoiceException('If supplied, "customer_id" cannot be empty.', 1);
-            } elseif (array_key_exists('customer_id', $aData)) {
-                //  Ensure the email field is empty
+            } elseif ($sKeyExistsCustomerId && $sKeyExistsEmail) {
+                //  Ensure the email field is empty if it has been supplied
                 $aData['email'] = null;
             }
 
-            if (array_key_exists('email', $aData) && empty($aData['email'])) {
+            if ($sKeyExistsEmail && empty($aData['email'])) {
                 throw new InvoiceException('If supplied, "email" cannot be empty.', 1);
-            } elseif (array_key_exists('email', $aData)) {
-                //  Ensure the customer_id field is empty
+            } elseif ($sKeyExistsEmail && $sKeyExistsCustomerId) {
+                //  Ensure the customer_id field is empty if it has been supplied
                 $aData['customer_id'] = null;
             }
 
-            $oDb = Factory::service('Database');
             $oDb->trans_begin();
 
             $this->prepareInvoice($aData, $iInvoiceId);
@@ -376,6 +377,7 @@ class Invoice extends Base
      * @param  array   &$aData     The data to format/validate
      * @param  integer $iInvoiceId The invoice ID
      * @return void
+     * @throws InvoiceException
      */
     private function prepareInvoice(&$aData, $iInvoiceId = null)
     {
@@ -434,6 +436,9 @@ class Invoice extends Base
 
                 //  Has an ID or is null
                 $aItem['id'] = !empty($aItem['id']) ? (int) $aItem['id'] : null;
+
+                //  Currency is always the same as the invoice
+                $aItem['currency'] = $aData['currency'];
 
                 //  Always has a unit
                 $aItem['unit'] = !empty($aItem['unit']) ? strtoupper(trim($aItem['unit'])) : null;
@@ -497,7 +502,12 @@ class Invoice extends Base
 
         //  Invalid currency
         if (array_key_exists('currency', $aData)) {
-            //  @todo
+            $oCurrency = Factory::service('Currency', 'nailsapp/module-currency');
+            try {
+                $oCurrency->getByIsoCode($aData['currency']);
+            } catch (\Exception $e) {
+                throw new InvoiceException('"' . $aData['currency'] . '" is not a valid currency.', 1);
+            }
         }
 
         //  Invalid Tax IDs
@@ -588,6 +598,7 @@ class Invoice extends Base
      * @param  integer $iInvoiceId The invoice ID
      * @param  array   $aItems     The items to update
      * @return void
+     * @throws InvoiceException
      */
     private function updateLineItems($iInvoiceId, $aItems)
     {
@@ -601,6 +612,7 @@ class Invoice extends Base
                 'label'       => !empty($aItem['label']) ? $aItem['label'] : null,
                 'body'        => !empty($aItem['body']) ? $aItem['body'] : null,
                 'order'       => !empty($aItem['order']) ? $aItem['order'] : 0,
+                'currency'    => !empty($aItem['currency']) ? $aItem['currency'] : null,
                 'unit'        => !empty($aItem['unit']) ? $aItem['unit'] : null,
                 'tax_id'      => !empty($aItem['tax_id']) ? $aItem['tax_id'] : null,
                 'quantity'    => !empty($aItem['quantity']) ? $aItem['quantity'] : 1,
@@ -738,6 +750,7 @@ class Invoice extends Base
 
     /**
      * Generates a valid invoice token
+     * @param string $sRef The invoice's reference
      * @return string
      */
     public function generateValidToken($sRef)
@@ -855,12 +868,12 @@ class Invoice extends Base
 
         if (!empty($oInvoice)) {
 
-            $iPaid = $oInvoice->totals->base->paid;
+            $iPaid = $oInvoice->totals->raw->paid;
             if ($bIncludeProcessing) {
-                $iPaid += $oInvoice->totals->base->processing;
+                $iPaid += $oInvoice->totals->raw->processing;
             }
 
-            return $iPaid >= $oInvoice->totals->base->grand;
+            return $iPaid >= $oInvoice->totals->raw->grand;
         }
 
         return false;
@@ -1026,29 +1039,36 @@ class Invoice extends Base
         $oObj->has_processing_payments = $oObj->processing_payments > 0;
         unset($oObj->processing_payments);
 
+        //  Currency
+        $oObj->currency = $this->oCurrency->getByIsoCode($oObj->currency);
+
         //  Totals
-        $oObj->totals                  = new \stdClass();
-        $oObj->totals->base            = new \stdClass();
-        $oObj->totals->base->sub       = (int) $oObj->sub_total;
-        $oObj->totals->base->tax       = (int) $oObj->tax_total;
-        $oObj->totals->base->grand     = (int) $oObj->grand_total;
-        $oObj->totals->base->paid      = (int) $oObj->paid_total;
-        $oObj->totals->base->processing = (int) $oObj->processing_total;
-
-        //  Localise to the User's preference; perform any currency conversions as required
-        $oObj->totals->localised             = new \stdClass();
-        $oObj->totals->localised->sub        = (float) number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->totals->localised->tax        = (float) number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->totals->localised->grand      = (float) number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->totals->localised->paid       = (float) number_format($oObj->totals->base->paid/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->totals->localised->processing = (float) number_format($oObj->totals->base->processing/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-
-        $oObj->totals->localised_formatted             = new \stdClass();
-        $oObj->totals->localised_formatted->sub        = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->sub/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->totals->localised_formatted->tax        = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->tax/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->totals->localised_formatted->grand      = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->grand/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->totals->localised_formatted->paid       = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->paid /self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
-        $oObj->totals->localised_formatted->processing = self::CURRENCY_SYMBOL_HTML . number_format($oObj->totals->base->processing /self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->totals = (object) array(
+            'raw' => (object) array(
+                'sub'        => (int) $oObj->sub_total,
+                'tax'        => (int) $oObj->tax_total,
+                'grand'      => (int) $oObj->grand_total,
+                'paid'       => (int) $oObj->paid_total,
+                'processing' => (int) $oObj->processing_total
+            ),
+            'formatted' => (object) array(
+                'sub' => $this->oCurrency->format(
+                    $oObj->currency->code, $oObj->sub_total / pow(10, $oObj->currency->decimal_precision)
+                ),
+                'tax' => $this->oCurrency->format(
+                    $oObj->currency->code, $oObj->tax_total / pow(10, $oObj->currency->decimal_precision)
+                ),
+                'grand' => $this->oCurrency->format(
+                    $oObj->currency->code, $oObj->grand_total / pow(10, $oObj->currency->decimal_precision)
+                ),
+                'paid' => $this->oCurrency->format(
+                    $oObj->currency->code, $oObj->paid_total / pow(10, $oObj->currency->decimal_precision)
+                ),
+                'processing' => $this->oCurrency->format(
+                    $oObj->currency->code, $oObj->processing_total / pow(10, $oObj->currency->decimal_precision)
+                )
+            )
+        );
 
         unset($oObj->sub_total);
         unset($oObj->tax_total);

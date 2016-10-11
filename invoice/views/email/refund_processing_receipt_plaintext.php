@@ -5,14 +5,14 @@ This email confirms that a refund is processing for a previous payment you made.
 ORIGINAL PAYMENT
 Reference: {{refund.payment.ref}}
 Invoice:   {{refund.invoice.ref}}
-Amount:    {{{refund.payment.amount.localised_formatted}}}
+Amount:    {{{refund.payment.amount.formatted}}}
 
 ---
 
 REFUND DETAILS
 Reference: {{refund.ref}}
 {{#refund.reason}}Reason:    {{refund.reason}}{{/refund.reason}}
-Amount:    {{{refund.amount.localised_formatted}}}
+Amount:    {{{refund.amount.formatted}}}
 
 ---
 

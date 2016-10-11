@@ -18,23 +18,19 @@ use Nails\Invoice\Exception\PaymentException;
 
 class Refund extends Base
 {
+    /**
+     * The Currency library
+     * @var Nails\Currency\Library\Currency
+     */
+    protected $oCurrency;
+
+    // --------------------------------------------------------------------------
+
     //  Statuses
     const STATUS_PENDING    = 'PENDING';
     const STATUS_PROCESSING = 'PROCESSING';
     const STATUS_COMPLETE   = 'COMPLETE';
     const STATUS_FAILED     = 'FAILED';
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Currency values
-     * @todo  make this way more dynamic
-     */
-    const CURRENCY_DECIMAL_PLACES = 2;
-    const CURRENCY_CODE           = 'GBP';
-    const CURRENCY_SYMBOL_HTML    = '&pound;';
-    const CURRENCY_SYMBOL_TEXT    = '£';
-    const CURRENCY_LOCALISE_VALUE = 100;
 
     // --------------------------------------------------------------------------
 
@@ -45,8 +41,9 @@ class Refund extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_refund';
-        $this->tableAlias       = 'pr';
+        $this->tableAlias        = 'pr';
         $this->defaultSortColumn = 'created';
+        $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
     }
 
     // --------------------------------------------------------------------------
@@ -68,7 +65,7 @@ class Refund extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Returns an array of statsues with human friendly labels
+     * Returns an array of statuses with human friendly labels
      * @return array
      */
     public function getStatusesHuman()
@@ -417,17 +414,24 @@ class Refund extends Base
         $oObj->status->id    = $sStatus;
         $oObj->status->label = !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus));
 
-        //  Amount
-        $iAmount = $oObj->amount;
-        $oObj->amount                      = new \stdClass();
-        $oObj->amount->base                = $iAmount;
-        $oObj->amount->localised           = (float) number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->amount->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        //  Currency
+        $oCurrency = $this->oCurrency->getByIsoCode($oObj->currency);
+        unset($oObj->currency);
 
-        $iFee = $oObj->fee;
-        $oObj->fee                      = new \stdClass();
-        $oObj->fee->base                = $iFee;
-        $oObj->fee->localised           = (float) number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->fee->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        //  Amount
+        $oObj->amount = (object) array(
+            'raw'       => $oObj->amount,
+            'formatted' => $this->oCurrency->format(
+                $oCurrency->code, $oObj->amount / pow(10, $oCurrency->decimal_precision)
+            )
+        );
+
+        //  Fee
+        $oObj->fee = (object) array(
+            'raw'       => $oObj->fee,
+            'formatted' => $this->oCurrency->format(
+                $oCurrency->code, $oObj->fee / pow(10, $oCurrency->decimal_precision)
+            )
+        );
     }
 }

@@ -79,6 +79,7 @@ class Invoice extends NAILS_Controller
      * Pay a single invoice
      * @param  \stdClass $oInvoice The invoice object
      * @return void
+     * @throws NailsException
      */
     protected function pay($oInvoice)
     {
@@ -260,8 +261,8 @@ class Invoice extends NAILS_Controller
 
                     //  Attempt payment
                     $oChargeResponse = $oChargeRequest->execute(
-                        $oInvoice->totals->base->grand,
-                        $oInvoice->currency
+                        $oInvoice->totals->raw->grand,
+                        $oInvoice->currency->code
                     );
 
                     //  Handle response

@@ -11,6 +11,7 @@
                     <th class="ref">Ref</th>
                     <th class="state">State</th>
                     <th class="customer">Customer</th>
+                    <th class="currency">Currency</th>
                     <th class="amount sub">Sub Total</th>
                     <th class="amount tax">Tax</th>
                     <th class="amount grand">Grand Total</th>
@@ -75,7 +76,7 @@
 
                                     echo anchor(
                                         'admin/invoice/customer/edit/' . $oInvoice->customer->id,
-                                        $oInvoice->customer->label
+                                        $oInvoice->customer->label ?: $oInvoice->customer->first_name . ' ' . $oInvoice->customer->last_name
                                     );
 
                                     echo '<small>';
@@ -102,14 +103,17 @@
 
                                 ?>
                             </td>
+                            <td class="currency">
+                                <?=$oInvoice->currency->code?>
+                            </td>
                             <td class="amount total">
-                                <?=$oInvoice->totals->localised_formatted->sub?>
+                                <?=$oInvoice->totals->formatted->sub?>
                             </td>
                             <td class="amount tax">
-                                <?=$oInvoice->totals->localised_formatted->tax?>
+                                <?=$oInvoice->totals->formatted->tax?>
                             </td>
                             <td class="amount grand">
-                                <?=$oInvoice->totals->localised_formatted->grand?>
+                                <?=$oInvoice->totals->formatted->grand?>
                             </td>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->created)?>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->modified)?>
@@ -142,6 +146,14 @@
                                             'class="btn btn-xs btn-primary" target="_blank"'
                                         );
 
+                                        if ($oInvoice->state->id == 'OPEN' || $oInvoice->state->id == 'PARTIALLY_PAID') {
+                                            echo anchor(
+                                                $oInvoice->urls->payment,
+                                                'Pay    ',
+                                                'class="btn btn-xs btn-primary" target="_blank"'
+                                            );
+                                        }
+
                                         if (empty($oInvoice->payments->count)) {
 
                                             echo anchor(
@@ -172,7 +184,7 @@
 
                     ?>
                     <tr>
-                        <td colspan="9" class="no-data">
+                        <td colspan="10" class="no-data">
                             No Invoices Found
                         </td>
                     </tr>

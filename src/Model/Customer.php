@@ -138,14 +138,23 @@ class Customer extends Base
     {
         try {
 
-            if (array_key_exists('organisation', $aData) && array_key_exists('first_name', $aData) && array_key_exists('last_name', $aData)) {
+            $sKeyExistsLabel = array_key_exists('label', $aData);
+            $sKeyExistsOrg   = array_key_exists('organisation', $aData);
+            $sKeyExistsFirst = array_key_exists('first_name', $aData);
+            $sKeyExistsLast  = array_key_exists('last_name', $aData);
+
+
+
+            if ($sKeyExistsOrg && $sKeyExistsFirst && $sKeyExistsLast) {
                 if (empty($aData['organisation']) && empty($aData['first_name']) && empty($aData['last_name'])) {
                     throw new InvoiceException('"organisation", "first_name" and "last_name" cannot all be empty.', 1);
                 }
             }
 
-            //  Compile the label
-            $aData['label'] = $this->compileLabel($aData);
+            //  Only compile the label if the label isn't defined and any of the other fields are present
+            if (!$sKeyExistsLabel && ($sKeyExistsOrg || $sKeyExistsFirst || $sKeyExistsLast)) {
+                $aData['label'] = $this->compileLabel($aData);
+            }
 
             return parent::update($iCustomerId, $aData);
 

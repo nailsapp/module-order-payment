@@ -50,23 +50,23 @@
                     <tbody>
                         <tr>
                             <td class="header">Currency</td>
-                            <td><?=$payment->currency?></td>
+                            <td><?=$payment->currency->code?></td>
                         </tr>
                         <tr>
                             <td class="header">Amount</td>
-                            <td><?=$payment->amount->localised_formatted?></td>
+                            <td><?=$payment->amount->formatted?></td>
                         </tr>
                         <tr>
                             <td class="header">Amount (refunded)</td>
-                            <td><?=$payment->amount_refunded->localised_formatted?></td>
+                            <td><?=$payment->amount_refunded->formatted?></td>
                         </tr>
                         <tr>
                             <td class="header">Fee</td>
-                            <td><?=$payment->fee->localised_formatted?></td>
+                            <td><?=$payment->fee->formatted?></td>
                         </tr>
                         <tr>
                             <td class="header">Fee (refunded)</td>
-                            <td><?=$payment->fee_refunded->localised_formatted?></td>
+                            <td><?=$payment->fee_refunded->formatted?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -162,10 +162,10 @@
                                 </td>
                                 <td><?=$oRefund->txn_id?></td>
                                 <td>
-                                    <?=$oRefund->amount->localised_formatted?>
+                                    <?=$oRefund->amount->formatted?>
                                 </td>
                                 <td>
-                                    <?=$oRefund->fee->localised_formatted?>
+                                    <?=$oRefund->fee->formatted?>
                                 </td>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->created)?>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->modified)?>

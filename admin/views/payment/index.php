@@ -84,10 +84,10 @@
                             <td class="amount">
                                 <?php
 
-                                echo $oPayment->amount->localised_formatted;
-                                if ($oPayment->amount_refunded->base) {
+                                echo $oPayment->amount->formatted;
+                                if ($oPayment->amount_refunded->raw) {
                                     echo '<small>';
-                                    echo 'Refunded: ' . $oPayment->amount_refunded->localised_formatted;
+                                    echo 'Refunded: ' . $oPayment->amount_refunded->formatted;
                                     echo '</small>';
                                 }
 
@@ -96,17 +96,17 @@
                             <td class="fee">
                                 <?php
 
-                                echo $oPayment->fee->localised_formatted;
-                                if ($oPayment->fee_refunded->base) {
+                                echo $oPayment->fee->formatted;
+                                if ($oPayment->fee_refunded->raw) {
                                     echo '<small>';
-                                    echo 'Refunded: ' . $oPayment->fee_refunded->localised_formatted;
+                                    echo 'Refunded: ' . $oPayment->fee_refunded->formatted;
                                     echo '</small>';
                                 }
 
                                 ?>
                             </td>
                             <td class="currency">
-                                <?=$oPayment->currency?>
+                                <?=$oPayment->currency->code?>
                             </td>
                             <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
                             <td class="actions">

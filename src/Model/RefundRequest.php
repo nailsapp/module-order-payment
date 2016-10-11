@@ -12,8 +12,6 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Factory;
-use Nails\Invoice\Model\RequestBase;
 use Nails\Invoice\Exception\RefundRequestException;
 
 class RefundRequest extends RequestBase
@@ -25,6 +23,7 @@ class RefundRequest extends RequestBase
     /**
      * Set the reason
      * @param string $sReason The reason of the charge
+     * @return $this
      */
     public function setReason($sReason)
     {
@@ -49,6 +48,7 @@ class RefundRequest extends RequestBase
      * Execute the refund
      * @param  integer $iAmount The amount to refund
      * @return \Nails\Invoice\Model\ChargeResponse
+     * @throws RefundRequestException
      */
     public function execute($iAmount)
     {
@@ -71,7 +71,7 @@ class RefundRequest extends RequestBase
         if (!$this->oPayment->is_refundable) {
 
             //  Why?
-            if ($this->oPayment->available_for_refund->base === 0) {
+            if ($this->oPayment->available_for_refund->raw === 0) {
 
                 throw new RefundRequestException('Payment is already fully refunded.', 1);
             } else {
@@ -80,17 +80,17 @@ class RefundRequest extends RequestBase
             }
         }
 
-        $iRefundAmount = is_null($iAmount) ? $this->oPayment->available_for_refund->base : $iAmount;
+        $iRefundAmount = is_null($iAmount) ? $this->oPayment->available_for_refund->raw : $iAmount;
 
         if (empty($iRefundAmount)) {
             throw new RefundRequestException('Refund amount must be greater than 0.', 1);
         }
 
         //  Validate refund amount
-        if ($iRefundAmount > $this->oPayment->available_for_refund->base) {
+        if ($iRefundAmount > $this->oPayment->available_for_refund->raw) {
             throw new RefundRequestException(
                 'Requested refund amount is greater than the value of the remaining payment balance (' .
-                $this->oPayment->available_for_refund->localised_formatted . ').',
+                $this->oPayment->available_for_refund->formatted . ').',
                 1
             );
         }
@@ -103,7 +103,7 @@ class RefundRequest extends RequestBase
                     'reason'     => $this->getReason(),
                     'payment_id' => $this->oPayment->id,
                     'invoice_id' => $this->oInvoice->id,
-                    'currency'   => $this->oPayment->currency,
+                    'currency'   => $this->oPayment->currency->code,
                     'amount'     => $iRefundAmount
                 )
             );
@@ -119,7 +119,7 @@ class RefundRequest extends RequestBase
         $oRefundResponse = $this->oDriver->refund(
             $this->oPayment->txn_id,
             $iAmount,
-            $this->oPayment->currency,
+            $this->oPayment->currency->code,
             $this->oPayment->custom_data,
             $this->getReason(),
             $this->oPayment,
@@ -161,7 +161,7 @@ class RefundRequest extends RequestBase
             );
 
             if (empty($bResult)) {
-                throw new ChargeRequestException('Failed to update existing payment.', 1);
+                throw new RefundRequestException('Failed to update existing payment.', 1);
             }
         }
 

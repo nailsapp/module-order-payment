@@ -8,7 +8,7 @@
             <hr>
             <div class="panel panel-success text-center">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Thank you for your payment of <?=$oPayment->amount->localised_formatted?></h3>
+                    <h3 class="panel-title">Thank you for your payment of <?=$oPayment->amount->formatted?></h3>
                 </div>
                 <div class="panel-body">
                     Your payment reference is <strong><?=$oPayment->ref?></strong>

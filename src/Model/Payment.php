@@ -18,6 +18,14 @@ use Nails\Invoice\Exception\PaymentException;
 
 class Payment extends Base
 {
+    /**
+     * The Currency library
+     * @var Nails\Currency\Library\Currency
+     */
+    protected $oCurrency;
+
+    // --------------------------------------------------------------------------
+
     //  Statuses
     const STATUS_PENDING          = 'PENDING';
     const STATUS_PROCESSING       = 'PROCESSING';
@@ -29,26 +37,15 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Currency values
-     * @todo  make this way more dynamic
-     */
-    const CURRENCY_DECIMAL_PLACES = 2;
-    const CURRENCY_CODE           = 'GBP';
-    const CURRENCY_SYMBOL_HTML    = '&pound;';
-    const CURRENCY_SYMBOL_TEXT    = '£';
-    const CURRENCY_LOCALISE_VALUE = 100;
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Construct the model
      */
     public function __construct()
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_payment';
-        $this->tableAlias       = 'p';
+        $this->tableAlias        = 'p';
         $this->defaultSortColumn = 'created';
+        $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
     }
 
     // --------------------------------------------------------------------------
@@ -643,37 +640,50 @@ class Payment extends Base
             $oObj->driver->label = $oObj->driver;
         }
 
+        //  Currency
+        $oCurrency      = $this->oCurrency->getByIsoCode($oObj->currency);
+        $oObj->currency = $oCurrency;
+
         //  Amount
-        $iAmount = $oObj->amount;
-        $oObj->amount                      = new \stdClass();
-        $oObj->amount->base                = $iAmount;
-        $oObj->amount->localised           = (float) number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->amount->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->amount->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        $oObj->amount = (object) array(
+            'raw'       => $oObj->amount,
+            'formatted' => $this->oCurrency->format(
+                $oCurrency->code, $oObj->amount / pow(10, $oCurrency->decimal_precision)
+            )
+        );
 
-        $iAmountRefunded = $oObj->amount_refunded;
-        $oObj->amount_refunded                      = new \stdClass();
-        $oObj->amount_refunded->base                = $iAmountRefunded;
-        $oObj->amount_refunded->localised           = (float) number_format($oObj->amount_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->amount_refunded->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->amount_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        //  Amount refunded
+        $oObj->amount_refunded = (object) array(
+            'raw'       => $oObj->amount_refunded,
+            'formatted' => $this->oCurrency->format(
+                $oCurrency->code, $oObj->amount_refunded / pow(10, $oCurrency->decimal_precision)
+            )
+        );
 
-        $iFee = $oObj->fee;
-        $oObj->fee                      = new \stdClass();
-        $oObj->fee->base                = $iFee;
-        $oObj->fee->localised           = (float) number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->fee->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->fee->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        //  Fee
+        $oObj->fee = (object) array(
+            'raw'       => $oObj->fee,
+            'formatted' => $this->oCurrency->format(
+                $oCurrency->code, $oObj->fee / pow(10, $oCurrency->decimal_precision)
+            )
+        );
 
-        $iFeeRefunded = $oObj->fee_refunded;
-        $oObj->fee_refunded                      = new \stdClass();
-        $oObj->fee_refunded->base                = $iFeeRefunded;
-        $oObj->fee_refunded->localised           = (float) number_format($oObj->fee_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->fee_refunded->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->fee_refunded->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        //  Fee refunded
+        $oObj->fee_refunded = (object) array(
+            'raw'       => $oObj->fee_refunded,
+            'formatted' => $this->oCurrency->format(
+                $oCurrency->code, $oObj->fee_refunded / pow(10, $oCurrency->decimal_precision)
+            )
+        );
 
-
-        $iAvailableForRefund = $oObj->amount->base - $oObj->amount_refunded->base;
-        $oObj->available_for_refund                      = new \stdClass();
-        $oObj->available_for_refund->base                = $iAvailableForRefund;
-        $oObj->available_for_refund->localised           = (float) number_format($oObj->available_for_refund->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES, '', '');
-        $oObj->available_for_refund->localised_formatted = self::CURRENCY_SYMBOL_HTML . number_format($oObj->available_for_refund->base/self::CURRENCY_LOCALISE_VALUE, self::CURRENCY_DECIMAL_PLACES);
+        //  Available for refund
+        $iAvailableForRefund = $oObj->amount->raw - $oObj->amount_refunded->raw;
+        $oObj->available_for_refund = (object) array(
+            'raw'       => $iAvailableForRefund,
+            'formatted' => $this->oCurrency->format(
+                $oCurrency->code, $iAvailableForRefund / pow(10, $oCurrency->decimal_precision)
+            )
+        );
 
         //  Can this payment be refunded?
         $aValidStates  = array(
@@ -681,7 +691,7 @@ class Payment extends Base
             self::STATUS_COMPLETE,
             self::STATUS_REFUNDED_PARTIAL
         );
-        $oObj->is_refundable = in_array($oObj->status->id, $aValidStates) && $oObj->available_for_refund->base > 0;
+        $oObj->is_refundable = in_array($oObj->status->id, $aValidStates) && $oObj->available_for_refund->raw > 0;
 
         //  URLs
         $oObj->urls             = new \stdClass();

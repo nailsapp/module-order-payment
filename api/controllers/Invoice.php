@@ -31,7 +31,8 @@ class Invoice extends Base
 
         } else {
 
-            $sKeywords     = $this->input->get('keywords');
+            $oInput        = Factory::service('Input');
+            $sKeywords     = $oInput->get('keywords');
             $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
 
             if (strlen($sKeywords) >= 3) {
@@ -66,7 +67,8 @@ class Invoice extends Base
      */
     public function getId($iId = null)
     {
-        $iId = (int) $iId ?: (int) $this->input->get('id');
+        $oInput = Factory::service('Input');
+        $iId    = (int) $iId ?: (int) $oInput->get('id');
 
         if (empty($iId)) {
             return array(
@@ -103,7 +105,7 @@ class Invoice extends Base
             'due'      => $oInvoice->due->raw,
             'paid'     => $oInvoice->paid->raw,
             'state'    => $oInvoice->state,
-            'currency' => $oInvoice->currency,
+            'currency' => $oInvoice->currency->code,
             'totals'   => $oInvoice->totals,
             'urls'     => $oInvoice->urls,
             'customer' => empty($oInvoice->customer) ? null : array(

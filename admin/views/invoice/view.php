@@ -130,17 +130,17 @@
                                     <?=$oItem->label?>
                                     <?=$oItem->body ? '<small>' . $oItem->body . '</small>' : ''?>
                                 </td>
-                                <td class="text-center"><?=$oItem->unit_cost->localised_formatted?></td>
+                                <td class="text-center"><?=$oItem->unit_cost->formatted?></td>
                                 <td class="text-center">
                                     <?=$oItem->quantity?> <?=$oItem->unit->label?>
                                 </td>
-                                <td class="text-center"><?=$oItem->totals->localised_formatted->sub?></td>
+                                <td class="text-center"><?=$oItem->totals->formatted->sub?></td>
                                 <td class="text-center">
-                                    <?=$oItem->totals->localised_formatted->tax?>
+                                    <?=$oItem->totals->formatted->tax?>
                                     <small>
                                         at <?=$oItem->tax ? $oItem->tax->rate : 0?>%
                                 </td>
-                                <td class="text-center"><?=$oItem->totals->localised_formatted->grand?></td>
+                                <td class="text-center"><?=$oItem->totals->formatted->grand?></td>
                             </tr>
                             <?php
                         }
@@ -151,19 +151,19 @@
                         <tr class="total-row">
                             <td colspan="7" class="text-right">
                                 <strong>Sub Total:</strong>
-                                <span><?=$invoice->totals->localised_formatted->sub?></span>
+                                <span><?=$invoice->totals->formatted->sub?></span>
                             </td>
                         </tr>
                         <tr class="total-row">
                             <td colspan="7" class="text-right">
                                 <strong>Tax:</strong>
-                                <span><?=$invoice->totals->localised_formatted->tax?></span>
+                                <span><?=$invoice->totals->formatted->tax?></span>
                             </td>
                         </tr>
                         <tr class="total-row">
                             <td colspan="7" class="text-right">
                                 <strong>Grand Total:</strong>
-                                <span><?=$invoice->totals->localised_formatted->grand?></span>
+                                <span><?=$invoice->totals->formatted->grand?></span>
                             </td>
                         </tr>
                     </tfoot>
@@ -219,10 +219,10 @@
                                 <td>
                                     <?php
 
-                                    echo $oPayment->amount->localised_formatted;
-                                    if ($oPayment->amount_refunded->base) {
+                                    echo $oPayment->amount->formatted;
+                                    if ($oPayment->amount_refunded->raw) {
                                         echo '<small>';
-                                        echo 'Refunded: ' . $oPayment->amount_refunded->localised_formatted;
+                                        echo 'Refunded: ' . $oPayment->amount_refunded->formatted;
                                         echo '</small>';
                                     }
 
@@ -231,10 +231,10 @@
                                 <td>
                                     <?php
 
-                                    echo $oPayment->fee->localised_formatted;
-                                    if ($oPayment->fee_refunded->base) {
+                                    echo $oPayment->fee->formatted;
+                                    if ($oPayment->fee_refunded->raw) {
                                         echo '<small>';
-                                        echo 'Refunded: ' . $oPayment->fee_refunded->localised_formatted;
+                                        echo 'Refunded: ' . $oPayment->fee_refunded->formatted;
                                         echo '</small>';
                                     }
 
@@ -255,8 +255,8 @@
 
                                         $aAttr = array(
                                             'class="btn btn-xs btn-danger js-confirm-refund"',
-                                            'data-max="' . $oPayment->available_for_refund->localised . '"',
-                                            'data-max-formatted="' . $oPayment->available_for_refund->localised_formatted . '"',
+                                            'data-max="' . $oPayment->available_for_refund->raw . '"',
+                                            'data-max-formatted="' . $oPayment->available_for_refund->formatted . '"',
                                             'data-return-to="' . urlencode(current_url()) . '"',
                                         );
 
@@ -336,10 +336,10 @@
                                 </td>
                                 <td><?=$oRefund->txn_id?></td>
                                 <td>
-                                    <?=$oRefund->amount->localised_formatted?>
+                                    <?=$oRefund->amount->formatted?>
                                 </td>
                                 <td>
-                                    <?=$oRefund->fee->localised_formatted?>
+                                    <?=$oRefund->fee->formatted?>
                                 </td>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->created)?>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->modified)?>

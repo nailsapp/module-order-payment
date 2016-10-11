@@ -215,6 +215,7 @@ class RequestBase
      * Set a refund as COMPLETE
      * @param string  $sTxnId       The refund's transaction ID
      * @param integer $iFeeRefunded The fee refunded by the processor, if known
+     * @throws RequestException
      */
     protected function setRefundComplete($sTxnId = null, $iFeeRefunded = null)
     {
@@ -236,7 +237,7 @@ class RequestBase
 
         // Update the associated payment, if the payment is fully refunded then mark it so
         $oPayment = $this->oPaymentModel->getById($this->oRefund->payment_id);
-        if ($oPayment->available_for_refund->base > 0) {
+        if ($oPayment->available_for_refund->raw > 0) {
 
             $this->oPaymentModel->setRefundedPartial($oPayment->id);
 

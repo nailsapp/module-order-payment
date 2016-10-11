@@ -1,6 +1,6 @@
 /* globals ko, console, moment */
 /* exported invoiceEdit*/
-var invoiceEdit = function(units, taxes, items) {
+var invoiceEdit = function(units, taxes, items, currencies) {
 
     var base, key;
 
@@ -57,7 +57,7 @@ var invoiceEdit = function(units, taxes, items) {
     for (key in items) {
         if (items.hasOwnProperty(key)) {
             items[key].quantity  = ko.observable(items[key].quantity);
-            items[key].unit_cost = ko.observable(items[key].unit_cost.localised);
+            items[key].unit_cost = ko.observable(items[key].unit_cost.formatted.replace(/[^\d.]/g, ''));
             if (items[key].tax !== null) {
                 items[key].tax_id = ko.observable(items[key].tax.id);
             } else {
@@ -205,6 +205,32 @@ var invoiceEdit = function(units, taxes, items) {
 
     // --------------------------------------------------------------------------
 
+    base.currencyChanged = function(a,b,c) {
+        var currency     = $('#invoice-currency').val();
+        var symbolBefore = '';
+        var symbolAfter  = '';
+
+        for (var key in currencies) {
+            if (currencies.hasOwnProperty(key)) {
+                if (currencies[key].code === currency) {
+                    if (currencies[key].symbol_position === 'BEFORE') {
+                        symbolBefore = currencies[key].symbol;
+                        symbolAfter  = '';
+                    } else {
+                        symbolBefore = '';
+                        symbolAfter  = currencies[key].symbol;
+                    }
+                    break;
+                }
+            }
+        }
+
+        base.currencySymbolBefore(symbolBefore);
+        base.currencySymbolAfter(symbolAfter);
+    };
+
+    // --------------------------------------------------------------------------
+
     base.termsText = function() {
 
         var str;
@@ -270,6 +296,11 @@ var invoiceEdit = function(units, taxes, items) {
 
         return total;
     });
+
+    // --------------------------------------------------------------------------
+
+    base.currencySymbolBefore = ko.observable();
+    base.currencySymbolAfter  = ko.observable();
 
     // --------------------------------------------------------------------------
 

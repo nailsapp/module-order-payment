@@ -19,13 +19,14 @@ use Nails\Invoice\Controller\BaseAdmin;
 class Invoice extends BaseAdmin
 {
     protected $oInvoiceModel;
+    protected $oInvoiceItemModel;
     protected $oTaxModel;
 
     // --------------------------------------------------------------------------
 
     /**
      * Announces this controller's navGroups
-     * @return stdClass
+     * @return \stdClass
      */
     public static function announce()
     {
@@ -94,11 +95,12 @@ class Invoice extends BaseAdmin
         $sTableAlias = $this->oInvoiceModel->getTableAlias();
 
         //  Get pagination and search/sort variables
-        $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
-        $perPage   = $this->input->get('perPage')   ? $this->input->get('perPage')   : 50;
-        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTableAlias . '.created';
-        $sortOrder = $this->input->get('sortOrder') ? $this->input->get('sortOrder') : 'desc';
-        $keywords  = $this->input->get('keywords')  ? $this->input->get('keywords')  : '';
+        $oInput    = Factory::service('Input');
+        $page      = $oInput->get('page')      ? $oInput->get('page')      : 0;
+        $perPage   = $oInput->get('perPage')   ? $oInput->get('perPage')   : 50;
+        $sortOn    = $oInput->get('sortOn')    ? $oInput->get('sortOn')    : $sTableAlias . '.created';
+        $sortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
+        $keywords  = $oInput->get('keywords')  ? $oInput->get('keywords')  : '';
 
         // --------------------------------------------------------------------------
 
@@ -113,11 +115,13 @@ class Invoice extends BaseAdmin
 
         //  Define the filters
         $aCbFilters = array();
-        $aOptions   = array();
-        $aStates    = $this->oInvoiceModel->getStates();
+
+        //  States
+        $aStateOptions = array();
+        $aStates       = $this->oInvoiceModel->getStates();
 
         foreach ($aStates as $sState => $sLabel) {
-            $aOptions[] = array(
+            $aStateOptions[] = array(
                 $sLabel,
                 $sState,
                 true
@@ -127,7 +131,26 @@ class Invoice extends BaseAdmin
         $aCbFilters[] = Helper::searchFilterObject(
             $sTableAlias . '.state',
             'State',
-            $aOptions
+            $aStateOptions
+        );
+
+        //  Currencies
+        $oCurrency        = Factory::service('Currency', 'nailsapp/module-currency');
+        $aCurrencyOptions = array();
+        $aCurrencies      = $oCurrency->getAllEnabled();
+
+        foreach ($aCurrencies as $oCurrency) {
+            $aCurrencyOptions[] = array(
+                $oCurrency->code,
+                $oCurrency->code,
+                true
+            );
+        }
+
+        $aCbFilters[] = Helper::searchFilterObject(
+            $sTableAlias . '.currency',
+            'Currency',
+            $aCurrencyOptions
         );
 
         // --------------------------------------------------------------------------
@@ -184,7 +207,8 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        if ($this->input->post()) {
+        $oInput = Factory::service('Input');
+        if ($oInput->post()) {
 
             if ($this->validatePost()) {
 
@@ -195,7 +219,9 @@ class Invoice extends BaseAdmin
                     //  Send invoice if needed
                     $this->sendInvoice($oInvoice);
 
-                    $this->session->set_flashdata('success', 'Invoice created successfully.');
+                    $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                    $oSession->set_flashdata('success', 'Invoice created successfully.');
+
                     redirect('admin/invoice/invoice/index');
 
                 } else {
@@ -220,9 +246,10 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Invoice Items
-        if ($this->input->post()) {
+        $oInput = Factory::service('Input');
+        if ($oInput->post()) {
 
-            $aItems = $this->input->post('items') ?: array();
+            $aItems = $oInput->post('items') ?: array();
             //  Tidy up post data as expected by JS
             foreach ($aItems as &$aItem) {
 
@@ -231,8 +258,8 @@ class Invoice extends BaseAdmin
 
                 $sUnitCost                     = $aItem['unit_cost'];
                 $aItem['unit_cost']            = new \stdClass();
-                $aItem['unit_cost']->localised = new \stdClass();
-                $aItem['unit_cost']->localised = !empty($sUnitCost) ? (float) $sUnitCost : null;
+                $aItem['unit_cost']->formatted = new \stdClass();
+                $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
 
                 $aItem['tax'] = new \stdClass();
                 $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
@@ -249,6 +276,12 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        $oCurrency                = Factory::service('Currency', 'nailsapp/module-currency');
+        $aCurrencies              = $oCurrency->getAllEnabled();
+        $this->data['currencies'] = $aCurrencies;
+
+        // --------------------------------------------------------------------------
+
         $oAsset = Factory::service('Asset');
         $oAsset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
         $oAsset->inline(
@@ -256,7 +289,8 @@ class Invoice extends BaseAdmin
                 new invoiceEdit(
                     ' . json_encode($aItemUnits) . ',
                     ' . json_encode($aTaxes) . ',
-                    ' . json_encode($aItems) . '
+                    ' . json_encode($aItems) . ',
+                    ' . json_encode($aCurrencies) . '
                 )
             );',
             'JS'
@@ -280,7 +314,10 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $iInvoiceId = (int) $this->uri->segment(5);
+        $oUri   = Factory::service('Uri');
+        $oInput = Factory::service('Input');
+
+        $iInvoiceId            = (int) $oUri->segment(5);
         $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
@@ -294,7 +331,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        if ($this->input->post()) {
+        if ($oInput->post()) {
 
             if ($this->validatePost()) {
 
@@ -304,7 +341,9 @@ class Invoice extends BaseAdmin
                     $oInvoice = $this->oInvoiceModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
-                    $this->session->set_flashdata('success', 'Invoice was saved successfully.');
+                    $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                    $oSession->set_flashdata('success', 'Invoice was saved successfully.');
+
                     redirect('admin/invoice/invoice/index');
 
                 } else {
@@ -329,9 +368,9 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Invoice Items
-        if ($this->input->post()) {
+        if ($oInput->post()) {
 
-            $aItems = $this->input->post('items') ?: array();
+            $aItems = $oInput->post('items') ?: array();
             //  Tidy up post data as expected by JS
             foreach ($aItems as &$aItem) {
 
@@ -340,8 +379,8 @@ class Invoice extends BaseAdmin
 
                 $sUnitCost                     = $aItem['unit_cost'];
                 $aItem['unit_cost']            = new \stdClass();
-                $aItem['unit_cost']->localised = new \stdClass();
-                $aItem['unit_cost']->localised = !empty($sUnitCost) ? (float) $sUnitCost : null;
+                $aItem['unit_cost']->formatted = new \stdClass();
+                $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
 
                 $aItem['tax'] = new \stdClass();
                 $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
@@ -358,6 +397,12 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        $oCurrency                = Factory::service('Currency', 'nailsapp/module-currency');
+        $aCurrencies              = $oCurrency->getAllEnabled();
+        $this->data['currencies'] = $aCurrencies;
+
+        // --------------------------------------------------------------------------
+
         $oAsset = Factory::service('Asset');
         $oAsset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
         $oAsset->inline(
@@ -365,7 +410,8 @@ class Invoice extends BaseAdmin
                 new invoiceEdit(
                     ' . json_encode($aItemUnits) . ',
                     ' . json_encode($aTaxes) . ',
-                    ' . json_encode($aItems) . '
+                    ' . json_encode($aItems) . ',
+                    ' . json_encode($aCurrencies) . '
                 )
             );',
             'JS'
@@ -387,7 +433,8 @@ class Invoice extends BaseAdmin
             unauthorised();
         }
 
-        $iInvoiceId = (int) $this->uri->segment(5);
+        $oUri       = Factory::service('Uri');
+        $iInvoiceId = (int) $oUri->segment(5);
         $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {
@@ -416,6 +463,7 @@ class Invoice extends BaseAdmin
             'ref'             => 'xss_clean|trim',
             'state'           => 'xss_clean|trim|required',
             'dated'           => 'xss_clean|trim|required|valid_date',
+            'currency'        => 'xss_clean|trim|required|callback__callbackValidCurrency',
             'terms'           => 'xss_clean|trim|is_natural',
             'customer_id'     => 'xss_clean|trim',
             'additional_text' => 'xss_clean|trim',
@@ -438,7 +486,26 @@ class Invoice extends BaseAdmin
         $oFormValidation->set_message('is_natural', lang('fv_is_natural'));
         $oFormValidation->set_message('valid_email', lang('fv_valid_email'));
 
-        return $oFormValidation->run();
+        return $oFormValidation->run($this);
+    }
+
+    // --------------------------------------------------------------------------
+
+    public function _callbackValidCurrency($sCode)
+    {
+        $oFormValidation = Factory::service('FormValidation');
+        $oFormValidation->set_message('_callbackValidCurrency', 'Invalid currency.');
+
+        $oCurrency = Factory::service('Currency', 'nailsapp/module-currency');
+        $aEnabled  = $oCurrency->getAllEnabled();
+
+        foreach ($aEnabled as $oCurrency) {
+            if ($oCurrency->code === $sCode) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // --------------------------------------------------------------------------
@@ -449,19 +516,22 @@ class Invoice extends BaseAdmin
      */
     protected function getObjectFromPost()
     {
+        $oInput = Factory::service('Input');
+        $oUri   = Factory::service('Uri');
         $aData = array(
-            'ref'             => $this->input->post('ref') ?: null,
-            'state'           => $this->input->post('state') ?: null,
-            'dated'           => $this->input->post('dated') ?: null,
-            'terms'           => (int) $this->input->post('terms') ?: 0,
-            'customer_id'     => (int) $this->input->post('customer_id') ?: null,
-            'additional_text' => $this->input->post('additional_text') ?: null,
+            'ref'             => $oInput->post('ref') ?: null,
+            'state'           => $oInput->post('state') ?: null,
+            'dated'           => $oInput->post('dated') ?: null,
+            'currency'        => $oInput->post('currency') ?: null,
+            'terms'           => (int) $oInput->post('terms') ?: 0,
+            'customer_id'     => (int) $oInput->post('customer_id') ?: null,
+            'additional_text' => $oInput->post('additional_text') ?: null,
             'items'           => array(),
-            'currency'        => 'GBP'
+            'currency'        => $oInput->post('currency')
         );
 
-        if ($this->input->post('items')) {
-            foreach ($this->input->post('items') as $aItem) {
+        if ($oInput->post('items')) {
+            foreach ($oInput->post('items') as $aItem) {
 
                 //  @todo convert to pence using a model
                 $aData['items'][] = array(
@@ -476,7 +546,7 @@ class Invoice extends BaseAdmin
             }
         }
 
-        if ($this->uri->rsegment(5) == 'edit') {
+        if ($oUri->rsegment(5) == 'edit') {
             unset($aData['ref']);
         }
 
@@ -521,7 +591,8 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oInvoice = $this->oInvoiceModel->getById($this->uri->segment(5));
+        $oUri     = Factory::service('Uri');
+        $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
             show_404();
         }
@@ -545,7 +616,9 @@ class Invoice extends BaseAdmin
             $sMessage = 'Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError();
         }
 
-        $this->session->set_flashdata($sStatus, $sMessage);
+        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession->set_flashdata($sStatus, $sMessage);
+
         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
     }
 
@@ -563,7 +636,8 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oInvoice = $this->oInvoiceModel->getById($this->uri->segment(5));
+        $oUri     = Factory::service('Uri');
+        $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
             show_404();
         }
@@ -581,7 +655,9 @@ class Invoice extends BaseAdmin
             $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
         }
 
-        $this->session->set_flashdata($sStatus, $sMessage);
+        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession->set_flashdata($sStatus, $sMessage);
+
         redirect('admin/invoice/invoice/index');
     }
 }
