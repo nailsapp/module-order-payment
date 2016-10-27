@@ -25,6 +25,6 @@ class Migration6 extends Base
     public function execute()
     {
         $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_invoice_item` ADD `currency` CHAR(3)  NOT NULL  DEFAULT '' AFTER `order`;");
-        $this->query("UPDATE `{{NAILS_DB_PREFIX}}invoice_invoice_item` AS `it` SET `it`.`currency` = (SELECT `i`.`currency` FROM `{{NAILS_DB_PREFIX}}invoice_invoice` AS `i` WHERE `i`.`id` = `it`.`id`);");
+        $this->query("UPDATE `{{NAILS_DB_PREFIX}}invoice_invoice_item` AS `it` SET `it`.`currency` = (SELECT `i`.`currency` FROM `{{NAILS_DB_PREFIX}}invoice_invoice` AS `i` WHERE `i`.`id` = `it`.`invoice_id`);");
     }
 }
