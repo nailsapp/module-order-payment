@@ -11,10 +11,11 @@
  */
 
 use Nails\Factory;
+use App\Controller\Base;
 use Nails\Common\Exception\NailsException;
 use Nails\Invoice\Exception\DriverException;
 
-class Invoice extends NAILS_Controller
+class Invoice extends Base
 {
     const DEFAULT_INVOICE_SKIN = 'nailsapp/skin-invoice-classic';
 

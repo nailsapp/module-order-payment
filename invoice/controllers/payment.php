@@ -11,9 +11,10 @@
  */
 
 use Nails\Factory;
+use App\Controller\Base;
 use Nails\Common\Exception\NailsException;
 
-class Payment extends NAILS_Controller
+class Payment extends Base
 {
     /**
      * Completes a payment
