@@ -96,9 +96,10 @@ class Invoice extends Base
 
             if ($oInvoice->state->id === 'PAID') {
 
-                $this->load->view('structure/header', $this->data);
-                $this->load->view('invoice/pay/paid', $this->data);
-                $this->load->view('structure/footer', $this->data);
+                $oView = Factory::service('View');
+                $oView->load('structure/header', $this->data);
+                $oView->load('invoice/pay/paid', $this->data);
+                $oView->load('structure/footer', $this->data);
                 return;
 
             } else {
@@ -129,9 +130,10 @@ class Invoice extends Base
                 }
             }
 
-            $this->load->view('structure/header', $this->data);
-            $this->load->view('invoice/pay/hasProcessing', $this->data);
-            $this->load->view('structure/footer', $this->data);
+            $oView = Factory::service('View');
+            $oView->load('structure/header', $this->data);
+            $oView->load('invoice/pay/hasProcessing', $this->data);
+            $oView->load('structure/footer', $this->data);
             return;
         }
 
@@ -314,9 +316,10 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $this->load->view('structure/header', $this->data);
-        $this->load->view('invoice/pay/index', $this->data);
-        $this->load->view('structure/footer', $this->data);
+        $oView = Factory::service('View');
+        $oView->load('structure/header', $this->data);
+        $oView->load('invoice/pay/index', $this->data);
+        $oView->load('structure/footer', $this->data);
     }
 
     // --------------------------------------------------------------------------
