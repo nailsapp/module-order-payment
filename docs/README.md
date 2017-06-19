@@ -9,8 +9,8 @@ It has been designed to be very generic and simple to expand, so that integratio
 
 ## Contents
 
-- [Invoices](/docs/invoices.md)
-- [Payments](docs/payments.md)
-- [Shipping](docs/shipping.md)
-- [Vouchers](docs/vouchers.md)
-- [Events](docs/events.md)
+- [Invoices](invoices.md)
+- [Payments](payments.md)
+- [Shipping](shipping.md)
+- [Vouchers](vouchers.md)
+- [Events](events.md)
