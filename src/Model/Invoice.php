@@ -12,8 +12,8 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Factory;
 use Nails\Common\Model\Base;
+use Nails\Factory;
 use Nails\Invoice\Exception\InvoiceException;
 
 class Invoice extends Base
@@ -28,7 +28,7 @@ class Invoice extends Base
 
     /**
      * The Currency library
-     * @var Nails\Currency\Library\Currency
+     * @var \Nails\Currency\Library\Currency
      */
     protected $oCurrency;
 
@@ -53,10 +53,10 @@ class Invoice extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice';
-        $this->tableAlias       = 'i';
+        $this->tableAlias        = 'i';
         $this->tableItem         = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'created';
-        $this->searchableFields  = array($this->tableAlias . '.id', $this->tableAlias . '.ref', 'c.label');
+        $this->searchableFields  = [$this->tableAlias . '.id', $this->tableAlias . '.ref', 'c.label'];
         $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
     }
 
@@ -68,14 +68,14 @@ class Invoice extends Base
      */
     public function getStates()
     {
-        return array(
+        return [
             self::STATE_DRAFT           => 'Draft',
             self::STATE_OPEN            => 'Open',
             self::STATE_PAID_PARTIAL    => 'Partially Paid',
             self::STATE_PAID_PROCESSING => 'Paid (payments processing)',
             self::STATE_PAID            => 'Paid',
-            self::STATE_WRITTEN_OFF     => 'Written Off'
-        );
+            self::STATE_WRITTEN_OFF     => 'Written Off',
+        ];
     }
 
     // --------------------------------------------------------------------------
@@ -86,15 +86,15 @@ class Invoice extends Base
      */
     public function getSelectableStates()
     {
-        return array(
+        return [
             self::STATE_DRAFT => 'Draft',
-            self::STATE_OPEN  => 'Open'
-        );
+            self::STATE_OPEN  => 'Open',
+        ];
     }
 
     // --------------------------------------------------------------------------
 
-    public function getAllRawQuery($iPage = null, $iPerPage = null, $aData = array(), $bIncludeDeleted = false)
+    public function getAllRawQuery($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
@@ -105,22 +105,35 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    public function countAll($aData = [], $bIncludeDeleted = false)
+    {
+        $oDb            = Factory::service('Database');
+        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oDb->join($oCustomerModel->getTableName() . ' c', $this->tableAlias . '.customer_id = c.id', 'LEFT');
+
+        return parent::countAll($aData, $bIncludeDeleted);
+    }
+
+    // --------------------------------------------------------------------------
+
     /**
      * Retrieve all invoices from the databases
+     *
      * @param  int     $iPage           The page number to return
      * @param  int     $iPerPage        The number of results per page
-     * @param  array   $aData           Data to pass _to getcount_common()
+     * @param  array   $aData           Data to pass to getCountCommon()
      * @param  boolean $bIncludeDeleted Whether to include deleted results
+     *
      * @return array
      */
-    public function getAll($iPage = null, $iPerPage = null, $aData = array(), $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
     {
         if (empty($aData['select'])) {
 
             $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
             $sPaymentClass = get_class($oPaymentModel);
 
-            $aData['select'] = array(
+            $aData['select'] = [
                 $this->tableAlias . '.id',
                 $this->tableAlias . '.ref',
                 $this->tableAlias . '.token',
@@ -164,31 +177,29 @@ class Invoice extends Base
                 $this->tableAlias . '.created',
                 $this->tableAlias . '.created_by',
                 $this->tableAlias . '.modified',
-                $this->tableAlias . '.modified_by'
-            );
+                $this->tableAlias . '.modified_by',
+            ];
         }
 
         //  If keywords are included then apply the search conditionals
         if (!empty($aData['keywords'])) {
 
             if (empty($aData['or_like'])) {
-                $aData['or_like'] = array();
+                $aData['or_like'] = [];
             }
 
             foreach ($this->searchableFields as $mField) {
-                $aData['or_like'][] = array(
+                $aData['or_like'][] = [
                     'column' => $mField,
-                    'value'  => $aData['keywords']
-                );
+                    'value'  => $aData['keywords'],
+                ];
             }
         }
 
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
 
         if (!empty($aItems)) {
-
             if (!empty($aData['includeAll']) || !empty($aData['includeCustomer'])) {
-
                 $this->getSingleAssociatedItem(
                     $aItems,
                     'customer_id',
@@ -246,11 +257,13 @@ class Invoice extends Base
 
     /**
      * Create a new invoice
+     *
      * @param  array   $aData         The data to create the invoice with
      * @param  boolean $bReturnObject Whether to return the complete invoice object
+     *
      * @return mixed
      */
-    public function create($aData = array(), $bReturnObject = false)
+    public function create($aData = [], $bReturnObject = false)
     {
         $oDb = Factory::service('Database');
 
@@ -291,7 +304,6 @@ class Invoice extends Base
             return $bReturnObject ? $oInvoice : $oInvoice->id;
 
         } catch (\Exception $e) {
-
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -302,11 +314,13 @@ class Invoice extends Base
 
     /**
      * Update an invoice
+     *
      * @param  integer $iInvoiceId The ID of the invoice to update
      * @param  array   $aData      The data to update the invoice with
+     *
      * @return boolean
      */
-    public function update($iInvoiceId, $aData = array())
+    public function update($iInvoiceId, $aData = [])
     {
         $oDb = Factory::service('Database');
 
@@ -363,7 +377,6 @@ class Invoice extends Base
             return $bResult;
 
         } catch (\Exception $e) {
-
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -374,8 +387,10 @@ class Invoice extends Base
 
     /**
      * Format and validate passed data
+     *
      * @param  array   &$aData     The data to format/validate
      * @param  integer $iInvoiceId The invoice ID
+     *
      * @return void
      * @throws InvoiceException
      */
@@ -394,7 +409,7 @@ class Invoice extends Base
 
         //  Always has a date
         if (array_key_exists('dated', $aData) && empty($aData['dated'])) {
-            $oDate = Factory::factory('DateTime');
+            $oDate          = Factory::factory('DateTime');
             $aData['dated'] = $oDate->format('Y-m-d');
         }
 
@@ -402,11 +417,8 @@ class Invoice extends Base
         if (!array_key_exists('due', $aData) && !empty($aData['dated'])) {
 
             if (array_key_exists('terms', $aData)) {
-
                 $iTerms = (int) $aData['terms'];
-
             } else {
-
                 $iTerms = (int) appSetting('default_payment_terms', 'nailsapp/module-invoice');
             }
 
@@ -414,7 +426,6 @@ class Invoice extends Base
             $oDate->add(new \DateInterval('P' . $iTerms . 'D'));
             $aData['due'] = $oDate->format('Y-m-d');
         }
-
 
         //  Always has a currency
         if (array_key_exists('currency', $aData)) {
@@ -431,7 +442,7 @@ class Invoice extends Base
         if (array_key_exists('items', $aData)) {
 
             $iCounter = 0;
-            $aTaxIds  = array();
+            $aTaxIds  = [];
             foreach ($aData['items'] as &$aItem) {
 
                 //  Has an ID or is null
@@ -562,15 +573,12 @@ class Invoice extends Base
 
                 //  Calculate tax
                 if (!empty($aItem['tax_id'])) {
-
                     foreach ($aTaxRates as $oTaxRate) {
                         if ($oTaxRate->id == $aItem['tax_id']) {
                             $aItem['tax_total'] = $aItem['sub_total'] * $oTaxRate->rate_decimal;
                         }
                     }
-
                 } else {
-
                     $aItem['tax_total'] = 0;
                 }
 
@@ -595,20 +603,22 @@ class Invoice extends Base
 
     /**
      * Update the line items of an invoice
+     *
      * @param  integer $iInvoiceId The invoice ID
      * @param  array   $aItems     The items to update
+     *
      * @return void
      * @throws InvoiceException
      */
     private function updateLineItems($iInvoiceId, $aItems)
     {
         $oItemModel  = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
-        $aTouchedIds = array();
+        $aTouchedIds = [];
 
         //  Update/insert all known items
         foreach ($aItems as $aItem) {
 
-            $aData = array(
+            $aData = [
                 'label'       => !empty($aItem['label']) ? $aItem['label'] : null,
                 'body'        => !empty($aItem['body']) ? $aItem['body'] : null,
                 'order'       => !empty($aItem['order']) ? $aItem['order'] : 0,
@@ -619,18 +629,15 @@ class Invoice extends Base
                 'unit_cost'   => !empty($aItem['unit_cost']) ? $aItem['unit_cost'] : 0,
                 'sub_total'   => !empty($aItem['sub_total']) ? $aItem['sub_total'] : 0,
                 'tax_total'   => !empty($aItem['tax_total']) ? $aItem['tax_total'] : 0,
-                'grand_total' => !empty($aItem['grand_total']) ? $aItem['grand_total'] : 0
-            );
+                'grand_total' => !empty($aItem['grand_total']) ? $aItem['grand_total'] : 0,
+            ];
 
             if (!empty($aItem['id'])) {
 
                 //  Update
                 if (!$oItemModel->update($aItem['id'], $aData)) {
-
                     throw new InvoiceException('Failed to update invoice item.', 1);
-
                 } else {
-
                     $aTouchedIds[] = $aItem['id'];
                 }
 
@@ -638,15 +645,11 @@ class Invoice extends Base
 
                 //  Insert
                 $aData['invoice_id'] = $iInvoiceId;
-
-                $iItemId = $oItemModel->create($aData);
+                $iItemId             = $oItemModel->create($aData);
 
                 if (!$iItemId) {
-
                     throw new InvoiceException('Failed to create invoice item.', 1);
-
                 } else {
-
                     $aTouchedIds[] = $iItemId;
                 }
             }
@@ -668,23 +671,24 @@ class Invoice extends Base
 
     /**
      * Fetch an invoice by it's ref
+     *
      * @param  string $sRef  The ref of the invoice to fetch
      * @param  mixed  $aData Any data to pass to getCountCommon()
+     *
      * @return mixed
      */
-    public function getByRef($sRef, $aData = array())
+    public function getByRef($sRef, $aData = [])
     {
         if (empty($sRef)) {
             return false;
         }
 
         if (!isset($aData['where'])) {
-            $aData['where'] = array();
+            $aData['where'] = [];
         }
 
-        $aData['where'][] = array($this->tableAlias . '.ref', $sRef);
-
-        $aResult = $this->getAll(null, null, $aData);
+        $aData['where'][] = [$this->tableAlias . '.ref', $sRef];
+        $aResult          = $this->getAll($aData);
 
         if (empty($aResult)) {
             return false;
@@ -697,23 +701,24 @@ class Invoice extends Base
 
     /**
      * Fetch an invoice by it's token
-     * @param  string $sToken  The token of the invoice to fetch
-     * @param  mixed  $aData Any data to pass to getCountCommon()
+     *
+     * @param  string $sToken The token of the invoice to fetch
+     * @param  mixed  $aData  Any data to pass to getCountCommon()
+     *
      * @return mixed
      */
-    public function getByToken($sToken, $aData = array())
+    public function getByToken($sToken, $aData = [])
     {
         if (empty($sRef)) {
             return false;
         }
 
         if (!isset($aData['where'])) {
-            $aData['where'] = array();
+            $aData['where'] = [];
         }
 
-        $aData['where'][] = array($this->tableAlias . '.token', $sToken);
-
-        $aResult = $this->getAll(null, null, $aData);
+        $aData['where'][] = [$this->tableAlias . '.token', $sToken];
+        $aResult          = $this->getAll($aData);
 
         if (empty($aResult)) {
             return false;
@@ -737,7 +742,7 @@ class Invoice extends Base
 
         do {
 
-            $sRef = $oNow->format('Ym') .'-' . strtoupper(random_string('alnum'));
+            $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
             $bRefExists = (bool) $oDb->count_all_results($this->table);
 
@@ -750,7 +755,9 @@ class Invoice extends Base
 
     /**
      * Generates a valid invoice token
+     *
      * @param string $sRef The invoice's reference
+     *
      * @return string
      */
     public function generateValidToken($sRef)
@@ -773,8 +780,10 @@ class Invoice extends Base
 
     /**
      * Send an invoice by email
+     *
      * @param  integer $iInvoiceId     The ID of the invoice to send
      * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
+     *
      * @return boolean
      */
     public function send($iInvoiceId, $sEmailOverride = null)
@@ -802,14 +811,13 @@ class Invoice extends Base
 
             } elseif (!empty($oInvoice->customer->email)) {
 
-                $aEmails = array($oInvoice->customer->email);
+                $aEmails = [$oInvoice->customer->email];
 
             } elseif (!empty($oInvoice->email)) {
 
-                $aEmails = array($oInvoice->email);
+                $aEmails = [$oInvoice->email];
 
             } else {
-
                 throw new InvoiceException('No email address to send the invoice to', 1);
             }
 
@@ -818,9 +826,9 @@ class Invoice extends Base
 
             $oEmail       = new \stdClass();
             $oEmail->type = 'send_invoice';
-            $oEmail->data = array(
-                'invoice' => $oInvoice
-            );
+            $oEmail->data = [
+                'invoice' => $oInvoice,
+            ];
 
             foreach ($aEmails as $sEmail) {
 
@@ -831,22 +839,20 @@ class Invoice extends Base
                 if (!empty($oResult)) {
 
                     $oInvoiceEmailModel->create(
-                        array(
+                        [
                             'invoice_id' => $oInvoice->id,
                             'email_id'   => $oResult->id,
                             'email_type' => $oEmail->type,
-                            'recipient'  => $oEmail->to_email
-                        )
+                            'recipient'  => $oEmail->to_email,
+                        ]
                     );
 
                 } else {
-
                     throw new InvoiceException($oEmailer->lastError(), 1);
                 }
             }
 
         } catch (\Exception $e) {
-
             $this->setError($e->getMessage());
             return false;
         }
@@ -858,8 +864,10 @@ class Invoice extends Base
 
     /**
      * Whether an invoice has been fully paid or not
+     *
      * @param  integer $iInvoiceId         The Invoice to query
      * @param  boolean $bIncludeProcessing Whether to include payments which are still processing
+     *
      * @return boolean
      */
     public function isPaid($iInvoiceId, $bIncludeProcessing = false)
@@ -883,7 +891,9 @@ class Invoice extends Base
 
     /**
      * Set an invoice as paid
-     * @param  integer  $iInvoiceId The Invoice to query
+     *
+     * @param  integer $iInvoiceId The Invoice to query
+     *
      * @return boolean
      */
     public function setPaid($iInvoiceId)
@@ -891,10 +901,10 @@ class Invoice extends Base
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
             $iInvoiceId,
-            array(
+            [
                 'state' => self::STATE_PAID,
-                'paid'  => $oNow->format('Y-m-d H:i:s')
-            )
+                'paid'  => $oNow->format('Y-m-d H:i:s'),
+            ]
         );
 
         //  Trigger the invoice.paid event
@@ -907,7 +917,9 @@ class Invoice extends Base
 
     /**
      * Set an invoice as paid but with processing payments
-     * @param  integer  $iInvoiceId The Invoice to query
+     *
+     * @param  integer $iInvoiceId The Invoice to query
+     *
      * @return boolean
      */
     public function setPaidProcessing($iInvoiceId)
@@ -915,10 +927,10 @@ class Invoice extends Base
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
             $iInvoiceId,
-            array(
+            [
                 'state' => self::STATE_PAID_PROCESSING,
-                'paid'  => $oNow->format('Y-m-d H:i:s')
-            )
+                'paid'  => $oNow->format('Y-m-d H:i:s'),
+            ]
         );
 
         //  Trigger the invoice.paid.processing event
@@ -931,7 +943,9 @@ class Invoice extends Base
 
     /**
      * Set an invoice as paid but with processing payments
-     * @param  integer  $iInvoiceId The Invoice to query
+     *
+     * @param  integer $iInvoiceId The Invoice to query
+     *
      * @return boolean
      */
     public function setWrittenOff($iInvoiceId)
@@ -939,10 +953,10 @@ class Invoice extends Base
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
             $iInvoiceId,
-            array(
+            [
                 'state'       => self::STATE_WRITTEN_OFF,
-                'written_off' => $oNow->format('Y-m-d H:i:s')
-            )
+                'written_off' => $oNow->format('Y-m-d H:i:s'),
+            ]
         );
 
         //  Trigger the invoice.paid.processing event
@@ -955,8 +969,10 @@ class Invoice extends Base
 
     /**
      * Trigger a callback event for an invoice
+     *
      * @param  string  $sEvent     The event to trigger (the name of the constant)
      * @param  integer $iInvoiceId The invoice ID
+     *
      * @return void
      */
     protected function triggerEvent($sEvent, $iInvoiceId)
@@ -966,7 +982,7 @@ class Invoice extends Base
 
         $oPEH->trigger(
             $oClass->getConstant($sEvent),
-            $this->getById($iInvoiceId, array('includeAll' => true))
+            $this->getById($iInvoiceId, ['includeAll' => true])
         );
     }
 
@@ -979,18 +995,19 @@ class Invoice extends Base
      * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
      *
      * @param  object $oObj      A reference to the object being formatted.
-     * @param  array  $aData     The same data array which is passed to _getcount_common, for reference if needed
+     * @param  array  $aData     The same data array which is passed to getCountCommon, for reference if needed
      * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
      * @param  array  $aBools    Fields which should be cast as booleans if not null
      * @param  array  $aFloats   Fields which should be cast as floats if not null
+     *
      * @return void
      */
     protected function formatObject(
         &$oObj,
-        $aData = array(),
-        $aIntegers = array(),
-        $aBools = array(),
-        $aFloats = array()
+        $aData = [],
+        $aIntegers = [],
+        $aBools = [],
+        $aFloats = []
     ) {
 
         $aIntegers[] = 'terms';
@@ -1001,30 +1018,30 @@ class Invoice extends Base
         $aStateLabels = $this->getStates();
         $sState       = $oObj->state;
 
-        $oObj->state            = new \stdClass();
-        $oObj->state->id        = $sState;
-        $oObj->state->label     = $aStateLabels[$sState];
+        $oObj->state        = new \stdClass();
+        $oObj->state->id    = $sState;
+        $oObj->state->label = $aStateLabels[$sState];
 
         //  Dated
-        $oDated = new \DateTime($oObj->dated . ' 00:00:00');
+        $oDated                 = new \DateTime($oObj->dated . ' 00:00:00');
         $oObj->dated            = new \stdClass();
         $oObj->dated->raw       = $oDated->format('Y-m-d');
         $oObj->dated->formatted = toUserDate($oDated);
 
         //  Due
-        $oDue = new \DateTime($oObj->due . ' 23:59:59');
+        $oDue                 = new \DateTime($oObj->due . ' 23:59:59');
         $oObj->due            = new \stdClass();
         $oObj->due->raw       = $oDue->format('Y-m-d');
         $oObj->due->formatted = toUserDate($oDue);
 
         //  Paid
-        $oPaid = new \DateTime($oObj->paid);
+        $oPaid                 = new \DateTime($oObj->paid);
         $oObj->paid            = new \stdClass();
         $oObj->paid->raw       = $oPaid->format('Y-m-d H:i:s');
         $oObj->paid->formatted = toUserDateTime($oPaid);
 
         //  Compute boolean flags
-        $oNow  = Factory::factory('DateTime');
+        $oNow = Factory::factory('DateTime');
 
         $oObj->is_scheduled = false;
         if ($oObj->state->id == self::STATE_OPEN && $oNow < $oDated) {
@@ -1043,32 +1060,32 @@ class Invoice extends Base
         $oObj->currency = $this->oCurrency->getByIsoCode($oObj->currency);
 
         //  Totals
-        $oObj->totals = (object) array(
-            'raw' => (object) array(
+        $oObj->totals = (object) [
+            'raw'       => (object) [
                 'sub'        => (int) $oObj->sub_total,
                 'tax'        => (int) $oObj->tax_total,
                 'grand'      => (int) $oObj->grand_total,
                 'paid'       => (int) $oObj->paid_total,
-                'processing' => (int) $oObj->processing_total
-            ),
-            'formatted' => (object) array(
-                'sub' => $this->oCurrency->format(
+                'processing' => (int) $oObj->processing_total,
+            ],
+            'formatted' => (object) [
+                'sub'        => $this->oCurrency->format(
                     $oObj->currency->code, $oObj->sub_total / pow(10, $oObj->currency->decimal_precision)
                 ),
-                'tax' => $this->oCurrency->format(
+                'tax'        => $this->oCurrency->format(
                     $oObj->currency->code, $oObj->tax_total / pow(10, $oObj->currency->decimal_precision)
                 ),
-                'grand' => $this->oCurrency->format(
+                'grand'      => $this->oCurrency->format(
                     $oObj->currency->code, $oObj->grand_total / pow(10, $oObj->currency->decimal_precision)
                 ),
-                'paid' => $this->oCurrency->format(
+                'paid'       => $this->oCurrency->format(
                     $oObj->currency->code, $oObj->paid_total / pow(10, $oObj->currency->decimal_precision)
                 ),
                 'processing' => $this->oCurrency->format(
                     $oObj->currency->code, $oObj->processing_total / pow(10, $oObj->currency->decimal_precision)
-                )
-            )
-        );
+                ),
+            ],
+        ];
 
         unset($oObj->sub_total);
         unset($oObj->tax_total);
