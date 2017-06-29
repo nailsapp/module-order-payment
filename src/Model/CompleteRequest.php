@@ -12,8 +12,6 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Factory;
-use Nails\Invoice\Model\RequestBase;
 use Nails\Invoice\Exception\CompleteRequestException;
 
 class CompleteRequest extends RequestBase
@@ -24,7 +22,10 @@ class CompleteRequest extends RequestBase
 
     /**
      * Set the URL to go to when a payment is completed
+     *
      * @param string $sContinueUrl the URL to go to when payment is completed
+     *
+     * @return $this
      */
     public function setContinueUrl($sContinueUrl)
     {
@@ -47,9 +48,12 @@ class CompleteRequest extends RequestBase
 
     /**
      * Complete the payment
+     *
      * @param  array $aGetVars  Any $_GET variables passed from the redirect flow
      * @param  array $aPostVars Any $_POST variables passed from the redirect flow
+     *
      * @return \Nails\Invoice\Model\CompleteResponse
+     * @throws CompleteRequestException
      */
     public function execute($aGetVars, $aPostVars)
     {
@@ -80,7 +84,7 @@ class CompleteRequest extends RequestBase
             throw new CompleteRequestException('Response from driver was empty.', 1);
         }
 
-        if (!($oCompleteResponse instanceof \Nails\Invoice\Model\CompleteResponse)) {
+        if (!($oCompleteResponse instanceof CompleteResponse)) {
             throw new CompleteRequestException(
                 'Response from driver must be an instance of \Nails\Invoice\Model\CompleteResponse.',
                 1
@@ -114,11 +118,11 @@ class CompleteRequest extends RequestBase
             $sPaymentClass = get_class($this->oPaymentModel);
             $bResult       = $this->oPaymentModel->update(
                 $this->oPayment->id,
-                array(
+                [
                     'status'    => $sPaymentClass::STATUS_FAILED,
                     'fail_msg'  => $oCompleteResponse->getError()->msg,
-                    'fail_code' => $oCompleteResponse->getError()->code
-                )
+                    'fail_code' => $oCompleteResponse->getError()->code,
+                ]
             );
 
             if (empty($bResult)) {

@@ -10,9 +10,9 @@
  * @link
  */
 
-use Nails\Factory;
 use App\Controller\Base;
 use Nails\Common\Exception\NailsException;
+use Nails\Factory;
 use Nails\Invoice\Exception\DriverException;
 
 class Invoice extends Base
@@ -23,7 +23,9 @@ class Invoice extends Base
 
     /**
      * Download a single invoice
+     *
      * @param  \stdClass $oInvoice The invoice object
+     *
      * @return void
      */
     protected function download($oInvoice)
@@ -53,7 +55,9 @@ class Invoice extends Base
 
     /**
      * View a single invoice
+     *
      * @param  \stdClass $oInvoice The invoice object
+     *
      * @return void
      */
     protected function view($oInvoice)
@@ -78,7 +82,9 @@ class Invoice extends Base
 
     /**
      * Pay a single invoice
+     *
      * @param  \stdClass $oInvoice The invoice object
+     *
      * @return void
      * @throws NailsException
      */
@@ -123,7 +129,7 @@ class Invoice extends Base
             $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
             $sPaymentClass = get_class($oPaymentModel);
 
-            $this->data['aProcessingPayments'] = array();
+            $this->data['aProcessingPayments'] = [];
             foreach ($oInvoice->payments->data as $oPayment) {
                 if ($oPayment->status->id === $sPaymentClass::STATUS_PROCESSING) {
                     $this->data['aProcessingPayments'][] = $oPayment;
@@ -167,13 +173,13 @@ class Invoice extends Base
 
             $oFormValidation = Factory::service('FormValidation');
 
-            $aRules = array(
-                'driver'   => array('xss_clean', 'trim', 'required'),
-                'cc[name]' => array('xss_clean', 'trim'),
-                'cc[num]'  => array('xss_clean', 'trim'),
-                'cc[exp]'  => array('xss_clean', 'trim'),
-                'cc[cvc]'  => array('xss_clean', 'trim')
-            );
+            $aRules = [
+                'driver'   => ['xss_clean', 'trim', 'required'],
+                'cc[name]' => ['xss_clean', 'trim'],
+                'cc[num]'  => ['xss_clean', 'trim'],
+                'cc[exp]'  => ['xss_clean', 'trim'],
+                'cc[cvc]'  => ['xss_clean', 'trim'],
+            ];
 
             $sSelectedDriver = $this->input->post('driver');
             $oSelectedDriver = null;
@@ -197,7 +203,7 @@ class Invoice extends Base
                     } elseif (!empty($aFields)) {
 
                         foreach ($aFields as $aField) {
-                            $aRules[$sSlug . '[' . $aField['key'] . ']'] = array('xss_clean');
+                            $aRules[$sSlug . '[' . $aField['key'] . ']'] = ['xss_clean'];
                         }
                     }
 
@@ -311,7 +317,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $oAsset->load('jquery.payment/lib/jquery.payment.js', array('nailsapp/module-invoice', 'BOWER'));
+        $oAsset->load('jquery.payment/lib/jquery.payment.js', ['nailsapp/module-invoice', 'BOWER']);
         $oAsset->load('invoice.pay.min.js', 'nailsapp/module-invoice');
 
         // --------------------------------------------------------------------------
@@ -330,24 +336,25 @@ class Invoice extends Base
      */
     public function _remap()
     {
-        $sInvoiceRef   = $this->uri->rsegment(2);
-        $sInvoiceToken = $this->uri->rsegment(3);
-        $sMethod       = $this->uri->rsegment(4);
+        $oUri          = Factory::service('Uri');
+        $sInvoiceRef   = $oUri->rsegment(2);
+        $sInvoiceToken = $oUri->rsegment(3);
+        $sMethod       = $oUri->rsegment(4);
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
         $oInvoice      = $oInvoiceModel->getByRef(
             $sInvoiceRef,
-            array(
+            [
                 'includeCustomer' => true,
                 'includeItems'    => true,
                 'includePayments' => true,
-                'includeRefunds'  => true
-            )
+                'includeRefunds'  => true,
+            ]
         );
 
         if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {
             show_404();
         }
 
-        return call_user_func(array($this, $sMethod), $oInvoice);
+        return call_user_func([$this, $sMethod], $oInvoice);
     }
 }

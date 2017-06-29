@@ -128,6 +128,12 @@ class Invoice extends Base
      */
     public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
     {
+        //  If the first value is an array then treat as if called with getAll(null, null, $aData);
+        if (is_array($iPage)) {
+            $aData = $iPage;
+            $iPage = null;
+        }
+
         if (empty($aData['select'])) {
 
             $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');

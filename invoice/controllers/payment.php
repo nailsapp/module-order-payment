@@ -10,15 +10,17 @@
  * @link
  */
 
-use Nails\Factory;
 use App\Controller\Base;
 use Nails\Common\Exception\NailsException;
+use Nails\Factory;
 
 class Payment extends Base
 {
     /**
      * Completes a payment
+     *
      * @param  \stdClass $oPayment The invoice object
+     *
      * @return void
      */
     protected function complete($oPayment)
@@ -29,7 +31,6 @@ class Payment extends Base
         $this->data['oInvoice'] = $oPayment->invoice;
 
         if ($oPayment->status->id === $oPaymentModel::STATUS_FAILED) {
-
             //  Payments which FAILED should be ignored
             show_404();
 
@@ -63,20 +64,18 @@ class Payment extends Base
                 $oCompleteRequest->setContinueUrl($oPayment->urls->continue);
 
                 //  Attempt completion
+                $oInput            = Factory::service('Input');
                 $oCompleteResponse = $oCompleteRequest->execute(
-                    $this->input->get(),
-                    $this->input->post()
+                    $oInput->get(),
+                    $oInput->post()
                 );
 
                 if ($oCompleteResponse->isProcessing()) {
 
-                    //  Payment was successfull but has not been confirmed
+                    //  Payment was successful but has not been confirmed
                     if ($oCompleteRequest->getContinueUrl()) {
-
                         redirect($oCompleteRequest->getContinueUrl());
-
                     } else {
-
                         redirect($oPayment->urls->processing);
                     }
 
@@ -84,28 +83,20 @@ class Payment extends Base
 
                     //  Payment has completed fully
                     if ($oCompleteRequest->getContinueUrl()) {
-
                         redirect($oCompleteRequest->getContinueUrl());
-
                     } else {
-
                         redirect($oPayment->urls->thanks);
                     }
 
                 } elseif ($oCompleteResponse->isFailed()) {
-
                     throw new NailsException('Payment failed: ' . $oCompleteResponse->getError()->user, 1);
-
                 } else {
-
                     throw new NailsException('Payment failed.', 1);
                 }
 
             } catch (\Exception $e) {
-
                 $oSession = Factory::service('Session', 'nailsapp/module-auth');
                 $oSession->set_flashdata('error', $e->getMessage());
-
                 redirect($oPayment->invoice->urls->payment);
             }
         }
@@ -115,17 +106,16 @@ class Payment extends Base
 
     /**
      * Shows a thank you page
+     *
      * @param  \stdClass $oPayment The invoice object
+     *
      * @return void
      */
     protected function thanks($oPayment)
     {
         if ($oPayment->status->id === 'PROCESSING') {
-
             redirect($oPayment->urls->processing);
-
         } elseif ($oPayment->status->id !== 'COMPLETE') {
-
             show_404();
         }
 
@@ -145,17 +135,16 @@ class Payment extends Base
 
     /**
      * Shows a thank you page which informs the user that their payment is processing
+     *
      * @param  \stdClass $oPayment The invoice object
+     *
      * @return void
      */
     protected function processing($oPayment)
     {
         if ($oPayment->status->id === 'COMPLETE') {
-
             redirect($oPayment->urls->thanks);
-
         } elseif ($oPayment->status->id !== 'PROCESSING') {
-
             show_404();
         }
 
@@ -179,11 +168,12 @@ class Payment extends Base
      */
     public function _remap()
     {
-        $iPaymentId    = (int) $this->uri->rsegment(2);
-        $sPaymentToken = $this->uri->rsegment(3);
-        $sMethod       = $this->uri->rsegment(4);
+        $oUri          = Factory::service('Uri');
+        $iPaymentId    = (int) $oUri->rsegment(2);
+        $sPaymentToken = $oUri->rsegment(3);
+        $sMethod       = $oUri->rsegment(4);
         $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $oPayment      = $oPaymentModel->getById($iPaymentId, array('includeInvoice' => true));
+        $oPayment      = $oPaymentModel->getById($iPaymentId, ['includeInvoice' => true]);
 
         if (empty($oPayment) || $sPaymentToken !== $oPayment->token || !method_exists($this, $sMethod)) {
             show_404();
