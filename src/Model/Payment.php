@@ -46,6 +46,7 @@ class Payment extends Base
         $this->tableAlias        = 'p';
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
+        $this->searchableFields  = ['id', 'ref', 'description', 'txn_id'];
     }
 
     // --------------------------------------------------------------------------
