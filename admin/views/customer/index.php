@@ -46,8 +46,15 @@
                             <td class="actions">
                                 <?php
 
-                                if (userHasPermission('admin:invoice:customer:edit')) {
+                                if (userHasPermission('admin:invoice:invoice:create')) {
+                                    echo anchor(
+                                        'admin/invoice/invoice/create?customer_id=' . $oCustomer->id,
+                                        'New Invoice',
+                                        'class="btn btn-xs btn-default"'
+                                    );
+                                }
 
+                                if (userHasPermission('admin:invoice:customer:edit')) {
                                     echo anchor(
                                         'admin/invoice/customer/edit/' . $oCustomer->id,
                                         lang('action_edit'),

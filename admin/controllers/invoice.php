@@ -35,7 +35,7 @@ class Invoice extends BaseAdmin
             $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
             $oNavGroup->setLabel('Invoices &amp; Payments');
             $oNavGroup->setIcon('fa-credit-card');
-            $oNavGroup->addAction('Manage Invoices', 'index', array(), 0);
+            $oNavGroup->addAction('Manage Invoices', 'index', [], 0);
 
             return $oNavGroup;
         }
@@ -96,36 +96,36 @@ class Invoice extends BaseAdmin
 
         //  Get pagination and search/sort variables
         $oInput    = Factory::service('Input');
-        $page      = $oInput->get('page')      ? $oInput->get('page')      : 0;
-        $perPage   = $oInput->get('perPage')   ? $oInput->get('perPage')   : 50;
-        $sortOn    = $oInput->get('sortOn')    ? $oInput->get('sortOn')    : $sTableAlias . '.created';
+        $page      = $oInput->get('page') ? $oInput->get('page') : 0;
+        $perPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
+        $sortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
         $sortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
-        $keywords  = $oInput->get('keywords')  ? $oInput->get('keywords')  : '';
+        $keywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
 
         // --------------------------------------------------------------------------
 
         //  Define the sortable columns
-        $sortColumns = array(
+        $sortColumns = [
             $sTableAlias . '.created'  => 'Created Date',
             $sTableAlias . '.modified' => 'Modified Date',
             $sTableAlias . '.state'    => 'Invoice State',
-        );
+        ];
 
         // --------------------------------------------------------------------------
 
         //  Define the filters
-        $aCbFilters = array();
+        $aCbFilters = [];
 
         //  States
-        $aStateOptions = array();
+        $aStateOptions = [];
         $aStates       = $this->oInvoiceModel->getStates();
 
         foreach ($aStates as $sState => $sLabel) {
-            $aStateOptions[] = array(
+            $aStateOptions[] = [
                 $sLabel,
                 $sState,
-                true
-            );
+                true,
+            ];
         }
 
         $aCbFilters[] = Helper::searchFilterObject(
@@ -136,15 +136,15 @@ class Invoice extends BaseAdmin
 
         //  Currencies
         $oCurrency        = Factory::service('Currency', 'nailsapp/module-currency');
-        $aCurrencyOptions = array();
+        $aCurrencyOptions = [];
         $aCurrencies      = $oCurrency->getAllEnabled();
 
         foreach ($aCurrencies as $oCurrency) {
-            $aCurrencyOptions[] = array(
+            $aCurrencyOptions[] = [
                 $oCurrency->code,
                 $oCurrency->code,
-                true
-            );
+                true,
+            ];
         }
 
         $aCbFilters[] = Helper::searchFilterObject(
@@ -156,19 +156,19 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Define the $data variable for the queries
-        $data = array(
-            'sort' => array(
-                array($sortOn, $sortOrder)
-            ),
+        $data = [
+            'sort'            => [
+                [$sortOn, $sortOrder],
+            ],
             'includeCustomer' => true,
             'includePayments' => true,
             'keywords'        => $keywords,
-            'cbFilters'       => $aCbFilters
-        );
+            'cbFilters'       => $aCbFilters,
+        ];
 
         //  Get the items for the page
-        $totalRows                   = $this->oInvoiceModel->countAll($data);
-        $this->data['invoices']      = $this->oInvoiceModel->getAll($page, $perPage, $data);
+        $totalRows              = $this->oInvoiceModel->countAll($data);
+        $this->data['invoices'] = $this->oInvoiceModel->getAll($page, $perPage, $data);
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
@@ -207,7 +207,9 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oInput = Factory::service('Input');
+        $oInput                    = Factory::service('Input');
+        $this->data['customer_id'] = $oInput->get('customer_id');
+
         if ($oInput->post()) {
 
             if ($this->validatePost()) {
@@ -249,7 +251,7 @@ class Invoice extends BaseAdmin
         $oInput = Factory::service('Input');
         if ($oInput->post()) {
 
-            $aItems = $oInput->post('items') ?: array();
+            $aItems = $oInput->post('items') ?: [];
             //  Tidy up post data as expected by JS
             foreach ($aItems as &$aItem) {
 
@@ -261,7 +263,7 @@ class Invoice extends BaseAdmin
                 $aItem['unit_cost']->formatted = new \stdClass();
                 $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
 
-                $aItem['tax'] = new \stdClass();
+                $aItem['tax']     = new \stdClass();
                 $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
 
                 $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
@@ -271,7 +273,7 @@ class Invoice extends BaseAdmin
 
         } else {
 
-            $aItems = array();
+            $aItems = [];
         }
 
         // --------------------------------------------------------------------------
@@ -318,7 +320,7 @@ class Invoice extends BaseAdmin
         $oInput = Factory::service('Input');
 
         $iInvoiceId            = (int) $oUri->segment(5);
-        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
+        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, ['includeAll' => true]);
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
             show_404();
@@ -370,7 +372,7 @@ class Invoice extends BaseAdmin
         //  Invoice Items
         if ($oInput->post()) {
 
-            $aItems = $oInput->post('items') ?: array();
+            $aItems = $oInput->post('items') ?: [];
             //  Tidy up post data as expected by JS
             foreach ($aItems as &$aItem) {
 
@@ -382,7 +384,7 @@ class Invoice extends BaseAdmin
                 $aItem['unit_cost']->formatted = new \stdClass();
                 $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
 
-                $aItem['tax'] = new \stdClass();
+                $aItem['tax']     = new \stdClass();
                 $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
 
                 $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
@@ -397,9 +399,11 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oCurrency                = Factory::service('Currency', 'nailsapp/module-currency');
-        $aCurrencies              = $oCurrency->getAllEnabled();
-        $this->data['currencies'] = $aCurrencies;
+        $oCurrency                 = Factory::service('Currency', 'nailsapp/module-currency');
+        $aCurrencies               = $oCurrency->getAllEnabled();
+        $this->data['currencies']  = $aCurrencies;
+        //  A customer ID can be specified when creating an invoice; this prevents undefined var errors
+        $this->data['customer_id'] = null;
 
         // --------------------------------------------------------------------------
 
@@ -433,9 +437,9 @@ class Invoice extends BaseAdmin
             unauthorised();
         }
 
-        $oUri       = Factory::service('Uri');
-        $iInvoiceId = (int) $oUri->segment(5);
-        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
+        $oUri                  = Factory::service('Uri');
+        $iInvoiceId            = (int) $oUri->segment(5);
+        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, ['includeAll' => true]);
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {
             show_404();
@@ -459,7 +463,7 @@ class Invoice extends BaseAdmin
     {
         $oFormValidation = Factory::service('FormValidation');
 
-        $aRules = array(
+        $aRules = [
             'ref'             => 'xss_clean|trim',
             'state'           => 'xss_clean|trim|required',
             'dated'           => 'xss_clean|trim|required|valid_date',
@@ -467,16 +471,16 @@ class Invoice extends BaseAdmin
             'terms'           => 'xss_clean|trim|is_natural',
             'customer_id'     => 'xss_clean|trim',
             'additional_text' => 'xss_clean|trim',
-            'items'           => ''
-        );
+            'items'           => '',
+        ];
 
-        $aRulesFV = array();
+        $aRulesFV = [];
         foreach ($aRules as $sKey => $sRules) {
-            $aRulesFV[] = array(
+            $aRulesFV[] = [
                 'field' => $sKey,
                 'label' => '',
-                'rules' => $sRules
-            );
+                'rules' => $sRules,
+            ];
         }
 
         $oFormValidation->set_rules($aRulesFV);
@@ -518,7 +522,7 @@ class Invoice extends BaseAdmin
     {
         $oInput = Factory::service('Input');
         $oUri   = Factory::service('Uri');
-        $aData = array(
+        $aData  = [
             'ref'             => $oInput->post('ref') ?: null,
             'state'           => $oInput->post('state') ?: null,
             'dated'           => $oInput->post('dated') ?: null,
@@ -526,23 +530,23 @@ class Invoice extends BaseAdmin
             'terms'           => (int) $oInput->post('terms') ?: 0,
             'customer_id'     => (int) $oInput->post('customer_id') ?: null,
             'additional_text' => $oInput->post('additional_text') ?: null,
-            'items'           => array(),
-            'currency'        => $oInput->post('currency')
-        );
+            'items'           => [],
+            'currency'        => $oInput->post('currency'),
+        ];
 
         if ($oInput->post('items')) {
             foreach ($oInput->post('items') as $aItem) {
 
                 //  @todo convert to pence using a model
-                $aData['items'][] = array(
+                $aData['items'][] = [
                     'id'        => array_key_exists('id', $aItem) ? $aItem['id'] : null,
                     'quantity'  => array_key_exists('quantity', $aItem) ? $aItem['quantity'] : null,
                     'unit'      => array_key_exists('unit', $aItem) ? $aItem['unit'] : null,
                     'label'     => array_key_exists('label', $aItem) ? $aItem['label'] : null,
                     'body'      => array_key_exists('body', $aItem) ? $aItem['body'] : null,
-                    'unit_cost' => array_key_exists('unit_cost', $aItem) ? intval($aItem['unit_cost']*100) : null,
-                    'tax_id'    => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null
-                );
+                    'unit_cost' => array_key_exists('unit_cost', $aItem) ? intval($aItem['unit_cost'] * 100) : null,
+                    'tax_id'    => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null,
+                ];
             }
         }
 
@@ -602,9 +606,9 @@ class Invoice extends BaseAdmin
         //  Allow getting a constant
         $oInvoiceModel = $this->oInvoiceModel;
 
-        $aData = array(
+        $aData = [
             'state' => $oInvoiceModel::STATE_DRAFT,
-        );
+        ];
         if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
 
             $sStatus  = 'success';

@@ -1,5 +1,5 @@
 <div class="group-invoice invoice edit">
-    <?=form_open()?>
+    <?=form_open($customer_id ? 'admin/invoice/invoice/create?customer_id=' . $customer_id : null)?>
     <fieldset>
         <legend>Details</legend>
         <?php
@@ -7,7 +7,7 @@
         $aField = array(
             'key'     => 'customer_id',
             'label'   => 'Customer',
-            'default' => !empty($invoice->customer->id) ? $invoice->customer->id : '',
+            'default' => !empty($invoice->customer->id) ? $invoice->customer->id : $customer_id,
             'class'   => 'customer-search',
             'info'    => '<a href="#" class="btn btn-xs btn-primary" data-bind="click: createCustomer">Create Customer</a>'
         );
