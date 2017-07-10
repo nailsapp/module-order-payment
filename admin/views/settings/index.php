@@ -1,15 +1,15 @@
 <?php
 
 //  Get any additional libraries we'll need
-$oInput = nailsFactory('service', 'Input');
+$oInput = \Nails\Factory::service('Input');
 
 ?>
 <div class="group-invoice settings">
     <?php
 
-        echo form_open();
-        $sActiveTab = $this->input->post('active_tab') ?: 'tab-misc';
-        echo '<input type="hidden" name="active_tab" value="' . $sActiveTab . '" id="active-tab">';
+    echo form_open();
+    $sActiveTab = $this->input->post('active_tab') ?: 'tab-misc';
+    echo '<input type="hidden" name="active_tab" value="' . $sActiveTab . '" id="active-tab">';
 
     ?>
     <ul class="tabs" data-active-tab-input="#active-tab">
@@ -64,35 +64,35 @@ $oInput = nailsFactory('service', 'Input');
                     <legend>Business Information</legend>
                     <?php
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'business_name';
                     $field['label']   = 'Name';
                     $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
 
                     echo form_field($field);
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'business_address';
                     $field['label']   = 'Address';
                     $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
 
                     echo form_field_textarea($field);
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'business_phone';
                     $field['label']   = 'Telephone';
                     $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
 
                     echo form_field($field);
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'business_email';
                     $field['label']   = 'Email';
                     $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
 
                     echo form_field($field);
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'business_vat_number';
                     $field['label']   = 'VAT Number';
                     $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
@@ -105,14 +105,14 @@ $oInput = nailsFactory('service', 'Input');
                     <legend>Defaults</legend>
                     <?php
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'default_additional_text';
                     $field['label']   = 'Invoice Additional Text';
                     $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
 
                     echo form_field_textarea($field);
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'default_payment_terms';
                     $field['label']   = 'Invoice Payment Terms';
                     $field['default'] = isset($settings[$field['key']]) ? $settings[$field['key']] : false;
@@ -125,7 +125,7 @@ $oInput = nailsFactory('service', 'Input');
                     <legend>Saved Cards</legend>
                     <?php
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'saved_cards_enabled';
                     $field['label']   = 'Enabled';
                     $field['info']    = 'Allow users to save their cards for future use.';
@@ -139,7 +139,7 @@ $oInput = nailsFactory('service', 'Input');
                     <legend>Saved Addresses</legend>
                     <?php
 
-                    $field            = array();
+                    $field            = [];
                     $field['key']     = 'saved_addresses_enabled';
                     $field['label']   = 'Enabled';
                     $field['info']    = 'Allow users to save their billing addresses for future use.';
@@ -190,7 +190,7 @@ $oInput = nailsFactory('service', 'Input');
             <?php
         }
 
-    ?>
+        ?>
     </section>
     <p>
         <?=form_submit('submit', lang('action_save_changes'), 'class="btn btn-primary"')?>
