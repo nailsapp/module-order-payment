@@ -19,6 +19,14 @@ use Nails\Invoice\Exception\InvoiceException;
 class Invoice extends Base
 {
     /**
+     * Turn caching off due to dynamic subqueries in the select statement
+     * @var bool
+     */
+    protected static $CACHING_ENABLED = false;
+
+    // --------------------------------------------------------------------------
+
+    /**
      * The table where line items are stored
      * @var string
      */
