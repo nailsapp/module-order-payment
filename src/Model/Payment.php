@@ -100,7 +100,9 @@ class Payment extends Base
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
 
         if (is_array($iPage)) {    
+
             $aData = $iPage;
+            $iPage = null;
         }
 
         if (!empty($aItems)) {
