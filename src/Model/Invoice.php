@@ -137,6 +137,7 @@ class Invoice extends Base
     public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
+        //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
         if (is_array($iPage)) {
             $aData = $iPage;
             $iPage = null;
