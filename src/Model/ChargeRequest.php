@@ -13,7 +13,6 @@
 namespace Nails\Invoice\Model;
 
 use Nails\Factory;
-use Nails\Invoice\Model\RequestBase;
 use Nails\Invoice\Exception\ChargeRequestException;
 
 class ChargeRequest extends RequestBase
@@ -28,7 +27,7 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Cosntruct the charge request
+     * ChargeRequest constructor.
      */
     public function __construct()
     {
@@ -55,7 +54,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set the cardholder's name
+     *
      * @param string $sCardName The cardholder's name
+     *
+     * @return $this
      */
     public function setCardName($sCardName)
     {
@@ -78,7 +80,11 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set the card's number
+     *
      * @param string $sCardNumber The card's number
+     *
+     * @throws ChargeRequestException
+     * @return $this
      */
     public function setCardNumber($sCardNumber)
     {
@@ -106,7 +112,11 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set the card's expiry month
-     * @param string $sExpiry The card's expiry month
+     *
+     * @param string $sCardExpMonth The card's expiry month
+     *
+     * @throws ChargeRequestException
+     * @return $this
      */
     public function setCardExpMonth($sCardExpMonth)
     {
@@ -114,7 +124,7 @@ class ChargeRequest extends RequestBase
         if (is_numeric($sCardExpMonth)) {
 
             $iMonth = (int) $sCardExpMonth;
-            if ($iMonth < 1 || $iMonth >  12) {
+            if ($iMonth < 1 || $iMonth > 12) {
 
                 throw new ChargeRequestException(
                     '"' . $sCardExpMonth . '" is an invalid expiry month; must be in the range 1-12.',
@@ -134,9 +144,6 @@ class ChargeRequest extends RequestBase
                 1
             );
         }
-
-        $this->oCard->exp->month = $sCardExpMonth;
-        return $this;
     }
 
     // --------------------------------------------------------------------------
@@ -154,7 +161,11 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set the card's expiry year
-     * @param string $sExpiry The card's expiry year
+     *
+     * @param string $sCardExpYear The card's expiry year
+     *
+     * @throws ChargeRequestException
+     * @return $this
      */
     public function setCardExpYear($sCardExpYear)
     {
@@ -199,9 +210,6 @@ class ChargeRequest extends RequestBase
                 1
             );
         }
-
-        $this->oCard->exp->year = $sCardExpYear;
-        return $this;
     }
 
     // --------------------------------------------------------------------------
@@ -219,7 +227,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set the card's CVC number
+     *
      * @param string $sCardCvc The card's cvc number
+     *
+     * @return $this
      */
     public function setCardCvc($sCardCvc)
     {
@@ -243,8 +254,11 @@ class ChargeRequest extends RequestBase
 
     /**
      * Define a custom field
+     *
      * @param string $sProperty The property to set
      * @param mixed  $mValue    The value to set
+     *
+     * @return $this
      */
     public function setCustomField($sProperty, $mValue)
     {
@@ -256,7 +270,9 @@ class ChargeRequest extends RequestBase
 
     /**
      * Retrieve a custom field
+     *
      * @param  string $sProperty The property to retrieve
+     *
      * @return mixed
      */
     public function getCustomField($sProperty)
@@ -268,8 +284,11 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set a custom value
+     *
      * @param string $sProperty The property to set
      * @param mixed  $mValue    The value to set
+     *
+     * @return $this
      */
     public function setCustomData($sProperty, $mValue)
     {
@@ -281,7 +300,9 @@ class ChargeRequest extends RequestBase
 
     /**
      * Retrieve a custom value
+     *
      * @param  string $sProperty The property to retrieve
+     *
      * @return mixed
      */
     public function getCustomData($sProperty)
@@ -293,7 +314,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set the description
+     *
      * @param string $sDescription The description of the charge
+     *
+     * @return $this
      */
     public function setDescription($sDescription)
     {
@@ -316,7 +340,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set whether the charge should automatically redirect
-     * @param boolean $bAutoRedirect Whetehr to auto redirect or not
+     *
+     * @param boolean $bAutoRedirect Whether to auto redirect or not
+     *
+     * @return $this
      */
     public function setAutoRedirect($bAutoRedirect)
     {
@@ -328,7 +355,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Whether the charge request will automatically redirect in the case of a
-     * driver requestring a redirect flow.
+     * driver requesting a redirect flow.
      * @return boolean
      */
     public function isAutoRedirect()
@@ -340,7 +367,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Set the URL to go to when a payment is completed
+     *
      * @param string $sContinueUrl the URL to go to when payment is completed
+     *
+     * @return $this
      */
     public function setContinueUrl($sContinueUrl)
     {
@@ -363,8 +393,11 @@ class ChargeRequest extends RequestBase
 
     /**
      * execute the charge
-     * @param  integer   $iAmount    The amount to charge the card
-     * @param  string    $sCurrency  The currency in which to charge
+     *
+     * @param  integer $iAmount   The amount to charge the card
+     * @param  string  $sCurrency The currency in which to charge
+     *
+     * @throws ChargeRequestException
      * @return \Nails\Invoice\Model\ChargeResponse
      */
     public function execute($iAmount, $sCurrency)
@@ -395,15 +428,15 @@ class ChargeRequest extends RequestBase
         if (empty($this->oPayment)) {
 
             $iPaymentId = $this->oPaymentModel->create(
-                array(
+                [
                     'driver'       => $this->oDriver->getSlug(),
                     'description'  => $this->getDescription(),
                     'invoice_id'   => $this->oInvoice->id,
                     'currency'     => $sCurrency,
                     'amount'       => $iAmount,
                     'url_continue' => $this->getContinueUrl(),
-                    'custom_data'  => $this->oCustomData
-                )
+                    'custom_data'  => $this->oCustomData,
+                ]
             );
 
             if (empty($iPaymentId)) {
@@ -432,7 +465,7 @@ class ChargeRequest extends RequestBase
             $oDriverData,
             $this->oCustomData,
             $this->getDescription(),
-            $this->oPayment->id,
+            $this->oPayment,
             $this->oInvoice,
             $sSuccessUrl,
             $sFailUrl,
@@ -444,7 +477,7 @@ class ChargeRequest extends RequestBase
             throw new ChargeRequestException('Response from driver was empty.', 1);
         }
 
-        if (!($oChargeResponse instanceof \Nails\Invoice\Model\ChargeResponse)) {
+        if (!($oChargeResponse instanceof ChargeResponse)) {
             throw new ChargeRequestException(
                 'Response from driver must be an instance of \Nails\Invoice\Model\ChargeResponse.',
                 1
@@ -472,10 +505,10 @@ class ChargeRequest extends RequestBase
                 echo $oCi->load->view('structure/header/blank', getControllerData(), true);
                 echo $oCi->load->view(
                     'invoice/pay/post',
-                    array(
+                    [
                         'redirectUrl' => $sRedirectUrl,
-                        'postFields'  => $aPostData
-                    ),
+                        'postFields'  => $aPostData,
+                    ],
                     true
                 );
                 echo $oCi->load->view('structure/footer/blank', getControllerData(), true);
@@ -504,11 +537,11 @@ class ChargeRequest extends RequestBase
             $sPaymentClass = get_class($this->oPaymentModel);
             $bResult       = $this->oPaymentModel->update(
                 $this->oPayment->id,
-                array(
+                [
                     'status'    => $sPaymentClass::STATUS_FAILED,
                     'fail_msg'  => $oChargeResponse->getError()->msg,
-                    'fail_code' => $oChargeResponse->getError()->code
-                )
+                    'fail_code' => $oChargeResponse->getError()->code,
+                ]
             );
 
             if (empty($bResult)) {
