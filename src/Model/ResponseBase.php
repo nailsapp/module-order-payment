@@ -42,7 +42,7 @@ class ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * Construct the model
+     * ResponseBase constructor.
      */
     public function __construct()
     {
@@ -57,34 +57,38 @@ class ResponseBase
      */
     public function getStatuses()
     {
-        return array(
+        return [
             self::STATUS_PENDING,
             self::STATUS_PROCESSING,
             self::STATUS_COMPLETE,
-            self::STATUS_FAILED
-        );
+            self::STATUS_FAILED,
+        ];
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Returns an array of statsues with human friendly labels
+     * Returns an array of statuses with human friendly labels
      * @return array
      */
     public function getStatusesHuman()
     {
-        return array(
+        return [
             self::STATUS_PENDING    => 'Pending',
             self::STATUS_PROCESSING => 'Processing',
             self::STATUS_COMPLETE   => 'Complete',
-            self::STATUS_FAILED     => 'Failed'
-        );
+            self::STATUS_FAILED     => 'Failed',
+        ];
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns the current status of the response
+     *
+     * @param string $sStatus The status to set
+     *
+     * @throws ResponseException
      * @return string
      */
     public function setStatus($sStatus)
@@ -106,6 +110,7 @@ class ResponseBase
 
     /**
      * Set the status as PENDING
+     * @return string
      */
     public function setStatusPending()
     {
@@ -116,6 +121,7 @@ class ResponseBase
 
     /**
      * Set the status as PROCESSING
+     * @return string
      */
     public function setStatusProcessing()
     {
@@ -126,6 +132,7 @@ class ResponseBase
 
     /**
      * Set the status as COMPLETE
+     * @return string
      */
     public function setStatusComplete()
     {
@@ -136,15 +143,18 @@ class ResponseBase
 
     /**
      * Set the status as FAILED
+     *
      * @param string $sReasonMsg    The exception message, logged against the payment and not shown to the customer
-     * @param integr $iReasonCode   The exception code, logged against the payment and not shown to the customer
+     * @param string $sReasonCode   The exception code, logged against the payment and not shown to the customer
      * @param string $sUserFeedback The message to show to the user explaining the error
+     *
+     * @return string
      */
-    public function setStatusFailed($sReasonMsg, $iReasonCode, $sUserFeedback = '')
+    public function setStatusFailed($sReasonMsg, $sReasonCode, $sUserFeedback = '')
     {
         $this->sErrorMsg  = trim($sReasonMsg);
-        $this->sErrorCode = (int) $iReasonCode;
-        $this->sErrorUser = !empty($sUserFeedback) ? trim($sUserFeedback) : $this->sErrorMsg;
+        $this->sErrorCode = trim($sReasonCode);
+        $this->sErrorUser = trim($sUserFeedback);
 
         return $this->setStatus(self::STATUS_FAILED);
     }
@@ -224,7 +234,10 @@ class ResponseBase
 
     /**
      * Set the transaction ID
+     *
      * @param string $sTxnId The transaction ID
+     *
+     * @return $this
      */
     public function setTxnId($sTxnId)
     {
@@ -240,7 +253,8 @@ class ResponseBase
      * The transaction ID
      * @return string
      */
-    public function getTxnId() {
+    public function getTxnId()
+    {
         return $this->sTxnId;
     }
 
@@ -248,7 +262,10 @@ class ResponseBase
 
     /**
      * Set the fee charged by the payment processor
+     *
      * @param integer $iFee The fee charged by the payment processor
+     *
+     * @return $this
      */
     public function setFee($iFee)
     {
@@ -264,7 +281,8 @@ class ResponseBase
      * The fee charged by the payment processor
      * @return integer
      */
-    public function getFee() {
+    public function getFee()
+    {
         return $this->iFee;
     }
 
@@ -272,7 +290,7 @@ class ResponseBase
 
     /**
      * Prevent the object from being altered
-     * @return object
+     * @return $this
      */
     public function lock()
     {
@@ -286,7 +304,8 @@ class ResponseBase
      * Whether the response is locked
      * @return boolean
      */
-    public function isLocked() {
+    public function isLocked()
+    {
         return $this->bIsLocked;
     }
 }

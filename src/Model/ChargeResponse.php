@@ -12,9 +12,6 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Invoice\Model\ResponseBase;
-use Nails\Invoice\Exception\ChargeResponseException;
-
 class ChargeResponse extends ResponseBase
 {
     //  Redirect variables
@@ -53,7 +50,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Set whether the response is a redirect
+     *
      * @param boolean $bIsRedirect Whether the response is a redirect
+     *
+     * @return $this
      */
     protected function setIsRedirect($bIsRedirect)
     {
@@ -67,7 +67,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Set the redirectUrl value
+     *
      * @param string $sRedirectUrl The Redirect URL
+     *
+     * @return $this
      */
     public function setRedirectUrl($sRedirectUrl)
     {
@@ -93,7 +96,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Set the sSuccessUrl value
+     *
      * @param string $sSuccessUrl The URL to go to on successful payment
+     *
+     * @return $this
      */
     public function setSuccessUrl($sSuccessUrl)
     {
@@ -106,7 +112,7 @@ class ChargeResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * The URL to redirect to on successsful payment
+     * The URL to redirect to on successful payment
      * @return string
      */
     public function getSuccessUrl()
@@ -129,7 +135,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Set the sFailUrl value
+     *
      * @param string $sFailUrl The URL to go to on failed payment
+     *
+     * @return $this
      */
     public function setFailUrl($sFailUrl)
     {
@@ -143,7 +152,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Set the URL to go to when a payment is completed
+     *
      * @param string $sContinueUrl the URL to go to when payment is completed
+     *
+     * @return $this
      */
     public function setContinueUrl($sContinueUrl)
     {
@@ -168,7 +180,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Set any data which should be POST'ed to the endpoint
+     *
      * @param array $aRedirectPostData The data to post
+     *
+     * @return $this
      */
     public function setRedirectPostData($aRedirectPostData)
     {
