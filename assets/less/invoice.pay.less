@@ -1,29 +1,33 @@
 .nailsapp-invoice {
+
+    max-width: 500px;
+
     &.pay {
-        margin-top: 2em;
         position: relative;
+
         &.shake {
             perspective: 800px;
+
             .shakeable {
-                -webkit-animation-duration: 400ms;
-                -webkit-animation-timing-function: ease-in-out;
-                -webkit-animation-name: panelShakeAnimation;
-                -moz-animation-duration: 400ms;
-                -moz-animation-timing-function: ease-in-out;
-                -moz-animation-name: panelShakeAnimation;
+                animation-duration: 400ms;
+                animation-timing-function: ease-in-out;
+                animation-name: panelShakeAnimation;
             }
         }
+
         &.masked {
             > form {
                 > * {
                     opacity: 0.5;
                 }
+
                 > .mask {
                     opacity: 1;
                     display: block;
                 }
             }
         }
+
         .mask {
             display: none;
             position: absolute;
@@ -37,70 +41,10 @@
                 transform: translate3d(-50%, -50%, 0);
                 font-size: 2em;
                 animation: spin 2s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045);
-                transform-origin:50% 47%;
+                transform-origin: 50% 47%;
             }
         }
-        .panel-body {
-            > *:last-child {
-                margin-bottom: 0;
-            }
-        }
-        .list-group {
-            .list-group-item {
-                padding: 0;
-                &:first-child {
-                    label {
-                        border-top-right-radius: 4px;
-                        border-top-left-radius: 4px;
-                    }
-                }
-                &:last-child {
-                    label {
-                        border-bottom-right-radius: 4px;
-                        border-bottom-left-radius: 4px;
-                    }
-                }
-            }
-            label {
-                margin: 0;
-                padding: 10px 15px;
-                display: block;
-                cursor: pointer;
-                &:hover,
-                &.active {
-                    background: #F3F3F3;
-                }
-            }
-            input {
-                margin-right: 0.5em;
-                display: inline-block;
-            }
-            .text-muted {
-                display: inline-block;
-                margin-left: 1em;
-            }
-        }
-        .form-group {
-            label {
-                display: block;
-                > * {
-                    font-weight: normal;
-                }
-                > input,
-                > select {
-                    margin-top: 0.5em;
-                    &.has-error {
-                        background-color: rgba(244, 67, 54, 0.2);
-                        border-color: rgb(244, 67, 54);
-                        color: #BD291E;
-                    }
-                }
-            }
-            .alert {
-                padding: 0.5em 0.75em;
-                margin-top: 0.5em;
-            }
-        }
+
         .js-invoice-cc-num {
             padding-right: 50px;
             background-size: 32px 32px;
@@ -132,33 +76,36 @@
                 background-image: url(../img/cards-64x64/visa.png);
             }
         }
+
         .js-invoice-cc-cvc {
             padding-right: 50px;
             background-size: 32px 32px;
             background-repeat: no-repeat;
             background-position: right 5px center;
+
             &.amex {
                 background-image: url(../img/cvc-64x64/amex.png);
             }
+
             &.other {
                 background-image: url(../img/cvc-64x64/other.png);
             }
         }
-        .cancel-payment {
-            margin-top: 2.5em;
-        }
     }
+
     &.pending {
         .list-group {
             margin-bottom: 0;
         }
     }
+
     &.paid {
         h3 {
             margin: 0;
             margin-bottom: 0.5em;
         }
     }
+
     @keyframes spin {
         from {
             transform: rotate(0deg);
@@ -168,7 +115,7 @@
         }
     }
     @keyframes panelShakeAnimation {
-        0 {
+        0% {
             transform: translateX(0);
         }
         12.5% {

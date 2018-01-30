@@ -17,6 +17,10 @@ use Nails\Invoice\Exception\DriverException;
 
 class Invoice extends Base
 {
+    /**
+     * The default invoice skin to use
+     * @type string
+     */
     const DEFAULT_INVOICE_SKIN = 'nailsapp/skin-invoice-classic';
 
     // --------------------------------------------------------------------------
@@ -63,12 +67,13 @@ class Invoice extends Base
     protected function view($oInvoice)
     {
         //  Business details
-        $this->data['business']             = new \stdClass();
-        $this->data['business']->name       = appSetting('business_name', 'nailsapp/module-invoice');
-        $this->data['business']->address    = appSetting('business_address', 'nailsapp/module-invoice');
-        $this->data['business']->telephone  = appSetting('business_telephone', 'nailsapp/module-invoice');
-        $this->data['business']->email      = appSetting('business_email', 'nailsapp/module-invoice');
-        $this->data['business']->vat_number = appSetting('business_vat_number', 'nailsapp/module-invoice');
+        $this->data['business'] = [
+            'name'       => appSetting('business_name', 'nailsapp/module-invoice'),
+            'address'    => appSetting('business_address', 'nailsapp/module-invoice'),
+            'telephone'  => appSetting('business_telephone', 'nailsapp/module-invoice'),
+            'email'      => appSetting('business_email', 'nailsapp/module-invoice'),
+            'vat_number' => appSetting('business_vat_number', 'nailsapp/module-invoice'),
+        ];
 
         $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
         $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
@@ -90,11 +95,16 @@ class Invoice extends Base
      */
     protected function pay($oInvoice)
     {
+        $oAsset = Factory::service('Asset');
+        $oInput = Factory::service('Input');
+
         $this->data['oInvoice']       = $oInvoice;
         $this->data['headerOverride'] = 'structure/header/blank';
         $this->data['footerOverride'] = 'structure/footer/blank';
 
-        $oAsset = Factory::service('Asset');
+        $oAsset->clear();
+        $oAsset->load('https://code.jquery.com/jquery-2.2.4.min.js');
+        $oAsset->load('nails.min.css', 'nailsapp/common');
         $oAsset->load('invoice.pay.css', 'nailsapp/module-invoice');
 
         //  Only open invoice can be paid
@@ -119,7 +129,7 @@ class Invoice extends Base
             unauthorised();
         }
 
-        $this->data['sUrlCancel'] = $this->input->get('cancel') ?: site_url();
+        $this->data['sUrlCancel'] = $oInput->get('cancel') ?: site_url();
 
         // --------------------------------------------------------------------------
 
@@ -127,11 +137,10 @@ class Invoice extends Base
         if ($oInvoice->has_processing_payments) {
 
             $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-            $sPaymentClass = get_class($oPaymentModel);
 
             $this->data['aProcessingPayments'] = [];
             foreach ($oInvoice->payments->data as $oPayment) {
-                if ($oPayment->status->id === $sPaymentClass::STATUS_PROCESSING) {
+                if ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
                     $this->data['aProcessingPayments'][] = $oPayment;
                 }
             }
@@ -163,7 +172,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        if ($this->input->post()) {
+        if ($oInput->post()) {
 
             /**
              * Validation works by looking at which driver has been chosen and then
@@ -181,7 +190,7 @@ class Invoice extends Base
                 'cc[cvc]'  => ['xss_clean', 'trim'],
             ];
 
-            $sSelectedDriver = $this->input->post('driver');
+            $sSelectedDriver = $oInput->post('driver');
             $oSelectedDriver = null;
 
             foreach ($this->data['aDrivers'] as $oDriver) {
@@ -193,7 +202,7 @@ class Invoice extends Base
 
                     $oSelectedDriver = $oDriver;
 
-                    if ($aFields === 'CARD') {
+                    if ($aFields === $oSelectedDriver::PAYMENT_FIELDS_CARD) {
 
                         $aRules['cc[name]'][] = 'required';
                         $aRules['cc[num]'][]  = 'required';
@@ -201,7 +210,6 @@ class Invoice extends Base
                         $aRules['cc[cvc]'][]  = 'required';
 
                     } elseif (!empty($aFields)) {
-
                         foreach ($aFields as $aField) {
                             $aRules[$sSlug . '[' . $aField['key'] . ']'] = ['xss_clean'];
                         }
@@ -234,7 +242,7 @@ class Invoice extends Base
                     //  If the driver expects card data then set it, if it expects custom data then set that
                     $mPaymentFields = $oSelectedDriver->getPaymentFields();
 
-                    if (!empty($mPaymentFields) && $mPaymentFields == 'CARD') {
+                    if (!empty($mPaymentFields) && $mPaymentFields == $oSelectedDriver::PAYMENT_FIELDS_CARD) {
 
                         $sName = !empty($_POST['cc']['name']) ? $_POST['cc']['name'] : '';
                         $sNum  = !empty($_POST['cc']['num']) ? $_POST['cc']['num'] : '';
@@ -253,15 +261,10 @@ class Invoice extends Base
                         $oChargeRequest->setCardCvc($sCvc);
 
                     } elseif (!empty($mPaymentFields)) {
-
                         foreach ($mPaymentFields as $aField) {
-
                             if (!empty($_POST[$sSelectedDriver][$aField['key']])) {
-
                                 $sValue = $_POST[$sSelectedDriver][$aField['key']];
-
                             } else {
-
                                 $sValue = null;
                             }
                             $oChargeRequest->setCustomField($aField['key'], $sValue);
@@ -278,7 +281,7 @@ class Invoice extends Base
                     if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete()) {
 
                         /**
-                         * Payment was successfull (but potentially unconfirmed). Send the user off to
+                         * Payment was successful (but potentially unconfirmed). Send the user off to
                          * complete the request.
                          */
 
@@ -305,12 +308,10 @@ class Invoice extends Base
                     }
 
                 } catch (\Exception $e) {
-
                     $this->data['error'] = $e->getMessage();
                 }
 
             } else {
-
                 $this->data['error'] = lang('fv_there_were_errors');
             }
         }
@@ -355,6 +356,6 @@ class Invoice extends Base
             show_404();
         }
 
-        return call_user_func([$this, $sMethod], $oInvoice);
+        call_user_func([$this, $sMethod], $oInvoice);
     }
 }

@@ -29,13 +29,12 @@ var invoicePay = function() {
             //  Update button
             var btnString = $(this).data('is-redirect') ? 'Continue' : 'Pay Now';
             $('#js-invoice-pay-now')
-                .removeClass('btn-warning disabled')
-                .addClass('btn-success')
+                .removeClass('btn--warning btn--disabled')
                 .text(btnString);
 
             //  Hide any errors
-            $('#js-invoice-driver-select + .alert-danger').remove();
-            $('.js-invoice-panel-payment-details input + .alert-danger').remove();
+            $('#js-invoice-driver-select + .alert--danger').remove();
+            $('.js-invoice-panel-payment-details input + .alert--danger').remove();
 
         });
         $('.js-invoice-driver-select input:checked').trigger('click');
@@ -48,16 +47,15 @@ var invoicePay = function() {
         //  CVC Card type formatting
         $('.js-invoice-cc-num').on('keyup', function() {
 
-            var cardNum  = $(this).val().trim();
+            var cardNum = $(this).val().trim();
             var cardType = $.payment.cardType(cardNum);
-            var cardCvc = $(this).closest('.row').find('.js-invoice-cc-cvc');
+            var cardCvc = $('.js-invoice-cc-cvc');
 
             cardCvc.removeClass('amex other');
 
             if (cardNum.length > 0) {
 
-                switch (cardType)
-                {
+                switch (cardType) {
                     case 'amex':
                         cardCvc.addClass('amex');
                         break;
@@ -77,7 +75,7 @@ var invoicePay = function() {
             var isValid = true;
 
             //  Hide errors
-            $('#js-invoice-driver-select + .alert-danger').remove();
+            $('#js-invoice-driver-select + .alert--danger').remove();
             $('.js-invoice-panel-payment-details input').removeClass('has-error');
 
             //  Driver selected
@@ -120,12 +118,14 @@ var invoicePay = function() {
             } else {
 
                 isValid = false;
-                $('#js-invoice-driver-select').after('<p class="alert alert-danger">Please select an option.</p>');
+                $('#js-invoice-driver-select').after('<p class="alert alert--danger">Please select an option.</p>');
             }
 
             if (!isValid) {
                 $('#js-invoice').addClass('shake');
-                setTimeout(function() { $('#js-invoice').removeClass('shake'); }, 500);
+                setTimeout(function() {
+                    $('#js-invoice').removeClass('shake');
+                }, 500);
             } else {
                 $('#js-invoice').addClass('masked');
             }

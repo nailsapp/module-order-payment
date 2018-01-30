@@ -35,7 +35,7 @@ var invoiceEdit = function(units, taxes, items, currencies) {
      */
     base.taxes = ko.observableArray([{
         'id': '',
-        'label': 'No Tax - 0%',
+        'label': 'No Tax - 0%'
     }]);
     for (key in taxes) {
         if (taxes.hasOwnProperty(key)) {
@@ -56,7 +56,7 @@ var invoiceEdit = function(units, taxes, items, currencies) {
     base.items = ko.observableArray();
     for (key in items) {
         if (items.hasOwnProperty(key)) {
-            items[key].quantity  = ko.observable(items[key].quantity);
+            items[key].quantity = ko.observable(items[key].quantity);
             items[key].unit_cost = ko.observable(items[key].unit_cost.formatted.replace(/[^\d.]/g, ''));
             if (items[key].tax !== null) {
                 items[key].tax_id = ko.observable(items[key].tax.id);
@@ -93,8 +93,7 @@ var invoiceEdit = function(units, taxes, items, currencies) {
 
     // --------------------------------------------------------------------------
 
-    base.addItem = function()
-    {
+    base.addItem = function() {
         var item = {
             'id': null,
             'quantity': ko.observable(1),
@@ -112,26 +111,23 @@ var invoiceEdit = function(units, taxes, items, currencies) {
 
     // --------------------------------------------------------------------------
 
-    base.removeItem = function()
-    {
+    base.removeItem = function() {
         base.items.remove(this);
     };
 
     // --------------------------------------------------------------------------
 
-    base.moveUp = function()
-    {
+    base.moveUp = function() {
         var i = base.items.indexOf(this);
         if (i >= 1) {
             var array = base.items();
-            base.items.splice(i-1, 2, array[i], array[i-1]);
+            base.items.splice(i - 1, 2, array[i], array[i - 1]);
         }
     };
 
     // --------------------------------------------------------------------------
 
-    base.moveDown = function()
-    {
+    base.moveDown = function() {
         var i = base.items().indexOf(this);
         if (i < base.items().length - 1) {
             var rawNumbers = base.items();
@@ -205,20 +201,20 @@ var invoiceEdit = function(units, taxes, items, currencies) {
 
     // --------------------------------------------------------------------------
 
-    base.currencyChanged = function(a,b,c) {
-        var currency     = $('#invoice-currency').val();
+    base.currencyChanged = function() {
+        var currency = $('#invoice-currency').val();
         var symbolBefore = '';
-        var symbolAfter  = '';
+        var symbolAfter = '';
 
         for (var key in currencies) {
             if (currencies.hasOwnProperty(key)) {
                 if (currencies[key].code === currency) {
                     if (currencies[key].symbol_position === 'BEFORE') {
                         symbolBefore = currencies[key].symbol;
-                        symbolAfter  = '';
+                        symbolAfter = '';
                     } else {
                         symbolBefore = '';
-                        symbolAfter  = currencies[key].symbol;
+                        symbolAfter = currencies[key].symbol;
                     }
                     break;
                 }
@@ -277,7 +273,7 @@ var invoiceEdit = function(units, taxes, items, currencies) {
             if (base.items()[i].tax_id()) {
                 for (var x = base.taxes().length - 1; x >= 0; x--) {
                     if (base.taxes()[x].id === base.items()[i].tax_id()) {
-                        total += base.items()[i].quantity() * base.items()[i].unit_cost() * (base.taxes()[x].rate/100);
+                        total += base.items()[i].quantity() * base.items()[i].unit_cost() * (base.taxes()[x].rate / 100);
                     }
                 }
             }
@@ -300,7 +296,7 @@ var invoiceEdit = function(units, taxes, items, currencies) {
     // --------------------------------------------------------------------------
 
     base.currencySymbolBefore = ko.observable();
-    base.currencySymbolAfter  = ko.observable();
+    base.currencySymbolAfter = ko.observable();
 
     // --------------------------------------------------------------------------
 
@@ -335,18 +331,17 @@ var invoiceEdit = function(units, taxes, items, currencies) {
             draggable: false,
             modal: true,
             buttons:
-            {
-                OK: function() {
-                    $(this).dialog('close');
-                },
-            }
+                {
+                    OK: function() {
+                        $(this).dialog('close');
+                    }
+                }
         });
     };
 
     // --------------------------------------------------------------------------
 
-    base.createCustomer = function()
-    {
+    base.createCustomer = function() {
         $('<div>').html('You will lose unsaved changes.').dialog({
             title: 'Are you sure?',
             resizable: false,
@@ -354,14 +349,14 @@ var invoiceEdit = function(units, taxes, items, currencies) {
             modal: true,
             dialogClass: 'no-close',
             buttons:
-            {
-                'OK': function() {
-                    window.location.href = window.SITE_URL + 'admin/invoice/customer/create';
-                },
-                'Cancel': function() {
-                    $(this).dialog('close');
+                {
+                    'OK': function() {
+                        window.location.href = window.SITE_URL + 'admin/invoice/customer/create';
+                    },
+                    'Cancel': function() {
+                        $(this).dialog('close');
+                    }
                 }
-            }
         });
     };
 
@@ -373,8 +368,7 @@ var invoiceEdit = function(units, taxes, items, currencies) {
      * @param  {Mixed}  payload Any additional data to display in the console
      * @return {Void}
      */
-    base.log = function(message, payload)
-    {
+    base.log = function(message, payload) {
         if (typeof(console.log) === 'function') {
 
             if (payload !== undefined) {
@@ -396,8 +390,7 @@ var invoiceEdit = function(units, taxes, items, currencies) {
      * @param  {Mixed}  payload Any additional data to display in the console
      * @return {Void}
      */
-    base.warn = function(message, payload)
-    {
+    base.warn = function(message, payload) {
         if (typeof(console.warn) === 'function') {
 
             if (payload !== undefined) {
