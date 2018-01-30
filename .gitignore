@@ -3,3 +3,21 @@ composer.lock
 vendor
 node_modules
 .idea
+
+
+assets/bower_components/*
+
+# Include specific files from iframe-resizer
+!assets/bower_components/iframe-resizer/
+assets/bower_components/iframe-resizer/*
+!assets/bower_components/iframe-resizer/js
+assets/bower_components/iframe-resizer/js/*
+!assets/bower_components/iframe-resizer/js/iframeResizer.min.js
+!assets/bower_components/iframe-resizer/js/iframeResizer.contentWindow.min.js
+
+# Include specific files from jquery.payment
+!assets/bower_components/jquery.payment/
+assets/bower_components/jquery.payment/*
+!assets/bower_components/jquery.payment/lib
+assets/bower_components/jquery.payment/lib/*
+!assets/bower_components/jquery.payment/lib/jquery.payment.min.js
