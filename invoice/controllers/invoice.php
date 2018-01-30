@@ -317,7 +317,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $oAsset->load('jquery.payment/lib/jquery.payment.js', ['nailsapp/module-invoice', 'BOWER']);
+        $oAsset->load('jquery.payment/lib/jquery.payment.min.js', ['nailsapp/module-invoice', 'BOWER']);
         $oAsset->load('invoice.pay.min.js', 'nailsapp/module-invoice');
 
         // --------------------------------------------------------------------------
