@@ -7,37 +7,38 @@ var invoicePay = function() {
     base.__construct = function() {
 
         //  Bind to driver selection
-        $('.js-invoice-driver-select input').on('click', function() {
+        $('.js-invoice-driver-select input')
+            .on('click', function() {
 
-            //  Highlight selection
-            $('.js-invoice-driver-select.active').removeClass('active');
-            $(this).closest('.js-invoice-driver-select').addClass('active');
+                //  Highlight selection
+                $('.js-invoice-driver-select.active').removeClass('active');
+                $(this).closest('.js-invoice-driver-select').addClass('active');
 
-            //  Show payment fields
-            $('.js-invoice-panel-payment-details').addClass('hidden');
-            if ($(this).data('is-card')) {
+                //  Show payment fields
+                $('.js-invoice-panel-payment-details').addClass('hidden');
+                if ($(this).data('is-card')) {
 
-                $('#js-invoice-panel-payment-details-card')
-                    .removeClass('hidden');
+                    $('#js-invoice-panel-payment-details-card')
+                        .removeClass('hidden');
 
-            } else {
+                } else {
 
-                $('.js-invoice-panel-payment-details[data-driver="' + $(this).data('driver') + '"]')
-                    .removeClass('hidden');
-            }
+                    $('.js-invoice-panel-payment-details[data-driver="' + $(this).data('driver') + '"]')
+                        .removeClass('hidden');
+                }
 
-            //  Update button
-            var btnString = $(this).data('is-redirect') ? 'Continue' : 'Pay Now';
-            $('#js-invoice-pay-now')
-                .removeClass('btn--warning btn--disabled')
-                .text(btnString);
+                //  Update button
+                var btnString = $(this).data('is-redirect') ? 'Continue' : 'Pay Now';
+                $('#js-invoice-pay-now')
+                    .removeClass('btn--warning btn--disabled')
+                    .text(btnString);
 
-            //  Hide any errors
-            $('#js-invoice-driver-select + .alert--danger').remove();
-            $('.js-invoice-panel-payment-details input + .alert--danger').remove();
+                //  Hide any errors
+                $('#js-error').addClass('hidden');
 
-        });
-        $('.js-invoice-driver-select input:checked').trigger('click');
+            });
+        $('.js-invoice-driver-select input:checked')
+            .trigger('click');
 
         //  Card input formatting
         $('.js-invoice-cc-num').payment('formatCardNumber');
@@ -45,93 +46,102 @@ var invoicePay = function() {
         $('.js-invoice-cc-cvc').payment('formatCardCVC');
 
         //  CVC Card type formatting
-        $('.js-invoice-cc-num').on('keyup', function() {
+        $('.js-invoice-cc-num')
+            .on('keyup', function() {
 
-            var cardNum = $(this).val().trim();
-            var cardType = $.payment.cardType(cardNum);
-            var cardCvc = $('.js-invoice-cc-cvc');
+                var cardNum = $(this).val().trim();
+                var cardType = $.payment.cardType(cardNum);
+                var cardCvc = $('.js-invoice-cc-cvc');
 
-            cardCvc.removeClass('amex other');
+                cardCvc.removeClass('amex other');
+                $(this).removeClass('has-error');
 
-            if (cardNum.length > 0) {
+                if (cardNum.length > 0) {
+                    switch (cardType) {
+                        case 'amex':
+                            cardCvc.addClass('amex');
+                            break;
 
-                switch (cardType) {
-                    case 'amex':
-                        cardCvc.addClass('amex');
-                        break;
-
-                    default:
-                        cardCvc.addClass('other');
-                        break;
+                        default:
+                            cardCvc.addClass('other');
+                            break;
+                    }
                 }
-            }
-        });
-
-        $('.js-invoice-cc-num').trigger('keyup');
+            })
+            .trigger('keyup');
 
         //  Validation
-        $('#js-invoice-main-form').on('submit', function() {
+        $('#js-invoice-main-form')
+            .on('submit', function() {
 
-            var isValid = true;
+                var isValid = true;
 
-            //  Hide errors
-            $('#js-invoice-driver-select + .alert--danger').remove();
-            $('.js-invoice-panel-payment-details input').removeClass('has-error');
+                //  Hide errors
+                $('#js-error')
+                    .addClass('hidden');
 
-            //  Driver selected
-            var selectedDriver = $('.js-invoice-driver-select input:checked');
-            if (selectedDriver.length !== 0) {
+                //  Driver selected
+                var selectedDriver = $('.js-invoice-driver-select input:checked');
+                if (selectedDriver.length !== 0) {
 
-                $('.js-invoice-panel-payment-details:not(.hidden) :input').each(function() {
+                    $('.js-invoice-panel-payment-details:not(.hidden) :input').each(function() {
 
-                    var val = $(this).val().trim();
+                        var val = $(this).val().trim();
 
-                    if ($(this).data('is-required') && val.length === 0) {
-
-                        isValid = false;
-                        $(this).addClass('has-error');
-                    }
-
-                    if ($(this).data('cc-num') && !$.payment.validateCardNumber(val)) {
-
-                        isValid = false;
-                        $(this).addClass('has-error');
-                    }
-
-                    if ($(this).data('cc-exp')) {
-                        var expObj = $.payment.cardExpiryVal(val);
-                        if (!$.payment.validateCardExpiry(expObj.month, expObj.year)) {
+                        if ($(this).data('is-required') && val.length === 0) {
 
                             isValid = false;
                             $(this).addClass('has-error');
                         }
-                    }
 
-                    if ($(this).data('cc-cvc') && !$.payment.validateCardCVC(val)) {
+                        if ($(this).data('cc-num') && !$.payment.validateCardNumber(val)) {
 
-                        isValid = false;
-                        $(this).addClass('has-error');
-                    }
+                            isValid = false;
+                            $(this).addClass('has-error');
+                        }
 
-                });
+                        if ($(this).data('cc-exp')) {
+                            var expObj = $.payment.cardExpiryVal(val);
+                            if (!$.payment.validateCardExpiry(expObj.month, expObj.year)) {
 
-            } else {
+                                isValid = false;
+                                $(this).addClass('has-error');
+                            }
+                        }
 
-                isValid = false;
-                $('#js-invoice-driver-select').after('<p class="alert alert--danger">Please select an option.</p>');
-            }
+                        if ($(this).data('cc-cvc') && !$.payment.validateCardCVC(val)) {
 
-            if (!isValid) {
-                $('#js-invoice').addClass('shake');
-                setTimeout(function() {
-                    $('#js-invoice').removeClass('shake');
-                }, 500);
-            } else {
-                $('#js-invoice').addClass('masked');
-            }
+                            isValid = false;
+                            $(this).addClass('has-error');
+                        }
 
-            return isValid;
-        });
+                        if (!isValid) {
+                            $('#js-error')
+                                .html('Please check all fields')
+                                .removeClass('hidden');
+                        }
+
+                    });
+
+                } else {
+
+                    isValid = false;
+                    $('#js-error')
+                        .html('Please select an option')
+                        .removeClass('hidden');
+                }
+
+                if (!isValid) {
+                    $('#js-invoice').addClass('shake');
+                    setTimeout(function() {
+                        $('#js-invoice').removeClass('shake');
+                    }, 500);
+                } else {
+                    $('#js-invoice').addClass('masked');
+                }
+
+                return isValid;
+            });
 
         return base;
     };

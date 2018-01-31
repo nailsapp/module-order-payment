@@ -8,20 +8,20 @@
             Invoice <?=$oInvoice->ref?>
         </h1>
         <div class="panel__body">
-            <?php
-
-            if (!empty($error)) {
-
-                ?>
-                <p class="alert alert--danger">
-                    <?=$error?>
-                </p>
-                <?php
-            }
-
-            ?>
-            <p>Choose Payment Method</p>
-            <ul class="list list--unstyled" id="js-invoice-driver-select">
+            <p class="alert alert--danger <?=empty($error) ? 'hidden' : ''?>" id="js-error">
+                <?=$error?>
+            </p>
+            <p class="alert alert--success <?=empty($success) ? 'hidden' : ''?>">
+                <?=$success?>
+            </p>
+            <p class="alert alert--warning <?=empty($message) ? 'hidden' : ''?>">
+                <?=$message?>
+            </p>
+            <p class="alert alert--info <?=empty($info) ? 'hidden' : ''?>">
+                <?=$info?>
+            </p>
+            <h5>Choose Payment Method</h5>
+            <ul class="list list--unstyled list--bordered" id="js-invoice-driver-select">
                 <?php
 
                 foreach ($aDrivers as $oDriver) {
@@ -39,7 +39,7 @@
 
                     ?>
                     <li>
-                        <label class="form-group js-invoice-driver-select">
+                        <label class="form__group js-invoice-driver-select">
                             <?php
 
                             echo form_radio(
@@ -69,8 +69,6 @@
 
                 ?>
             </ul>
-            <?=form_error('driver') ? '<p class="alert alert--danger">Please select an option.</p>' : ''?>
-
             <?php
 
             $bShowCardFields = false;
@@ -87,7 +85,7 @@
 
                     ?>
                     <div class="hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
-                        <p>Payment Details</p>
+                        <h5>Payment Details</h5>
                         <?php
 
                         foreach ($mFields as $aField) {
@@ -113,7 +111,7 @@
                                         $sKey,
                                         $aOptions,
                                         set_value($sKey),
-                                        'class="form-control" ' .
+                                        'class="' . $sErrorClass . '" ' .
                                         'placeholder="' . $sPlaceholder . '" ' .
                                         'data-is-required="' . $sRequired . '"'
                                     );
@@ -123,7 +121,7 @@
                                     echo form_password(
                                         $sKey,
                                         null,
-                                        'class="form-control" ' .
+                                        'class="' . $sErrorClass . '" ' .
                                         'placeholder="' . $sPlaceholder . '" ' .
                                         'data-is-required="' . $sRequired . '"'
                                     );
@@ -134,7 +132,7 @@
                                     echo form_input(
                                         $sKey,
                                         set_value($sKey),
-                                        'class="form-control ' . $sErrorClass . '" ' .
+                                        'class="' . $sErrorClass . '" ' .
                                         'placeholder="' . $sPlaceholder . '" ' .
                                         'data-is-required="' . $sRequired . '"'
                                     );
@@ -155,8 +153,8 @@
             if ($bShowCardFields) {
                 ?>
                 <div class="hidden js-invoice-panel-payment-details" id="js-invoice-panel-payment-details-card">
-                    <p>Payment Details</p>
-                    <label class="form-group">
+                    <h5>Payment Details</h5>
+                    <label class="form__group">
                         <?php
 
                         $sKey         = 'cc[name]';
@@ -169,7 +167,7 @@
                         echo form_input(
                             $sKey,
                             set_value($sKey, $sDefault),
-                            'class="form-control js-invoice-cc-name ' . $sErrorClass . '" ' .
+                            'class="js-invoice-cc-name ' . $sErrorClass . '" ' .
                             'placeholder="' . $sPlaceholder . ' "' .
                             'data-is-required="true" ' .
                             'autocomplete="on"'
@@ -179,7 +177,7 @@
 
                         ?>
                     </label>
-                    <label class="form-group">
+                    <label class="form__group">
                         <?php
 
                         $sKey         = 'cc[num]';
@@ -192,7 +190,7 @@
                         echo form_tel(
                             $sKey,
                             set_value($sKey, $sDefault),
-                            'class="form-control js-invoice-cc-num ' . $sErrorClass . '" ' .
+                            'class="js-invoice-cc-num ' . $sErrorClass . '" ' .
                             'placeholder="' . $sPlaceholder . '" ' .
                             'data-cc-num="true" ' .
                             'autocomplete="on"'
@@ -202,7 +200,7 @@
 
                         ?>
                     </label>
-                    <label class="form-group">
+                    <label class="form__group">
                         <?php
 
                         $sKey         = 'cc[exp]';
@@ -214,7 +212,7 @@
                         echo form_tel(
                             $sKey,
                             set_value($sKey, $sDefault),
-                            'class="form-control js-invoice-cc-exp ' . $sErrorClass . '" ' .
+                            'class="js-invoice-cc-exp ' . $sErrorClass . '" ' .
                             'placeholder="' . $sPlaceholder . '" ' .
                             'data-cc-exp="true" ' .
                             'autocomplete="on"'
@@ -224,7 +222,7 @@
 
                         ?>
                     </label>
-                    <label class="form-group">
+                    <label class="form__group">
                         <?php
 
                         $sKey         = 'cc[cvc]';
@@ -236,7 +234,7 @@
                         echo form_tel(
                             $sKey,
                             set_value($sKey, $sDefault),
-                            'class="form-control js-invoice-cc-cvc ' . $sErrorClass . '" ' .
+                            'class="js-invoice-cc-cvc ' . $sErrorClass . '" ' .
                             'placeholder="' . $sPlaceholder . '" ' .
                             'data-cc-cvc="true" ' .
                             'autocomplete="off"'
