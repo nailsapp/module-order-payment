@@ -131,7 +131,7 @@ class RefundRequest extends RequestBase
             throw new RefundRequestException('Response from driver was empty.', 1);
         }
 
-        if (!($oRefundResponse instanceof \Nails\Invoice\Model\RefundResponse)) {
+        if (!($oRefundResponse instanceof RefundResponse)) {
             throw new RefundRequestException(
                 'Response from driver must be an instance of \Nails\Invoice\Model\RefundResponse.',
                 1

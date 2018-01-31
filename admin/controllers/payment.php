@@ -239,8 +239,6 @@ class Payment extends BaseAdmin
             $sMessage = 'Payment refunded successfully.';
 
         } catch (NailsException $e) {
-
-            dumpanddie($e->getMessage());
             $sStatus  = 'error';
             $sMessage = $e->getMessage();
         }

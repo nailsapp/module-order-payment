@@ -24,6 +24,7 @@ class Migration7 extends Base
      */
     public function execute()
     {
-        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` CHANGE `fail_code` `fail_code` VARCHAR(15) NULL DEFAULT NULL;");
+        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` CHANGE `fail_code` `fail_code` VARCHAR(150) NULL DEFAULT NULL;");
+        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_refund` CHANGE `fail_code` `fail_code` VARCHAR(150) NULL DEFAULT NULL;");
     }
 }

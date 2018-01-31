@@ -33,9 +33,6 @@ var invoicePay = function() {
                     .removeClass('btn--warning btn--disabled')
                     .text(btnString);
 
-                //  Hide any errors
-                $('#js-error').addClass('hidden');
-
             });
         $('.js-invoice-driver-select input:checked')
             .trigger('click');

@@ -10,9 +10,9 @@
  * @link
  */
 
-use App\Controller\Base;
 use Nails\Common\Exception\NailsException;
 use Nails\Factory;
+use Nails\Invoice\Controller\Base;
 use Nails\Invoice\Exception\DriverException;
 
 class Invoice extends Base
@@ -35,12 +35,13 @@ class Invoice extends Base
     protected function download($oInvoice)
     {
         //  Business details
-        $this->data['business']             = new \stdClass();
-        $this->data['business']->name       = appSetting('business_name', 'nailsapp/module-invoice');
-        $this->data['business']->address    = appSetting('business_address', 'nailsapp/module-invoice');
-        $this->data['business']->telephone  = appSetting('business_telephone', 'nailsapp/module-invoice');
-        $this->data['business']->email      = appSetting('business_email', 'nailsapp/module-invoice');
-        $this->data['business']->vat_number = appSetting('business_vat_number', 'nailsapp/module-invoice');
+        $this->data['business'] = (object) [
+            'name'       => appSetting('business_name', 'nailsapp/module-invoice'),
+            'address'    => appSetting('business_address', 'nailsapp/module-invoice'),
+            'telephone'  => appSetting('business_telephone', 'nailsapp/module-invoice'),
+            'email'      => appSetting('business_email', 'nailsapp/module-invoice'),
+            'vat_number' => appSetting('business_vat_number', 'nailsapp/module-invoice'),
+        ];
 
         $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
         $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
@@ -67,7 +68,7 @@ class Invoice extends Base
     protected function view($oInvoice)
     {
         //  Business details
-        $this->data['business'] = [
+        $this->data['business'] = (object) [
             'name'       => appSetting('business_name', 'nailsapp/module-invoice'),
             'address'    => appSetting('business_address', 'nailsapp/module-invoice'),
             'telephone'  => appSetting('business_telephone', 'nailsapp/module-invoice'),
@@ -102,17 +103,13 @@ class Invoice extends Base
         $this->data['headerOverride'] = 'structure/header/blank';
         $this->data['footerOverride'] = 'structure/footer/blank';
 
-        $oAsset->clear();
-        $oAsset->load('https://code.jquery.com/jquery-2.2.4.min.js');
-        $oAsset->load('nails.min.css', 'nailsapp/common');
-        $oAsset->load('invoice.pay.css', 'nailsapp/module-invoice');
-
         //  Only open invoice can be paid
         if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->is_scheduled) {
 
             if ($oInvoice->state->id === 'PAID') {
 
                 $oView = Factory::service('View');
+                $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/pay/paid.php');
                 $oView->load('structure/header', $this->data);
                 $oView->load('invoice/pay/paid', $this->data);
                 $oView->load('structure/footer', $this->data);
@@ -146,6 +143,7 @@ class Invoice extends Base
             }
 
             $oView = Factory::service('View');
+            $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/pay/hasProcessing.php');
             $oView->load('structure/header', $this->data);
             $oView->load('invoice/pay/hasProcessing', $this->data);
             $oView->load('structure/footer', $this->data);
@@ -324,6 +322,7 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         $oView = Factory::service('View');
+        $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/pay/index.php');
         $oView->load('structure/header', $this->data);
         $oView->load('invoice/pay/index', $this->data);
         $oView->load('structure/footer', $this->data);
