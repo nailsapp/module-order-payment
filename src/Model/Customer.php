@@ -12,8 +12,8 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Factory;
 use Nails\Common\Model\Base;
+use Nails\Invoice\Exception\InvoiceException;
 
 class Customer extends Base
 {
@@ -24,7 +24,6 @@ class Customer extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_customer';
-        $this->tableAlias       = 'c';
         $this->defaultSortColumn = 'first_name';
         $this->destructiveDelete = false;
     }
@@ -33,13 +32,15 @@ class Customer extends Base
 
     /**
      * Retrieve all customers from the databases
+     *
      * @param  int     $iPage           The page number to return
      * @param  int     $iPerPage        The number of results per page
-     * @param  array   $aData           Data to pass _to getcount_common()
+     * @param  array   $aData           Data to pass to getCountCommon()
      * @param  boolean $bIncludeDeleted Whether to include deleted results
+     *
      * @return array
      */
-    public function getAll($iPage = null, $iPerPage = null, $aData = array(), $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
@@ -71,49 +72,52 @@ class Customer extends Base
     /**
      * This method applies the conditionals which are common across the get_*()
      * methods and the count() method.
-     * @param string $data Data passed from the calling method
+     *
+     * @param array $aData Data passed from the calling method
+     *
      * @return void
      */
-    protected function getCountCommon($data = array())
+    protected function getCountCommon($aData = [])
     {
         //  If there's a search term, then we better get %LIKING%
-        if (!empty($data['keywords'])) {
+        if (!empty($aData['keywords'])) {
 
-            if (empty($data['or_like'])) {
-
-                $data['or_like'] = array();
+            if (empty($aData['or_like'])) {
+                $aData['or_like'] = [];
             }
 
-            $keywordAsId = (int) preg_replace('/[^0-9]/', '', $data['keywords']);
+            $iKeywordAsId = (int) preg_replace('/[^0-9]/', '', $aData['keywords']);
 
-            if ($keywordAsId) {
-
-                $data['or_like'][] = array(
+            if ($iKeywordAsId) {
+                $aData['or_like'][] = [
                     'column' => $this->tableAlias . '.id',
-                    'value'  => $keywordAsId
-                );
+                    'value'  => $iKeywordAsId,
+                ];
             }
-            $data['or_like'][] = array(
+
+            $aData['or_like'][] = [
                 'column' => $this->tableAlias . '.label',
-                'value'  => $data['keywords']
-            );
+                'value'  => $aData['keywords'],
+            ];
         }
 
         // --------------------------------------------------------------------------
 
         //  Let the parent method handle sorting, etc
-        parent::getCountCommon($data);
+        parent::getCountCommon($aData);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Create a new customer
+     *
      * @param  array   $aData         The data to create the customer with
      * @param  boolean $bReturnObject Whether to return the complete customer object
+     *
      * @return mixed
      */
-    public function create($aData = array(), $bReturnObject = false)
+    public function create($aData = [], $bReturnObject = false)
     {
         try {
 
@@ -127,7 +131,6 @@ class Customer extends Base
             return parent::create($aData, $bReturnObject);
 
         } catch (\Exception $e) {
-
             $this->setError($e->getMessage());
             return false;
         }
@@ -137,11 +140,13 @@ class Customer extends Base
 
     /**
      * Update an existing customer
+     *
      * @param  integer $iCustomerId The ID of the customer to update
      * @param  array   $aData       The data to update the customer with
+     *
      * @return mixed
      */
-    public function update($iCustomerId, $aData = array())
+    public function update($iCustomerId, $aData = [])
     {
         try {
 
@@ -149,8 +154,6 @@ class Customer extends Base
             $sKeyExistsOrg   = array_key_exists('organisation', $aData);
             $sKeyExistsFirst = array_key_exists('first_name', $aData);
             $sKeyExistsLast  = array_key_exists('last_name', $aData);
-
-
 
             if ($sKeyExistsOrg && $sKeyExistsFirst && $sKeyExistsLast) {
                 if (empty($aData['organisation']) && empty($aData['first_name']) && empty($aData['last_name'])) {
@@ -166,7 +169,6 @@ class Customer extends Base
             return parent::update($iCustomerId, $aData);
 
         } catch (\Exception $e) {
-
             $this->setError($e->getMessage());
             return false;
         }
@@ -176,62 +178,59 @@ class Customer extends Base
 
     /**
      * Compile the customer label
+     *
      * @param  array $aData The data passed to create() or update()
+     *
      * @return string
      */
     protected function compileLabel($aData)
     {
         if (!empty($aData['organisation'])) {
-
-            $sLabel = trim($aData['organisation']);
-
+            return trim($aData['organisation']);
         } else {
-
-            $aLabel   = array();
-            $aLabel[] = !empty($aData['first_name']) ? trim($aData['first_name']) : '';
-            $aLabel[] = !empty($aData['last_name']) ? trim($aData['last_name']) : '';
-
-            $aLabel = array_filter($aLabel);
-            $sLabel = implode(' ', $aLabel);
+            return implode(
+                ' ',
+                array_filter([
+                    !empty($aData['first_name']) ? trim($aData['first_name']) : '',
+                    !empty($aData['last_name']) ? trim($aData['last_name']) : '',
+                ])
+            );
         }
-
-        return $sLabel;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Formats the business object
-     * @param object $oObj An object containing business data
+     * Formats a single object
+     *
+     * The getAll() method iterates over each returned item with this method so as to
+     * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
+     *
+     * @param  object $oObj      A reference to the object being formatted.
+     * @param  array  $aData     The same data array which is passed to _getCountCommon, for reference if needed
+     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
+     * @param  array  $aBools    Fields which should be cast as booleans if not null
+     * @param  array  $aFloats   Fields which should be cast as floats if not null
+     *
      * @return void
      */
     protected function formatObject(
         &$oObj,
-        $aData = array(),
-        $aIntegers = array(),
-        $aBools = array(),
-        $aFloats = array()
+        $aData = [],
+        $aIntegers = [],
+        $aBools = [],
+        $aFloats = []
     ) {
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
-        //  Address
-        $aAddress = array(
-            $oObj->billing_address_line_1,
-            $oObj->billing_address_line_2,
-            $oObj->billing_address_town,
-            $oObj->billing_address_county,
-            $oObj->billing_address_postcode,
-            $oObj->billing_address_country
-        );
-        $aAddress = array_filter($aAddress);
-
-        $oObj->billing_address           = new \stdClass();
-        $oObj->billing_address->line_1   = $oObj->billing_address_line_1;
-        $oObj->billing_address->line_2   = $oObj->billing_address_line_2;
-        $oObj->billing_address->town     = $oObj->billing_address_town;
-        $oObj->billing_address->county   = $oObj->billing_address_county;
-        $oObj->billing_address->postcode = $oObj->billing_address_postcode;
-        $oObj->billing_address->country  = $oObj->billing_address_country;
+        $oObj->billing_address = [
+            'line_1'   => $oObj->billing_address_line_1,
+            'line_2'   => $oObj->billing_address_line_2,
+            'town'     => $oObj->billing_address_town,
+            'county'   => $oObj->billing_address_county,
+            'postcode' => $oObj->billing_address_postcode,
+            'country'  => $oObj->billing_address_country,
+        ];
 
         unset($oObj->billing_address_line_1);
         unset($oObj->billing_address_line_2);
