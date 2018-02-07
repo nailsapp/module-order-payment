@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Base Response Model
+ * Base Response
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    Model
+ * @category    Factory
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Exception\ResponseException;
 

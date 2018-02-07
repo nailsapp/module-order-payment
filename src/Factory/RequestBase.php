@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Base Request Model
+ * Base Request
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    Model
+ * @category    Factory
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Factory;
 
 use Nails\Factory;
 use Nails\Invoice\Exception\RequestException;
@@ -19,16 +19,12 @@ class RequestBase
 {
     protected $oDriver;
     protected $oDriverModel;
-
     protected $oInvoice;
     protected $oInvoiceModel;
-
     protected $oPayment;
     protected $oPaymentModel;
-
     protected $oRefund;
     protected $oRefundModel;
-
     protected $oPaymentEventHandler;
 
     // --------------------------------------------------------------------------
@@ -49,7 +45,11 @@ class RequestBase
 
     /**
      * Set the driver to be used for the request
+     *
      * @param string $sDriverSlug The driver's slug
+     *
+     * @return $this
+     * @throws RequestException
      */
     public function setDriver($sDriverSlug)
     {
@@ -69,18 +69,23 @@ class RequestBase
         }
 
         $this->oDriver = $oDriver;
+        return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set the invoice object
+     *
      * @param integer $iInvoiceId The invoice to use for the request
+     *
+     * @return $this
+     * @throws RequestException
      */
     public function setInvoice($iInvoiceId)
     {
         //  Validate
-        $oInvoice = $this->oInvoiceModel->getById($iInvoiceId, array('includeAll' => true));
+        $oInvoice = $this->oInvoiceModel->getById($iInvoiceId, ['includeAll' => true]);
 
         if (empty($oInvoice)) {
             throw new RequestException('Invalid invoice ID.', 1);
@@ -94,12 +99,16 @@ class RequestBase
 
     /**
      * Set the payment object
+     *
      * @param integer $iPaymentId The payment to use for the request
+     *
+     * @return $this
+     * @throws RequestException
      */
     public function setPayment($iPaymentId)
     {
         //  Validate
-        $oPayment = $this->oPaymentModel->getById($iPaymentId, array('includeInvoice' => true));
+        $oPayment = $this->oPaymentModel->getById($iPaymentId, ['includeInvoice' => true]);
 
         if (empty($oPayment)) {
             throw new RequestException('Invalid payment ID.', 1);
@@ -113,7 +122,11 @@ class RequestBase
 
     /**
      * Set the refund  object
+     *
      * @param integer $iRefundId The refund to use for the request
+     *
+     * @return $this
+     * @throws RequestException
      */
     public function setRefund($iRefundId)
     {
@@ -132,8 +145,12 @@ class RequestBase
 
     /**
      * Set a payment as PROCESSING
+     *
      * @param string  $sTxnId The payment's transaction ID
      * @param integer $iFee   The fee charged by the processor, if known
+     *
+     * @return $this
+     * @throws RequestException
      */
     protected function setPaymentProcessing($sTxnId = null, $iFee = null)
     {
@@ -143,7 +160,7 @@ class RequestBase
         }
 
         //  Update the payment
-        $aData = array('txn_id' => $sTxnId ? $sTxnId : null);
+        $aData = ['txn_id' => $sTxnId ? $sTxnId : null];
 
         if (!is_null($iFee)) {
             $aData['fee'] = $iFee;
@@ -164,14 +181,19 @@ class RequestBase
 
         //  Send receipt email
         $this->oPaymentModel->sendReceipt($this->oPayment->id);
+        return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set a payment as COMPLETE, and mark the invoice as paid if so
+     *
      * @param string  $sTxnId The payment's transaction ID
      * @param integer $iFee   The fee charged by the processor, if known
+     *
+     * @return $this
+     * @throws RequestException
      */
     protected function setPaymentComplete($sTxnId = null, $iFee = null)
     {
@@ -186,7 +208,7 @@ class RequestBase
         }
 
         //  Update the payment
-        $aData = array('txn_id' => $sTxnId ? $sTxnId : null);
+        $aData = ['txn_id' => $sTxnId ? $sTxnId : null];
 
         if (!is_null($iFee)) {
             $aData['fee'] = $iFee;
@@ -207,14 +229,19 @@ class RequestBase
 
         //  Send receipt email
         $this->oPaymentModel->sendReceipt($this->oPayment->id);
+
+        return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Set a refund as COMPLETE
+     *
      * @param string  $sTxnId       The refund's transaction ID
      * @param integer $iFeeRefunded The fee refunded by the processor, if known
+     *
+     * @return $this
      * @throws RequestException
      */
     protected function setRefundComplete($sTxnId = null, $iFeeRefunded = null)
@@ -225,7 +252,7 @@ class RequestBase
         }
 
         //  Update the refund
-        $aData = array('txn_id' => $sTxnId ? $sTxnId : null);
+        $aData = ['txn_id' => $sTxnId ? $sTxnId : null];
 
         if (!is_null($iFeeRefunded)) {
             $aData['fee'] = $iFeeRefunded;
@@ -238,15 +265,14 @@ class RequestBase
         // Update the associated payment, if the payment is fully refunded then mark it so
         $oPayment = $this->oPaymentModel->getById($this->oRefund->payment_id);
         if ($oPayment->available_for_refund->raw > 0) {
-
             $this->oPaymentModel->setRefundedPartial($oPayment->id);
-
         } else {
-
             $this->oPaymentModel->setRefunded($oPayment->id);
         }
 
         //  Send receipt email
         $this->oRefundModel->sendReceipt($this->oRefund->id);
+
+        return $this;
     }
 }

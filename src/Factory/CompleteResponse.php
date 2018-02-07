@@ -1,18 +1,16 @@
 <?php
 
 /**
- * Complete Response model
+ * Complete Response
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    Model
+ * @category    Factory
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Invoice\Model;
-
-use Nails\Invoice\Model\ResponseBase;
+namespace Nails\Invoice\Factory;
 
 class CompleteResponse extends ResponseBase
 {

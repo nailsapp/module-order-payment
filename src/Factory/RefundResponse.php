@@ -1,18 +1,16 @@
 <?php
 
 /**
- * Refund Response model
+ * Refund Response
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    Model
+ * @category    Factory
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Invoice\Model;
-
-use Nails\Invoice\Model\ResponseBase;
+namespace Nails\Invoice\Factory;
 
 class RefundResponse extends ResponseBase
 {

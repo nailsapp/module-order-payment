@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Complete Request model
+ * Complete Request
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    Model
+ * @category    Factory
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Exception\CompleteRequestException;
 

@@ -1,7 +1,7 @@
 <?php
 
-return array(
-    'models' => array(
+return [
+    'models'    => [
         'Customer' => function () {
             if (class_exists('\App\Invoice\Model\Customer')) {
                 return new \App\Invoice\Model\Customer();
@@ -71,50 +71,64 @@ return array(
             } else {
                 return new \Nails\Invoice\PaymentEventHandler();
             }
-        }
-    ),
-    'factories' => array(
+        },
+    ],
+    'factories' => [
         'ChargeRequest' => function () {
-            if (class_exists('\App\Invoice\Model\ChargeRequest')) {
-                return new \App\Invoice\Model\ChargeRequest();
+            if (class_exists('\App\Invoice\Factory\ChargeRequest')) {
+                return new \App\Invoice\Factory\ChargeRequest();
             } else {
-                return new \Nails\Invoice\Model\ChargeRequest();
+                return new \Nails\Invoice\Factory\ChargeRequest();
             }
         },
         'ChargeResponse' => function () {
-            if (class_exists('\App\Invoice\Model\ChargeResponse')) {
-                return new \App\Invoice\Model\ChargeResponse();
+            if (class_exists('\App\Invoice\Factory\ChargeResponse')) {
+                return new \App\Invoice\Factory\ChargeResponse();
             } else {
-                return new \Nails\Invoice\Model\ChargeResponse();
+                return new \Nails\Invoice\Factory\ChargeResponse();
             }
         },
         'CompleteRequest' => function () {
-            if (class_exists('\App\Invoice\Model\CompleteRequest')) {
-                return new \App\Invoice\Model\CompleteRequest();
+            if (class_exists('\App\Invoice\Factory\CompleteRequest')) {
+                return new \App\Invoice\Factory\CompleteRequest();
             } else {
-                return new \Nails\Invoice\Model\CompleteRequest();
+                return new \Nails\Invoice\Factory\CompleteRequest();
             }
         },
         'CompleteResponse' => function () {
-            if (class_exists('\App\Invoice\Model\CompleteResponse')) {
-                return new \App\Invoice\Model\CompleteResponse();
+            if (class_exists('\App\Invoice\Factory\CompleteResponse')) {
+                return new \App\Invoice\Factory\CompleteResponse();
             } else {
-                return new \Nails\Invoice\Model\CompleteResponse();
+                return new \Nails\Invoice\Factory\CompleteResponse();
+            }
+        },
+        'Invoice' => function () {
+            if (class_exists('\App\Invoice\Factory\Invoice')) {
+                return new \App\Invoice\Factory\Invoice();
+            } else {
+                return new \Nails\Invoice\Factory\Invoice();
+            }
+        },
+        'InvoiceItem' => function () {
+            if (class_exists('\App\Invoice\Factory\Invoice\Item')) {
+                return new \App\Invoice\Factory\Invoice\Item();
+            } else {
+                return new \Nails\Invoice\Factory\Invoice\Item();
             }
         },
         'RefundRequest' => function () {
-            if (class_exists('\App\Invoice\Model\RefundRequest')) {
-                return new \App\Invoice\Model\RefundRequest();
+            if (class_exists('\App\Invoice\Factory\RefundRequest')) {
+                return new \App\Invoice\Factory\RefundRequest();
             } else {
-                return new \Nails\Invoice\Model\RefundRequest();
+                return new \Nails\Invoice\Factory\RefundRequest();
             }
         },
         'RefundResponse' => function () {
-            if (class_exists('\App\Invoice\Model\RefundResponse')) {
-                return new \App\Invoice\Model\RefundResponse();
+            if (class_exists('\App\Invoice\Factory\RefundResponse')) {
+                return new \App\Invoice\Factory\RefundResponse();
             } else {
-                return new \Nails\Invoice\Model\RefundResponse();
+                return new \Nails\Invoice\Factory\RefundResponse();
             }
-        }
-    )
-);
+        },
+    ],
+];
