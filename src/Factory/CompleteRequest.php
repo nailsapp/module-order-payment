@@ -52,7 +52,7 @@ class CompleteRequest extends RequestBase
      * @param  array $aGetVars  Any $_GET variables passed from the redirect flow
      * @param  array $aPostVars Any $_POST variables passed from the redirect flow
      *
-     * @return \Nails\Invoice\Model\CompleteResponse
+     * @return \Nails\Invoice\Factory\CompleteResponse
      * @throws CompleteRequestException
      */
     public function execute($aGetVars, $aPostVars)
@@ -86,7 +86,7 @@ class CompleteRequest extends RequestBase
 
         if (!($oCompleteResponse instanceof CompleteResponse)) {
             throw new CompleteRequestException(
-                'Response from driver must be an instance of \Nails\Invoice\Model\CompleteResponse.',
+                'Response from driver must be an instance of \Nails\Invoice\Factory\CompleteResponse.',
                 1
             );
         }

@@ -82,7 +82,7 @@ class PaymentBase extends Base
      * @param  string    $sContinueUrl The URL to go to after payment is completed
      *
      * @throws DriverException
-     * @return \Nails\Invoice\Model\ChargeResponse
+     * @return \Nails\Invoice\Factory\ChargeResponse
      */
     public function charge(
         $iAmount,
@@ -110,7 +110,7 @@ class PaymentBase extends Base
      * @param  array     $aPostVars Any $_POST variables passed from the redirect flow
      *
      * @throws DriverException
-     * @return \Nails\Invoice\Model\CompleteResponse
+     * @return \Nails\Invoice\Factory\CompleteResponse
      */
     public function complete($oPayment, $oInvoice, $aGetVars, $aPostVars)
     {
@@ -131,7 +131,7 @@ class PaymentBase extends Base
      * @param  \stdClass $oInvoice    The invoice object
      *
      * @throws DriverException
-     * @return \Nails\Invoice\Model\RefundResponse
+     * @return \Nails\Invoice\Factory\RefundResponse
      */
     public function refund($sTxnId, $iAmount, $sCurrency, $oCustomData, $sReason, $oPayment, $oInvoice)
     {

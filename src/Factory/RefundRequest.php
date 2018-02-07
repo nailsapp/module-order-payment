@@ -22,7 +22,9 @@ class RefundRequest extends RequestBase
 
     /**
      * Set the reason
+     *
      * @param string $sReason The reason of the charge
+     *
      * @return $this
      */
     public function setReason($sReason)
@@ -46,8 +48,10 @@ class RefundRequest extends RequestBase
 
     /**
      * Execute the refund
+     *
      * @param  integer $iAmount The amount to refund
-     * @return \Nails\Invoice\Model\ChargeResponse
+     *
+     * @return \Nails\Invoice\Factory\ChargeResponse
      * @throws RefundRequestException
      */
     public function execute($iAmount)
@@ -69,13 +73,9 @@ class RefundRequest extends RequestBase
 
         //  Validate ability to refund
         if (!$this->oPayment->is_refundable) {
-
-            //  Why?
             if ($this->oPayment->available_for_refund->raw === 0) {
-
                 throw new RefundRequestException('Payment is already fully refunded.', 1);
             } else {
-
                 throw new RefundRequestException('Payment is not in a state where it can be refunded.', 1);
             }
         }
@@ -99,13 +99,13 @@ class RefundRequest extends RequestBase
         if (empty($this->oRefund)) {
 
             $iRefundId = $this->oRefundModel->create(
-                array(
+                [
                     'reason'     => $this->getReason(),
                     'payment_id' => $this->oPayment->id,
                     'invoice_id' => $this->oInvoice->id,
                     'currency'   => $this->oPayment->currency->code,
-                    'amount'     => $iRefundAmount
-                )
+                    'amount'     => $iRefundAmount,
+                ]
             );
 
             if (empty($iRefundId)) {
@@ -133,7 +133,7 @@ class RefundRequest extends RequestBase
 
         if (!($oRefundResponse instanceof RefundResponse)) {
             throw new RefundRequestException(
-                'Response from driver must be an instance of \Nails\Invoice\Model\RefundResponse.',
+                'Response from driver must be an instance of \Nails\Invoice\Factory\RefundResponse.',
                 1
             );
         }
@@ -146,18 +146,17 @@ class RefundRequest extends RequestBase
                 $oRefundResponse->getFee()
             );
 
-
         } elseif ($oRefundResponse->isFailed()) {
 
             //  Update the payment
             $sRefundClass = get_class($this->oRefundModel);
-            $bResult             = $this->oRefundModel->update(
+            $bResult      = $this->oRefundModel->update(
                 $this->oRefund->id,
-                array(
+                [
                     'status'    => $sRefundClass::STATUS_FAILED,
                     'fail_msg'  => $oRefundResponse->getError()->msg,
-                    'fail_code' => $oRefundResponse->getError()->code
-                )
+                    'fail_code' => $oRefundResponse->getError()->code,
+                ]
             );
 
             if (empty($bResult)) {

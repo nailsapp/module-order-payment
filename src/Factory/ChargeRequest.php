@@ -34,17 +34,19 @@ class ChargeRequest extends RequestBase
         parent::__construct();
 
         //  Card details
-        $this->oCard             = new \stdClass();
-        $this->oCard->name       = null;
-        $this->oCard->number     = null;
-        $this->oCard->exp        = new \stdClass();
-        $this->oCard->exp->month = null;
-        $this->oCard->exp->year  = null;
-        $this->oCard->cvc        = null;
+        $this->oCard = (object) [
+            'name'   => null,
+            'number' => null,
+            'exp'    => (object) [
+                'month' => null,
+                'year'  => null,
+            ],
+            'cvc'    => null,
+        ];
 
         //  Container for custom fields and data
-        $this->oCustomField = new \stdClass();
-        $this->oCustomData  = new \stdClass();
+        $this->oCustomField = (object) [];
+        $this->oCustomData  = (object) [];
 
         //  Auto redirect by default
         $this->bAutoRedirect = true;
@@ -132,13 +134,11 @@ class ChargeRequest extends RequestBase
                 );
 
             } else {
-
                 $this->oCard->exp->month = $iMonth < 10 ? '0' . $iMonth : (string) $iMonth;
                 return $this;
             }
 
         } else {
-
             throw new ChargeRequestException(
                 '"' . $sCardExpMonth . '" is an invalid expiry month; must be numeric.',
                 1
@@ -196,7 +196,6 @@ class ChargeRequest extends RequestBase
                 return $this;
 
             } else {
-
                 throw new ChargeRequestException(
                     '"' . $sCardExpYear . '" is an invalid expiry year; must be 2 or 4 digits.',
                     1
@@ -204,7 +203,6 @@ class ChargeRequest extends RequestBase
             }
 
         } else {
-
             throw new ChargeRequestException(
                 '"' . $sCardExpYear . '" is an invalid expiry year; must be numeric.',
                 1
@@ -398,7 +396,7 @@ class ChargeRequest extends RequestBase
      * @param  string  $sCurrency The currency in which to charge
      *
      * @throws ChargeRequestException
-     * @return \Nails\Invoice\Model\ChargeResponse
+     * @return \Nails\Invoice\Factory\ChargeResponse
      */
     public function execute($iAmount, $sCurrency)
     {
@@ -479,7 +477,7 @@ class ChargeRequest extends RequestBase
 
         if (!($oChargeResponse instanceof ChargeResponse)) {
             throw new ChargeRequestException(
-                'Response from driver must be an instance of \Nails\Invoice\Model\ChargeResponse.',
+                'Response from driver must be an instance of \Nails\Invoice\Factory\ChargeResponse.',
                 1
             );
         }

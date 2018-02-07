@@ -12,14 +12,14 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Factory;
 use Nails\Common\Model\Base;
+use Nails\Factory;
 
 class InvoiceItem extends Base
 {
     /**
      * The Currency library
-     * @var Nails\Currency\Library\Currency
+     * @var \Nails\Currency\Library\Currency
      */
     protected $oCurrency;
 
@@ -47,15 +47,15 @@ class InvoiceItem extends Base
         $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
 
         $this->addExpandableField(
-            array(
+            [
                 'trigger'     => 'tax',
                 'type'        => self::EXPANDABLE_TYPE_SINGLE,
                 'property'    => 'tax',
                 'model'       => 'Tax',
                 'provider'    => 'nailsapp/module-invoice',
                 'id_column'   => 'tax_id',
-                'auto_expand' => true
-            )
+                'auto_expand' => true,
+            ]
         );
     }
 
@@ -67,31 +67,33 @@ class InvoiceItem extends Base
      */
     public function getUnits()
     {
-        return array(
+        return [
             self::UNIT_NONE   => 'None',
             self::UNIT_MINUTE => 'Minutes',
             self::UNIT_HOUR   => 'Hours',
             self::UNIT_DAY    => 'Days',
             self::UNIT_WEEK   => 'Weeks',
             self::UNIT_MONTH  => 'Months',
-            self::UNIT_YEAR   => 'Years'
-        );
+            self::UNIT_YEAR   => 'Years',
+        ];
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Retrieve items which relate to a particular set of invoice IDs
+     *
      * @param  array $aInvoiceIds The invoice IDs
+     *
      * @return array
      */
     public function getForInvoices($aInvoiceIds)
     {
-        $aData = array(
-            'where_in' => array(
-                array('invoice_id', $aInvoiceIds)
-            )
-        );
+        $aData = [
+            'where_in' => [
+                ['invoice_id', $aInvoiceIds],
+            ],
+        ];
 
         return $this->getAll(null, null, $aData);
     }
@@ -109,14 +111,15 @@ class InvoiceItem extends Base
      * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
      * @param  array  $aBools    Fields which should be cast as booleans if not null
      * @param  array  $aFloats   Fields which should be cast as floats if not null
+     *
      * @return void
      */
     protected function formatObject(
         &$oObj,
-        $aData = array(),
-        $aIntegers = array(),
-        $aBools = array(),
-        $aFloats = array()
+        $aData = [],
+        $aIntegers = [],
+        $aBools = [],
+        $aFloats = []
     ) {
 
         $aIntegers[] = 'invoice_id';
@@ -132,32 +135,32 @@ class InvoiceItem extends Base
         unset($oObj->currency);
 
         //  Unit cost
-        $oObj->unit_cost = (object) array(
+        $oObj->unit_cost = (object) [
             'raw'       => $oObj->unit_cost,
             'formatted' => $this->oCurrency->format(
                 $oCurrency->code, $oObj->unit_cost / pow(10, $oCurrency->decimal_precision)
-            )
-        );
+            ),
+        ];
 
         //  Totals
-        $oObj->totals = (object) array(
-            'raw' => (object) array(
-                'sub'        => (int) $oObj->sub_total,
-                'tax'        => (int) $oObj->tax_total,
-                'grand'      => (int) $oObj->grand_total
-            ),
-            'formatted' => (object) array(
-                'sub' => $this->oCurrency->format(
+        $oObj->totals = (object) [
+            'raw'       => (object) [
+                'sub'   => (int) $oObj->sub_total,
+                'tax'   => (int) $oObj->tax_total,
+                'grand' => (int) $oObj->grand_total,
+            ],
+            'formatted' => (object) [
+                'sub'   => $this->oCurrency->format(
                     $oCurrency->code, $oObj->sub_total / pow(10, $oCurrency->decimal_precision)
                 ),
-                'tax' => $this->oCurrency->format(
+                'tax'   => $this->oCurrency->format(
                     $oCurrency->code, $oObj->tax_total / pow(10, $oCurrency->decimal_precision)
                 ),
                 'grand' => $this->oCurrency->format(
                     $oCurrency->code, $oObj->grand_total / pow(10, $oCurrency->decimal_precision)
-                )
-            )
-        );
+                ),
+            ],
+        ];
 
         unset($oObj->sub_total);
         unset($oObj->tax_total);

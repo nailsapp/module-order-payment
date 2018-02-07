@@ -15,8 +15,6 @@ use Nails\Common\Traits\ErrorHandling;
 use Nails\Factory;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
-use Nails\Invoice\Model\ChargeRequest;
-use Nails\Invoice\Model\ChargeResponse;
 
 class Invoice
 {

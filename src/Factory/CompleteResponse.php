@@ -21,7 +21,10 @@ class CompleteResponse extends ResponseBase
 
     /**
      * Set the URL to go to when a payment is completed
+     *
      * @param string $sContinueUrl the URL to go to when payment is completed
+     *
+     * @return $this
      */
     public function setContinueUrl($sContinueUrl)
     {
