@@ -15,6 +15,7 @@ namespace Nails\Invoice\Model;
 use Nails\Common\Model\Base;
 use Nails\Factory;
 use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Factory\Invoice\Item;
 
 class Invoice extends Base
 {
@@ -459,6 +460,10 @@ class Invoice extends Base
             $iCounter = 0;
             $aTaxIds  = [];
             foreach ($aData['items'] as &$aItem) {
+
+                if ($aItem instanceof Item) {
+                    $aItem = $aItem->toArray();
+                }
 
                 //  Has an ID or is null
                 $aItem['id'] = !empty($aItem['id']) ? (int) $aItem['id'] : null;
