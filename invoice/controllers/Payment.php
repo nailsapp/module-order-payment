@@ -126,7 +126,7 @@ class Payment extends Base
         // --------------------------------------------------------------------------
 
         $oView = Factory::service('View');
-        $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/thanks/index.php');
+        $this->loadStyles(APPPATH . 'modules/invoice/views/thanks/index.php');
         $oView->load('structure/header', $this->data);
         $oView->load('invoice/thanks/index', $this->data);
         $oView->load('structure/footer', $this->data);
@@ -156,7 +156,7 @@ class Payment extends Base
         // --------------------------------------------------------------------------
 
         $oView = Factory::service('View');
-        $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/thanks/processing.php');
+        $this->loadStyles(APPPATH . 'modules/invoice/views/thanks/processing.php');
         $oView->load('structure/header', $this->data);
         $oView->load('invoice/thanks/processing', $this->data);
         $oView->load('structure/footer', $this->data);

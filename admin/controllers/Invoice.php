@@ -464,13 +464,13 @@ class Invoice extends BaseAdmin
         $oFormValidation = Factory::service('FormValidation');
 
         $aRules = [
-            'ref'             => 'xss_clean|trim',
-            'state'           => 'xss_clean|trim|required',
-            'dated'           => 'xss_clean|trim|required|valid_date',
-            'currency'        => 'xss_clean|trim|required|callback__callbackValidCurrency',
-            'terms'           => 'xss_clean|trim|is_natural',
-            'customer_id'     => 'xss_clean|trim',
-            'additional_text' => 'xss_clean|trim',
+            'ref'             => 'trim',
+            'state'           => 'trim|required',
+            'dated'           => 'trim|required|valid_date',
+            'currency'        => 'trim|required|callback__callbackValidCurrency',
+            'terms'           => 'trim|is_natural',
+            'customer_id'     => 'trim',
+            'additional_text' => 'trim',
             'items'           => '',
         ];
 

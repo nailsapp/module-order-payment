@@ -234,19 +234,19 @@ class Customer extends BaseAdmin
     protected function formValidation()
     {
         $aRules = array(
-            'first_name'               => 'xss_clean|max_length[255]',
-            'last_name'                => 'xss_clean|max_length[255]',
-            'organisation'             => 'xss_clean|max_length[255]',
-            'email'                    => 'xss_clean|max_length[255]|valid_email|required',
-            'billing_email'            => 'xss_clean|max_length[255]|valid_email',
-            'telephone'                => 'xss_clean|max_length[25]',
-            'vat_number'               => 'xss_clean|max_length[25]',
-            'billing_address_line_1'   => 'xss_clean|max_length[255]',
-            'billing_address_line_2'   => 'xss_clean|max_length[255]',
-            'billing_address_town'     => 'xss_clean|max_length[255]',
-            'billing_address_county'   => 'xss_clean|max_length[255]',
-            'billing_address_postcode' => 'xss_clean|max_length[255]',
-            'billing_address_country'  => 'xss_clean|max_length[255]'
+            'first_name'               => 'max_length[255]',
+            'last_name'                => 'max_length[255]',
+            'organisation'             => 'max_length[255]',
+            'email'                    => 'max_length[255]|valid_email|required',
+            'billing_email'            => 'max_length[255]|valid_email',
+            'telephone'                => 'max_length[25]',
+            'vat_number'               => 'max_length[25]',
+            'billing_address_line_1'   => 'max_length[255]',
+            'billing_address_line_2'   => 'max_length[255]',
+            'billing_address_town'     => 'max_length[255]',
+            'billing_address_county'   => 'max_length[255]',
+            'billing_address_postcode' => 'max_length[255]',
+            'billing_address_country'  => 'max_length[255]'
         );
 
 

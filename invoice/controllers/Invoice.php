@@ -109,7 +109,7 @@ class Invoice extends Base
             if ($oInvoice->state->id === 'PAID') {
 
                 $oView = Factory::service('View');
-                $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/pay/paid.php');
+                $this->loadStyles(APPPATH . 'modules/invoice/views/pay/paid.php');
                 $oView->load('structure/header', $this->data);
                 $oView->load('invoice/pay/paid', $this->data);
                 $oView->load('structure/footer', $this->data);
@@ -143,7 +143,7 @@ class Invoice extends Base
             }
 
             $oView = Factory::service('View');
-            $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/pay/hasProcessing.php');
+            $this->loadStyles(APPPATH . 'modules/invoice/views/pay/hasProcessing.php');
             $oView->load('structure/header', $this->data);
             $oView->load('invoice/pay/hasProcessing', $this->data);
             $oView->load('structure/footer', $this->data);
@@ -181,11 +181,11 @@ class Invoice extends Base
             $oFormValidation = Factory::service('FormValidation');
 
             $aRules = [
-                'driver'   => ['xss_clean', 'trim', 'required'],
-                'cc[name]' => ['xss_clean', 'trim'],
-                'cc[num]'  => ['xss_clean', 'trim'],
-                'cc[exp]'  => ['xss_clean', 'trim'],
-                'cc[cvc]'  => ['xss_clean', 'trim'],
+                'driver'   => ['', 'trim', 'required'],
+                'cc[name]' => ['', 'trim'],
+                'cc[num]'  => ['', 'trim'],
+                'cc[exp]'  => ['', 'trim'],
+                'cc[cvc]'  => ['', 'trim'],
             ];
 
             $sSelectedDriver = $oInput->post('driver');
@@ -209,7 +209,7 @@ class Invoice extends Base
 
                     } elseif (!empty($aFields)) {
                         foreach ($aFields as $aField) {
-                            $aRules[$sSlug . '[' . $aField['key'] . ']'] = ['xss_clean'];
+                            $aRules[$sSlug . '[' . $aField['key'] . ']'] = [''];
                         }
                     }
 
@@ -322,7 +322,7 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         $oView = Factory::service('View');
-        $this->loadStyles(FCPATH . APPPATH . 'modules/invoice/views/pay/index.php');
+        $this->loadStyles(APPPATH . 'modules/invoice/views/pay/index.php');
         $oView->load('structure/header', $this->data);
         $oView->load('invoice/pay/index', $this->data);
         $oView->load('structure/footer', $this->data);
