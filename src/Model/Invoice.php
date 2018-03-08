@@ -36,8 +36,8 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * The Currency library
-     * @var \Nails\Currency\Library\Currency
+     * The Currency service
+     * @var \Nails\Currency\Service\Currency
      */
     protected $oCurrency;
 

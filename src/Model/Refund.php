@@ -12,15 +12,15 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Factory;
 use Nails\Common\Model\Base;
+use Nails\Factory;
 use Nails\Invoice\Exception\PaymentException;
 
 class Refund extends Base
 {
     /**
      * The Currency library
-     * @var Nails\Currency\Library\Currency
+     * @var Nails\Currency\Service\Currency
      */
     protected $oCurrency;
 
@@ -54,12 +54,12 @@ class Refund extends Base
      */
     public function getStatuses()
     {
-        return array(
+        return [
             self::STATUS_PENDING,
             self::STATUS_PROCESSING,
             self::STATUS_COMPLETE,
-            self::STATUS_FAILED
-        );
+            self::STATUS_FAILED,
+        ];
     }
 
     // --------------------------------------------------------------------------
@@ -70,25 +70,27 @@ class Refund extends Base
      */
     public function getStatusesHuman()
     {
-        return array(
+        return [
             self::STATUS_PENDING    => 'Pending',
             self::STATUS_PROCESSING => 'Processing',
             self::STATUS_COMPLETE   => 'Complete',
-            self::STATUS_FAILED     => 'Failed'
-        );
+            self::STATUS_FAILED     => 'Failed',
+        ];
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Retrieve all payments from the databases
+     *
      * @param  int     $iPage           The page number to return
      * @param  int     $iPerPage        The number of results per page
      * @param  array   $aData           Data to pass _to getcount_common()
      * @param  boolean $bIncludeDeleted Whether to include deleted results
+     *
      * @return array
      */
-    public function getAll($iPage = null, $iPerPage = null, $aData = array(), $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
@@ -108,10 +110,10 @@ class Refund extends Base
                     'invoice',
                     'Invoice',
                     'nailsapp/module-invoice',
-                    array(
+                    [
                         'includeCustomer' => true,
-                        'includeItems'    => true
-                    )
+                        'includeItems'    => true,
+                    ]
                 );
             }
 
@@ -133,11 +135,13 @@ class Refund extends Base
 
     /**
      * Create a new refund
+     *
      * @param  array   $aData         The data to create the refund with
      * @param  boolean $bReturnObject Whether to return the complete refund object
+     *
      * @return mixed
      */
-    public function create($aData = array(), $bReturnObject = false)
+    public function create($aData = [], $bReturnObject = false)
     {
         $oDb = Factory::service('Database');
 
@@ -177,11 +181,13 @@ class Refund extends Base
 
     /**
      * Update a payment
+     *
      * @param  integer $iRefundId The ID of the refund to update
      * @param  array   $aData     The data to update the payment with
+     *
      * @return boolean
      */
-    public function update($iRefundId, $aData = array())
+    public function update($iRefundId, $aData = [])
     {
         $oDb = Factory::service('Database');
 
@@ -233,7 +239,7 @@ class Refund extends Base
 
         do {
 
-            $sRef = $oNow->format('Ym') .'-' . strtoupper(random_string('alnum'));
+            $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
             $bRefExists = (bool) $oDb->count_all_results($this->table);
 
@@ -246,11 +252,13 @@ class Refund extends Base
 
     /**
      * Set a refund as PENDING
-     * @param  integer  $iRefundId The refund to update
-     * @param  array    $aData     Any additional data to save to the transaction
+     *
+     * @param  integer $iRefundId The refund to update
+     * @param  array   $aData     Any additional data to save to the transaction
+     *
      * @return boolean
      */
-    public function setPending($iRefundId, $aData = array())
+    public function setPending($iRefundId, $aData = [])
     {
         $aData['status'] = self::STATUS_PENDING;
         return $this->update($iRefundId, $aData);
@@ -260,11 +268,13 @@ class Refund extends Base
 
     /**
      * Set a refund as PROCESSING
-     * @param  integer  $iRefundId The refund to update
-     * @param  array    $aData     Any additional data to save to the transaction
+     *
+     * @param  integer $iRefundId The refund to update
+     * @param  array   $aData     Any additional data to save to the transaction
+     *
      * @return boolean
      */
-    public function setProcessing($iRefundId, $aData = array())
+    public function setProcessing($iRefundId, $aData = [])
     {
         $aData['status'] = self::STATUS_PROCESSING;
         return $this->update($iRefundId, $aData);
@@ -274,11 +284,13 @@ class Refund extends Base
 
     /**
      * Set a refund as COMPLETE
-     * @param  integer  $iRefundId The refund to update
-     * @param  array    $aData     Any additional data to save to the transaction
+     *
+     * @param  integer $iRefundId The refund to update
+     * @param  array   $aData     Any additional data to save to the transaction
+     *
      * @return boolean
      */
-    public function setComplete($iRefundId, $aData = array())
+    public function setComplete($iRefundId, $aData = [])
     {
         $aData['status'] = self::STATUS_COMPLETE;
         return $this->update($iRefundId, $aData);
@@ -288,11 +300,13 @@ class Refund extends Base
 
     /**
      * Set a refund as FAILED
-     * @param  integer  $iRefundId The refund to update
-     * @param  array    $aData     Any additional data to save to the transaction
+     *
+     * @param  integer $iRefundId The refund to update
+     * @param  array   $aData     Any additional data to save to the transaction
+     *
      * @return boolean
      */
-    public function setFailed($iRefundId, $aData = array())
+    public function setFailed($iRefundId, $aData = [])
     {
         $aData['status'] = self::STATUS_FAILED;
         return $this->update($iRefundId, $aData);
@@ -304,13 +318,13 @@ class Refund extends Base
     {
         try {
 
-            $oRefund = $this->getById($iRefundId, array('includeInvoice' => true, 'includePayment' => true));
+            $oRefund = $this->getById($iRefundId, ['includeInvoice' => true, 'includePayment' => true]);
 
             if (empty($oRefund)) {
                 throw new PaymentException('Invalid Payment ID', 1);
             }
 
-            if (!in_array($oRefund->status->id, array(self::STATUS_PROCESSING, self::STATUS_COMPLETE))) {
+            if (!in_array($oRefund->status->id, [self::STATUS_PROCESSING, self::STATUS_COMPLETE])) {
                 throw new PaymentException('Refund must be in a paid or processing state to send receipt.', 1);
             }
 
@@ -325,9 +339,9 @@ class Refund extends Base
                 $oEmail->type = 'refund_processing_receipt';
             }
 
-            $oEmail->data = array(
-                'refund' => $oRefund
-            );
+            $oEmail->data = [
+                'refund' => $oRefund,
+            ];
 
             if (!empty($sEmailOverride)) {
 
@@ -340,7 +354,7 @@ class Refund extends Base
 
             } elseif (!empty($oRefund->invoice->customer->email)) {
 
-                $aEmails = array($oRefund->invoice->customer->email);
+                $aEmails = [$oRefund->invoice->customer->email];
 
             } else {
 
@@ -356,17 +370,17 @@ class Refund extends Base
             foreach ($aEmails as $sEmail) {
 
                 $oEmail->to_email = $sEmail;
-                $oResult = $oEmailer->send($oEmail);
+                $oResult          = $oEmailer->send($oEmail);
 
                 if (!empty($oResult)) {
 
                     $oInvoiceEmailModel->create(
-                        array(
+                        [
                             'invoice_id' => $oRefund->invoice->id,
                             'email_id'   => $oResult->id,
                             'email_type' => $oEmail->type,
-                            'recipient'  => $oEmail->to_email
-                        )
+                            'recipient'  => $oEmail->to_email,
+                        ]
                     );
 
                 } else {
@@ -397,14 +411,15 @@ class Refund extends Base
      * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
      * @param  array  $aBools    Fields which should be cast as booleans if not null
      * @param  array  $aFloats   Fields which should be cast as floats if not null
+     *
      * @return void
      */
     protected function formatObject(
         &$oObj,
-        $aData = array(),
-        $aIntegers = array(),
-        $aBools = array(),
-        $aFloats = array()
+        $aData = [],
+        $aIntegers = [],
+        $aBools = [],
+        $aFloats = []
     ) {
 
         $aIntegers[] = 'payment_id';
@@ -426,19 +441,19 @@ class Refund extends Base
         unset($oObj->currency);
 
         //  Amount
-        $oObj->amount = (object) array(
+        $oObj->amount = (object) [
             'raw'       => $oObj->amount,
             'formatted' => $this->oCurrency->format(
                 $oCurrency->code, $oObj->amount / pow(10, $oCurrency->decimal_precision)
-            )
-        );
+            ),
+        ];
 
         //  Fee
         $oObj->fee = (object) array(
             'raw'       => $oObj->fee,
             'formatted' => $this->oCurrency->format(
                 $oCurrency->code, $oObj->fee / pow(10, $oCurrency->decimal_precision)
-            )
+            ),
         );
     }
 }
