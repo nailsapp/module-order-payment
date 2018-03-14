@@ -14,7 +14,24 @@ namespace Nails\Invoice\Controller;
 
 use Nails\Factory;
 
-class Base extends \App\Controller\Base
+// --------------------------------------------------------------------------
+
+/**
+ * Allow the app to add functionality, if needed
+ */
+if (class_exists('\App\Invoice\Controller\Base')) {
+    abstract class BaseMiddle extends \App\Invoice\Controller\Base
+    {
+    }
+} else {
+    abstract class BaseMiddle extends \Nails\Common\Controller\Base
+    {
+    }
+}
+
+// --------------------------------------------------------------------------
+
+abstract class Base extends BaseMiddle
 {
     /**
      * Loads Invoice styles if supplied view does not exist
