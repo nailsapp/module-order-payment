@@ -191,7 +191,8 @@ class Invoice
             if (empty($oInvoice)) {
                 throw new InvoiceException($oInvoiceModel->lastError());
             }
-            $this->iId = $oInvoice->id;
+            $this->iId  = $oInvoice->id;
+            $this->sRef = $oInvoice->ref;
         } else {
             $oInvoice = $oInvoiceModel->getById($this->iId);
         }
