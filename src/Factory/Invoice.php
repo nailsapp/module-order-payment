@@ -84,7 +84,7 @@ class Invoice
 
     /**
      * The invoice's callback data
-     * @var string
+     * @var mixed
      */
     protected $mCallbackData;
 

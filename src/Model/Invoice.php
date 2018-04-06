@@ -450,7 +450,6 @@ class Invoice extends Base
 
         //  Callback data is encoded as JSON
         if (array_key_exists('callback_data', $aData)) {
-            $aData['callback_data'] = array_key_exists('callback_data', $aData) ? $aData['callback_data'] : null;
             $aData['callback_data'] = json_encode($aData['callback_data']);
         }
 
@@ -639,18 +638,24 @@ class Invoice extends Base
         foreach ($aItems as $aItem) {
 
             $aData = [
-                'label'       => !empty($aItem['label']) ? $aItem['label'] : null,
-                'body'        => !empty($aItem['body']) ? $aItem['body'] : null,
-                'order'       => !empty($aItem['order']) ? $aItem['order'] : 0,
-                'currency'    => !empty($aItem['currency']) ? $aItem['currency'] : null,
-                'unit'        => !empty($aItem['unit']) ? $aItem['unit'] : null,
-                'tax_id'      => !empty($aItem['tax_id']) ? $aItem['tax_id'] : null,
-                'quantity'    => !empty($aItem['quantity']) ? $aItem['quantity'] : 1,
-                'unit_cost'   => !empty($aItem['unit_cost']) ? $aItem['unit_cost'] : 0,
-                'sub_total'   => !empty($aItem['sub_total']) ? $aItem['sub_total'] : 0,
-                'tax_total'   => !empty($aItem['tax_total']) ? $aItem['tax_total'] : 0,
-                'grand_total' => !empty($aItem['grand_total']) ? $aItem['grand_total'] : 0,
+                'label'         => getFromArray('label', $aItem, null),
+                'body'          => getFromArray('body', $aItem, null),
+                'order'         => getFromArray('order', $aItem, 0),
+                'currency'      => getFromArray('currency', $aItem, null),
+                'unit'          => getFromArray('unit', $aItem, null),
+                'tax_id'        => getFromArray('tax_id', $aItem, null),
+                'quantity'      => getFromArray('quantity', $aItem, 1),
+                'unit_cost'     => getFromArray('unit_cost', $aItem, 0),
+                'sub_total'     => getFromArray('sub_total', $aItem, 0),
+                'tax_total'     => getFromArray('tax_total', $aItem, 0),
+                'grand_total'   => getFromArray('grand_total', $aItem, 0),
+                'callback_data' => getFromArray('callback_data', $aItem, null),
             ];
+
+            //  Ensure callback data is encoded as JSON
+            if (array_key_exists('callback_data', $aData)) {
+                $aData['callback_data'] = json_encode($aData['callback_data']);
+            }
 
             if (!empty($aItem['id'])) {
 

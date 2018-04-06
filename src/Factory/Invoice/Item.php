@@ -63,6 +63,12 @@ class Item
      */
     protected $iUnitCost = 0;
 
+    /**
+     * The item's callback data
+     * @var mixed
+     */
+    protected $mCallbackData;
+
     // --------------------------------------------------------------------------
 
     /**
@@ -115,13 +121,14 @@ class Item
     public function toArray()
     {
         return [
-            'id'        => (int) $this->iId ?: null,
-            'label'     => $this->sLabel,
-            'body'      => $this->sBody,
-            'unit'      => $this->iUnit,
-            'tax_id'    => (int) $this->iTaxId ?: null,
-            'quantity'  => (int) $this->iQuantity ?: 0,
-            'unit_cost' => (int) $this->iUnitCost ?: 0,
+            'id'            => (int) $this->iId ?: null,
+            'label'         => $this->sLabel,
+            'body'          => $this->sBody,
+            'unit'          => $this->iUnit,
+            'tax_id'        => (int) $this->iTaxId ?: null,
+            'quantity'      => (int) $this->iQuantity ?: 0,
+            'unit_cost'     => (int) $this->iUnitCost ?: 0,
+            'callback_data' => $this->mCallbackData,
         ];
     }
 }

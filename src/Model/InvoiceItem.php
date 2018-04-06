@@ -173,5 +173,8 @@ class InvoiceItem extends Base
         $oObj->unit        = new \stdClass();
         $oObj->unit->id    = $sUnit;
         $oObj->unit->label = $aUnits[$sUnit];
+
+        //  Callback data
+        $oObj->callback_data = json_decode($oObj->callback_data);
     }
 }
