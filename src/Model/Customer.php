@@ -223,7 +223,7 @@ class Customer extends Base
     ) {
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
-        $oObj->billing_address = [
+        $oObj->billing_address = (object) [
             'line_1'   => $oObj->billing_address_line_1,
             'line_2'   => $oObj->billing_address_line_2,
             'town'     => $oObj->billing_address_town,
