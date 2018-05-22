@@ -28,14 +28,6 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * The table where line items are stored
-     * @var string
-     */
-    protected $tableItem;
-
-    // --------------------------------------------------------------------------
-
-    /**
      * The Currency service
      * @var \Nails\Currency\Service\Currency
      */
@@ -62,11 +54,50 @@ class Invoice extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice';
-        $this->tableAlias        = 'i';
-        $this->tableItem         = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'created';
-        $this->searchableFields  = [$this->tableAlias . '.id', $this->tableAlias . '.ref', 'c.label'];
+        $this->searchableFields  = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
         $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
+
+        $this->addExpandableField([
+            'trigger'   => 'customer',
+            'type'      => self::EXPANDABLE_TYPE_SINGLE,
+            'property'  => 'customer',
+            'model'     => 'Customer',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'customer_id',
+        ]);
+        $this->addExpandableField([
+            'trigger'   => 'emails',
+            'type'      => self::EXPANDABLE_TYPE_MANY,
+            'property'  => 'emails',
+            'model'     => 'InvoiceEmail',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'invoice_id',
+        ]);
+        $this->addExpandableField([
+            'trigger'   => 'payments',
+            'type'      => self::EXPANDABLE_TYPE_MANY,
+            'property'  => 'payments',
+            'model'     => 'Payment',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'invoice_id',
+        ]);
+        $this->addExpandableField([
+            'trigger'   => 'refunds',
+            'type'      => self::EXPANDABLE_TYPE_MANY,
+            'property'  => 'refunds',
+            'model'     => 'Refund',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'invoice_id',
+        ]);
+        $this->addExpandableField([
+            'trigger'   => 'items',
+            'type'      => self::EXPANDABLE_TYPE_MANY,
+            'property'  => 'items',
+            'model'     => 'InvoiceItem',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'invoice_id',
+        ]);
     }
 
     // --------------------------------------------------------------------------
@@ -107,7 +138,7 @@ class Invoice extends Base
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-        $oDb->join($oCustomerModel->getTableName() . ' c', $this->tableAlias . '.customer_id = c.id', 'LEFT');
+        $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
 
         return parent::getAllRawQuery($iPage, $iPerPage, $aData, $bIncludeDeleted);
     }
@@ -118,7 +149,7 @@ class Invoice extends Base
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-        $oDb->join($oCustomerModel->getTableName() . ' c', $this->tableAlias . '.customer_id = c.id', 'LEFT');
+        $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
 
         return parent::countAll($aData, $bIncludeDeleted);
     }
@@ -150,26 +181,26 @@ class Invoice extends Base
             $sPaymentClass = get_class($oPaymentModel);
 
             $aData['select'] = [
-                $this->tableAlias . '.id',
-                $this->tableAlias . '.ref',
-                $this->tableAlias . '.token',
-                $this->tableAlias . '.state',
-                $this->tableAlias . '.dated',
-                $this->tableAlias . '.terms',
-                $this->tableAlias . '.due',
-                $this->tableAlias . '.paid',
-                $this->tableAlias . '.customer_id',
-                $this->tableAlias . '.email',
-                $this->tableAlias . '.currency',
-                $this->tableAlias . '.sub_total',
-                $this->tableAlias . '.tax_total',
-                $this->tableAlias . '.grand_total',
+                $this->getTableAlias() . '.id',
+                $this->getTableAlias() . '.ref',
+                $this->getTableAlias() . '.token',
+                $this->getTableAlias() . '.state',
+                $this->getTableAlias() . '.dated',
+                $this->getTableAlias() . '.terms',
+                $this->getTableAlias() . '.due',
+                $this->getTableAlias() . '.paid',
+                $this->getTableAlias() . '.customer_id',
+                $this->getTableAlias() . '.email',
+                $this->getTableAlias() . '.currency',
+                $this->getTableAlias() . '.sub_total',
+                $this->getTableAlias() . '.tax_total',
+                $this->getTableAlias() . '.grand_total',
                 '(
                     SELECT
                         SUM(amount)
                         FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
                         WHERE
-                        invoice_id = ' . $this->tableAlias . '.id
+                        invoice_id = ' . $this->getTableAlias() . '.id
                         AND status = \'' . $sPaymentClass::STATUS_COMPLETE . '\'
                 ) paid_total',
                 '(
@@ -177,7 +208,7 @@ class Invoice extends Base
                         SUM(amount)
                         FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
                         WHERE
-                        invoice_id = ' . $this->tableAlias . '.id
+                        invoice_id = ' . $this->getTableAlias() . '.id
                         AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
                 ) processing_total',
                 '(
@@ -185,86 +216,48 @@ class Invoice extends Base
                         COUNT(id)
                         FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
                         WHERE
-                        invoice_id = ' . $this->tableAlias . '.id
+                        invoice_id = ' . $this->getTableAlias() . '.id
                         AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
                 ) processing_payments',
-                $this->tableAlias . '.additional_text',
-                $this->tableAlias . '.callback_data',
-                $this->tableAlias . '.created',
-                $this->tableAlias . '.created_by',
-                $this->tableAlias . '.modified',
-                $this->tableAlias . '.modified_by',
+                $this->getTableAlias() . '.additional_text',
+                $this->getTableAlias() . '.callback_data',
+                $this->getTableAlias() . '.created',
+                $this->getTableAlias() . '.created_by',
+                $this->getTableAlias() . '.modified',
+                $this->getTableAlias() . '.modified_by',
             ];
         }
 
-        //  If keywords are included then apply the search conditionals
-        if (!empty($aData['keywords'])) {
+        //  @todo (Pablo - 2018-05-22) - Backwards compatability
+        if (empty($aData['expand'])) {
+            $aData['expand'] = [];
+        }
 
-            if (empty($aData['or_like'])) {
-                $aData['or_like'] = [];
-            }
+        if (!empty($aData['includeAll'])) {
+            $aData['expand'] = static::EXPAND_ALL;
+        }
 
-            foreach ($this->searchableFields as $mField) {
-                $aData['or_like'][] = [
-                    'column' => $mField,
-                    'value'  => $aData['keywords'],
-                ];
-            }
+        if (!empty($aData['includeCustomer'])) {
+            $aData['expand'][] = 'customer';
+        }
+
+        if (!empty($aData['includeEmails'])) {
+            $aData['expand'][] = 'emails';
+        }
+
+        if (!empty($aData['includePayments'])) {
+            $aData['expand'][] = 'payments';
+        }
+
+        if (!empty($aData['includeRefunds'])) {
+            $aData['expand'][] = 'refunds';
+        }
+
+        if (!empty($aData['includeItems'])) {
+            $aData['expand'][] = 'items';
         }
 
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
-
-        if (!empty($aItems)) {
-            if (!empty($aData['includeAll']) || !empty($aData['includeCustomer'])) {
-                $this->getSingleAssociatedItem(
-                    $aItems,
-                    'customer_id',
-                    'customer',
-                    'Customer',
-                    'nailsapp/module-invoice'
-                );
-            }
-
-            if (!empty($aData['includeAll']) || !empty($aData['includeEmails'])) {
-                $this->getManyAssociatedItems(
-                    $aItems,
-                    'emails',
-                    'invoice_id',
-                    'InvoiceEmail',
-                    'nailsapp/module-invoice'
-                );
-            }
-
-            if (!empty($aData['includeAll']) || !empty($aData['includePayments'])) {
-                $this->getManyAssociatedItems(
-                    $aItems,
-                    'payments',
-                    'invoice_id',
-                    'Payment',
-                    'nailsapp/module-invoice'
-                );
-            }
-
-            if (!empty($aData['includeAll']) || !empty($aData['includeRefunds'])) {
-                $this->getManyAssociatedItems(
-                    $aItems,
-                    'refunds',
-                    'invoice_id',
-                    'Refund',
-                    'nailsapp/module-invoice'
-                );
-            }
-
-            if (!empty($aData['includeAll']) || !empty($aData['includeItems'])) {
-                $this->getManyAssociatedItems(
-                    $aItems,
-                    'items',
-                    'invoice_id',
-                    'InvoiceItem',
-                    'nailsapp/module-invoice'
-                );
-            }
-        }
 
         return $aItems;
     }
@@ -712,7 +705,7 @@ class Invoice extends Base
             $aData['where'] = [];
         }
 
-        $aData['where'][] = [$this->tableAlias . '.ref', $sRef];
+        $aData['where'][] = [$this->getTableAlias() . '.ref', $sRef];
         $aResult          = $this->getAll($aData);
 
         if (empty($aResult)) {
@@ -742,7 +735,7 @@ class Invoice extends Base
             $aData['where'] = [];
         }
 
-        $aData['where'][] = [$this->tableAlias . '.token', $sToken];
+        $aData['where'][] = [$this->getTableAlias() . '.token', $sToken];
         $aResult          = $this->getAll($aData);
 
         if (empty($aResult)) {
