@@ -120,10 +120,10 @@
 
         ?>
     </fieldset>
-    <p>
+    <div class="admin-floating-controls">
         <button type="submit" class="btn btn-primary">
-            <?=lang('action_save')?>
+            Save Changes
         </button>
-    </p>
+    </div>
     <?=form_close()?>
 </div>
