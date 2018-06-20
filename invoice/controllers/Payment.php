@@ -96,7 +96,7 @@ class Payment extends Base
 
             } catch (\Exception $e) {
                 $oSession = Factory::service('Session', 'nailsapp/module-auth');
-                $oSession->set_flashdata('error', $e->getMessage());
+                $oSession->setFlashData('error', $e->getMessage());
                 redirect($oPayment->invoice->urls->payment);
             }
         }

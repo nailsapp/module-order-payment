@@ -244,7 +244,7 @@ class Payment extends BaseAdmin
         }
 
         $oSession = Factory::service('Session', 'nailsapp/module-auth');
-        $oSession->set_flashdata($sStatus, $sMessage);
+        $oSession->setFlashData($sStatus, $sMessage);
         redirect($sRedirect);
     }
 }

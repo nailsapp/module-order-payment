@@ -222,7 +222,7 @@ class Invoice extends BaseAdmin
                     $this->sendInvoice($oInvoice);
 
                     $oSession = Factory::service('Session', 'nailsapp/module-auth');
-                    $oSession->set_flashdata('success', 'Invoice created successfully.');
+                    $oSession->setFlashData('success', 'Invoice created successfully.');
 
                     redirect('admin/invoice/invoice/index');
 
@@ -344,7 +344,7 @@ class Invoice extends BaseAdmin
                     $this->sendInvoice($oInvoice);
 
                     $oSession = Factory::service('Session', 'nailsapp/module-auth');
-                    $oSession->set_flashdata('success', 'Invoice was saved successfully.');
+                    $oSession->setFlashData('success', 'Invoice was saved successfully.');
 
                     redirect('admin/invoice/invoice/index');
 
@@ -621,7 +621,7 @@ class Invoice extends BaseAdmin
         }
 
         $oSession = Factory::service('Session', 'nailsapp/module-auth');
-        $oSession->set_flashdata($sStatus, $sMessage);
+        $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
     }
@@ -660,7 +660,7 @@ class Invoice extends BaseAdmin
         }
 
         $oSession = Factory::service('Session', 'nailsapp/module-auth');
-        $oSession->set_flashdata($sStatus, $sMessage);
+        $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice/index');
     }
