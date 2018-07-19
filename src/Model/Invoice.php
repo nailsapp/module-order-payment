@@ -695,24 +695,9 @@ class Invoice extends Base
      *
      * @return mixed
      */
-    public function getByRef($sRef, $aData = [])
+    public function getByRef($sRef, array $aData = [])
     {
-        if (empty($sRef)) {
-            return false;
-        }
-
-        if (!isset($aData['where'])) {
-            $aData['where'] = [];
-        }
-
-        $aData['where'][] = [$this->getTableAlias() . '.ref', $sRef];
-        $aResult          = $this->getAll($aData);
-
-        if (empty($aResult)) {
-            return false;
-        }
-
-        return $aResult[0];
+        return $this->getByColumn('ref', $sRef, $aData);
     }
 
     // --------------------------------------------------------------------------
@@ -725,24 +710,9 @@ class Invoice extends Base
      *
      * @return mixed
      */
-    public function getByToken($sToken, $aData = [])
+    public function getByToken($sToken, array $aData = [])
     {
-        if (empty($sRef)) {
-            return false;
-        }
-
-        if (!isset($aData['where'])) {
-            $aData['where'] = [];
-        }
-
-        $aData['where'][] = [$this->getTableAlias() . '.token', $sToken];
-        $aResult          = $this->getAll($aData);
-
-        if (empty($aResult)) {
-            return false;
-        }
-
-        return $aResult[0];
+        return $this->getByColumn('token', $sRef, $aData);
     }
 
     // --------------------------------------------------------------------------
