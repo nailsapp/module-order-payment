@@ -712,7 +712,7 @@ class Invoice extends Base
      */
     public function getByToken($sToken, array $aData = [])
     {
-        return $this->getByColumn('token', $sRef, $aData);
+        return $this->getByColumn('token', $sToken, $aData);
     }
 
     // --------------------------------------------------------------------------
