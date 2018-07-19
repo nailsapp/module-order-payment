@@ -40,7 +40,7 @@ class Customer extends Base
      *
      * @return array
      */
-    public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
@@ -77,7 +77,7 @@ class Customer extends Base
      *
      * @return void
      */
-    protected function getCountCommon($aData = [])
+    protected function getCountCommon(array $aData = [])
     {
         //  If there's a search term, then we better get %LIKING%
         if (!empty($aData['keywords'])) {
@@ -117,7 +117,7 @@ class Customer extends Base
      *
      * @return mixed
      */
-    public function create($aData = [], $bReturnObject = false)
+    public function create(array $aData = [], $bReturnObject = false)
     {
         try {
 
@@ -146,7 +146,7 @@ class Customer extends Base
      *
      * @return mixed
      */
-    public function update($iCustomerId, $aData = [])
+    public function update($iCustomerId, array $aData = [])
     {
         try {
 
@@ -216,10 +216,10 @@ class Customer extends Base
      */
     protected function formatObject(
         &$oObj,
-        $aData = [],
-        $aIntegers = [],
-        $aBools = [],
-        $aFloats = []
+        array $aData = [],
+        array $aIntegers = [],
+        array $aBools = [],
+        array $aFloats = []
     ) {
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 

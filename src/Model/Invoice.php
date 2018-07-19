@@ -134,7 +134,7 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
-    public function getAllRawQuery($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
+    public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
@@ -166,7 +166,7 @@ class Invoice extends Base
      *
      * @return array
      */
-    public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
@@ -272,7 +272,7 @@ class Invoice extends Base
      *
      * @return mixed
      */
-    public function create($aData = [], $bReturnObject = false)
+    public function create(array $aData = [], $bReturnObject = false)
     {
         $oDb = Factory::service('Database');
 
@@ -329,7 +329,7 @@ class Invoice extends Base
      *
      * @return boolean
      */
-    public function update($iInvoiceId, $aData = [])
+    public function update($iInvoiceId, array $aData = [])
     {
         $oDb = Factory::service('Database');
 
@@ -1022,10 +1022,10 @@ class Invoice extends Base
      */
     protected function formatObject(
         &$oObj,
-        $aData = [],
-        $aIntegers = [],
-        $aBools = [],
-        $aFloats = []
+        array $aData = [],
+        array $aIntegers = [],
+        array $aBools = [],
+        array $aFloats = []
     ) {
 
         $aIntegers[] = 'terms';

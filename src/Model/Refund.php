@@ -90,7 +90,7 @@ class Refund extends Base
      *
      * @return array
      */
-    public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
@@ -141,7 +141,7 @@ class Refund extends Base
      *
      * @return mixed
      */
-    public function create($aData = [], $bReturnObject = false)
+    public function create(array $aData = [], $bReturnObject = false)
     {
         $oDb = Factory::service('Database');
 
@@ -187,7 +187,7 @@ class Refund extends Base
      *
      * @return boolean
      */
-    public function update($iRefundId, $aData = [])
+    public function update($iRefundId, array $aData = [])
     {
         $oDb = Factory::service('Database');
 
@@ -416,10 +416,10 @@ class Refund extends Base
      */
     protected function formatObject(
         &$oObj,
-        $aData = [],
-        $aIntegers = [],
-        $aBools = [],
-        $aFloats = []
+        array $aData = [],
+        array $aIntegers = [],
+        array $aBools = [],
+        array $aFloats = []
     ) {
 
         $aIntegers[] = 'payment_id';

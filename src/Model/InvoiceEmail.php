@@ -33,7 +33,7 @@ class InvoiceEmail extends Base
      * @param array  $aData   Data passed from the calling method
      * @return void
      **/
-    protected function getCountCommon($aData = array())
+    protected function getCountCommon(array $aData = array())
     {
         if (empty($aData['select'])) {
             $aData['select'] = array(
@@ -66,10 +66,10 @@ class InvoiceEmail extends Base
      */
     protected function formatObject(
         &$oObj,
-        $aData = array(),
-        $aIntegers = array(),
-        $aBools = array(),
-        $aFloats = array()
+        array $aData = [],
+        array $aIntegers = [],
+        array $aBools = [],
+        array $aFloats = []
     ) {
 
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);

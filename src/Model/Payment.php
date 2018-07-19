@@ -97,7 +97,7 @@ class Payment extends Base
      *
      * @return array
      */
-    public function getAll($iPage = null, $iPerPage = null, $aData = [], $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
@@ -174,7 +174,7 @@ class Payment extends Base
      *
      * @return void
      **/
-    protected function getCountCommon($data = [])
+    protected function getCountCommon(array $data = [])
     {
         $oDb           = Factory::service('Database');
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
@@ -227,7 +227,7 @@ class Payment extends Base
      *
      * @return mixed
      */
-    public function create($aData = [], $bReturnObject = false)
+    public function create(array $aData = [], $bReturnObject = false)
     {
         $oDb = Factory::service('Database');
 
@@ -279,7 +279,7 @@ class Payment extends Base
      *
      * @return boolean
      */
-    public function update($iPaymentId, $aData = [])
+    public function update($iPaymentId, array $aData = [])
     {
         $oDb = Factory::service('Database');
 
@@ -639,10 +639,10 @@ class Payment extends Base
      */
     protected function formatObject(
         &$oObj,
-        $aData = [],
-        $aIntegers = [],
-        $aBools = [],
-        $aFloats = []
+        array $aData = [],
+        array $aIntegers = [],
+        array $aBools = [],
+        array $aFloats = []
     ) {
 
         $aIntegers[] = 'invoice_id';
