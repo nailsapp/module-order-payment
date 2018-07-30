@@ -10,10 +10,11 @@
  * @link
  */
 
-namespace Nails\Api\Invoice;
+namespace Nails\Invoice\Api\Controller;
 
-use Nails\Factory;
 use Nails\Api\Controller\Base;
+use Nails\Api\Exception\ApiException;
+use Nails\Factory;
 
 class Invoice extends Base
 {
@@ -23,46 +24,35 @@ class Invoice extends Base
     public function getSearch()
     {
         if (!userHasPermission('admin:invoice:invoice:manage')) {
-
-            return array(
-                'status' => 401,
-                'error' => 'You are not authorised to search invoices.'
-            );
-
-        } else {
-
-            $oInput        = Factory::service('Input');
-            $sKeywords     = $oInput->get('keywords');
-            $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-
-            if (strlen($sKeywords) >= 3) {
-
-                $oResult = $oInvoiceModel->search($sKeywords, null, null, array('includeCustomer' => true));
-                $aOut    = array();
-
-                foreach ($oResult->data as $oInvoice) {
-                    $aOut[] = $this->formatInvoice($oInvoice);
-                }
-
-                return array(
-                    'data' => $aOut
-                );
-
-            } else {
-
-                return array(
-                    'status' => 400,
-                    'error' => 'Search term must be 3 characters or longer.'
-                );
-            }
+            throw new ApiException('You are not authorised to search invoices.', 401);
         }
+
+        $oInput        = Factory::service('Input');
+        $sKeywords     = $oInput->get('keywords');
+        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+
+        if (strlen($sKeywords) >= 3) {
+            throw new ApiException('Search term must be 3 characters or longer.', 400);
+        }
+
+        $oResult = $oInvoiceModel->search($sKeywords, null, null, ['includeCustomer' => true]);
+        $aOut    = [];
+
+        foreach ($oResult->data as $oInvoice) {
+            $aOut[] = $this->formatInvoice($oInvoice);
+        }
+
+        return Factory::factory('ApiResponse', 'nailsapp/module-api')
+                      ->setData($aOut);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns an invoice by its ID
+     *
      * @param  string $iId The invoice's ID
+     *
      * @return array
      */
     public function getId($iId = null)
@@ -71,33 +61,25 @@ class Invoice extends Base
         $iId    = (int) $iId ?: (int) $oInput->get('id');
 
         if (empty($iId)) {
-            return array(
-                'status' => 404
-            );
+            throw new ApiException('Invalid Invoice ID', 404);
         }
 
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoice      = $oInvoiceModel->getById($iId, array('includeCustomer' => true));
+        $oInvoice      = $oInvoiceModel->getById($iId, ['includeCustomer' => true]);
 
         if (empty($oInvoice)) {
-
-            return array(
-                'status' => 404
-            );
-
-        } else {
-
-            return array(
-                'data' => $this->formatInvoice($oInvoice)
-            );
+            throw new ApiException('Invalid Invoice ID', 404);
         }
+
+        return Factory::factory('ApiResponse', 'nailsapp/module-api')
+                      ->setData($this->formatInvoice($oInvoice));
     }
 
     // --------------------------------------------------------------------------
 
     public function formatInvoice($oInvoice)
     {
-        return array(
+        return [
             'id'       => $oInvoice->id,
             'ref'      => $oInvoice->ref,
             'terms'    => $oInvoice->terms,
@@ -108,10 +90,10 @@ class Invoice extends Base
             'currency' => $oInvoice->currency->code,
             'totals'   => $oInvoice->totals,
             'urls'     => $oInvoice->urls,
-            'customer' => empty($oInvoice->customer) ? null : array(
+            'customer' => empty($oInvoice->customer) ? null : [
                 'id'    => $oInvoice->customer->id,
                 'label' => $oInvoice->customer->label,
-            )
-        );
+            ],
+        ];
     }
 }
