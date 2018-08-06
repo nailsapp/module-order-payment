@@ -10,18 +10,17 @@
  * @link
  */
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Model\Invoice;
 
-use Nails\Factory;
 use Nails\Common\Model\Base;
+use Nails\Factory;
 
-class InvoiceEmail extends Base
+class Email extends Base
 {
     public function __construct()
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_email';
-        $this->tableAlias       = 'ie';
         $this->defaultSortColumn = 'created';
     }
 
@@ -30,21 +29,23 @@ class InvoiceEmail extends Base
     /**
      * This method applies the conditionals which are common across the get_*()
      * methods and the count() method.
-     * @param array  $aData   Data passed from the calling method
+     *
+     * @param array $aData Data passed from the calling method
+     *
      * @return void
      **/
-    protected function getCountCommon(array $aData = array())
+    protected function getCountCommon(array $aData = [])
     {
         if (empty($aData['select'])) {
-            $aData['select'] = array(
-                $this->tableAlias . '.*',
-                'ea.ref email_ref'
-            );
+            $aData['select'] = [
+                $this->getTableAlias() . '.*',
+                'ea.ref email_ref',
+            ];
         }
 
         //  Common joins
         $oDb = Factory::service('Database');
-        $oDb->join(NAILS_DB_PREFIX . 'email_archive ea', $this->tableAlias . '.email_id = ea.id', 'LEFT');
+        $oDb->join(NAILS_DB_PREFIX . 'email_archive ea', $this->getTableAlias() . '.email_id = ea.id', 'LEFT');
 
         parent::getCountCommon($aData);
     }
@@ -62,6 +63,7 @@ class InvoiceEmail extends Base
      * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
      * @param  array  $aBools    Fields which should be cast as booleans if not null
      * @param  array  $aFloats   Fields which should be cast as floats if not null
+     *
      * @return void
      */
     protected function formatObject(
@@ -71,26 +73,24 @@ class InvoiceEmail extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
-
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
         $oEmailer = factory::service('Emailer', 'nailsapp/module-email');
         $aTypes   = $oEmailer->getTypes();
 
-        $oEmail              = new \stdClass();
-        $oEmail->id          = (int) $oObj->email_id ?: null;
-        $oEmail->ref         = $oObj->email_ref;
-        $oEmail->type        = new \stdClass();
-        $oEmail->type->slug  = $oObj->email_type;
-        $oEmail->type->label = '';
-        $oEmail->preview_url = $oEmail->id ? site_url('email/view_online/' . $oEmail->ref) : null;
+        $oEmail = (object) [
+            'id'          => (int) $oObj->email_id ?: null,
+            'ref'         => $oObj->email_ref,
+            'type'        => (object) [
+                'slug'  => $oObj->email_type,
+                'label' => '',
+            ],
+            'preview_url' => $oObj->email_id ? site_url('email/view/' . $oObj->email_ref) : null,
+        ];
 
         if (!empty($aTypes[$oEmail->type->slug])) {
-
             $oEmail->type->label = $aTypes[$oEmail->type->slug]->name;
-
         } else {
-
             $oEmail->type->label = preg_replace('/[-_]/', ' ', $oEmail->type->slug);
         }
 

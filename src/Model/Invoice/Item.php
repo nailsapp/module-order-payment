@@ -10,12 +10,12 @@
  * @link
  */
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Model\Invoice;
 
 use Nails\Common\Model\Base;
 use Nails\Factory;
 
-class InvoiceItem extends Base
+class Item extends Base
 {
     /**
      * The Currency service
@@ -42,21 +42,17 @@ class InvoiceItem extends Base
     {
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice_item';
-        $this->tableAlias        = 'io';
         $this->defaultSortColumn = 'order';
         $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
-
-        $this->addExpandableField(
-            [
-                'trigger'     => 'tax',
-                'type'        => self::EXPANDABLE_TYPE_SINGLE,
-                'property'    => 'tax',
-                'model'       => 'Tax',
-                'provider'    => 'nailsapp/module-invoice',
-                'id_column'   => 'tax_id',
-                'auto_expand' => true,
-            ]
-        );
+        $this->addExpandableField([
+            'trigger'     => 'tax',
+            'type'        => self::EXPANDABLE_TYPE_SINGLE,
+            'property'    => 'tax',
+            'model'       => 'Tax',
+            'provider'    => 'nailsapp/module-invoice',
+            'id_column'   => 'tax_id',
+            'auto_expand' => true,
+        ]);
     }
 
     // --------------------------------------------------------------------------
@@ -89,13 +85,11 @@ class InvoiceItem extends Base
      */
     public function getForInvoices($aInvoiceIds)
     {
-        $aData = [
+        return $this->getAll([
             'where_in' => [
                 ['invoice_id', $aInvoiceIds],
             ],
-        ];
-
-        return $this->getAll(null, null, $aData);
+        ]);
     }
 
     // --------------------------------------------------------------------------
@@ -121,7 +115,6 @@ class InvoiceItem extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
-
         $aIntegers[] = 'invoice_id';
         $aIntegers[] = 'tax_id';
         $aIntegers[] = 'unit_cost';
@@ -170,9 +163,10 @@ class InvoiceItem extends Base
         $sUnit  = $oObj->unit;
         $aUnits = $this->getUnits();
 
-        $oObj->unit        = new \stdClass();
-        $oObj->unit->id    = $sUnit;
-        $oObj->unit->label = $aUnits[$sUnit];
+        $oObj->unit = (object) [
+            'id'    => $sUnit,
+            'label' => $aUnits[$sUnit],
+        ];
 
         //  Callback data
         $oObj->callback_data = json_decode($oObj->callback_data);

@@ -17,24 +17,24 @@ return [
             }
         },
         'InvoiceEmail' => function () {
-            if (class_exists('\App\Invoice\Model\InvoiceEmail')) {
-                return new \App\Invoice\Model\InvoiceEmail();
+            if (class_exists('\App\Invoice\Model\Invoice\Email')) {
+                return new \App\Invoice\Model\Invoice\Email();
             } else {
-                return new \Nails\Invoice\Model\InvoiceEmail();
+                return new \Nails\Invoice\Model\Invoice\Email();
             }
         },
         'InvoiceItem' => function () {
-            if (class_exists('\App\Invoice\Model\InvoiceItem')) {
-                return new \App\Invoice\Model\InvoiceItem();
+            if (class_exists('\App\Invoice\Model\Invoice\Item')) {
+                return new \App\Invoice\Model\Invoice\Item();
             } else {
-                return new \Nails\Invoice\Model\InvoiceItem();
+                return new \Nails\Invoice\Model\Invoice\Item();
             }
         },
         'InvoiceSkin' => function () {
-            if (class_exists('\App\Invoice\Model\InvoiceSkin')) {
-                return new \App\Invoice\Model\InvoiceSkin();
+            if (class_exists('\App\Invoice\Model\Invoice\Skin')) {
+                return new \App\Invoice\Model\Invoice\Skin();
             } else {
-                return new \Nails\Invoice\Model\InvoiceSkin();
+                return new \Nails\Invoice\Model\Invoice\Skin();
             }
         },
         'Payment' => function () {

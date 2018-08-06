@@ -10,11 +10,11 @@
  * @link
  */
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Model\Invoice;
 
 use Nails\Common\Model\BaseSkin;
 
-class InvoiceSkin extends BaseSkin
+class Skin extends BaseSkin
 {
     protected $sModule         = 'nailsapp/module-invoice';
     protected $sType           = 'invoice';
