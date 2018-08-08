@@ -11,7 +11,7 @@
 
 namespace Nails\Invoice\Factory\Invoice;
 
-use Nails\Invoice\Model\InvoiceItem;
+use Nails\Invoice\Model\Invoice;
 
 class Item
 {
@@ -43,7 +43,7 @@ class Item
      * The item's unit
      * @var string
      */
-    protected $iUnit = InvoiceItem::UNIT_NONE;
+    protected $iUnit = Invoice\Item::UNIT_NONE;
 
     /**
      * The item's tax ID
