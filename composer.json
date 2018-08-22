@@ -52,6 +52,9 @@
                             ]
                         }
                     }
+                },
+                "nailsapp/module-api": {
+                    "namespace": "invoice"
                 }
             }
         }

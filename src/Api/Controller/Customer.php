@@ -31,7 +31,7 @@ class Customer extends Base
         $sKeywords      = $oInput->get('keywords');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
 
-        if (strlen($sKeywords) >= 3) {
+        if (strlen($sKeywords) <= 3) {
             throw new ApiException('Search term must be 3 characters or longer.', 400);
         }
 
