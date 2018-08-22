@@ -8,7 +8,7 @@ $oInput = \Nails\Factory::service('Input');
     <?php
 
     echo form_open();
-    $sActiveTab = $this->input->post('active_tab') ?: 'tab-misc';
+    $sActiveTab = $oInput->post('active_tab') ?: 'tab-misc';
     echo '<input type="hidden" name="active_tab" value="' . $sActiveTab . '" id="active-tab">';
 
     ?>

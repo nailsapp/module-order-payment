@@ -47,6 +47,23 @@ class Payment extends Base
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
         $this->searchableFields  = ['id', 'ref', 'description', 'txn_id'];
+
+        $this->addExpandableField([
+            'trigger'   => 'invoice',
+            'type'      => self::EXPANDABLE_TYPE_SINGLE,
+            'property'  => 'invoice',
+            'model'     => 'Invoice',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'invoice_id',
+        ]);
+        $this->addExpandableField([
+            'trigger'   => 'refunds',
+            'type'      => self::EXPANDABLE_TYPE_MANY,
+            'property'  => 'refunds',
+            'model'     => 'Refund',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'payment_id',
+        ]);
     }
 
     // --------------------------------------------------------------------------
@@ -88,65 +105,6 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Retrieve all payments from the databases
-     *
-     * @param  int     $iPage           The page number to return
-     * @param  int     $iPerPage        The number of results per page
-     * @param  array   $aData           Data to pass _to getcount_common()
-     * @param  boolean $bIncludeDeleted Whether to include deleted results
-     *
-     * @return array
-     */
-    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
-    {
-        //  If the first value is an array then treat as if called with getAll(null, null, $aData);
-        //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
-        if (is_array($iPage)) {
-            $aData = $iPage;
-            $iPage = null;
-        }
-
-        $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
-
-        if (is_array($iPage)) {
-
-            $aData = $iPage;
-            $iPage = null;
-        }
-
-        if (!empty($aItems)) {
-
-            if (!empty($aData['includeAll']) || !empty($aData['includeInvoice'])) {
-                $this->getSingleAssociatedItem(
-                    $aItems,
-                    'invoice_id',
-                    'invoice',
-                    'Invoice',
-                    'nailsapp/module-invoice',
-                    [
-                        'includeCustomer' => true,
-                        'includeItems'    => true,
-                    ]
-                );
-            }
-
-            if (!empty($aData['includeAll']) || !empty($aData['includeRefunds'])) {
-                $this->getManyAssociatedItems(
-                    $aItems,
-                    'refunds',
-                    'payment_id',
-                    'Refund',
-                    'nailsapp/module-invoice'
-                );
-            }
-        }
-
-        return $aItems;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Retrive payments which relate to a particular set of invoice IDs
      *
      * @param  array $aInvoiceIds The invoice IDs
@@ -155,13 +113,11 @@ class Payment extends Base
      */
     public function getForInvoices($aInvoiceIds)
     {
-        $aData = [
+        return $this->getAll([
             'where_in' => [
                 ['invoice_id', $aInvoiceIds],
             ],
-        ];
-
-        return $this->getAll(null, null, $aData);
+        ]);
     }
 
     // --------------------------------------------------------------------------

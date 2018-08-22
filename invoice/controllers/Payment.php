@@ -175,7 +175,7 @@ class Payment extends Base
         $sPaymentToken = $oUri->rsegment(3);
         $sMethod       = $oUri->rsegment(4);
         $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $oPayment      = $oPaymentModel->getById($iPaymentId, ['includeInvoice' => true]);
+        $oPayment      = $oPaymentModel->getById($iPaymentId, ['expand' => ['invoice']]);
 
         if (empty($oPayment) || $sPaymentToken !== $oPayment->token || !method_exists($this, $sMethod)) {
             show_404();

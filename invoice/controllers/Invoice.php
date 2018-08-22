@@ -343,12 +343,7 @@ class Invoice extends Base
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
         $oInvoice      = $oInvoiceModel->getByRef(
             $sInvoiceRef,
-            [
-                'includeCustomer' => true,
-                'includeItems'    => true,
-                'includePayments' => true,
-                'includeRefunds'  => true,
-            ]
+            ['expand' => ['customer', 'items', 'payments', 'refunds']]
         );
 
         if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {

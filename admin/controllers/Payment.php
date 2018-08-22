@@ -12,10 +12,10 @@
 
 namespace Nails\Admin\Invoice;
 
-use Nails\Factory;
 use Nails\Admin\Helper;
-use Nails\Invoice\Controller\BaseAdmin;
 use Nails\Common\Exception\NailsException;
+use Nails\Factory;
+use Nails\Invoice\Controller\BaseAdmin;
 
 class Payment extends BaseAdmin
 {
@@ -79,6 +79,7 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        $oInput        = Factory::service('Input');
         $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
         $oDriverModel  = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
@@ -88,37 +89,37 @@ class Payment extends BaseAdmin
         $sTableAlias = $oPaymentModel->getTableAlias();
 
         //  Get pagination and search/sort variables
-        $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
-        $perPage   = $this->input->get('perPage')   ? $this->input->get('perPage')   : 50;
-        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTableAlias . '.created';
-        $sortOrder = $this->input->get('sortOrder') ? $this->input->get('sortOrder') : 'desc';
-        $keywords  = $this->input->get('keywords')  ? $this->input->get('keywords')  : '';
+        $page      = $oInput->get('page') ? $oInput->get('page') : 0;
+        $perPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
+        $sortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
+        $sortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
+        $keywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
 
         // --------------------------------------------------------------------------
 
         //  Define the sortable columns
-        $sortColumns = array(
+        $sortColumns = [
             $sTableAlias . '.created'    => 'Received Date',
             $sTableAlias . '.driver'     => 'Payment Gateway',
             $sTableAlias . '.invoice_id' => 'Invoice ID',
             $sTableAlias . '.txn_id'     => 'Transaction ID',
             $sTableAlias . '.amount'     => 'Amount',
-            $sTableAlias . '.currency'   => 'Currency'
-        );
+            $sTableAlias . '.currency'   => 'Currency',
+        ];
 
         // --------------------------------------------------------------------------
 
         //  Define the filters
-        $aCbFilters = array();
-        $aOptions   = array();
+        $aCbFilters = [];
+        $aOptions   = [];
         $aDrivers   = $oDriverModel->getAll();
 
         foreach ($aDrivers as $sSlug => $oDriver) {
-            $aOptions[] = array(
+            $aOptions[] = [
                 $oDriver->name,
                 $sSlug,
-                true
-            );
+                true,
+            ];
         }
 
         $aCbFilters[] = Helper::searchFilterObject(
@@ -136,13 +137,13 @@ class Payment extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Define the $data variable for the queries
-        $data = array(
-            'sort' => array(
-                array($sortOn, $sortOrder)
-            ),
+        $data = [
+            'sort'      => [
+                [$sortOn, $sortOrder],
+            ],
             'keywords'  => $keywords,
-            'cbFilters' => $aCbFilters
-        );
+            'cbFilters' => $aCbFilters,
+        ];
 
         //  Get the items for the page
         $totalRows                   = $oPaymentModel->countAll($data);
@@ -183,11 +184,16 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        $oUri          = Factory::service('Uri');
         $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
 
         // --------------------------------------------------------------------------
 
-        $this->data['payment'] = $oPaymentModel->getById($this->uri->segment(5), array('includeAll' => true));
+        $this->data['payment'] = $oPaymentModel->getById(
+            $oUri->segment(5),
+            ['expand' => $oPaymentModel::EXPAND_ALL]
+        );
+
         if (!$this->data['payment']) {
             show_404();
         }
@@ -211,11 +217,13 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        $oUri          = Factory::service('Uri');
+        $oInput        = Factory::service('Input');
         $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $iPaymentId    = $this->uri->segment(5);
-        $sAmount       = $this->input->post('amount') ?: null;
-        $sReason       = $this->input->post('reason') ?: null;
-        $sRedirect     = urldecode($this->input->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
+        $iPaymentId    = $oUri->segment(5);
+        $sAmount       = $oInput->post('amount') ?: null;
+        $sReason       = $oInput->post('reason') ?: null;
+        $sRedirect     = urldecode($oInput->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
 
         try {
 

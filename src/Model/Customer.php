@@ -26,45 +26,15 @@ class Customer extends Base
         $this->table             = NAILS_DB_PREFIX . 'invoice_customer';
         $this->defaultSortColumn = 'first_name';
         $this->destructiveDelete = false;
-    }
 
-    // --------------------------------------------------------------------------
-
-    /**
-     * Retrieve all customers from the databases
-     *
-     * @param  int     $iPage           The page number to return
-     * @param  int     $iPerPage        The number of results per page
-     * @param  array   $aData           Data to pass to getCountCommon()
-     * @param  boolean $bIncludeDeleted Whether to include deleted results
-     *
-     * @return array
-     */
-    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
-    {
-        //  If the first value is an array then treat as if called with getAll(null, null, $aData);
-        //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
-        if (is_array($iPage)) {
-            $aData = $iPage;
-            $iPage = null;
-        }
-
-        $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
-
-        if (!empty($aItems)) {
-
-            if (!empty($aData['includeAll']) || !empty($aData['includeInvoices'])) {
-                $this->getManyAssociatedItems(
-                    $aItems,
-                    'invoices',
-                    'customer_id',
-                    'Invoice',
-                    'nailsapp/module-invoice'
-                );
-            }
-        }
-
-        return $aItems;
+        $this->addExpandableField([
+            'trigger'   => 'invoices',
+            'type'      => self::EXPANDABLE_TYPE_MANY,
+            'property'  => 'invoices',
+            'model'     => 'Invoice',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'customer_id',
+        ]);
     }
 
     // --------------------------------------------------------------------------

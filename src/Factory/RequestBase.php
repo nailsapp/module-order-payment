@@ -65,7 +65,7 @@ class RequestBase
         }
 
         if (empty($oDriver)) {
-            throw new RequestException('"' . $sDriverSlug . '" is not a valid payment driver.', 1);
+            throw new RequestException('"' . $sDriverSlug . '" is not a valid payment driver.');
         }
 
         $this->oDriver = $oDriver;
@@ -85,10 +85,13 @@ class RequestBase
     public function setInvoice($iInvoiceId)
     {
         //  Validate
-        $oInvoice = $this->oInvoiceModel->getById($iInvoiceId, ['includeAll' => true]);
+        $oInvoice = $this->oInvoiceModel->getById(
+            $iInvoiceId,
+            ['expand' => $this->oInvoiceModel::EXPAND_ALL]
+        );
 
         if (empty($oInvoice)) {
-            throw new RequestException('Invalid invoice ID.', 1);
+            throw new RequestException('Invalid invoice ID.');
         }
 
         $this->oInvoice = $oInvoice;
@@ -108,10 +111,13 @@ class RequestBase
     public function setPayment($iPaymentId)
     {
         //  Validate
-        $oPayment = $this->oPaymentModel->getById($iPaymentId, ['includeInvoice' => true]);
+        $oPayment = $this->oPaymentModel->getById(
+            $iPaymentId,
+            ['expand' => ['invoice']]
+        );
 
         if (empty($oPayment)) {
-            throw new RequestException('Invalid payment ID.', 1);
+            throw new RequestException('Invalid payment ID.');
         }
 
         $this->oPayment = $oPayment;
@@ -134,7 +140,7 @@ class RequestBase
         $oRefund = $this->oRefundModel->getById($iRefundId);
 
         if (empty($oRefund)) {
-            throw new RequestException('Invalid refund ID.', 1);
+            throw new RequestException('Invalid refund ID.');
         }
 
         $this->oRefund = $oRefund;
@@ -156,7 +162,7 @@ class RequestBase
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
-            throw new RequestException('No payment selected.', 1);
+            throw new RequestException('No payment selected.');
         }
 
         //  Update the payment
@@ -167,7 +173,7 @@ class RequestBase
         }
 
         if (!$this->oPaymentModel->setComplete($this->oPayment->id, $aData)) {
-            throw new RequestException('Failed to update existing payment.', 1);
+            throw new RequestException('Failed to update existing payment.');
         }
 
         //  Has the invoice been paid in full? If so, mark it as paid and fire the invoice.paid.processing event
@@ -175,7 +181,7 @@ class RequestBase
 
             //  Mark Invoice as PAID_PROCESSING
             if (!$this->oInvoiceModel->setPaidProcessing($this->oInvoice->id)) {
-                throw new RequestException('Failed to mark invoice as paid (processing).', 1);
+                throw new RequestException('Failed to mark invoice as paid (processing).');
             }
         }
 
@@ -199,12 +205,12 @@ class RequestBase
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
-            throw new RequestException('No payment selected.', 1);
+            throw new RequestException('No payment selected.');
         }
 
         //  Ensure we have an invoice
         if (empty($this->oInvoice)) {
-            throw new RequestException('No invoice selected.', 1);
+            throw new RequestException('No invoice selected.');
         }
 
         //  Update the payment
@@ -215,7 +221,7 @@ class RequestBase
         }
 
         if (!$this->oPaymentModel->setComplete($this->oPayment->id, $aData)) {
-            throw new RequestException('Failed to update existing payment.', 1);
+            throw new RequestException('Failed to update existing payment.');
         }
 
         //  Has the invoice been paid in full? If so, mark it as paid and fire the invoice.paid event
@@ -223,7 +229,7 @@ class RequestBase
 
             //  Mark Invoice as PAID
             if (!$this->oInvoiceModel->setPaid($this->oInvoice->id)) {
-                throw new RequestException('Failed to mark invoice as paid.', 1);
+                throw new RequestException('Failed to mark invoice as paid.');
             }
         }
 
@@ -248,7 +254,7 @@ class RequestBase
     {
         //  Ensure we have a payment
         if (empty($this->oRefund)) {
-            throw new RequestException('No refund selected.', 1);
+            throw new RequestException('No refund selected.');
         }
 
         //  Update the refund
@@ -259,7 +265,7 @@ class RequestBase
         }
 
         if (!$this->oRefundModel->setComplete($this->oRefund->id, $aData)) {
-            throw new RequestException('Failed to update existing refund.', 1);
+            throw new RequestException('Failed to update existing refund.');
         }
 
         // Update the associated payment, if the payment is fully refunded then mark it so

@@ -12,10 +12,10 @@
 
 namespace Nails\Admin\Invoice;
 
-use Nails\Factory;
 use Nails\Admin\Helper;
-use Nails\Invoice\Controller\BaseAdmin;
 use Nails\Common\Exception\NailsException;
+use Nails\Factory;
+use Nails\Invoice\Controller\BaseAdmin;
 
 class Customer extends BaseAdmin
 {
@@ -88,36 +88,37 @@ class Customer extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        $oInput         = Factory::service('Input');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-        $sTableAlias   = $oCustomerModel->getTableAlias();
+        $sTableAlias    = $oCustomerModel->getTableAlias();
 
         //  Get pagination and search/sort variables
-        $page      = $this->input->get('page')      ? $this->input->get('page')      : 0;
-        $perPage   = $this->input->get('perPage')   ? $this->input->get('perPage')   : 50;
-        $sortOn    = $this->input->get('sortOn')    ? $this->input->get('sortOn')    : $sTableAlias . '.organisation';
-        $sortOrder = $this->input->get('sortOrder') ? $this->input->get('sortOrder') : 'asc';
-        $keywords  = $this->input->get('keywords')  ? $this->input->get('keywords')  : '';
+        $page      = $oInput->get('page') ? $oInput->get('page') : 0;
+        $perPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
+        $sortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.organisation';
+        $sortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'asc';
+        $keywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
 
         // --------------------------------------------------------------------------
 
         //  Define the sortable columns
-        $sortColumns = array(
+        $sortColumns = [
             $sTableAlias . '.organisation' => 'Organisation',
             $sTableAlias . '.first_name'   => 'Customer Name',
             $sTableAlias . '.created'      => 'Created Date',
-            $sTableAlias . '.modified'     => 'Last Modified Date'
-        );
+            $sTableAlias . '.modified'     => 'Last Modified Date',
+        ];
 
         // --------------------------------------------------------------------------
 
         //  Define the $data variable for the queries
-        $data = array(
-            'includeInvoices' => true,
-            'sort' => array(
-                array($sortOn, $sortOrder)
-            ),
-            'keywords'  => $keywords
-        );
+        $data = [
+            'expand'   => ['invoices'],
+            'sort'     => [
+                [$sortOn, $sortOrder],
+            ],
+            'keywords' => $keywords,
+        ];
 
         //  Get the items for the page
         $totalRows               = $oCustomerModel->countAll($data);
@@ -155,19 +156,19 @@ class Customer extends BaseAdmin
             unauthorised();
         }
 
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-
-        if ($this->input->post()) {
+        $oInput = Factory::service('Input');
+        if ($oInput->post()) {
 
             try {
 
                 $this->formValidation();
-
+                $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
                 if (!$oCustomerModel->create($this->prepPostData())) {
                     throw new NailsException('Failed to create item. ' . $oCustomerModel->lastError(), 1);
                 }
 
-                $this->session->set_flashdata('success', 'Item created successfully.');
+                $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                $oSession->setFlashData('success', 'Item created successfully.');
                 redirect('admin/invoice/customer');
 
             } catch (\Exception $e) {
@@ -192,16 +193,22 @@ class Customer extends BaseAdmin
         }
 
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oUri           = Factory::service('Uri');
 
-        $itemId             = (int) $this->uri->segment(5);
-        $this->data['item'] = $oCustomerModel->getById($itemId, array('includeAll' => true));
+        $itemId             = (int) $oUri->segment(5);
+        $this->data['item'] = $oCustomerModel->getById(
+            $itemId,
+            ['expand' => $oCustomerModel::EXPAND_ALL]
+        );
+
         if (empty($this->data['item'])) {
             show_404();
         }
 
         // --------------------------------------------------------------------------
 
-        if ($this->input->post()) {
+        $oInput = Factory::service('Input');
+        if ($oInput->post()) {
 
             try {
 
@@ -211,7 +218,8 @@ class Customer extends BaseAdmin
                     throw new NailsException('Failed to update item. ' . $oCustomerModel->lastError(), 1);
                 }
 
-                $this->session->set_flashdata('success', 'Item updated successfully.');
+                $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                $oSession->setFlashData('success', 'Item updated successfully.');
                 redirect('admin/invoice/customer');
 
             } catch (\Exception $e) {
@@ -233,7 +241,7 @@ class Customer extends BaseAdmin
      */
     protected function formValidation()
     {
-        $aRules = array(
+        $aRules = [
             'first_name'               => 'max_length[255]',
             'last_name'                => 'max_length[255]',
             'organisation'             => 'max_length[255]',
@@ -246,9 +254,8 @@ class Customer extends BaseAdmin
             'billing_address_town'     => 'max_length[255]',
             'billing_address_county'   => 'max_length[255]',
             'billing_address_postcode' => 'max_length[255]',
-            'billing_address_country'  => 'max_length[255]'
-        );
-
+            'billing_address_country'  => 'max_length[255]',
+        ];
 
         $oFormValidation = Factory::service('FormValidation');
         foreach ($aRules as $sKey => $sRule) {
@@ -264,9 +271,10 @@ class Customer extends BaseAdmin
         }
 
         //  First/Last name is required if no organisation is provided
-        $sOrganisation = $this->input->post('organisation');
-        $sFirstName    = $this->input->post('first_name');
-        $sLastName     = $this->input->post('last_name');
+        $oInput        = Factory::service('Input');
+        $sOrganisation = $oInput->post('organisation');
+        $sFirstName    = $oInput->post('first_name');
+        $sLastName     = $oInput->post('last_name');
         if (empty($sOrganisation) && (empty($sFirstName) || empty($sLastName))) {
             throw new NailsException('First name and surname are required if not providing an organisation.', 1);
         }
@@ -280,21 +288,22 @@ class Customer extends BaseAdmin
      */
     protected function prepPostData()
     {
-        $aData = array(
-            'first_name'               => trim(strip_tags($this->input->post('first_name'))),
-            'last_name'                => trim(strip_tags($this->input->post('last_name'))),
-            'organisation'             => trim(strip_tags($this->input->post('organisation'))),
-            'email'                    => trim(strip_tags($this->input->post('email'))),
-            'billing_email'            => trim(strip_tags($this->input->post('billing_email'))),
-            'telephone'                => trim(strip_tags($this->input->post('telephone'))),
-            'vat_number'               => trim(strip_tags($this->input->post('vat_number'))),
-            'billing_address_line_1'   => trim(strip_tags($this->input->post('billing_address_line_1'))),
-            'billing_address_line_2'   => trim(strip_tags($this->input->post('billing_address_line_2'))),
-            'billing_address_town'     => trim(strip_tags($this->input->post('billing_address_town'))),
-            'billing_address_county'   => trim(strip_tags($this->input->post('billing_address_county'))),
-            'billing_address_postcode' => trim(strip_tags($this->input->post('billing_address_postcode'))),
-            'billing_address_country'  => trim(strip_tags($this->input->post('billing_address_country')))
-        );
+        $oInput = Factory::service('Input');
+        $aData  = [
+            'first_name'               => trim(strip_tags($oInput->post('first_name'))),
+            'last_name'                => trim(strip_tags($oInput->post('last_name'))),
+            'organisation'             => trim(strip_tags($oInput->post('organisation'))),
+            'email'                    => trim(strip_tags($oInput->post('email'))),
+            'billing_email'            => trim(strip_tags($oInput->post('billing_email'))),
+            'telephone'                => trim(strip_tags($oInput->post('telephone'))),
+            'vat_number'               => trim(strip_tags($oInput->post('vat_number'))),
+            'billing_address_line_1'   => trim(strip_tags($oInput->post('billing_address_line_1'))),
+            'billing_address_line_2'   => trim(strip_tags($oInput->post('billing_address_line_2'))),
+            'billing_address_town'     => trim(strip_tags($oInput->post('billing_address_town'))),
+            'billing_address_county'   => trim(strip_tags($oInput->post('billing_address_county'))),
+            'billing_address_postcode' => trim(strip_tags($oInput->post('billing_address_postcode'))),
+            'billing_address_country'  => trim(strip_tags($oInput->post('billing_address_country'))),
+        ];
 
         return $aData;
     }
@@ -313,9 +322,12 @@ class Customer extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        $oUri           = Factory::service('Uri');
         $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
-
-        $oCustomer = $oCustomerModel->getById($this->uri->segment(5), array('includeInvoices' => true));
+        $oCustomer      = $oCustomerModel->getById(
+            $oUri->segment(5),
+            ['expand' => ['invoices']]
+        );
         if (!$oCustomer) {
             show_404();
         }
@@ -339,7 +351,8 @@ class Customer extends BaseAdmin
             }
         }
 
-        $this->session->set_flashdata($sStatus, $sMessage);
+        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession->setFlashData($sStatus, $sMessage);
         redirect('admin/invoice/customer/index');
     }
 }

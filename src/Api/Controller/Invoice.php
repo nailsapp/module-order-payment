@@ -35,7 +35,7 @@ class Invoice extends Base
             throw new ApiException('Search term must be 3 characters or longer.', 400);
         }
 
-        $oResult = $oInvoiceModel->search($sKeywords, null, null, ['includeCustomer' => true]);
+        $oResult = $oInvoiceModel->search($sKeywords, null, null, ['expand' => ['customer']]);
         $aOut    = [];
 
         foreach ($oResult->data as $oInvoice) {
@@ -65,7 +65,7 @@ class Invoice extends Base
         }
 
         $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoice      = $oInvoiceModel->getById($iId, ['includeCustomer' => true]);
+        $oInvoice      = $oInvoiceModel->getById($iId, ['expand' => ['customer']]);
 
         if (empty($oInvoice)) {
             throw new ApiException('Invalid Invoice ID', 404);

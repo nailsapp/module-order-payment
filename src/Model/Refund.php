@@ -44,6 +44,23 @@ class Refund extends Base
         $this->tableAlias        = 'pr';
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
+
+        $this->addExpandableField([
+            'trigger'   => 'invoice',
+            'type'      => self::EXPANDABLE_TYPE_SINGLE,
+            'property'  => 'invoice',
+            'model'     => 'Invoice',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'invoice_id',
+        ]);
+        $this->addExpandableField([
+            'trigger'   => 'payment',
+            'type'      => self::EXPANDABLE_TYPE_SINGLE,
+            'property'  => 'payment',
+            'model'     => 'Payment',
+            'provider'  => 'nailsapp/module-invoice',
+            'id_column' => 'payment_id',
+        ]);
     }
 
     // --------------------------------------------------------------------------
@@ -76,59 +93,6 @@ class Refund extends Base
             self::STATUS_COMPLETE   => 'Complete',
             self::STATUS_FAILED     => 'Failed',
         ];
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Retrieve all payments from the databases
-     *
-     * @param  int     $iPage           The page number to return
-     * @param  int     $iPerPage        The number of results per page
-     * @param  array   $aData           Data to pass _to getcount_common()
-     * @param  boolean $bIncludeDeleted Whether to include deleted results
-     *
-     * @return array
-     */
-    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
-    {
-        //  If the first value is an array then treat as if called with getAll(null, null, $aData);
-        //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
-        if (is_array($iPage)) {
-            $aData = $iPage;
-            $iPage = null;
-        }
-
-        $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
-
-        if (!empty($aItems)) {
-
-            if (!empty($aData['includeAll']) || !empty($aData['includeInvoice'])) {
-                $this->getSingleAssociatedItem(
-                    $aItems,
-                    'invoice_id',
-                    'invoice',
-                    'Invoice',
-                    'nailsapp/module-invoice',
-                    [
-                        'includeCustomer' => true,
-                        'includeItems'    => true,
-                    ]
-                );
-            }
-
-            if (!empty($aData['includeAll']) || !empty($aData['includePayment'])) {
-                $this->getSingleAssociatedItem(
-                    $aItems,
-                    'payment_id',
-                    'payment',
-                    'Payment',
-                    'nailsapp/module-invoice'
-                );
-            }
-        }
-
-        return $aItems;
     }
 
     // --------------------------------------------------------------------------
@@ -314,6 +278,13 @@ class Refund extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Sends refund receipt email
+     *
+     * @param  integer $iRefundId      The ID of the refund
+     * @param  string  $sEmailOverride The email address to send the email to
+     * @return bool
+     */
     public function sendReceipt($iRefundId, $sEmailOverride = null)
     {
         try {
@@ -449,11 +420,11 @@ class Refund extends Base
         ];
 
         //  Fee
-        $oObj->fee = (object) array(
+        $oObj->fee = (object) [
             'raw'       => $oObj->fee,
             'formatted' => $this->oCurrency->format(
                 $oCurrency->code, $oObj->fee / pow(10, $oCurrency->decimal_precision)
             ),
-        );
+        ];
     }
 }

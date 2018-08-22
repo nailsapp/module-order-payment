@@ -12,8 +12,8 @@
 
 namespace Nails\Admin\Invoice;
 
-use Nails\Factory;
 use Nails\Admin\Helper;
+use Nails\Factory;
 use Nails\Invoice\Controller\BaseAdmin;
 
 class Invoice extends BaseAdmin
@@ -157,13 +157,12 @@ class Invoice extends BaseAdmin
 
         //  Define the $data variable for the queries
         $data = [
-            'sort'            => [
+            'sort'      => [
                 [$sortOn, $sortOrder],
             ],
-            'includeCustomer' => true,
-            'includePayments' => true,
-            'keywords'        => $keywords,
-            'cbFilters'       => $aCbFilters,
+            'expand'    => ['customer', 'payments'],
+            'keywords'  => $keywords,
+            'cbFilters' => $aCbFilters,
         ];
 
         //  Get the items for the page
@@ -320,7 +319,10 @@ class Invoice extends BaseAdmin
         $oInput = Factory::service('Input');
 
         $iInvoiceId            = (int) $oUri->segment(5);
-        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, ['includeAll' => true]);
+        $this->data['invoice'] = $this->oInvoiceModel->getById(
+            $iInvoiceId,
+            ['expand' => $this->oInvoiceModel::EXPAND_ALL]
+        );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
             show_404();
@@ -399,9 +401,9 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oCurrency                 = Factory::service('Currency', 'nailsapp/module-currency');
-        $aCurrencies               = $oCurrency->getAllEnabled();
-        $this->data['currencies']  = $aCurrencies;
+        $oCurrency                = Factory::service('Currency', 'nailsapp/module-currency');
+        $aCurrencies              = $oCurrency->getAllEnabled();
+        $this->data['currencies'] = $aCurrencies;
         //  A customer ID can be specified when creating an invoice; this prevents undefined var errors
         $this->data['customer_id'] = null;
 
@@ -439,7 +441,10 @@ class Invoice extends BaseAdmin
 
         $oUri                  = Factory::service('Uri');
         $iInvoiceId            = (int) $oUri->segment(5);
-        $this->data['invoice'] = $this->oInvoiceModel->getById($iInvoiceId, ['includeAll' => true]);
+        $this->data['invoice'] = $this->oInvoiceModel->getById(
+            $iInvoiceId,
+            ['expand' => $this->oInvoiceModel::EXPAND_ALL]
+        );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {
             show_404();

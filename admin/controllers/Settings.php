@@ -44,13 +44,13 @@ class Settings extends BaseAdmin
      */
     public static function permissions()
     {
-        $permissions = parent::permissions();
+        $aPermissions = parent::permissions();
 
-        $permissions['misc']        = 'Can update miscallaneous settings';
-        $permissions['driver']      = 'Can update driver settings';
-        $permissions['invoiceskin'] = 'Can update the invoice skin';
+        $aPermissions['misc']        = 'Can update miscallaneous settings';
+        $aPermissions['driver']      = 'Can update driver settings';
+        $aPermissions['invoiceskin'] = 'Can update the invoice skin';
 
-        return $permissions;
+        return $aPermissions;
     }
 
     // --------------------------------------------------------------------------
@@ -65,13 +65,14 @@ class Settings extends BaseAdmin
             unauthorised();
         }
 
+        $oInput              = Factory::service('Input');
         $oDb                 = Factory::service('Database');
         $oAppSettingModel    = Factory::model('AppSetting');
         $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
         $oInvoiceSkinModel   = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
 
         //  Process POST
-        if ($this->input->post()) {
+        if ($oInput->post()) {
 
             //  Settings keys
             $sKeyPaymentDriver = $oPaymentDriverModel->getSettingKey();
@@ -100,15 +101,15 @@ class Settings extends BaseAdmin
                 try {
 
                     $aSettings = array(
-                        'business_name'           => trim(strip_tags($this->input->post('business_name'))),
-                        'business_address'        => trim(strip_tags($this->input->post('business_address'))),
-                        'business_phone'          => trim(strip_tags($this->input->post('business_phone'))),
-                        'business_email'          => trim(strip_tags($this->input->post('business_email'))),
-                        'business_vat_number'     => trim(strip_tags($this->input->post('business_vat_number'))),
-                        'default_additional_text' => trim(strip_tags($this->input->post('default_additional_text'))),
-                        'default_payment_terms'   => (int) $this->input->post('default_payment_terms'),
-                        'saved_cards_enabled'     => (bool) $this->input->post('saved_cards_enabled'),
-                        'saved_addresses_enabled' => (bool) $this->input->post('saved_addresses_enabled')
+                        'business_name'           => trim(strip_tags($oInput->post('business_name'))),
+                        'business_address'        => trim(strip_tags($oInput->post('business_address'))),
+                        'business_phone'          => trim(strip_tags($oInput->post('business_phone'))),
+                        'business_email'          => trim(strip_tags($oInput->post('business_email'))),
+                        'business_vat_number'     => trim(strip_tags($oInput->post('business_vat_number'))),
+                        'default_additional_text' => trim(strip_tags($oInput->post('default_additional_text'))),
+                        'default_payment_terms'   => (int) $oInput->post('default_payment_terms'),
+                        'saved_cards_enabled'     => (bool) $oInput->post('saved_cards_enabled'),
+                        'saved_addresses_enabled' => (bool) $oInput->post('saved_addresses_enabled')
                     );
 
                     $oDb->trans_begin();
@@ -119,20 +120,18 @@ class Settings extends BaseAdmin
                     }
 
                     //  Drivers & Skins
-                    $oPaymentDriverModel->saveEnabled($this->input->post($sKeyPaymentDriver));
-                    $oInvoiceSkinModel->saveEnabled($this->input->post($sKeyInvoiceSkin));
+                    $oPaymentDriverModel->saveEnabled($oInput->post($sKeyPaymentDriver));
+                    $oInvoiceSkinModel->saveEnabled($oInput->post($sKeyInvoiceSkin));
 
                     $oDb->trans_commit();
                     $this->data['success'] = 'Invoice &amp; Payment settings were saved.';
 
                 } catch (\Exception $e) {
-
                     $oDb->trans_rollback();
                     $this->data['error'] = 'There was a problem saving settings. ' . $e->getMessage();
                 }
 
             } else {
-
                 $this->data['error'] = lang('fv_there_were_errors');
             }
         }

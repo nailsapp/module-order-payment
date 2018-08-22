@@ -169,7 +169,6 @@ class Invoice extends Base
     public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
-        //  @todo (Pablo - 2017-11-09) - Convert these to expandable fields
         if (is_array($iPage)) {
             $aData = $iPage;
             $iPage = null;
@@ -226,35 +225,6 @@ class Invoice extends Base
                 $this->getTableAlias() . '.modified',
                 $this->getTableAlias() . '.modified_by',
             ];
-        }
-
-        //  @todo (Pablo - 2018-05-22) - Backwards compatability
-        if (empty($aData['expand'])) {
-            $aData['expand'] = [];
-        }
-
-        if (!empty($aData['includeAll'])) {
-            $aData['expand'] = static::EXPAND_ALL;
-        }
-
-        if (!empty($aData['includeCustomer'])) {
-            $aData['expand'][] = 'customer';
-        }
-
-        if (!empty($aData['includeEmails'])) {
-            $aData['expand'][] = 'emails';
-        }
-
-        if (!empty($aData['includePayments'])) {
-            $aData['expand'][] = 'payments';
-        }
-
-        if (!empty($aData['includeRefunds'])) {
-            $aData['expand'][] = 'refunds';
-        }
-
-        if (!empty($aData['includeItems'])) {
-            $aData['expand'][] = 'items';
         }
 
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
@@ -970,7 +940,7 @@ class Invoice extends Base
 
         $oPEH->trigger(
             $oClass->getConstant($sEvent),
-            $this->getById($iInvoiceId, ['includeAll' => true])
+            $this->getById($iInvoiceId, ['expand' => static::EXPAND_ALL])
         );
     }
 
