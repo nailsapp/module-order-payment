@@ -433,7 +433,7 @@ class Payment extends Base
     {
         try {
 
-            $oPayment = $this->getById($iPaymentId, ['includeInvoice' => true]);
+            $oPayment = $this->getById($iPaymentId, ['expand' => ['invoice']]);
 
             if (empty($oPayment)) {
                 throw new PaymentException('Invalid Payment ID', 1);
@@ -524,7 +524,7 @@ class Payment extends Base
         try {
 
             //  Validate payment
-            $oPayment = $this->getById($iPaymentId, ['includeInvoice' => true]);
+            $oPayment = $this->getById($iPaymentId, ['expand' => ['invoice']]);
             if (!$oPayment) {
                 throw new PaymentException('Invalid payment ID.', 1);
             }

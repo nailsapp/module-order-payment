@@ -289,7 +289,7 @@ class Refund extends Base
     {
         try {
 
-            $oRefund = $this->getById($iRefundId, ['includeInvoice' => true, 'includePayment' => true]);
+            $oRefund = $this->getById($iRefundId, ['expand' => ['invoice', 'payment']]);
 
             if (empty($oRefund)) {
                 throw new PaymentException('Invalid Payment ID', 1);
