@@ -940,7 +940,7 @@ class Invoice extends Base
 
         $oPEH->trigger(
             $oClass->getConstant($sEvent),
-            $this->getById($iInvoiceId, ['expand' => static::EXPAND_ALL])
+            $this->getById($iInvoiceId, ['expand' => ['customer', 'items']])
         );
     }
 
