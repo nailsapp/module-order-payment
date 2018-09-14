@@ -31,7 +31,7 @@ class Customer extends BaseAdmin
     {
         if (userHasPermission('admin:invoice:customer:manage')) {
 
-            $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+            $oNavGroup = Factory::factory('Nav', 'nails/module-admin');
             $oNavGroup->setLabel('Invoices &amp; Payments');
             $oNavGroup->setIcon('fa-credit-card');
             $oNavGroup->addAction('Manage Customers');
@@ -66,7 +66,7 @@ class Customer extends BaseAdmin
     public function __construct()
     {
         parent::__construct();
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -89,7 +89,7 @@ class Customer extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oInput         = Factory::service('Input');
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $sTableAlias    = $oCustomerModel->getTableAlias();
 
         //  Get pagination and search/sort variables
@@ -162,12 +162,12 @@ class Customer extends BaseAdmin
             try {
 
                 $this->formValidation();
-                $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+                $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
                 if (!$oCustomerModel->create($this->prepPostData())) {
                     throw new NailsException('Failed to create item. ' . $oCustomerModel->lastError(), 1);
                 }
 
-                $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                $oSession = Factory::service('Session', 'nails/module-auth');
                 $oSession->setFlashData('success', 'Item created successfully.');
                 redirect('admin/invoice/customer');
 
@@ -192,7 +192,7 @@ class Customer extends BaseAdmin
             unauthorised();
         }
 
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $oUri           = Factory::service('Uri');
 
         $itemId             = (int) $oUri->segment(5);
@@ -218,7 +218,7 @@ class Customer extends BaseAdmin
                     throw new NailsException('Failed to update item. ' . $oCustomerModel->lastError(), 1);
                 }
 
-                $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                $oSession = Factory::service('Session', 'nails/module-auth');
                 $oSession->setFlashData('success', 'Item updated successfully.');
                 redirect('admin/invoice/customer');
 
@@ -323,7 +323,7 @@ class Customer extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oUri           = Factory::service('Uri');
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $oCustomer      = $oCustomerModel->getById(
             $oUri->segment(5),
             ['expand' => ['invoices']]
@@ -351,7 +351,7 @@ class Customer extends BaseAdmin
             }
         }
 
-        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
         redirect('admin/invoice/customer/index');
     }

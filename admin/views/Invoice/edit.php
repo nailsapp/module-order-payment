@@ -80,7 +80,7 @@
         $aField = array(
             'key'         => 'terms',
             'label'       => 'Payment Terms',
-            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', 'nailsapp/module-invoice') ?: '',
+            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', 'nails/module-invoice') ?: '',
             'info'        => '<span data-bind="html: termsText()"></span>',
             'id'          => 'invoice-terms',
             'placeholder' => 'Leave blank to set the invoice to be due on receipt',
@@ -96,7 +96,7 @@
             'key'         => 'additional_text',
             'label'       => 'Additional Text',
             'placeholder' => 'Any additional text you\'d like to show on the invoice',
-            'default'     => !empty($invoice->additional_text) ? $invoice->additional_text : appSetting('default_additional_text', 'nailsapp/module-invoice')
+            'default'     => !empty($invoice->additional_text) ? $invoice->additional_text : appSetting('default_additional_text', 'nails/module-invoice')
         );
         echo form_field_textarea($aField);
 

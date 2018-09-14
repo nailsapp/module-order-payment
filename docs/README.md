@@ -1,4 +1,4 @@
-# Docs for `nailsapp/module-invoice`
+# Docs for `nails/module-invoice`
 > Documentation is a WIP.
 
 

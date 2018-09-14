@@ -34,11 +34,11 @@ class RequestBase
      */
     public function __construct()
     {
-        $this->oDriverModel         = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
-        $this->oInvoiceModel        = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $this->oPaymentModel        = Factory::model('Payment', 'nailsapp/module-invoice');
-        $this->oRefundModel         = Factory::model('Refund', 'nailsapp/module-invoice');
-        $this->oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+        $this->oDriverModel         = Factory::model('PaymentDriver', 'nails/module-invoice');
+        $this->oInvoiceModel        = Factory::model('Invoice', 'nails/module-invoice');
+        $this->oPaymentModel        = Factory::model('Payment', 'nails/module-invoice');
+        $this->oRefundModel         = Factory::model('Refund', 'nails/module-invoice');
+        $this->oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
     }
 
     // --------------------------------------------------------------------------

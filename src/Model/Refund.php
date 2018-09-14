@@ -43,14 +43,14 @@ class Refund extends Base
         $this->table             = NAILS_DB_PREFIX . 'invoice_refund';
         $this->tableAlias        = 'pr';
         $this->defaultSortColumn = 'created';
-        $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
+        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
 
         $this->addExpandableField([
             'trigger'   => 'invoice',
             'type'      => self::EXPANDABLE_TYPE_SINGLE,
             'property'  => 'invoice',
             'model'     => 'Invoice',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'invoice_id',
         ]);
         $this->addExpandableField([
@@ -58,7 +58,7 @@ class Refund extends Base
             'type'      => self::EXPANDABLE_TYPE_SINGLE,
             'property'  => 'payment',
             'model'     => 'Payment',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'payment_id',
         ]);
     }
@@ -126,7 +126,7 @@ class Refund extends Base
             $oDb->trans_commit();
 
             //  Trigger the payment.refund.created event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
             $sPaymentClass        = get_class($oPaymentEventHandler);
 
             $oPaymentEventHandler->trigger($sPaymentClass::EVENT_PAYMENT_REFUND_CREATED, $oRefund);
@@ -170,7 +170,7 @@ class Refund extends Base
             $oDb->trans_commit();
 
             //  Trigger the payment.updated event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
             $sPaymentClass        = get_class($oPaymentEventHandler);
 
             $oPaymentEventHandler->trigger(
@@ -335,8 +335,8 @@ class Refund extends Base
             $aEmails = array_unique($aEmails);
             $aEmails = array_filter($aEmails);
 
-            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
+            $oEmailer           = Factory::service('Emailer', 'nails/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nails/module-invoice');
 
             foreach ($aEmails as $sEmail) {
 

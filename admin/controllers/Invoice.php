@@ -32,7 +32,7 @@ class Invoice extends BaseAdmin
     {
         if (userHasPermission('admin:invoice:invoice:manage')) {
 
-            $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+            $oNavGroup = Factory::factory('Nav', 'nails/module-admin');
             $oNavGroup->setLabel('Invoices &amp; Payments');
             $oNavGroup->setIcon('fa-credit-card');
             $oNavGroup->addAction('Manage Invoices', 'index', [], 0);
@@ -68,9 +68,9 @@ class Invoice extends BaseAdmin
     {
         parent::__construct();
 
-        $this->oInvoiceModel     = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $this->oInvoiceItemModel = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
-        $this->oTaxModel         = Factory::model('Tax', 'nailsapp/module-invoice');
+        $this->oInvoiceModel     = Factory::model('Invoice', 'nails/module-invoice');
+        $this->oInvoiceItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
+        $this->oTaxModel         = Factory::model('Tax', 'nails/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -135,7 +135,7 @@ class Invoice extends BaseAdmin
         );
 
         //  Currencies
-        $oCurrency        = Factory::service('Currency', 'nailsapp/module-currency');
+        $oCurrency        = Factory::service('Currency', 'nails/module-currency');
         $aCurrencyOptions = [];
         $aCurrencies      = $oCurrency->getAllEnabled();
 
@@ -220,7 +220,7 @@ class Invoice extends BaseAdmin
                     //  Send invoice if needed
                     $this->sendInvoice($oInvoice);
 
-                    $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                    $oSession = Factory::service('Session', 'nails/module-auth');
                     $oSession->setFlashData('success', 'Invoice created successfully.');
 
                     redirect('admin/invoice/invoice/index');
@@ -277,14 +277,14 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oCurrency                = Factory::service('Currency', 'nailsapp/module-currency');
+        $oCurrency                = Factory::service('Currency', 'nails/module-currency');
         $aCurrencies              = $oCurrency->getAllEnabled();
         $this->data['currencies'] = $aCurrencies;
 
         // --------------------------------------------------------------------------
 
         $oAsset = Factory::service('Asset');
-        $oAsset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
+        $oAsset->load('invoice.edit.min.js', 'nails/module-invoice');
         $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
@@ -345,7 +345,7 @@ class Invoice extends BaseAdmin
                     $oInvoice = $this->oInvoiceModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
-                    $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                    $oSession = Factory::service('Session', 'nails/module-auth');
                     $oSession->setFlashData('success', 'Invoice was saved successfully.');
 
                     redirect('admin/invoice/invoice/index');
@@ -401,7 +401,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oCurrency                = Factory::service('Currency', 'nailsapp/module-currency');
+        $oCurrency                = Factory::service('Currency', 'nails/module-currency');
         $aCurrencies              = $oCurrency->getAllEnabled();
         $this->data['currencies'] = $aCurrencies;
         //  A customer ID can be specified when creating an invoice; this prevents undefined var errors
@@ -410,7 +410,7 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oAsset = Factory::service('Asset');
-        $oAsset->load('invoice.edit.min.js', 'nailsapp/module-invoice');
+        $oAsset->load('invoice.edit.min.js', 'nails/module-invoice');
         $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
@@ -453,7 +453,7 @@ class Invoice extends BaseAdmin
         $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
 
         $oAsset = Factory::service('Asset');
-        $oAsset->load('admin.invoice.view.min.js', 'nailsapp/module-invoice');
+        $oAsset->load('admin.invoice.view.min.js', 'nails/module-invoice');
 
         Helper::loadView('view');
     }
@@ -505,7 +505,7 @@ class Invoice extends BaseAdmin
         $oFormValidation = Factory::service('FormValidation');
         $oFormValidation->set_message('_callbackValidCurrency', 'Invalid currency.');
 
-        $oCurrency = Factory::service('Currency', 'nailsapp/module-currency');
+        $oCurrency = Factory::service('Currency', 'nails/module-currency');
         $aEnabled  = $oCurrency->getAllEnabled();
 
         foreach ($aEnabled as $oCurrency) {
@@ -625,7 +625,7 @@ class Invoice extends BaseAdmin
             $sMessage = 'Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError();
         }
 
-        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
@@ -664,7 +664,7 @@ class Invoice extends BaseAdmin
             $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
         }
 
-        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice/index');

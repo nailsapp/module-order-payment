@@ -45,7 +45,7 @@ class Payment extends Base
         $this->table             = NAILS_DB_PREFIX . 'invoice_payment';
         $this->tableAlias        = 'p';
         $this->defaultSortColumn = 'created';
-        $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
+        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
         $this->searchableFields  = ['id', 'ref', 'description', 'txn_id'];
 
         $this->addExpandableField([
@@ -53,7 +53,7 @@ class Payment extends Base
             'type'      => self::EXPANDABLE_TYPE_SINGLE,
             'property'  => 'invoice',
             'model'     => 'Invoice',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'invoice_id',
         ]);
         $this->addExpandableField([
@@ -61,7 +61,7 @@ class Payment extends Base
             'type'      => self::EXPANDABLE_TYPE_MANY,
             'property'  => 'refunds',
             'model'     => 'Refund',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'payment_id',
         ]);
     }
@@ -133,8 +133,8 @@ class Payment extends Base
     protected function getCountCommon(array $data = [])
     {
         $oDb           = Factory::service('Database');
-        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oRefundModel  = Factory::model('Refund', 'nailsapp/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $oRefundModel  = Factory::model('Refund', 'nails/module-invoice');
 
         $oDb->select($this->tableAlias . '.*, i.ref invoice_ref, i.state invoice_state');
 
@@ -210,7 +210,7 @@ class Payment extends Base
             $oDb->trans_commit();
 
             //  Trigger the payment.created event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
             $sPaymentClass        = get_class($oPaymentEventHandler);
 
             $oPaymentEventHandler->trigger($sPaymentClass::EVENT_PAYMENT_CREATED, $oPayment);
@@ -259,7 +259,7 @@ class Payment extends Base
             $oDb->trans_commit();
 
             //  Trigger the payment.updated event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
             $sPaymentClass        = get_class($oPaymentEventHandler);
 
             $oPaymentEventHandler->trigger(
@@ -483,8 +483,8 @@ class Payment extends Base
             $aEmails = array_unique($aEmails);
             $aEmails = array_filter($aEmails);
 
-            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
+            $oEmailer           = Factory::service('Emailer', 'nails/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nails/module-invoice');
 
             foreach ($aEmails as $sEmail) {
 
@@ -530,7 +530,7 @@ class Payment extends Base
             }
 
             //  Set up RefundRequest object
-            $oRefundRequest = Factory::factory('RefundRequest', 'nailsapp/module-invoice');
+            $oRefundRequest = Factory::factory('RefundRequest', 'nails/module-invoice');
 
             //  Set the driver to use for the request
             $oRefundRequest->setDriver($oPayment->driver->slug);
@@ -618,7 +618,7 @@ class Payment extends Base
         $oObj->status->label = !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus));
 
         //  Driver
-        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
+        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nails/module-invoice');
         $sDriver             = $oObj->driver;
         $oDriver             = $oPaymentDriverModel->getBySlug($sDriver);
 

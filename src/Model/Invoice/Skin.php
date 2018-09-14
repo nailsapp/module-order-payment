@@ -16,7 +16,7 @@ use Nails\Common\Model\BaseSkin;
 
 class Skin extends BaseSkin
 {
-    protected $sModule         = 'nailsapp/module-invoice';
+    protected $sModule         = 'nails/module-invoice';
     protected $sType           = 'invoice';
     protected $bEnableMultiple = false;
 }

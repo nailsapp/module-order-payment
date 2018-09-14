@@ -43,13 +43,13 @@ class Item extends Base
         parent::__construct();
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'order';
-        $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
+        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
         $this->addExpandableField([
             'trigger'     => 'tax',
             'type'        => self::EXPANDABLE_TYPE_SINGLE,
             'property'    => 'tax',
             'model'       => 'Tax',
-            'provider'    => 'nailsapp/module-invoice',
+            'provider'    => 'nails/module-invoice',
             'id_column'   => 'tax_id',
             'auto_expand' => true,
         ]);

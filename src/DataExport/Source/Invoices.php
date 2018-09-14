@@ -30,7 +30,7 @@ class Invoices implements Source
 
     public function getOptions()
     {
-        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
         return [
             [
                 'key'     => 'state',
@@ -74,8 +74,8 @@ class Invoices implements Source
     public function execute($aOptions = [])
     {
         $oDb               = Factory::service('Database');
-        $oInvoiceModel     = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oInvoiceItemModel = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
+        $oInvoiceModel     = Factory::model('Invoice', 'nails/module-invoice');
+        $oInvoiceItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
 
         $sState     = getFromArray('state', $aOptions);
         $sDateStart = getFromArray('date_start', $aOptions);
@@ -107,12 +107,12 @@ class Invoices implements Source
         }
 
         return [
-            Factory::factory('DataExportSourceResponse', 'nailsapp/module-admin')
+            Factory::factory('DataExportSourceResponse', 'nails/module-admin')
                    ->setLabel('Table: ' . $sTableInvoice)
                    ->setFilename('invoice')
                    ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoice)->result(), 'Field'))
                    ->setSource($oDb->query($sSqlInvoice)),
-            Factory::factory('DataExportSourceResponse', 'nailsapp/module-admin')
+            Factory::factory('DataExportSourceResponse', 'nails/module-admin')
                    ->setLabel('Table: ' . $sTableInvoiceItem)
                    ->setFilename('invoice_item')
                    ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoiceItem)->result(), 'Field'))

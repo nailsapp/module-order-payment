@@ -25,7 +25,7 @@ class Payment extends Base
      */
     protected function complete($oPayment)
     {
-        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
 
         $this->data['oPayment'] = $oPayment;
         $this->data['oInvoice'] = $oPayment->invoice;
@@ -49,7 +49,7 @@ class Payment extends Base
             try {
 
                 //  Set up CompleteRequest object
-                $oCompleteRequest = Factory::factory('CompleteRequest', 'nailsapp/module-invoice');
+                $oCompleteRequest = Factory::factory('CompleteRequest', 'nails/module-invoice');
 
                 //  Set the driver to use for the request
                 $oCompleteRequest->setDriver($oPayment->driver->slug);
@@ -95,7 +95,7 @@ class Payment extends Base
                 }
 
             } catch (\Exception $e) {
-                $oSession = Factory::service('Session', 'nailsapp/module-auth');
+                $oSession = Factory::service('Session', 'nails/module-auth');
                 $oSession->setFlashData('error', $e->getMessage());
                 redirect($oPayment->invoice->urls->payment);
             }
@@ -174,7 +174,7 @@ class Payment extends Base
         $iPaymentId    = (int) $oUri->rsegment(2);
         $sPaymentToken = $oUri->rsegment(3);
         $sMethod       = $oUri->rsegment(4);
-        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
         $oPayment      = $oPaymentModel->getById($iPaymentId, ['expand' => ['invoice']]);
 
         if (empty($oPayment) || $sPaymentToken !== $oPayment->token || !method_exists($this, $sMethod)) {

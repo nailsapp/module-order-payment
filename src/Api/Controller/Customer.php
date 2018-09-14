@@ -29,7 +29,7 @@ class Customer extends Base
 
         $oInput         = Factory::service('Input');
         $sKeywords      = $oInput->get('keywords');
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
 
         if (strlen($sKeywords) <= 3) {
             throw new ApiException('Search term must be 3 characters or longer.', 400);
@@ -42,7 +42,7 @@ class Customer extends Base
             $aOut[] = $this->formatCustomer($oCustomer);
         }
 
-        return Factory::factory('ApiResponse', 'nailsapp/module-api')
+        return Factory::factory('ApiResponse', 'nails/module-api')
                       ->setData($aOut);
     }
 
@@ -64,14 +64,14 @@ class Customer extends Base
             throw new ApiException('Invalid Customer ID', 404);
         }
 
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $oCustomer      = $oCustomerModel->getById($iId);
 
         if (empty($oCustomer)) {
             throw new ApiException('Invalid Customer ID', 404);
         }
 
-        return Factory::factory('ApiResponse', 'nailsapp/module-api')
+        return Factory::factory('ApiResponse', 'nails/module-api')
                       ->setData($this->formatCustomer($oCustomer));
     }
 

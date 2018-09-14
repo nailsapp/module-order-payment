@@ -75,7 +75,7 @@ class Email extends Base
     ) {
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
-        $oEmailer = factory::service('Emailer', 'nailsapp/module-email');
+        $oEmailer = factory::service('Emailer', 'nails/module-email');
         $aTypes   = $oEmailer->getTypes();
 
         $oEmail = (object) [

@@ -33,7 +33,7 @@ class Payment extends BaseAdmin
     {
         if (userHasPermission('admin:invoice:payment:view')) {
 
-            $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+            $oNavGroup = Factory::factory('Nav', 'nails/module-admin');
             $oNavGroup->setLabel('Invoices &amp; Payments');
             $oNavGroup->setIcon('fa-credit-card');
             if (userHasPermission('admin:invoice:payment:view')) {
@@ -80,9 +80,9 @@ class Payment extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oInput        = Factory::service('Input');
-        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
-        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
-        $oDriverModel  = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
+        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $oDriverModel  = Factory::model('PaymentDriver', 'nails/module-invoice');
 
         // --------------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ class Payment extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oUri          = Factory::service('Uri');
-        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
 
         // --------------------------------------------------------------------------
 
@@ -219,7 +219,7 @@ class Payment extends BaseAdmin
 
         $oUri          = Factory::service('Uri');
         $oInput        = Factory::service('Input');
-        $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
         $iPaymentId    = $oUri->segment(5);
         $sAmount       = $oInput->post('amount') ?: null;
         $sReason       = $oInput->post('reason') ?: null;
@@ -251,7 +251,7 @@ class Payment extends BaseAdmin
             $sMessage = $e->getMessage();
         }
 
-        $oSession = Factory::service('Session', 'nailsapp/module-auth');
+        $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
         redirect($sRedirect);
     }

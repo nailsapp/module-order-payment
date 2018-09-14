@@ -16,6 +16,6 @@ use Nails\Common\Model\BaseDriver;
 
 class PaymentDriver extends BaseDriver
 {
-    protected $sModule = 'nailsapp/module-invoice';
+    protected $sModule = 'nails/module-invoice';
     protected $sType   = 'payment';
 }

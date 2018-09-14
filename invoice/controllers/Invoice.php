@@ -21,7 +21,7 @@ class Invoice extends Base
      * The default invoice skin to use
      * @type string
      */
-    const DEFAULT_INVOICE_SKIN = 'nailsapp/skin-invoice-classic';
+    const DEFAULT_INVOICE_SKIN = 'nails/skin-invoice-classic';
 
     // --------------------------------------------------------------------------
 
@@ -36,20 +36,20 @@ class Invoice extends Base
     {
         //  Business details
         $this->data['business'] = (object) [
-            'name'       => appSetting('business_name', 'nailsapp/module-invoice'),
-            'address'    => appSetting('business_address', 'nailsapp/module-invoice'),
-            'telephone'  => appSetting('business_telephone', 'nailsapp/module-invoice'),
-            'email'      => appSetting('business_email', 'nailsapp/module-invoice'),
-            'vat_number' => appSetting('business_vat_number', 'nailsapp/module-invoice'),
+            'name'       => appSetting('business_name', 'nails/module-invoice'),
+            'address'    => appSetting('business_address', 'nails/module-invoice'),
+            'telephone'  => appSetting('business_telephone', 'nails/module-invoice'),
+            'email'      => appSetting('business_email', 'nails/module-invoice'),
+            'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
         ];
 
-        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
+        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nails/module-invoice');
         $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
         $this->data['isPdf']   = true;
         $sHtml                 = $oInvoiceSkinModel->view($sEnabledSkin, 'render', $this->data, true);
 
-        $oPdf = Factory::service('Pdf', 'nailsapp/module-pdf');
+        $oPdf = Factory::service('Pdf', 'nails/module-pdf');
         $oPdf->setPaperSize('A4', 'portrait');
         $oPdf->load_html($sHtml);
 
@@ -69,14 +69,14 @@ class Invoice extends Base
     {
         //  Business details
         $this->data['business'] = (object) [
-            'name'       => appSetting('business_name', 'nailsapp/module-invoice'),
-            'address'    => appSetting('business_address', 'nailsapp/module-invoice'),
-            'telephone'  => appSetting('business_telephone', 'nailsapp/module-invoice'),
-            'email'      => appSetting('business_email', 'nailsapp/module-invoice'),
-            'vat_number' => appSetting('business_vat_number', 'nailsapp/module-invoice'),
+            'name'       => appSetting('business_name', 'nails/module-invoice'),
+            'address'    => appSetting('business_address', 'nails/module-invoice'),
+            'telephone'  => appSetting('business_telephone', 'nails/module-invoice'),
+            'email'      => appSetting('business_email', 'nails/module-invoice'),
+            'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
         ];
 
-        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
+        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nails/module-invoice');
         $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
         $this->data['isPdf']   = false;
@@ -133,7 +133,7 @@ class Invoice extends Base
         //  If there are payments against this invoice which are processing, then deny payment
         if ($oInvoice->has_processing_payments) {
 
-            $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+            $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
 
             $this->data['aProcessingPayments'] = [];
             foreach ($oInvoice->payments->data as $oPayment) {
@@ -153,7 +153,7 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         //  Payment drivers
-        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
+        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nails/module-invoice');
         $aDrivers            = $oPaymentDriverModel->getEnabled();
         foreach ($aDrivers as $oDriver) {
 
@@ -226,7 +226,7 @@ class Invoice extends Base
                 try {
 
                     //  Set up ChargeRequest object
-                    $oChargeRequest = Factory::factory('ChargeRequest', 'nailsapp/module-invoice');
+                    $oChargeRequest = Factory::factory('ChargeRequest', 'nails/module-invoice');
 
                     //  Set the driver to use for the request
                     $oChargeRequest->setDriver($sSelectedDriver);
@@ -316,8 +316,8 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $oAsset->load('jquery.payment/lib/jquery.payment.min.js', ['nailsapp/module-invoice', 'BOWER']);
-        $oAsset->load('invoice.pay.min.js', 'nailsapp/module-invoice');
+        $oAsset->load('jquery.payment/lib/jquery.payment.min.js', ['nails/module-invoice', 'BOWER']);
+        $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
 
         // --------------------------------------------------------------------------
 
@@ -340,7 +340,7 @@ class Invoice extends Base
         $sInvoiceRef   = $oUri->rsegment(2);
         $sInvoiceToken = $oUri->rsegment(3);
         $sMethod       = $oUri->rsegment(4);
-        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
         $oInvoice      = $oInvoiceModel->getByRef(
             $sInvoiceRef,
             ['expand' => ['customer', 'items', 'payments', 'refunds']]

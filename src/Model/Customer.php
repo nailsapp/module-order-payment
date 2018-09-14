@@ -32,7 +32,7 @@ class Customer extends Base
             'type'      => self::EXPANDABLE_TYPE_MANY,
             'property'  => 'invoices',
             'model'     => 'Invoice',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'customer_id',
         ]);
     }

@@ -12,7 +12,7 @@
  * @link
  */
 
-namespace Nails\Database\Migration\Nailsapp\ModuleInvoice;
+namespace Nails\Database\Migration\Nails\ModuleInvoice;
 
 use Nails\Common\Console\Migrate\Base;
 
@@ -24,6 +24,6 @@ class Migration1 extends Base
      */
     public function execute()
     {
-        $this->query("UPDATE `{{NAILS_DB_PREFIX}}app_setting` SET `key` = 'enabled_driver_payment' WHERE `key` = 'enabled_payment_drivers' AND `grouping` = 'nailsapp/module-invoice';");
+        $this->query("UPDATE `{{NAILS_DB_PREFIX}}app_setting` SET `key` = 'enabled_driver_payment' WHERE `key` = 'enabled_payment_drivers' AND `grouping` = 'nails/module-invoice';");
     }
 }

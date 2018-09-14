@@ -1,10 +1,10 @@
 {
-  "name": "nailsapp-module-invoice",
+  "name": "nails-module-invoice",
   "description": "This is the \"Invoice & Payments\" module for Nails.",
   "author": "Nails Dev Team <hello@nailsapp.co.uk>",
   "analyze": true,
   "license": "MIT",
-  "repository": "https://github.com/nailsapp/module-invoice",
+  "repository": "https://github.com/nails/module-invoice",
   "devDependencies": {
     "gulp": "^3.9",
     "gulp-autoprefixer": "^3.1",

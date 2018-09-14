@@ -185,7 +185,7 @@ class Invoice
      */
     public function save()
     {
-        $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
         if (empty($this->iId)) {
             $oInvoice = $oInvoiceModel->create($this->toArray(), true);
             if (empty($oInvoice)) {
@@ -209,7 +209,7 @@ class Invoice
     public function delete()
     {
         if (!empty($this->iId)) {
-            $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+            $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
             if (!$oInvoiceModel->delete($this->iId)) {
                 throw new InvoiceException('Failed to delete invoice.');
             }
@@ -228,7 +228,7 @@ class Invoice
     public function writeOff()
     {
         if (!empty($this->iId)) {
-            $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+            $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
             if (!$oInvoiceModel->setWrittenOff($this->iId)) {
                 throw new InvoiceException('Failed to write off invoice.');
             }
@@ -252,7 +252,7 @@ class Invoice
         if (empty($this->iId)) {
             $oInvoice = $this->save();
         } else {
-            $oInvoiceModel = Factory::model('Invoice', 'nailsapp/module-invoice');
+            $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
             $oInvoice      = $oInvoiceModel->getById($this->iId);
         }
 

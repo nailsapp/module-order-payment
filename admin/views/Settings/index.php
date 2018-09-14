@@ -171,7 +171,7 @@ $oInput = \Nails\Factory::service('Input');
                 <?=adminHelper(
                     'loadSettingsDriverTable',
                     'PaymentDriver',
-                    'nailsapp/module-invoice'
+                    'nails/module-invoice'
                 )?>
             </div>
             <?php
@@ -184,7 +184,7 @@ $oInput = \Nails\Factory::service('Input');
                 <?=adminHelper(
                     'loadSettingsDriverTable',
                     'InvoiceSkin',
-                    'nailsapp/module-invoice'
+                    'nails/module-invoice'
                 )?>
             </div>
             <?php

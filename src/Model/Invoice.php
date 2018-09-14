@@ -56,14 +56,14 @@ class Invoice extends Base
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice';
         $this->defaultSortColumn = 'created';
         $this->searchableFields  = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
-        $this->oCurrency         = Factory::service('Currency', 'nailsapp/module-currency');
+        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
 
         $this->addExpandableField([
             'trigger'   => 'customer',
             'type'      => self::EXPANDABLE_TYPE_SINGLE,
             'property'  => 'customer',
             'model'     => 'Customer',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'customer_id',
         ]);
         $this->addExpandableField([
@@ -71,7 +71,7 @@ class Invoice extends Base
             'type'      => self::EXPANDABLE_TYPE_MANY,
             'property'  => 'emails',
             'model'     => 'InvoiceEmail',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'invoice_id',
         ]);
         $this->addExpandableField([
@@ -79,7 +79,7 @@ class Invoice extends Base
             'type'      => self::EXPANDABLE_TYPE_MANY,
             'property'  => 'payments',
             'model'     => 'Payment',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'invoice_id',
         ]);
         $this->addExpandableField([
@@ -87,7 +87,7 @@ class Invoice extends Base
             'type'      => self::EXPANDABLE_TYPE_MANY,
             'property'  => 'refunds',
             'model'     => 'Refund',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'invoice_id',
         ]);
         $this->addExpandableField([
@@ -95,7 +95,7 @@ class Invoice extends Base
             'type'      => self::EXPANDABLE_TYPE_MANY,
             'property'  => 'items',
             'model'     => 'InvoiceItem',
-            'provider'  => 'nailsapp/module-invoice',
+            'provider'  => 'nails/module-invoice',
             'id_column' => 'invoice_id',
         ]);
     }
@@ -137,7 +137,7 @@ class Invoice extends Base
     public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         $oDb            = Factory::service('Database');
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
 
         return parent::getAllRawQuery($iPage, $iPerPage, $aData, $bIncludeDeleted);
@@ -148,7 +148,7 @@ class Invoice extends Base
     public function countAll($aData = [], $bIncludeDeleted = false)
     {
         $oDb            = Factory::service('Database');
-        $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
 
         return parent::countAll($aData, $bIncludeDeleted);
@@ -176,7 +176,7 @@ class Invoice extends Base
 
         if (empty($aData['select'])) {
 
-            $oPaymentModel = Factory::model('Payment', 'nailsapp/module-invoice');
+            $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
             $sPaymentClass = get_class($oPaymentModel);
 
             $aData['select'] = [
@@ -398,7 +398,7 @@ class Invoice extends Base
             if (array_key_exists('terms', $aData)) {
                 $iTerms = (int) $aData['terms'];
             } else {
-                $iTerms = (int) appSetting('default_payment_terms', 'nailsapp/module-invoice');
+                $iTerms = (int) appSetting('default_payment_terms', 'nails/module-invoice');
             }
 
             $oDate = new \DateTime($aData['dated']);
@@ -479,7 +479,7 @@ class Invoice extends Base
 
         //  Invalid Customer ID
         if (array_key_exists('customer_id', $aData) && !empty($aData['customer_id'])) {
-            $oCustomerModel = Factory::model('Customer', 'nailsapp/module-invoice');
+            $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
             if (!$oCustomerModel->getById($aData['customer_id'])) {
                 throw new InvoiceException('"' . $aData['customer_id'] . '" is not a valid customer ID.', 1);
             }
@@ -495,7 +495,7 @@ class Invoice extends Base
 
         //  Invalid currency
         if (array_key_exists('currency', $aData)) {
-            $oCurrency = Factory::service('Currency', 'nailsapp/module-currency');
+            $oCurrency = Factory::service('Currency', 'nails/module-currency');
             try {
                 $oCurrency->getByIsoCode($aData['currency']);
             } catch (\Exception $e) {
@@ -505,7 +505,7 @@ class Invoice extends Base
 
         //  Invalid Tax IDs
         if (!empty($aTaxIds)) {
-            $oTaxModel = Factory::model('Tax', 'nailsapp/module-invoice');
+            $oTaxModel = Factory::model('Tax', 'nails/module-invoice');
             $aTaxRates = $oTaxModel->getByIds($aTaxIds);
             if (count($aTaxRates) != count($aTaxIds)) {
                 throw new InvoiceException('An invalid Tax Rate was supplied.', 1);
@@ -523,7 +523,7 @@ class Invoice extends Base
         } elseif (array_key_exists('items', $aData)) {
 
             //  Check each item
-            $oItemModel = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
+            $oItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
             foreach ($aData['items'] as &$aItem) {
 
                 //  Has a positive quantity
@@ -594,7 +594,7 @@ class Invoice extends Base
      */
     private function updateLineItems($iInvoiceId, $aItems)
     {
-        $oItemModel  = Factory::model('InvoiceItem', 'nailsapp/module-invoice');
+        $oItemModel  = Factory::model('InvoiceItem', 'nails/module-invoice');
         $aTouchedIds = [];
 
         //  Update/insert all known items
@@ -779,8 +779,8 @@ class Invoice extends Base
                 throw new InvoiceException('No email address to send the invoice to', 1);
             }
 
-            $oEmailer           = Factory::service('Emailer', 'nailsapp/module-email');
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nailsapp/module-invoice');
+            $oEmailer           = Factory::service('Emailer', 'nails/module-email');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nails/module-invoice');
 
             $oEmail       = new \stdClass();
             $oEmail->type = 'send_invoice';
@@ -935,7 +935,7 @@ class Invoice extends Base
      */
     protected function triggerEvent($sEvent, $iInvoiceId)
     {
-        $oPEH   = Factory::model('PaymentEventHandler', 'nailsapp/module-invoice');
+        $oPEH   = Factory::model('PaymentEventHandler', 'nails/module-invoice');
         $oClass = new \ReflectionClass($oPEH);
 
         $oPEH->trigger(

@@ -1,5 +1,5 @@
 {
-    "name": "nailsapp/module-invoice",
+    "name": "nails/module-invoice",
     "keywords": ["Nails", "Shed Collective", "CodeIgniter", "Invoice Module", "Invoicing", "Payments"],
     "homepage": "http://nailsapp.co.uk/modules/invoice",
     "description": "This is the Invoice module for nails, it provides an interface for raising invoices and accepting payment from customers.",
@@ -21,11 +21,11 @@
     "prefer-stable": true,
     "require":
     {
-        "nailsapp/common": "dev-develop",
-        "nailsapp/module-auth": "dev-develop",
-        "nailsapp/module-currency": "dev-develop",
-        "nailsapp/module-pdf": "dev-develop",
-        "nailsapp/skin-invoice-classic": "dev-develop"
+        "nails/common": "dev-develop",
+        "nails/module-auth": "dev-develop",
+        "nails/module-currency": "dev-develop",
+        "nails/module-pdf": "dev-develop",
+        "nails/skin-invoice-classic": "dev-develop"
     },
     "require-dev":
     {
@@ -43,17 +43,17 @@
             "type": "module",
             "namespace": "Nails\\Invoice\\",
             "data": {
-                "nailsapp/module-admin": {
+                "nails/module-admin": {
                     "autoload": {
                         "assets": {
                             "js": [
-                                ["admin.invoicesearch.min.js", "nailsapp/module-invoice"],
-                                ["admin.customersearch.min.js", "nailsapp/module-invoice"]
+                                ["admin.invoicesearch.min.js", "nails/module-invoice"],
+                                ["admin.customersearch.min.js", "nails/module-invoice"]
                             ]
                         }
                     }
                 },
-                "nailsapp/module-api": {
+                "nails/module-api": {
                     "namespace": "invoice"
                 }
             }

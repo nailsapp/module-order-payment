@@ -1,4 +1,4 @@
-<div class="nailsapp-invoice pay u-center-screen" id="js-invoice">
+<div class="nails-invoice pay u-center-screen" id="js-invoice">
     <div class="panel shakeable">
         <?=form_open(null, 'id="js-invoice-main-form"')?>
         <div class="mask" id="js-invoice-mask">

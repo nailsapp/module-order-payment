@@ -1,4 +1,4 @@
-<div class="nailsapp-invoice post u-center-screen">
+<div class="nails-invoice post u-center-screen">
     <div class="panel">
         <div class="panel__body text-center">
             <p>Please wait while we redirect you to our payment provider...</p>

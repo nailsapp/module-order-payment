@@ -1,4 +1,4 @@
-<div class="nailsapp-invoice pending u-center-screen" id="js-invoice">
+<div class="nails-invoice pending u-center-screen" id="js-invoice">
     <div class="panel">
         <h1 class="panel__header text-center">
             Invoice <?=$oInvoice->ref?>

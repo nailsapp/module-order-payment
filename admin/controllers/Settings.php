@@ -25,7 +25,7 @@ class Settings extends BaseAdmin
      */
     public static function announce()
     {
-        $oNavGroup = Factory::factory('Nav', 'nailsapp/module-admin');
+        $oNavGroup = Factory::factory('Nav', 'nails/module-admin');
         $oNavGroup->setLabel('Settings');
         $oNavGroup->setIcon('fa-wrench');
 
@@ -68,8 +68,8 @@ class Settings extends BaseAdmin
         $oInput              = Factory::service('Input');
         $oDb                 = Factory::service('Database');
         $oAppSettingModel    = Factory::model('AppSetting');
-        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nailsapp/module-invoice');
-        $oInvoiceSkinModel   = Factory::model('InvoiceSkin', 'nailsapp/module-invoice');
+        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nails/module-invoice');
+        $oInvoiceSkinModel   = Factory::model('InvoiceSkin', 'nails/module-invoice');
 
         //  Process POST
         if ($oInput->post()) {
@@ -115,7 +115,7 @@ class Settings extends BaseAdmin
                     $oDb->trans_begin();
 
                     //  Normal settings
-                    if (!$oAppSettingModel->set($aSettings, 'nailsapp/module-invoice')) {
+                    if (!$oAppSettingModel->set($aSettings, 'nails/module-invoice')) {
                         throw new NailsException($oAppSettingModel->lastError(), 1);
                     }
 
@@ -139,7 +139,7 @@ class Settings extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Get data
-        $this->data['settings'] = appSetting(null, 'nailsapp/module-invoice', true);
+        $this->data['settings'] = appSetting(null, 'nails/module-invoice', true);
 
         Helper::loadView('index');
     }

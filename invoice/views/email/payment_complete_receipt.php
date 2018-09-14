@@ -122,11 +122,11 @@
                                             <?php
 
                                             $aDetails = array(
-                                                appSetting('business_name', 'nailsapp/module-invoice') ? '<strong>' . appSetting('business_name', 'nailsapp/module-invoice') . '</strong>' : '',
-                                                appSetting('business_address', 'nailsapp/module-invoice') ? nl2br(appSetting('business_address', 'nailsapp/module-invoice')) : '',
-                                                appSetting('business_phone', 'nailsapp/module-invoice'),
-                                                appSetting('business_email', 'nailsapp/module-invoice'),
-                                                appSetting('business_vat_number', 'nailsapp/module-invoice') ? '<br>VAT Registration No. ' . appSetting('business_vat_number', 'nailsapp/module-invoice') : ''
+                                                appSetting('business_name', 'nails/module-invoice') ? '<strong>' . appSetting('business_name', 'nails/module-invoice') . '</strong>' : '',
+                                                appSetting('business_address', 'nails/module-invoice') ? nl2br(appSetting('business_address', 'nails/module-invoice')) : '',
+                                                appSetting('business_phone', 'nails/module-invoice'),
+                                                appSetting('business_email', 'nails/module-invoice'),
+                                                appSetting('business_vat_number', 'nails/module-invoice') ? '<br>VAT Registration No. ' . appSetting('business_vat_number', 'nails/module-invoice') : ''
                                             );
 
                                             $aDetails = array_filter($aDetails);
