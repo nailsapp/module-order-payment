@@ -26,6 +26,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Announces this controller's navGroups
+     *
      * @return \stdClass
      */
     public static function announce()
@@ -45,6 +46,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Returns an array of extra permissions for this controller
+     *
      * @return array
      */
     public static function permissions()
@@ -77,6 +79,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Browse invoices
+     *
      * @return void
      */
     public function index()
@@ -191,6 +194,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Create a new invoice
+     *
      * @return void
      */
     public function create()
@@ -305,6 +309,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Edit an invoice
+     *
      * @return void
      */
     public function edit()
@@ -319,9 +324,10 @@ class Invoice extends BaseAdmin
         $oInput = Factory::service('Input');
 
         $iInvoiceId            = (int) $oUri->segment(5);
-        $this->data['invoice'] = $this->oInvoiceModel->getById(
+        $oModel                = $this->oInvoiceModel;
+        $this->data['invoice'] = $oModel->getById(
             $iInvoiceId,
-            ['expand' => $this->oInvoiceModel::EXPAND_ALL]
+            ['expand' => $oModel::EXPAND_ALL]
         );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
@@ -339,10 +345,10 @@ class Invoice extends BaseAdmin
 
             if ($this->validatePost()) {
 
-                if ($this->oInvoiceModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
+                if ($oModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
 
                     //  Send invoice if needed
-                    $oInvoice = $this->oInvoiceModel->getById($this->data['invoice']->id);
+                    $oInvoice = $oModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
                     $oSession = Factory::service('Session', 'nails/module-auth');
@@ -352,7 +358,7 @@ class Invoice extends BaseAdmin
 
                 } else {
 
-                    $this->data['error'] = 'Failed to update invoice. ' . $this->oInvoiceModel->lastError();
+                    $this->data['error'] = 'Failed to update invoice. ' . $oModel->lastError();
                 }
 
             } else {
@@ -367,7 +373,7 @@ class Invoice extends BaseAdmin
         $aItemUnits = $this->oInvoiceItemModel->getUnits();
         $aTaxes     = $this->oTaxModel->getAll();
 
-        $this->data['invoiceStates'] = $this->oInvoiceModel->getSelectableStates();
+        $this->data['invoiceStates'] = $oModel->getSelectableStates();
 
         // --------------------------------------------------------------------------
 
@@ -431,6 +437,7 @@ class Invoice extends BaseAdmin
 
     /**
      * View an invoice
+     *
      * @return void
      */
     public function view()
@@ -440,10 +447,11 @@ class Invoice extends BaseAdmin
         }
 
         $oUri                  = Factory::service('Uri');
+        $oModel                = $this->oInvoiceModel;
         $iInvoiceId            = (int) $oUri->segment(5);
         $this->data['invoice'] = $this->oInvoiceModel->getById(
             $iInvoiceId,
-            ['expand' => $this->oInvoiceModel::EXPAND_ALL]
+            ['expand' => $oModel::EXPAND_ALL]
         );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {
@@ -462,6 +470,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Validate the POST data
+     *
      * @return boolean
      */
     protected function validatePost()
@@ -521,6 +530,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Get an object generated from the POST data
+     *
      * @return array
      */
     protected function getObjectFromPost()
@@ -590,6 +600,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Make an invoice a draft
+     *
      * @return void
      */
     public function make_draft()
@@ -635,6 +646,7 @@ class Invoice extends BaseAdmin
 
     /**
      * Delete an invoice
+     *
      * @return void
      */
     public function delete()
