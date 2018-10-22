@@ -85,9 +85,10 @@ class RequestBase
     public function setInvoice($iInvoiceId)
     {
         //  Validate
-        $oInvoice = $this->oInvoiceModel->getById(
+        $oModel   = $this->oInvoiceModel;
+        $oInvoice = $oModel->getById(
             $iInvoiceId,
-            ['expand' => $this->oInvoiceModel::EXPAND_ALL]
+            ['expand' => $oModel::EXPAND_ALL]
         );
 
         if (empty($oInvoice)) {
