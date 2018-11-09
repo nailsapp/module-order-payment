@@ -60,13 +60,13 @@ class Customer extends Base
 
             if ($iKeywordAsId) {
                 $aData['or_like'][] = [
-                    'column' => $this->tableAlias . '.id',
+                    'column' => $this->getTableAlias() . '.id',
                     'value'  => $iKeywordAsId,
                 ];
             }
 
             $aData['or_like'][] = [
-                'column' => $this->tableAlias . '.label',
+                'column' => $this->getTableAlias() . '.label',
                 'value'  => $aData['keywords'],
             ];
         }
