@@ -202,7 +202,7 @@ class Customer extends BaseAdmin
         );
 
         if (empty($this->data['item'])) {
-            show_404();
+            show404();
         }
 
         // --------------------------------------------------------------------------
@@ -329,7 +329,7 @@ class Customer extends BaseAdmin
             ['expand' => ['invoices']]
         );
         if (!$oCustomer) {
-            show_404();
+            show404();
         }
 
         if ($oCustomer->invoices->count) {

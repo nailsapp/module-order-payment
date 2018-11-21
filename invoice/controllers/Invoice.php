@@ -117,7 +117,7 @@ class Invoice extends Base
 
             } else {
 
-                show_404();
+                show404();
             }
         }
 
@@ -347,7 +347,7 @@ class Invoice extends Base
         );
 
         if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {
-            show_404();
+            show404();
         }
 
         call_user_func([$this, $sMethod], $oInvoice);

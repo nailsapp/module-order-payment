@@ -331,7 +331,7 @@ class Invoice extends BaseAdmin
         );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
-            show_404();
+            show404();
         }
 
         // --------------------------------------------------------------------------
@@ -455,7 +455,7 @@ class Invoice extends BaseAdmin
         );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {
-            show_404();
+            show404();
         }
 
         $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
@@ -614,7 +614,7 @@ class Invoice extends BaseAdmin
         $oUri     = Factory::service('Uri');
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
-            show_404();
+            show404();
         }
 
         // --------------------------------------------------------------------------
@@ -660,7 +660,7 @@ class Invoice extends BaseAdmin
         $oUri     = Factory::service('Uri');
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
-            show_404();
+            show404();
         }
 
         // --------------------------------------------------------------------------

@@ -195,7 +195,7 @@ class Payment extends BaseAdmin
         );
 
         if (!$this->data['payment']) {
-            show_404();
+            show404();
         }
 
         $this->data['page']->title = 'View Payment &rsaquo; ' . $this->data['payment']->ref;

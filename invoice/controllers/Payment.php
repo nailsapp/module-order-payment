@@ -32,7 +32,7 @@ class Payment extends Base
 
         if ($oPayment->status->id === $oPaymentModel::STATUS_FAILED) {
             //  Payments which FAILED should be ignored
-            show_404();
+            show404();
 
         } elseif ($oPayment->status->id === $oPaymentModel::STATUS_COMPLETE) {
 
@@ -116,7 +116,7 @@ class Payment extends Base
         if ($oPayment->status->id === 'PROCESSING') {
             redirect($oPayment->urls->processing);
         } elseif ($oPayment->status->id !== 'COMPLETE') {
-            show_404();
+            show404();
         }
 
         $this->data['oPayment']       = $oPayment;
@@ -146,7 +146,7 @@ class Payment extends Base
         if ($oPayment->status->id === 'COMPLETE') {
             redirect($oPayment->urls->thanks);
         } elseif ($oPayment->status->id !== 'PROCESSING') {
-            show_404();
+            show404();
         }
 
         $this->data['oPayment']       = $oPayment;
@@ -178,7 +178,7 @@ class Payment extends Base
         $oPayment      = $oPaymentModel->getById($iPaymentId, ['expand' => ['invoice']]);
 
         if (empty($oPayment) || $sPaymentToken !== $oPayment->token || !method_exists($this, $sMethod)) {
-            show_404();
+            show404();
         }
 
         $this->{$sMethod}($oPayment);
