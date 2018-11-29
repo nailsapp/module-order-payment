@@ -1,14 +1,18 @@
+'use strict';
+
+import '../sass/invoice.pay.scss';
+
 /* exported invoicePay */
-var invoicePay = function() {
+var invoicePay = function () {
     var base = this;
 
     // --------------------------------------------------------------------------
 
-    base.__construct = function() {
+    base.__construct = function () {
 
         //  Bind to driver selection
         $('.js-invoice-driver-select input')
-            .on('click', function() {
+            .on('click', function () {
 
                 //  Highlight selection
                 $('.js-invoice-driver-select.active').removeClass('active');
@@ -44,7 +48,7 @@ var invoicePay = function() {
 
         //  CVC Card type formatting
         $('.js-invoice-cc-num')
-            .on('keyup', function() {
+            .on('keyup', function () {
 
                 var cardNum = $(this).val().trim();
                 var cardType = $.payment.cardType(cardNum);
@@ -69,7 +73,7 @@ var invoicePay = function() {
 
         //  Validation
         $('#js-invoice-main-form')
-            .on('submit', function() {
+            .on('submit', function () {
 
                 var isValid = true;
 
@@ -81,7 +85,7 @@ var invoicePay = function() {
                 var selectedDriver = $('.js-invoice-driver-select input:checked');
                 if (selectedDriver.length !== 0) {
 
-                    $('.js-invoice-panel-payment-details:not(.hidden) :input').each(function() {
+                    $('.js-invoice-panel-payment-details:not(.hidden) :input').each(function () {
 
                         var val = $(this).val().trim();
 
@@ -130,7 +134,7 @@ var invoicePay = function() {
 
                 if (!isValid) {
                     $('#js-invoice').addClass('shake');
-                    setTimeout(function() {
+                    setTimeout(function () {
                         $('#js-invoice').removeClass('shake');
                     }, 500);
                 } else {

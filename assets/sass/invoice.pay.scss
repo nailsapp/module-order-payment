@@ -1,6 +1,5 @@
 .nails-invoice {
     max-width: 500px;
-
     &.pay {
         &.shake {
             perspective: 800px;
@@ -24,13 +23,13 @@
                 }
             }
         }
-
         .mask {
             display: none;
             position: absolute;
             width: 100%;
             height: 100%;
             z-index: 1;
+
             b {
                 position: relative;
                 left: 48%;
@@ -41,36 +40,43 @@
                 transform-origin: 50% 47%;
             }
         }
-
         .js-invoice-cc-num {
             padding-right: 50px;
             background-size: 32px 32px;
             background-repeat: no-repeat;
             background-position: right 5px center;
+
             &.amex {
-                background-image: url(../img/cards-64x64/amex.png);
+                background-image: url('../img/cards-64x64/amex.png');
             }
+
             &.dinersclub {
-                background-image: url(../img/cards-64x64/dinersclub.png);
+                background-image: url('../img/cards-64x64/dinersclub.png');
             }
+
             &.discover {
-                background-image: url(../img/cards-64x64/discover.png);
+                background-image: url('../img/cards-64x64/discover.png');
             }
+
             &.jcb {
-                background-image: url(../img/cards-64x64/jcb.png);
+                background-image: url('../img/cards-64x64/jcb.png');
             }
+
             &.maestro {
-                background-image: url(../img/cards-64x64/maestro.png);
+                background-image: url('../img/cards-64x64/maestro.png');
             }
+
             &.mastercard {
-                background-image: url(../img/cards-64x64/mastercard.png);
+                background-image: url('../img/cards-64x64/mastercard.png');
             }
+
             &.unionpay {
-                background-image: url(../img/cards-64x64/unionpay.png);
+                background-image: url('../img/cards-64x64/unionpay.png');
             }
+
             &.visa,
             &.visaelectron {
-                background-image: url(../img/cards-64x64/visa.png);
+                background-image: url('../img/cards-64x64/visa.png');
             }
         }
 
@@ -81,15 +87,14 @@
             background-position: right 5px center;
 
             &.amex {
-                background-image: url(../img/cvc-64x64/amex.png);
+                background-image: url('../img/cvc-64x64/amex.png');
             }
 
             &.other {
-                background-image: url(../img/cvc-64x64/other.png);
+                background-image: url('../img/cvc-64x64/other.png');
             }
         }
     }
-
     &.pending {
         .list-group {
             margin-bottom: 0;
@@ -111,6 +116,7 @@
             transform: rotate(360deg);
         }
     }
+
     @keyframes panelShakeAnimation {
         0% {
             transform: translateX(0);

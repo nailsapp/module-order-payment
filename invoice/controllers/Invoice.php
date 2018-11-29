@@ -19,6 +19,7 @@ class Invoice extends Base
 {
     /**
      * The default invoice skin to use
+     *
      * @type string
      */
     const DEFAULT_INVOICE_SKIN = 'nails/skin-invoice-classic';
@@ -316,7 +317,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $oAsset->load('jquery.payment/lib/jquery.payment.min.js', ['nails/module-invoice', 'BOWER']);
+        $oAsset->load('../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
         $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
 
         // --------------------------------------------------------------------------
@@ -332,6 +333,7 @@ class Invoice extends Base
 
     /**
      * Remap requests for valid payments to the appropriate controller method
+     *
      * @return void
      */
     public function _remap()
