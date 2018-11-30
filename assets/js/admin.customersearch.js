@@ -1,25 +1,23 @@
-var _INVOICE_CUSTOMERSEARCH;
-_INVOICE_CUSTOMERSEARCH = function()
-{
+function InvoiceCustomerSearch() {
     var base = this;
 
     // --------------------------------------------------------------------------
 
-    base.__construct =function() {
+    base.__construct = function() {
 
         $('input.customer-search').select2({
-            placeholder: "Search for a customer",
+            placeholder: 'Search for a customer',
             minimumInputLength: 3,
             ajax: {
                 url: window.SITE_URL + 'api/invoice/customer/search',
                 dataType: 'json',
                 quietMillis: 250,
-                data: function (term) {
+                data: function(term) {
                     return {
                         keywords: term
                     };
                 },
-                results: function (data) {
+                results: function(data) {
                     var out = {
                         'results': []
                     };
@@ -66,4 +64,6 @@ _INVOICE_CUSTOMERSEARCH = function()
     // --------------------------------------------------------------------------
 
     return base.__construct();
-}();
+};
+
+var _INVOICE_CUSTOMERSEARCH = new InvoiceCustomerSearch();

@@ -1,25 +1,23 @@
-var _INVOICE_INVOICESEARCH;
-_INVOICE_INVOICESEARCH = function()
-{
+function InvoiceInvoiceSearch() {
     var base = this;
 
     // --------------------------------------------------------------------------
 
-    base.__construct =function() {
+    base.__construct = function() {
 
         $('input.invoice-search').select2({
-            placeholder: "Search for an invoice",
+            placeholder: 'Search for an invoice',
             minimumInputLength: 3,
             ajax: {
                 url: window.SITE_URL + 'api/invoice/invoice/search',
                 dataType: 'json',
                 quietMillis: 250,
-                data: function (term) {
+                data: function(term) {
                     return {
                         keywords: term
                     };
                 },
-                results: function (data) {
+                results: function(data) {
                     var out = {
                         'results': []
                     };
@@ -66,4 +64,6 @@ _INVOICE_INVOICESEARCH = function()
     // --------------------------------------------------------------------------
 
     return base.__construct();
-}();
+};
+
+var _INVOICE_INVOICESEARCH = new InvoiceInvoiceSearch();
