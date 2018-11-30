@@ -182,11 +182,11 @@ class Invoice extends Base
             $oFormValidation = Factory::service('FormValidation');
 
             $aRules = [
-                'driver'   => ['', 'trim', 'required'],
-                'cc[name]' => ['', 'trim'],
-                'cc[num]'  => ['', 'trim'],
-                'cc[exp]'  => ['', 'trim'],
-                'cc[cvc]'  => ['', 'trim'],
+                'driver'   => ['trim', 'required'],
+                'cc[name]' => ['trim'],
+                'cc[num]'  => ['trim'],
+                'cc[exp]'  => ['trim'],
+                'cc[cvc]'  => ['trim'],
             ];
 
             $sSelectedDriver = $oInput->post('driver');
@@ -317,13 +317,10 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $oAsset->load('../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
-        $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
-
-        // --------------------------------------------------------------------------
-
         $oView = Factory::service('View');
         $this->loadStyles(APPPATH . 'modules/invoice/views/pay/index.php');
+        $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
+        $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
         $oView->load('structure/header', $this->data);
         $oView->load('invoice/pay/index', $this->data);
         $oView->load('structure/footer', $this->data);
