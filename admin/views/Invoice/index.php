@@ -38,25 +38,25 @@
 
                                 $sClass = 'danger';
                                 $sText  = 'Overdue';
-                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
+                                $sText  .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
 
                             } elseif ($oInvoice->is_scheduled) {
 
                                 $sClass = 'warning';
                                 $sText  = 'Scheduled';
-                                $sText .= '<small>Sending: ' . toUserDate($oInvoice->dated->raw) . '</small>';
+                                $sText  .= '<small>Sending: ' . toUserDate($oInvoice->dated->raw) . '</small>';
 
                             } elseif ($oInvoice->state->id == 'OPEN') {
 
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
-                                $sText .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
+                                $sText  .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
 
                             } elseif ($oInvoice->state->id == 'PAID') {
 
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
-                                $sText .= '<small>paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
+                                $sText  .= '<small>paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
 
                             } else {
 
@@ -130,7 +130,19 @@
                                             'class="btn btn-xs btn-primary"'
                                         );
 
-                                    } elseif ($oInvoice->state->id == 'DRAFT') {
+                                    } elseif ($oInvoice->state->id == 'WRITTEN_OFF') {
+
+                                        echo anchor(
+                                            'admin/invoice/invoice/view/' . $oInvoice->id,
+                                            lang('action_view'),
+                                            'class="btn btn-xs btn-default"'
+                                        );
+
+                                        echo anchor(
+                                            $oInvoice->urls->download,
+                                            lang('action_download'),
+                                            'class="btn btn-xs btn-primary" target="_blank"'
+                                        );
 
                                     } else {
 
@@ -149,17 +161,28 @@
                                         if ($oInvoice->state->id == 'OPEN' || $oInvoice->state->id == 'PARTIALLY_PAID') {
                                             echo anchor(
                                                 $oInvoice->urls->payment,
-                                                'Pay    ',
+                                                'Pay',
                                                 'class="btn btn-xs btn-primary" target="_blank"'
                                             );
                                         }
 
-                                        if (empty($oInvoice->payments->count)) {
+                                        $aValidPayments = array_filter(
+                                            $oInvoice->payments->data,
+                                            function ($oPayment) {
+                                                return $oPayment->status->id !== 'FAILED';
+                                            }
+                                        );
 
+                                        if (empty($aValidPayments)) {
                                             echo anchor(
                                                 'admin/invoice/invoice/make_draft/' . $oInvoice->id,
                                                 'Make Draft',
                                                 'class="btn btn-xs btn-warning"'
+                                            );
+                                            echo anchor(
+                                                'admin/invoice/invoice/write_off/' . $oInvoice->id,
+                                                'Write Off',
+                                                'class="btn btn-xs btn-danger confirm" data-body="Write invoice ' . $oInvoice->ref . ' off?"'
                                             );
                                         }
                                     }

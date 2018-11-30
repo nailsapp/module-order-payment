@@ -647,6 +647,52 @@ class Invoice extends BaseAdmin
     // --------------------------------------------------------------------------
 
     /**
+     * Write an invoice off
+     *
+     * @return void
+     */
+    public function write_off()
+    {
+        if (!userHasPermission('admin:invoice:invoice:edit')) {
+            unauthorised();
+        }
+
+        // --------------------------------------------------------------------------
+
+        $oUri     = Factory::service('Uri');
+        $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
+        if (!$oInvoice) {
+            show404();
+        }
+
+        // --------------------------------------------------------------------------
+
+        //  Allow getting a constant
+        $oInvoiceModel = $this->oInvoiceModel;
+
+        $aData = [
+            'state' => $oInvoiceModel::STATE_WRITTEN_OFF,
+        ];
+        if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
+
+            $sStatus  = 'success';
+            $sMessage = 'Invoice written off successfully!';
+
+        } else {
+
+            $sStatus  = 'error';
+            $sMessage = 'Failed to write off invoice. ' . $this->oInvoiceModel->lastError();
+        }
+
+        $oSession = Factory::service('Session', 'nails/module-auth');
+        $oSession->setFlashData($sStatus, $sMessage);
+
+        redirect('admin/invoice/invoice');
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Delete an invoice
      *
      * @return void
