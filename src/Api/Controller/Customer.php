@@ -79,9 +79,15 @@ class Customer extends Base
 
     public function formatCustomer($oCustomer)
     {
+        $sLabel = $oCustomer->label;
+        $sEmail = $oCustomer->billing_email ?: $oCustomer->email;
+        if (!empty($sEmail)) {
+            $sLabel .= ' (' . $sEmail . ')';
+        }
+
         return [
             'id'    => $oCustomer->id,
-            'label' => $oCustomer->label,
+            'label' => $sLabel . ' - ID ' . $oCustomer->id,
         ];
     }
 }

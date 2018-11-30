@@ -23,9 +23,11 @@ class Customer extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->table             = NAILS_DB_PREFIX . 'invoice_customer';
-        $this->defaultSortColumn = 'first_name';
-        $this->destructiveDelete = false;
+        $this->table              = NAILS_DB_PREFIX . 'invoice_customer';
+        $this->defaultSortColumn  = 'first_name';
+        $this->destructiveDelete  = false;
+        $this->searchableFields[] = 'email';
+        $this->searchableFields[] = 'billing_email';
 
         $this->addExpandableField([
             'trigger'   => 'invoices',
