@@ -288,7 +288,8 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oAsset = Factory::service('Asset');
-        $oAsset->load('invoice.edit.min.js', 'nails/module-invoice');
+        //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
+        $oAsset->load('invoice.edit.js', 'nails/module-invoice');
         $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
@@ -416,7 +417,8 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         $oAsset = Factory::service('Asset');
-        $oAsset->load('invoice.edit.min.js', 'nails/module-invoice');
+        //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
+        $oAsset->load('invoice.edit.js', 'nails/module-invoice');
         $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
