@@ -20,6 +20,7 @@ class Payment extends Base
 {
     /**
      * The Currency service
+     *
      * @var Nails\Currency\Service\Currency
      */
     protected $oCurrency;
@@ -47,29 +48,27 @@ class Payment extends Base
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
         $this->searchableFields  = ['id', 'ref', 'description', 'txn_id'];
-
-        $this->addExpandableField([
-            'trigger'   => 'invoice',
-            'type'      => self::EXPANDABLE_TYPE_SINGLE,
-            'property'  => 'invoice',
-            'model'     => 'Invoice',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'invoice_id',
-        ]);
-        $this->addExpandableField([
-            'trigger'   => 'refunds',
-            'type'      => self::EXPANDABLE_TYPE_MANY,
-            'property'  => 'refunds',
-            'model'     => 'Refund',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'payment_id',
-        ]);
+        $this
+            ->addExpandableField([
+                'trigger'   => 'invoice',
+                'model'     => 'Invoice',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'invoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'refunds',
+                'type'      => self::EXPANDABLE_TYPE_MANY,
+                'model'     => 'Refund',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'payment_id',
+            ]);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns all the statuses as an array
+     *
      * @return array
      */
     public function getStatuses()
@@ -88,6 +87,7 @@ class Payment extends Base
 
     /**
      * Returns an array of statsues with human friendly labels
+     *
      * @return array
      */
     public function getStatusesHuman()
@@ -204,7 +204,7 @@ class Payment extends Base
             $oPayment = parent::create($aData, true);
 
             if (!$oPayment) {
-                throw new PaymentException('Failed to create payment.', 1);
+                throw new PaymentException('Failed to create payment.');
             }
 
             $oDb->trans_commit();
@@ -218,7 +218,6 @@ class Payment extends Base
             return $bReturnObject ? $oPayment : $oPayment->id;
 
         } catch (\Exception $e) {
-
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -253,7 +252,7 @@ class Payment extends Base
             $bResult = parent::update($iPaymentId, $aData);
 
             if (!$bResult) {
-                throw new PaymentException('Failed to update payment.', 1);
+                throw new PaymentException('Failed to update payment.');
             }
 
             $oDb->trans_commit();
@@ -270,7 +269,6 @@ class Payment extends Base
             return $bResult;
 
         } catch (\Exception $e) {
-
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -281,6 +279,7 @@ class Payment extends Base
 
     /**
      * Generates a valid invoice ref
+     *
      * @return string
      */
     public function generateValidRef()
@@ -305,6 +304,7 @@ class Payment extends Base
 
     /**
      * Generates a valid payment token
+     *
      * @return string
      */
     public function generateValidToken()
@@ -313,7 +313,7 @@ class Payment extends Base
 
         do {
 
-            //  @todo: use more secure token generation, like random_bytes();
+            //  @todo (Pablo - 2018-12-11) - Use the base model's token logic
             $sToken = md5(microtime(true) . APP_PRIVATE_KEY);
             $oDb->where('token', $sToken);
             $bTokenExists = (bool) $oDb->count_all_results($this->table);
@@ -433,24 +433,28 @@ class Payment extends Base
     {
         try {
 
-            $oPayment = $this->getById($iPaymentId, ['expand' => ['invoice']]);
+            $oPayment = $this->getById(
+                $iPaymentId,
+                [
+                    'expand' => [
+                        ['invoice', ['expand' => ['customer']]],
+                    ],
+                ]
+            );
 
             if (empty($oPayment)) {
-                throw new PaymentException('Invalid Payment ID', 1);
+                throw new PaymentException('Invalid Payment ID');
             }
 
             if (!in_array($oPayment->status->id, [self::STATUS_PROCESSING, self::STATUS_COMPLETE])) {
-                throw new PaymentException('Payment must be in a paid or processing state to send receipt.', 1);
+                throw new PaymentException('Payment must be in a paid or processing state to send receipt.');
             }
 
             $oEmail = new \stdClass();
 
             if ($oPayment->status->id == self::STATUS_COMPLETE) {
-
                 $oEmail->type = 'payment_complete_receipt';
-
             } else {
-
                 $oEmail->type = 'payment_processing_receipt';
             }
 
@@ -476,8 +480,7 @@ class Payment extends Base
                 $aEmails = [$oPayment->invoice->email];
 
             } else {
-
-                throw new PaymentException('No email address to send the receipt to.', 1);
+                throw new PaymentException('No email address to send the receipt to.');
             }
 
             $aEmails = array_unique($aEmails);
@@ -503,13 +506,11 @@ class Payment extends Base
                     );
 
                 } else {
-
-                    throw new PaymentException($oEmailer->lastError(), 1);
+                    throw new PaymentException($oEmailer->lastError());
                 }
             }
 
         } catch (\Exception $e) {
-
             $this->setError($e->getMessage());
             return false;
         }
@@ -526,7 +527,7 @@ class Payment extends Base
             //  Validate payment
             $oPayment = $this->getById($iPaymentId, ['expand' => ['invoice']]);
             if (!$oPayment) {
-                throw new PaymentException('Invalid payment ID.', 1);
+                throw new PaymentException('Invalid payment ID.');
             }
 
             //  Set up RefundRequest object
@@ -554,10 +555,7 @@ class Payment extends Base
                  * Refund failed, throw an error which will be caught and displayed to the user
                  */
 
-                throw new PaymentException(
-                    'Refund failed: ' . $oRefundResponse->getError()->user,
-                    1
-                );
+                throw new PaymentException('Refund failed: ' . $oRefundResponse->getError()->user);
 
             } else {
 
@@ -565,13 +563,12 @@ class Payment extends Base
                  * Something which we've not accounted for went wrong.
                  */
 
-                throw new PaymentException('Refund failed.', 1);
+                throw new PaymentException('Refund failed.');
             }
 
             return true;
 
         } catch (PaymentException $e) {
-
             $this->setError($e->getMessage());
             return false;
         }
