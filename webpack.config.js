@@ -24,8 +24,6 @@ module.exports = {
                     {
                         loader: 'css-loader',
                         options: {
-                            minimize: true,
-                            importLoaders: 2,
                             url: false
                         }
                     },
