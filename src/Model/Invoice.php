@@ -260,7 +260,7 @@ class Invoice extends Base
                 $aData['ref'] = $this->generateValidRef();
             }
 
-            $aData['token'] = $this->generateValidToken($aData['ref']);
+            $aData['token'] = $this->generateToken();
 
             $aItems = $aData['items'];
             unset($aData['items']);
@@ -707,31 +707,6 @@ class Invoice extends Base
         } while ($bRefExists);
 
         return $sRef;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Generates a valid invoice token
-     *
-     * @param string $sRef The invoice's reference
-     *
-     * @return string
-     */
-    public function generateValidToken($sRef)
-    {
-        $oDb = Factory::service('Database');
-
-        do {
-
-            //  @todo: use more secure token generation, like random_bytes();
-            $sToken = md5(microtime(true) . $sRef . APP_PRIVATE_KEY);
-            $oDb->where('token', $sToken);
-            $bTokenExists = (bool) $oDb->count_all_results($this->table);
-
-        } while ($bTokenExists);
-
-        return $sToken;
     }
 
     // --------------------------------------------------------------------------

@@ -195,7 +195,7 @@ class Payment extends Base
                 $aData['ref'] = $this->generateValidRef();
             }
 
-            $aData['token'] = $this->generateValidToken();
+            $aData['token'] = $this->generateToken();
 
             if (array_key_exists('custom_data', $aData)) {
                 $aData['custom_data'] = json_encode($aData['custom_data']);
@@ -298,29 +298,6 @@ class Payment extends Base
         } while ($bRefExists);
 
         return $sRef;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Generates a valid payment token
-     *
-     * @return string
-     */
-    public function generateValidToken()
-    {
-        $oDb = Factory::service('Database');
-
-        do {
-
-            //  @todo (Pablo - 2018-12-11) - Use the base model's token logic
-            $sToken = md5(microtime(true) . APP_PRIVATE_KEY);
-            $oDb->where('token', $sToken);
-            $bTokenExists = (bool) $oDb->count_all_results($this->table);
-
-        } while ($bTokenExists);
-
-        return $sToken;
     }
 
     // --------------------------------------------------------------------------
@@ -562,7 +539,6 @@ class Payment extends Base
                 /**
                  * Something which we've not accounted for went wrong.
                  */
-
                 throw new PaymentException('Refund failed.');
             }
 
