@@ -96,6 +96,13 @@
                                     lang('action_view'),
                                     'class="btn btn-xs btn-default"'
                                 );
+                                if (userHasPermission('admin:invoice:invoice:manage')) {
+                                    echo anchor(
+                                        'admin/invoice/invoice/view/' . $oPayment->invoice_id,
+                                        'View Invoice',
+                                        'class="btn btn-xs btn-default"'
+                                    );
+                                }
                                 ?>
                             </td>
                         </tr>
