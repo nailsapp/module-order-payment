@@ -523,22 +523,12 @@ class Payment extends Base
             $oRefundResponse = $oRefundRequest->execute($iAmount);
 
             if ($oRefundResponse->isProcessing() || $oRefundResponse->isComplete()) {
-
                 //  It's all good
-
             } elseif ($oRefundResponse->isFailed()) {
-
-                /**
-                 * Refund failed, throw an error which will be caught and displayed to the user
-                 */
-
+                //  Refund failed, throw an error which will be caught and displayed to the user
                 throw new PaymentException('Refund failed: ' . $oRefundResponse->getError()->user);
-
             } else {
-
-                /**
-                 * Something which we've not accounted for went wrong.
-                 */
+                //Something which we've not accounted for went wrong.
                 throw new PaymentException('Refund failed.');
             }
 

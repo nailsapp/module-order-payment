@@ -20,6 +20,7 @@ class Refund extends Base
 {
     /**
      * The Currency library
+     *
      * @var Nails\Currency\Service\Currency
      */
     protected $oCurrency;
@@ -44,29 +45,30 @@ class Refund extends Base
         $this->tableAlias        = 'pr';
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
-
-        $this->addExpandableField([
-            'trigger'   => 'invoice',
-            'type'      => self::EXPANDABLE_TYPE_SINGLE,
-            'property'  => 'invoice',
-            'model'     => 'Invoice',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'invoice_id',
-        ]);
-        $this->addExpandableField([
-            'trigger'   => 'payment',
-            'type'      => self::EXPANDABLE_TYPE_SINGLE,
-            'property'  => 'payment',
-            'model'     => 'Payment',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'payment_id',
-        ]);
+        $this
+            ->addExpandableField([
+                'trigger'   => 'invoice',
+                'type'      => self::EXPANDABLE_TYPE_SINGLE,
+                'property'  => 'invoice',
+                'model'     => 'Invoice',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'invoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'payment',
+                'type'      => self::EXPANDABLE_TYPE_SINGLE,
+                'property'  => 'payment',
+                'model'     => 'Payment',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'payment_id',
+            ]);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns all the statuses as an array
+     *
      * @return array
      */
     public function getStatuses()
@@ -83,6 +85,7 @@ class Refund extends Base
 
     /**
      * Returns an array of statuses with human friendly labels
+     *
      * @return array
      */
     public function getStatusesHuman()
@@ -134,7 +137,6 @@ class Refund extends Base
             return $bReturnObject ? $oRefund : $oRefund->id;
 
         } catch (\Exception $e) {
-
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -181,7 +183,6 @@ class Refund extends Base
             return $bResult;
 
         } catch (\Exception $e) {
-
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -192,6 +193,7 @@ class Refund extends Base
 
     /**
      * Generates a valid invoice ref
+     *
      * @return string
      */
     public function generateValidRef()
@@ -283,6 +285,7 @@ class Refund extends Base
      *
      * @param  integer $iRefundId      The ID of the refund
      * @param  string  $sEmailOverride The email address to send the email to
+     *
      * @return bool
      */
     public function sendReceipt($iRefundId, $sEmailOverride = null)
@@ -302,11 +305,8 @@ class Refund extends Base
             $oEmail = new \stdClass();
 
             if ($oRefund->status->id == self::STATUS_COMPLETE) {
-
                 $oEmail->type = 'refund_complete_receipt';
-
             } else {
-
                 $oEmail->type = 'refund_processing_receipt';
             }
 
@@ -315,20 +315,13 @@ class Refund extends Base
             ];
 
             if (!empty($sEmailOverride)) {
-
-                //  @todo, validate email address (or addresses if an array)
+                //  @todo (Pablo - 2019-01-20) - validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
-
             } elseif (!empty($oRefund->invoice->customer->billing_email)) {
-
                 $aEmails = explode(',', $oRefund->invoice->customer->billing_email);
-
             } elseif (!empty($oRefund->invoice->customer->email)) {
-
                 $aEmails = [$oRefund->invoice->customer->email];
-
             } else {
-
                 throw new PaymentException('No email address to send the receipt to.', 1);
             }
 
@@ -344,7 +337,6 @@ class Refund extends Base
                 $oResult          = $oEmailer->send($oEmail);
 
                 if (!empty($oResult)) {
-
                     $oInvoiceEmailModel->create(
                         [
                             'invoice_id' => $oRefund->invoice->id,
@@ -353,15 +345,12 @@ class Refund extends Base
                             'recipient'  => $oEmail->to_email,
                         ]
                     );
-
                 } else {
-
                     throw new PaymentException($oEmailer->lastError(), 1);
                 }
             }
 
         } catch (\Exception $e) {
-
             $this->setError($e->getMessage());
             return false;
         }
