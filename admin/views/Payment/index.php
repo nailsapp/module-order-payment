@@ -23,9 +23,7 @@
                 <?php
 
                 if ($payments) {
-
                     foreach ($payments as $oPayment) {
-
                         ?>
                         <tr>
                             <td class="driver">
@@ -35,42 +33,29 @@
                                 <?=$oPayment->txn_id?>
                             </td>
                             <?php
-
                             if ($oPayment->status->id == 'PROCESSING') {
-
                                 $sClass = 'warning';
                                 $sText  = $oPayment->status->label;
-
                             } elseif ($oPayment->status->id == 'COMPLETE') {
-
                                 $sClass = 'success';
                                 $sText  = $oPayment->status->label;
-
                             } elseif ($oPayment->status->id == 'FAILED') {
-
                                 $sClass = 'danger';
                                 $sText  = $oPayment->status->label;
-
                             } else {
-
                                 $sClass = '';
                                 $sText  = $oPayment->status->label;
                             }
-
-                            echo '<td class="status ' . $sClass . '">';
-                            echo $sText;
-                            echo '</td>';
-
                             ?>
+                            <td class="status <?=$sClass?>">
+                                <?=$sText?>
+                            </td>
                             <td class="invoice">
                                 <?php
 
                                 if ($oPayment->invoice_state == 'DRAFT') {
-
                                     $sUrl = 'admin/invoice/invoice/edit/' . $oPayment->invoice_id;
-
                                 } else {
-
                                     $sUrl = 'admin/invoice/invoice/view/' . $oPayment->invoice_id;
                                 }
 
@@ -78,31 +63,26 @@
                                     $sUrl,
                                     $oPayment->invoice_ref . ' &mdash; ' . $invoiceStates[$oPayment->invoice_state]
                                 );
-
                                 ?>
                             </td>
                             <td class="amount">
                                 <?php
-
                                 echo $oPayment->amount->formatted;
                                 if ($oPayment->amount_refunded->raw) {
                                     echo '<small>';
                                     echo 'Refunded: ' . $oPayment->amount_refunded->formatted;
                                     echo '</small>';
                                 }
-
                                 ?>
                             </td>
                             <td class="fee">
                                 <?php
-
                                 echo $oPayment->fee->formatted;
                                 if ($oPayment->fee_refunded->raw) {
                                     echo '<small>';
                                     echo 'Refunded: ' . $oPayment->fee_refunded->formatted;
                                     echo '</small>';
                                 }
-
                                 ?>
                             </td>
                             <td class="currency">
@@ -111,30 +91,25 @@
                             <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
                             <td class="actions">
                                 <?php
-
                                 echo anchor(
                                     'admin/invoice/payment/view/' . $oPayment->id,
                                     lang('action_view'),
                                     'class="btn btn-xs btn-default"'
                                 );
-
                                 ?>
                             </td>
-                        <tr>
+                        </tr>
                         <?php
                     }
-
                 } else {
-
                     ?>
                     <tr>
-                        <td colspan="8" class="no-data">
+                        <td colspan="9" class="no-data">
                             No Payments Found
                         </td>
                     </tr>
                     <?php
                 }
-
                 ?>
             </tbody>
         </table>

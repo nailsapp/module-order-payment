@@ -27,15 +27,15 @@ class Payment extends BaseAdmin
 
     /**
      * Announces this controller's navGroups
+     *
      * @return stdClass
      */
     public static function announce()
     {
         if (userHasPermission('admin:invoice:payment:view')) {
-
-            $oNavGroup = Factory::factory('Nav', 'nails/module-admin');
-            $oNavGroup->setLabel('Invoices &amp; Payments');
-            $oNavGroup->setIcon('fa-credit-card');
+            $oNavGroup = Factory::factory('Nav', 'nails/module-admin')
+                ->setLabel('Invoices &amp; Payments')
+                ->setIcon('fa-credit-card');
             if (userHasPermission('admin:invoice:payment:view')) {
                 $oNavGroup->addAction('Manage Payments');
             }
@@ -48,22 +48,24 @@ class Payment extends BaseAdmin
 
     /**
      * Returns an array of extra permissions for this controller
+     *
      * @return array
      */
     public static function permissions()
     {
-        $permissions = parent::permissions();
+        $aPermissions = parent::permissions();
 
-        $permissions['view']   = 'Can view payment details';
-        $permissions['refund'] = 'Can refund payments';
+        $aPermissions['view']   = 'Can view payment details';
+        $aPermissions['refund'] = 'Can refund payments';
 
-        return $permissions;
+        return $aPermissions;
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Browse payments
+     *
      * @return void
      */
     public function index()
@@ -89,11 +91,11 @@ class Payment extends BaseAdmin
         $sTableAlias = $oPaymentModel->getTableAlias();
 
         //  Get pagination and search/sort variables
-        $page      = $oInput->get('page') ? $oInput->get('page') : 0;
-        $perPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
-        $sortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
-        $sortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
-        $keywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
+        $iPage      = $oInput->get('page') ? $oInput->get('page') : 0;
+        $iPerPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
+        $sSortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
+        $sSortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
+        $sKeywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
 
         // --------------------------------------------------------------------------
 
@@ -136,29 +138,28 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        //  Define the $data variable for the queries
-        $data = [
+        //  Define the $aData variable for the queries
+        $aData = [
             'sort'      => [
-                [$sortOn, $sortOrder],
+                [$sSortOn, $sSortOrder],
             ],
-            'keywords'  => $keywords,
+            'keywords'  => $sKeywords,
             'cbFilters' => $aCbFilters,
         ];
 
         //  Get the items for the page
-        $totalRows                   = $oPaymentModel->countAll($data);
-        $this->data['payments']      = $oPaymentModel->getAll($page, $perPage, $data);
+        $totalRows                   = $oPaymentModel->countAll($aData);
+        $this->data['payments']      = $oPaymentModel->getAll($iPage, $iPerPage, $aData);
         $this->data['invoiceStates'] = $oInvoiceModel->getStates();
 
         //  Set Search and Pagination objects for the view
-        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
-        $this->data['pagination'] = Helper::paginationObject($page, $perPage, $totalRows);
+        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sSortOn, $sSortOrder, $iPerPage, $sKeywords, $aCbFilters);
+        $this->data['pagination'] = Helper::paginationObject($iPage, $iPerPage, $totalRows);
 
         // --------------------------------------------------------------------------
 
         //  Add a header button
         if (userHasPermission('admin:invoice:invoice:create')) {
-
             Helper::addHeaderButton(
                 'admin/invoice/invoice/create',
                 'Create Invoice'
@@ -174,6 +175,7 @@ class Payment extends BaseAdmin
 
     /**
      * View a single payment
+     *
      * @return void
      */
     public function view()
@@ -207,6 +209,7 @@ class Payment extends BaseAdmin
 
     /**
      * View a single payment
+     *
      * @return void
      */
     public function refund()

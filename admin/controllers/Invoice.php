@@ -32,12 +32,10 @@ class Invoice extends BaseAdmin
     public static function announce()
     {
         if (userHasPermission('admin:invoice:invoice:manage')) {
-
-            $oNavGroup = Factory::factory('Nav', 'nails/module-admin');
-            $oNavGroup->setLabel('Invoices &amp; Payments');
-            $oNavGroup->setIcon('fa-credit-card');
-            $oNavGroup->addAction('Manage Invoices', 'index', [], 0);
-
+            $oNavGroup = Factory::factory('Nav', 'nails/module-admin')
+                ->setLabel('Invoices &amp; Payments')
+                ->setIcon('fa-credit-card')
+                ->addAction('Manage Invoices', 'index', [], 0);
             return $oNavGroup;
         }
     }
@@ -51,14 +49,14 @@ class Invoice extends BaseAdmin
      */
     public static function permissions()
     {
-        $permissions = parent::permissions();
+        $aPermissions = parent::permissions();
 
-        $permissions['manage'] = 'Can manage invoices';
-        $permissions['create'] = 'Can create invoices';
-        $permissions['edit']   = 'Can edit invoices';
-        $permissions['delete'] = 'Can delete invoices';
+        $aPermissions['manage'] = 'Can manage invoices';
+        $aPermissions['create'] = 'Can create invoices';
+        $aPermissions['edit']   = 'Can edit invoices';
+        $aPermissions['delete'] = 'Can delete invoices';
 
-        return $permissions;
+        return $aPermissions;
     }
 
     // --------------------------------------------------------------------------
@@ -98,17 +96,17 @@ class Invoice extends BaseAdmin
         $sTableAlias = $this->oInvoiceModel->getTableAlias();
 
         //  Get pagination and search/sort variables
-        $oInput    = Factory::service('Input');
-        $page      = $oInput->get('page') ? $oInput->get('page') : 0;
-        $perPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
-        $sortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
-        $sortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
-        $keywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
+        $oInput     = Factory::service('Input');
+        $iPage      = $oInput->get('page') ? $oInput->get('page') : 0;
+        $iPerPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
+        $sSortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
+        $sSortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
+        $sKeywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
 
         // --------------------------------------------------------------------------
 
         //  Define the sortable columns
-        $sortColumns = [
+        $aSortColumns = [
             $sTableAlias . '.created'  => 'Created Date',
             $sTableAlias . '.modified' => 'Modified Date',
             $sTableAlias . '.state'    => 'Invoice State',
@@ -158,27 +156,26 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        //  Define the $data variable for the queries
-        $data = [
+        //  Define the $aData variable for the queries
+        $aData = [
             'sort'      => [
-                [$sortOn, $sortOrder],
+                [$sSortOn, $sSortOrder],
             ],
             'expand'    => ['customer', 'payments'],
-            'keywords'  => $keywords,
+            'keywords'  => $sKeywords,
             'cbFilters' => $aCbFilters,
         ];
 
         //  Get the items for the page
-        $totalRows              = $this->oInvoiceModel->countAll($data);
-        $this->data['invoices'] = $this->oInvoiceModel->getAll($page, $perPage, $data);
+        $totalRows              = $this->oInvoiceModel->countAll($aData);
+        $this->data['invoices'] = $this->oInvoiceModel->getAll($iPage, $iPerPage, $aData);
 
         //  Set Search and Pagination objects for the view
-        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sortOn, $sortOrder, $perPage, $keywords, $aCbFilters);
-        $this->data['pagination'] = Helper::paginationObject($page, $perPage, $totalRows);
+        $this->data['search']     = Helper::searchObject(true, $aSortColumns, $sSortOn, $sSortOrder, $iPerPage, $sKeywords, $aCbFilters);
+        $this->data['pagination'] = Helper::paginationObject($iPage, $iPerPage, $totalRows);
 
         //  Add a header button
         if (userHasPermission('admin:invoice:invoice:create')) {
-
             Helper::addHeaderButton(
                 'admin/invoice/invoice/create',
                 'Create Invoice'
@@ -214,11 +211,8 @@ class Invoice extends BaseAdmin
         $this->data['customer_id'] = $oInput->get('customer_id');
 
         if ($oInput->post()) {
-
             if ($this->validatePost()) {
-
                 $oInvoice = $this->oInvoiceModel->create($this->getObjectFromPost(), true);
-
                 if (!empty($oInvoice)) {
 
                     //  Send invoice if needed
@@ -230,12 +224,10 @@ class Invoice extends BaseAdmin
                     redirect('admin/invoice/invoice/index');
 
                 } else {
-
                     $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->lastError();
                 }
 
             } else {
-
                 $this->data['error'] = lang('fv_there_were_errors');
             }
         }
@@ -275,7 +267,6 @@ class Invoice extends BaseAdmin
             }
 
         } else {
-
             $aItems = [];
         }
 
@@ -343,9 +334,7 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         if ($oInput->post()) {
-
             if ($this->validatePost()) {
-
                 if ($oModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
 
                     //  Send invoice if needed
@@ -358,12 +347,9 @@ class Invoice extends BaseAdmin
                     redirect('admin/invoice/invoice/index');
 
                 } else {
-
                     $this->data['error'] = 'Failed to update invoice. ' . $oModel->lastError();
                 }
-
             } else {
-
                 $this->data['error'] = lang('fv_there_were_errors');
             }
         }
@@ -402,7 +388,6 @@ class Invoice extends BaseAdmin
             }
 
         } else {
-
             $aItems = $this->data['invoice']->items->data;
         }
 
@@ -628,12 +613,9 @@ class Invoice extends BaseAdmin
             'state' => $oInvoiceModel::STATE_DRAFT,
         ];
         if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-
             $sStatus  = 'success';
             $sMessage = 'Invoice updated successfully!';
-
         } else {
-
             $sStatus  = 'error';
             $sMessage = 'Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError();
         }
@@ -674,12 +656,9 @@ class Invoice extends BaseAdmin
             'state' => $oInvoiceModel::STATE_WRITTEN_OFF,
         ];
         if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-
             $sStatus  = 'success';
             $sMessage = 'Invoice written off successfully!';
-
         } else {
-
             $sStatus  = 'error';
             $sMessage = 'Failed to write off invoice. ' . $this->oInvoiceModel->lastError();
         }
@@ -714,12 +693,9 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         if ($this->oInvoiceModel->delete($oInvoice->id)) {
-
             $sStatus  = 'success';
             $sMessage = 'Invoice deleted successfully!';
-
         } else {
-
             $sStatus  = 'error';
             $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
         }
