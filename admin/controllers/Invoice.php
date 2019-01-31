@@ -95,8 +95,8 @@ class Invoice extends BaseAdmin
         $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $iCustomerId    = $oInput->get('customer_id');
 
-        if ($oInput->get('customer_id')) {
-            $oCustomer = $oCustomerModel->getbyId($oInput->get('customer_id'));
+        if ($iCustomerId) {
+            $oCustomer = $oCustomerModel->getbyId($iCustomerId);
         }
 
         // --------------------------------------------------------------------------
