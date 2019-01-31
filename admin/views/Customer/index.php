@@ -11,7 +11,7 @@
                     <th class="customer">Customer</th>
                     <th class="datetime">Created</th>
                     <th class="datetime">Modified</th>
-                    <th class="actions">Actions</th>
+                    <th class="actions" style="width: 160px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,7 +50,15 @@
                                     echo anchor(
                                         'admin/invoice/invoice/create?customer_id=' . $oCustomer->id,
                                         'New Invoice',
-                                        'class="btn btn-xs btn-default"'
+                                        'class="btn btn-xs btn-success"'
+                                    );
+                                }
+
+                                if (userHasPermission('admin:invoice:invoice:manage')) {
+                                    echo anchor(
+                                        'admin/invoice/invoice?customer_id=' . $oCustomer->id,
+                                        'View Invoices',
+                                        'class="btn btn-xs btn-warning"'
                                     );
                                 }
 

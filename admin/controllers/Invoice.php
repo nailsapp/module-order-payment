@@ -13,6 +13,7 @@
 namespace Nails\Admin\Invoice;
 
 use Nails\Admin\Helper;
+use Nails\Admin\Nav;
 use Nails\Factory;
 use Nails\Invoice\Controller\BaseAdmin;
 
@@ -27,7 +28,8 @@ class Invoice extends BaseAdmin
     /**
      * Announces this controller's navGroups
      *
-     * @return \stdClass
+     * @return Nav
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public static function announce()
     {
@@ -78,7 +80,7 @@ class Invoice extends BaseAdmin
     /**
      * Browse invoices
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function index()
     {
@@ -88,15 +90,25 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        //  Are we dealing with a filtered view?
+        $oInput         = Factory::service('Input');
+        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
+        $iCustomerId    = $oInput->get('customer_id');
+
+        if ($oInput->get('customer_id')) {
+            $oCustomer = $oCustomerModel->getbyId($oInput->get('customer_id'));
+        }
+
+        // --------------------------------------------------------------------------
+
         //  Set method info
-        $this->data['page']->title = 'Manage Invoices';
+        $this->data['page']->title = empty($oCustomer) ? 'Manage Invoices' : possessive($oCustomer->label) . ' invoices';
 
         // --------------------------------------------------------------------------
 
         $sTableAlias = $this->oInvoiceModel->getTableAlias();
 
         //  Get pagination and search/sort variables
-        $oInput     = Factory::service('Input');
         $iPage      = $oInput->get('page') ? $oInput->get('page') : 0;
         $iPerPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
         $sSortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
@@ -158,6 +170,9 @@ class Invoice extends BaseAdmin
 
         //  Define the $aData variable for the queries
         $aData = [
+            'where'     => array_filter([
+                !empty($oCustomer) ? ['customer_id', $oCustomer->id] : null,
+            ]),
             'sort'      => [
                 [$sSortOn, $sSortOrder],
             ],
@@ -167,12 +182,12 @@ class Invoice extends BaseAdmin
         ];
 
         //  Get the items for the page
-        $totalRows              = $this->oInvoiceModel->countAll($aData);
+        $iTotalRows             = $this->oInvoiceModel->countAll($aData);
         $this->data['invoices'] = $this->oInvoiceModel->getAll($iPage, $iPerPage, $aData);
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $aSortColumns, $sSortOn, $sSortOrder, $iPerPage, $sKeywords, $aCbFilters);
-        $this->data['pagination'] = Helper::paginationObject($iPage, $iPerPage, $totalRows);
+        $this->data['pagination'] = Helper::paginationObject($iPage, $iPerPage, $iTotalRows);
 
         //  Add a header button
         if (userHasPermission('admin:invoice:invoice:create')) {
@@ -192,7 +207,7 @@ class Invoice extends BaseAdmin
     /**
      * Create a new invoice
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function create()
     {
@@ -302,7 +317,7 @@ class Invoice extends BaseAdmin
     /**
      * Edit an invoice
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function edit()
     {
@@ -425,7 +440,7 @@ class Invoice extends BaseAdmin
     /**
      * View an invoice
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function view()
     {
@@ -456,46 +471,13 @@ class Invoice extends BaseAdmin
     // --------------------------------------------------------------------------
 
     /**
-     * Validate the POST data
+     * Form validation cal;back to validate currency selection
      *
-     * @return boolean
+     * @param string $sCode the currency code
+     *
+     * @return bool
+     * @throws \Nails\Common\Exception\FactoryException
      */
-    protected function validatePost()
-    {
-        $oFormValidation = Factory::service('FormValidation');
-
-        $aRules = [
-            'ref'             => 'trim',
-            'state'           => 'trim|required',
-            'dated'           => 'trim|required|valid_date',
-            'currency'        => 'trim|required|callback__callbackValidCurrency',
-            'terms'           => 'trim|is_natural',
-            'customer_id'     => 'trim',
-            'additional_text' => 'trim',
-            'items'           => '',
-        ];
-
-        $aRulesFV = [];
-        foreach ($aRules as $sKey => $sRules) {
-            $aRulesFV[] = [
-                'field' => $sKey,
-                'label' => '',
-                'rules' => $sRules,
-            ];
-        }
-
-        $oFormValidation->set_rules($aRulesFV);
-
-        $oFormValidation->set_message('required', lang('fv_required'));
-        $oFormValidation->set_message('valid_date', lang('fv_valid_date'));
-        $oFormValidation->set_message('is_natural', lang('fv_is_natural'));
-        $oFormValidation->set_message('valid_email', lang('fv_valid_email'));
-
-        return $oFormValidation->run($this);
-    }
-
-    // --------------------------------------------------------------------------
-
     public function _callbackValidCurrency($sCode)
     {
         $oFormValidation = Factory::service('FormValidation');
@@ -516,79 +498,9 @@ class Invoice extends BaseAdmin
     // --------------------------------------------------------------------------
 
     /**
-     * Get an object generated from the POST data
-     *
-     * @return array
-     */
-    protected function getObjectFromPost()
-    {
-        $oInput = Factory::service('Input');
-        $oUri   = Factory::service('Uri');
-        $aData  = [
-            'ref'             => $oInput->post('ref') ?: null,
-            'state'           => $oInput->post('state') ?: null,
-            'dated'           => $oInput->post('dated') ?: null,
-            'currency'        => $oInput->post('currency') ?: null,
-            'terms'           => (int) $oInput->post('terms') ?: 0,
-            'customer_id'     => (int) $oInput->post('customer_id') ?: null,
-            'additional_text' => $oInput->post('additional_text') ?: null,
-            'items'           => [],
-            'currency'        => $oInput->post('currency'),
-        ];
-
-        if ($oInput->post('items')) {
-            foreach ($oInput->post('items') as $aItem) {
-
-                //  @todo convert to pence using a model
-                $aData['items'][] = [
-                    'id'        => array_key_exists('id', $aItem) ? $aItem['id'] : null,
-                    'quantity'  => array_key_exists('quantity', $aItem) ? $aItem['quantity'] : null,
-                    'unit'      => array_key_exists('unit', $aItem) ? $aItem['unit'] : null,
-                    'label'     => array_key_exists('label', $aItem) ? $aItem['label'] : null,
-                    'body'      => array_key_exists('body', $aItem) ? $aItem['body'] : null,
-                    'unit_cost' => array_key_exists('unit_cost', $aItem) ? intval($aItem['unit_cost'] * 100) : null,
-                    'tax_id'    => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null,
-                ];
-            }
-        }
-
-        if ($oUri->rsegment(5) == 'edit') {
-            unset($aData['ref']);
-        }
-
-        return $aData;
-    }
-
-    // --------------------------------------------------------------------------
-
-    protected function sendInvoice($oInvoice)
-    {
-        if (empty($oInvoice)) {
-            return false;
-        }
-
-        $sInvoiceClass = get_class($this->oInvoiceModel);
-
-        if ($oInvoice->state->id !== $sInvoiceClass::STATE_OPEN) {
-            return false;
-        }
-
-        $oNow   = Factory::factory('DateTime');
-        $oDated = new \DateTime($oInvoice->dated->raw);
-
-        if ($oNow->format('Y-m-d') != $oDated->format('Y-m-d')) {
-            return false;
-        }
-
-        return $this->oInvoiceModel->send($oInvoice->id);
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Make an invoice a draft
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function make_draft()
     {
@@ -631,7 +543,7 @@ class Invoice extends BaseAdmin
     /**
      * Write an invoice off
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function write_off()
     {
@@ -674,7 +586,7 @@ class Invoice extends BaseAdmin
     /**
      * Delete an invoice
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function delete()
     {
@@ -704,5 +616,126 @@ class Invoice extends BaseAdmin
         $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice/index');
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Validate the POST data
+     *
+     * @return boolean
+     * @throws \Nails\Common\Exception\FactoryException
+     */
+    protected function validatePost()
+    {
+        $oFormValidation = Factory::service('FormValidation');
+
+        $aRules = [
+            'ref'             => 'trim',
+            'state'           => 'trim|required',
+            'dated'           => 'trim|required|valid_date',
+            'currency'        => 'trim|required|callback__callbackValidCurrency',
+            'terms'           => 'trim|is_natural',
+            'customer_id'     => 'trim',
+            'additional_text' => 'trim',
+            'items'           => '',
+        ];
+
+        $aRulesFV = [];
+        foreach ($aRules as $sKey => $sRules) {
+            $aRulesFV[] = [
+                'field' => $sKey,
+                'label' => '',
+                'rules' => $sRules,
+            ];
+        }
+
+        $oFormValidation->set_rules($aRulesFV);
+
+        $oFormValidation->set_message('required', lang('fv_required'));
+        $oFormValidation->set_message('valid_date', lang('fv_valid_date'));
+        $oFormValidation->set_message('is_natural', lang('fv_is_natural'));
+        $oFormValidation->set_message('valid_email', lang('fv_valid_email'));
+
+        return $oFormValidation->run($this);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get an object generated from the POST data
+     *
+     * @return array
+     * @throws \Nails\Common\Exception\FactoryException
+     */
+    protected function getObjectFromPost()
+    {
+        $oInput = Factory::service('Input');
+        $oUri   = Factory::service('Uri');
+        $aData  = [
+            'ref'             => $oInput->post('ref') ?: null,
+            'state'           => $oInput->post('state') ?: null,
+            'dated'           => $oInput->post('dated') ?: null,
+            'currency'        => $oInput->post('currency') ?: null,
+            'terms'           => (int) $oInput->post('terms') ?: 0,
+            'customer_id'     => (int) $oInput->post('customer_id') ?: null,
+            'additional_text' => $oInput->post('additional_text') ?: null,
+            'items'           => [],
+            'currency'        => $oInput->post('currency'),
+        ];
+
+        if ($oInput->post('items')) {
+            foreach ($oInput->post('items') as $aItem) {
+
+                //  @todo convert to pence using a model
+                $aData['items'][] = [
+                    'id'        => array_key_exists('id', $aItem) ? $aItem['id'] : null,
+                    'quantity'  => array_key_exists('quantity', $aItem) ? $aItem['quantity'] : null,
+                    'unit'      => array_key_exists('unit', $aItem) ? $aItem['unit'] : null,
+                    'label'     => array_key_exists('label', $aItem) ? $aItem['label'] : null,
+                    'body'      => array_key_exists('body', $aItem) ? $aItem['body'] : null,
+                    'unit_cost' => array_key_exists('unit_cost', $aItem) ? intval($aItem['unit_cost'] * 100) : null,
+                    'tax_id'    => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null,
+                ];
+            }
+        }
+
+        if ($oUri->rsegment(5) == 'edit') {
+            unset($aData['ref']);
+        }
+
+        return $aData;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Send an invoice by email
+     *
+     * @param \stdClass $oInvoice The Invoice to send
+     *
+     * @return bool
+     * @throws \Nails\Common\Exception\FactoryException
+     */
+    protected function sendInvoice($oInvoice)
+    {
+        if (empty($oInvoice)) {
+            return false;
+        }
+
+        $sInvoiceClass = get_class($this->oInvoiceModel);
+
+        if ($oInvoice->state->id !== $sInvoiceClass::STATE_OPEN) {
+            return false;
+        }
+
+        $oNow   = Factory::factory('DateTime');
+        $oDated = new \DateTime($oInvoice->dated->raw);
+
+        if ($oNow->format('Y-m-d') != $oDated->format('Y-m-d')) {
+            return false;
+        }
+
+        return $this->oInvoiceModel->send($oInvoice->id);
     }
 }
