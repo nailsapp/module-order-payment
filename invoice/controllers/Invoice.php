@@ -110,7 +110,7 @@ class Invoice extends Base
             if ($oInvoice->state->id === 'PAID') {
 
                 $oView = Factory::service('View');
-                $this->loadStyles(APPPATH . 'modules/invoice/views/pay/paid.php');
+                $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
                 $oView->load('structure/header', $this->data);
                 $oView->load('invoice/pay/paid', $this->data);
                 $oView->load('structure/footer', $this->data);
@@ -144,7 +144,7 @@ class Invoice extends Base
             }
 
             $oView = Factory::service('View');
-            $this->loadStyles(APPPATH . 'modules/invoice/views/pay/hasProcessing.php');
+            $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/hasProcessing.php');
             $oView->load('structure/header', $this->data);
             $oView->load('invoice/pay/hasProcessing', $this->data);
             $oView->load('structure/footer', $this->data);
@@ -318,7 +318,7 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         $oView = Factory::service('View');
-        $this->loadStyles(APPPATH . 'modules/invoice/views/pay/index.php');
+        $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/index.php');
         $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
         $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
         $oView->load('structure/header', $this->data);
