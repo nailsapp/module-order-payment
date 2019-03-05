@@ -211,7 +211,7 @@ class Payment extends Base
             $oDb->trans_commit();
             $this->triggerEvent(
                 Events::PAYMENT_CREATED,
-                $bReturnObject ? $mPayment : $mPayment->id
+                [$this->getPaymentForEvent($bReturnObject ? $mPayment->id : $mPayment)]
             );
 
             return $mPayment;
@@ -257,7 +257,7 @@ class Payment extends Base
             $oDb->trans_commit();
             $this->triggerEvent(
                 Events::PAYMENT_UPDATED,
-                $iPaymentId
+                [$this->getPaymentForEvent($iPaymentId)]
             );
 
             return $bResult;
@@ -537,24 +537,20 @@ class Payment extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Trigger a callback event for a payment
+     * Get a payment in a suitable format for the event triggers
      *
-     * @param  string $sEvent     The event to trigger
-     * @param  int    $iPaymentId The payment ID
+     * @param int $iPaymentId The payment ID
      *
-     * @throws \Nails\Common\Exception\FactoryException
-     * @throws \Nails\Common\Exception\ModelException
+     * @return \stdClass
+     * @throws ModelException
      */
-    protected function triggerEvent(string $sEvent, int $iPaymentId): void
+    protected function getPaymentForEvent(int $iPaymentId): \stdClass
     {
-        $oEventService = Factory::service('Event');
-        $oEventService->trigger(
-            $sEvent,
-            'nails/module-invoice',
-            [
-                $this->getById($iPaymentId),
-            ]
-        );
+        $oPayment = $this->getById($iPaymentId);
+        if (empty($oPayment)) {
+            throw new ModelException('Invalid payment ID');
+        }
+        return $oPayment;
     }
 
     // --------------------------------------------------------------------------

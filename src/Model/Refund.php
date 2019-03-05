@@ -130,7 +130,7 @@ class Refund extends Base
             $oDb->trans_commit();
             $this->triggerEvent(
                 Events::REFUND_CREATED,
-                $bReturnObject ? $mRefund : $mRefund->id
+                [$this->getRefundForEvent($bReturnObject ? $mRefund->id : $mRefund)]
             );
 
             return $mRefund;
@@ -171,7 +171,7 @@ class Refund extends Base
             $oDb->trans_commit();
             $this->triggerEvent(
                 Events::REFUND_UPDATED,
-                $iRefundId
+                [$this->getRefundForEvent($iRefundId)]
             );
 
             return $bResult;
@@ -363,24 +363,20 @@ class Refund extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Trigger a callback event for a payment
+     * Get a refund in a suitable format for the event triggers
      *
-     * @param  string $sEvent    The event to trigger
-     * @param  int    $iRefundId The payment ID
+     * @param int $iRefundId The refund ID
      *
-     * @throws \Nails\Common\Exception\FactoryException
-     * @throws \Nails\Common\Exception\ModelException
+     * @return \stdClass
+     * @throws ModelException
      */
-    protected function triggerEvent(string $sEvent, int $iRefundId): void
+    protected function getRefundForEvent(int $iRefundId): \stdClass
     {
-        $oEventService = Factory::service('Event');
-        $oEventService->trigger(
-            $sEvent,
-            'nails/module-invoice',
-            [
-                $this->getById($iRefundId),
-            ]
-        );
+        $oRefund = $this->getById($iRefundId);
+        if (empty($oRefund)) {
+            throw new ModelException('Invalid refund ID');
+        }
+        return $oRefund;
     }
 
     // --------------------------------------------------------------------------

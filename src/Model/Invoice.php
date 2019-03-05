@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Model;
 
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Factory;
 use Nails\Invoice\Events;
@@ -283,7 +284,7 @@ class Invoice extends Base
             $oDb->trans_commit();
             $this->triggerEvent(
                 Events::INVOICE_CREATED,
-                $oInvoice->id
+                [$this->getInvoiceForEvent($oInvoice->id)]
             );
 
             return $bReturnObject ? $oInvoice : $oInvoice->id;
@@ -357,7 +358,7 @@ class Invoice extends Base
             $oDb->trans_commit();
             $this->triggerEvent(
                 Events::INVOICE_UPDATED,
-                $iInvoiceId
+                [$this->getInvoiceForEvent($iInvoiceId)]
             );
 
             return $bResult;
@@ -850,7 +851,7 @@ class Invoice extends Base
 
         $this->triggerEvent(
             Events::INVOICE_PAID,
-            $iInvoiceId
+            [$this->getInvoiceForEvent($iInvoiceId)]
         );
 
         return $bResult;
@@ -878,7 +879,7 @@ class Invoice extends Base
 
         $this->triggerEvent(
             Events::INVOICE_PAID_PROCESSING,
-            $iInvoiceId
+            [$this->getInvoiceForEvent($iInvoiceId)]
         );
 
         return $bResult;
@@ -906,7 +907,7 @@ class Invoice extends Base
 
         $this->triggerEvent(
             Events::INVOICE_WRITTEN_OFF,
-            $iInvoiceId
+            [$this->getInvoiceForEvent($iInvoiceId)]
         );
 
         return $bResult;
@@ -915,24 +916,20 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Trigger a callback event for an invoice
+     * Get an invoice in a suitable format for the event triggers
      *
-     * @param  string $sEvent     The event to trigger
-     * @param  int    $iInvoiceId The invoice ID
+     * @param int $iInvoiceId The invoice ID
      *
-     * @throws \Nails\Common\Exception\FactoryException
-     * @throws \Nails\Common\Exception\ModelException
+     * @return \stdClass
+     * @throws ModelException
      */
-    protected function triggerEvent(string $sEvent, int $iInvoiceId): void
+    protected function getInvoiceForEvent(int $iInvoiceId): \stdClass
     {
-        $oEventService = Factory::service('Event');
-        $oEventService->trigger(
-            $sEvent,
-            'nails/module-invoice',
-            [
-                $this->getById($iInvoiceId, ['expand' => ['customer', 'items']]),
-            ]
-        );
+        $oInvoice = $this->getById($iInvoiceId, ['expand' => ['customer', 'items']]);
+        if (empty($oInvoice)) {
+            throw new ModelException('Invalid invoice ID');
+        }
+        return $oInvoice;
     }
 
     // --------------------------------------------------------------------------
