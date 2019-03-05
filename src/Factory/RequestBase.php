@@ -25,7 +25,6 @@ class RequestBase
     protected $oPaymentModel;
     protected $oRefund;
     protected $oRefundModel;
-    protected $oPaymentEventHandler;
 
     // --------------------------------------------------------------------------
 
@@ -34,11 +33,10 @@ class RequestBase
      */
     public function __construct()
     {
-        $this->oDriverModel         = Factory::model('PaymentDriver', 'nails/module-invoice');
-        $this->oInvoiceModel        = Factory::model('Invoice', 'nails/module-invoice');
-        $this->oPaymentModel        = Factory::model('Payment', 'nails/module-invoice');
-        $this->oRefundModel         = Factory::model('Refund', 'nails/module-invoice');
-        $this->oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
+        $this->oDriverModel  = Factory::model('PaymentDriver', 'nails/module-invoice');
+        $this->oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $this->oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+        $this->oRefundModel  = Factory::model('Refund', 'nails/module-invoice');
     }
 
     // --------------------------------------------------------------------------

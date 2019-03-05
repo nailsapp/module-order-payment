@@ -65,13 +65,6 @@ return [
                 return new \Nails\Invoice\Model\Tax();
             }
         },
-        'PaymentEventHandler' => function () {
-            if (class_exists('\App\Invoice\PaymentEventHandler')) {
-                return new \App\Invoice\PaymentEventHandler();
-            } else {
-                return new \Nails\Invoice\PaymentEventHandler();
-            }
-        },
     ],
     'factories' => [
         'ChargeRequest' => function () {

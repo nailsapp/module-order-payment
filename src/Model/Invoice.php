@@ -14,6 +14,7 @@ namespace Nails\Invoice\Model;
 
 use Nails\Common\Model\Base;
 use Nails\Factory;
+use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
 
@@ -21,6 +22,7 @@ class Invoice extends Base
 {
     /**
      * Turn caching off due to dynamic subqueries in the select statement
+     *
      * @var bool
      */
     protected static $CACHING_ENABLED = false;
@@ -29,6 +31,7 @@ class Invoice extends Base
 
     /**
      * The Currency service
+     *
      * @var \Nails\Currency\Service\Currency
      */
     protected $oCurrency;
@@ -104,6 +107,7 @@ class Invoice extends Base
 
     /**
      * Returns the invoice states with human friendly names
+     *
      * @return array
      */
     public function getStates()
@@ -122,6 +126,7 @@ class Invoice extends Base
 
     /**
      * Returns the invoice states which a user can select when creating/editing
+     *
      * @return array
      */
     public function getSelectableStates()
@@ -276,9 +281,10 @@ class Invoice extends Base
             }
 
             $oDb->trans_commit();
-
-            //  Trigger the invoice.created event
-            $this->triggerEvent('EVENT_INVOICE_CREATED', $oInvoice->id);
+            $this->triggerEvent(
+                Events::INVOICE_CREATED,
+                $oInvoice->id
+            );
 
             return $bReturnObject ? $oInvoice : $oInvoice->id;
 
@@ -349,9 +355,10 @@ class Invoice extends Base
             }
 
             $oDb->trans_commit();
-
-            //  Trigger the invoice.updated event
-            $this->triggerEvent('EVENT_INVOICE_UPDATED', $iInvoiceId);
+            $this->triggerEvent(
+                Events::INVOICE_UPDATED,
+                $iInvoiceId
+            );
 
             return $bResult;
 
@@ -367,8 +374,8 @@ class Invoice extends Base
     /**
      * Format and validate passed data
      *
-     * @param  array   &$aData     The data to format/validate
-     * @param  integer $iInvoiceId The invoice ID
+     * @param  array   &$aData      The data to format/validate
+     * @param  integer  $iInvoiceId The invoice ID
      *
      * @return void
      * @throws InvoiceException
@@ -689,6 +696,7 @@ class Invoice extends Base
 
     /**
      * Generates a valid invoice ref
+     *
      * @return string
      */
     public function generateValidRef()
@@ -840,8 +848,10 @@ class Invoice extends Base
             ]
         );
 
-        //  Trigger the invoice.paid event
-        $this->triggerEvent('EVENT_INVOICE_PAID', $iInvoiceId);
+        $this->triggerEvent(
+            Events::INVOICE_PAID,
+            $iInvoiceId
+        );
 
         return $bResult;
     }
@@ -866,8 +876,10 @@ class Invoice extends Base
             ]
         );
 
-        //  Trigger the invoice.paid.processing event
-        $this->triggerEvent('EVENT_INVOICE_PAID_PROCESSING', $iInvoiceId);
+        $this->triggerEvent(
+            Events::INVOICE_PAID_PROCESSING,
+            $iInvoiceId
+        );
 
         return $bResult;
     }
@@ -892,8 +904,10 @@ class Invoice extends Base
             ]
         );
 
-        //  Trigger the invoice.paid.processing event
-        $this->triggerEvent('EVENT_INVOICE_WRITTEN_OFF', $iInvoiceId);
+        $this->triggerEvent(
+            Events::INVOICE_WRITTEN_OFF,
+            $iInvoiceId
+        );
 
         return $bResult;
     }
@@ -903,19 +917,21 @@ class Invoice extends Base
     /**
      * Trigger a callback event for an invoice
      *
-     * @param  string  $sEvent     The event to trigger (the name of the constant)
-     * @param  integer $iInvoiceId The invoice ID
+     * @param  string $sEvent     The event to trigger
+     * @param  int    $iInvoiceId The invoice ID
      *
-     * @return void
+     * @throws \Nails\Common\Exception\FactoryException
+     * @throws \Nails\Common\Exception\ModelException
      */
-    protected function triggerEvent($sEvent, $iInvoiceId)
+    protected function triggerEvent(string $sEvent, int $iInvoiceId): void
     {
-        $oPEH   = Factory::model('PaymentEventHandler', 'nails/module-invoice');
-        $oClass = new \ReflectionClass($oPEH);
-
-        $oPEH->trigger(
-            $oClass->getConstant($sEvent),
-            $this->getById($iInvoiceId, ['expand' => ['customer', 'items']])
+        $oEventService = Factory::service('Event');
+        $oEventService->trigger(
+            $sEvent,
+            'nails/module-invoice',
+            [
+                $this->getById($iInvoiceId, ['expand' => ['customer', 'items']]),
+            ]
         );
     }
 

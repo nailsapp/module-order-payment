@@ -14,6 +14,7 @@ namespace Nails\Invoice\Model;
 
 use Nails\Common\Model\Base;
 use Nails\Factory;
+use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
 
 class Payment extends Base
@@ -201,21 +202,19 @@ class Payment extends Base
                 $aData['custom_data'] = json_encode($aData['custom_data']);
             }
 
-            $oPayment = parent::create($aData, true);
+            $mPayment = parent::create($aData, $bReturnObject);
 
-            if (!$oPayment) {
+            if (!$mPayment) {
                 throw new PaymentException('Failed to create payment.');
             }
 
             $oDb->trans_commit();
+            $this->triggerEvent(
+                Events::PAYMENT_CREATED,
+                $bReturnObject ? $mPayment : $mPayment->id
+            );
 
-            //  Trigger the payment.created event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
-            $sPaymentClass        = get_class($oPaymentEventHandler);
-
-            $oPaymentEventHandler->trigger($sPaymentClass::EVENT_PAYMENT_CREATED, $oPayment);
-
-            return $bReturnObject ? $oPayment : $oPayment->id;
+            return $mPayment;
 
         } catch (\Exception $e) {
             $oDb->trans_rollback();
@@ -256,14 +255,9 @@ class Payment extends Base
             }
 
             $oDb->trans_commit();
-
-            //  Trigger the payment.updated event
-            $oPaymentEventHandler = Factory::model('PaymentEventHandler', 'nails/module-invoice');
-            $sPaymentClass        = get_class($oPaymentEventHandler);
-
-            $oPaymentEventHandler->trigger(
-                $sPaymentClass::EVENT_PAYMENT_UPDATED,
-                $this->getById($iPaymentId)
+            $this->triggerEvent(
+                Events::PAYMENT_UPDATED,
+                $iPaymentId
             );
 
             return $bResult;
@@ -538,6 +532,29 @@ class Payment extends Base
             $this->setError($e->getMessage());
             return false;
         }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Trigger a callback event for a payment
+     *
+     * @param  string $sEvent     The event to trigger
+     * @param  int    $iPaymentId The payment ID
+     *
+     * @throws \Nails\Common\Exception\FactoryException
+     * @throws \Nails\Common\Exception\ModelException
+     */
+    protected function triggerEvent(string $sEvent, int $iPaymentId): void
+    {
+        $oEventService = Factory::service('Event');
+        $oEventService->trigger(
+            $sEvent,
+            'nails/module-invoice',
+            [
+                $this->getById($iPaymentId),
+            ]
+        );
     }
 
     // --------------------------------------------------------------------------
