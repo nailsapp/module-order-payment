@@ -16,38 +16,6 @@ use Nails\Common\Events\Base;
 class Events extends Base
 {
     /**
-     * Fired when a payment is created
-     *
-     * @param \stdClass $oPayment The newly created payment
-     */
-    const PAYMENT_CREATED = 'PAYMENT:CREATED';
-
-    /**
-     * Fired when a payment is updated
-     *
-     * @param \stdClass $oPayment The payment which was updated
-     */
-    const PAYMENT_UPDATED = 'PAYMENT:UPDATED';
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Fired when a refund is created
-     *
-     * @param \stdClass $oRefund The newly created refund
-     */
-    const REFUND_CREATED = 'REFUND:CREATED';
-
-    /**
-     * Fired when a refund is updated
-     *
-     * @param \stdClass $oRefund The refund which was updated
-     */
-    const REFUND_UPDATED = 'REFUND:UPDATED';
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Fired when an invoice is created
      *
      * @param \stdClass $oInvoice The newly created invoice
@@ -88,4 +56,36 @@ class Events extends Base
      * @param \stdClass $oInvoice The invoice which was written off
      */
     const INVOICE_WRITTEN_OFF = 'INVOICE:WRITTEN_OFF';
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Fired when a payment is created
+     *
+     * @param \stdClass $oPayment The newly created payment
+     */
+    const PAYMENT_CREATED = 'PAYMENT:CREATED';
+
+    /**
+     * Fired when a payment is updated
+     *
+     * @param \stdClass $oPayment The payment which was updated
+     */
+    const PAYMENT_UPDATED = 'PAYMENT:UPDATED';
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Fired when a refund is created
+     *
+     * @param \stdClass $oRefund The newly created refund
+     */
+    const REFUND_CREATED = 'REFUND:CREATED';
+
+    /**
+     * Fired when a refund is updated
+     *
+     * @param \stdClass $oRefund The refund which was updated
+     */
+    const REFUND_UPDATED = 'REFUND:UPDATED';
 }

@@ -8,3 +8,13 @@
 This is the Invoice module for Nails, it provides an interface for raising invoices and accepting payment from customers.
 
 http://nailsapp.co.uk/modules/invoice
+
+
+## Documentation
+
+- [Invoices](docs/invoices.md)
+- [Payments](docs/payments.md)
+- [Shipping](docs/shipping.md)
+- [Vouchers](docs/vouchers.md)
+- [Events](docs/events.md)
+
