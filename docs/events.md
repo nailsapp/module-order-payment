@@ -19,7 +19,7 @@ This module exposes the following events through the [Nails Events Service](http
     - [Nails\Invoice\Events::PAYMENT_UPDATED](#payment-updated)
 - [Refunds](#refunds)
     - [Nails\Invoice\Events::REFUND_CREATED](#refund-created)
-    - [Nails\Invoice\Events::EFUND_UPDATED](#refund-updated)
+    - [Nails\Invoice\Events::REFUND_UPDATED](#refund-updated)
 
 
 
@@ -81,8 +81,8 @@ Fired when an invoice is marked as partially paid
 **Receives:**
 
 > ```
-> processing
-```
+> \stdClass $oInvoice The invoice which was marked as paid, but with payments processing
+> ```
 
 
 <a name="invoice-written-off"></a>
