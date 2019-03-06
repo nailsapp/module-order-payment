@@ -12,9 +12,15 @@ http://nailsapp.co.uk/modules/invoice
 
 ## Documentation
 
+- [Customers](docs/customers.md)
 - [Invoices](docs/invoices.md)
+  - [Generating invoices](docs/invoices.md#generating-invoices)
+    - [Line Items](docs/invoices.md#line-items)
+    - [Callback Data](docs/invoices.md#callback-data)
+  - [Creating Charges](docs/invoices.md#creating-charges)
+  - [Creating Refunds](docs/invoices.md#creating-refunds)
 - [Payments](docs/payments.md)
-- [Shipping](docs/shipping.md)
-- [Vouchers](docs/vouchers.md)
+- [Refunds](docs/refunds.md)
+- [Taxes](docs/tax.md)
 - [Events](docs/events.md)
 

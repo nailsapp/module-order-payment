@@ -1,26 +1,12 @@
-# Payments
-> Documentation is a WIP.
+# Invoice Module › Payments
 
-Payments can be taken using any installed driver. A payment is always associated with an invoice. Payments trigger events.
+Payments can be taken using any installed driver and is always associated with an invoice.
+
+
 
 
 ## Drivers
-Each payment provider is abstracted using a driver. The driver is responsible for interfacing with the payment gateway.
+Each payment provider is abstracted using a driver. The driver is responsible for interfacing with the payment gateway and can be enabled and configured in the module's settings panel in admin.
 
-    @todo: describe how drivers work
+> @todo: describe how drivers work
 
-
-## Events
-The following events are called throughout the lifetime of a payment.
-
-    @todo: describe how events work
-
-
-### Event Handler
-The payment event handler is responsible for acting upon successfull payments. Whenever a payment is received it will be called and passed any custom data which is stored with the invoice.
-
-It is common for the app to override the event handler so that it can perform actions when a payment is received. This class should be auto-loadable and have the following name:
-
-    \App\Invoice\PaymentEventHandler()
-
-In addition, it should implement the `Nails\Invoice\Interfaces\PaymentEventHandlerInterface` interface.

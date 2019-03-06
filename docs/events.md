@@ -1,6 +1,4 @@
-# Events
-> Documentation is a WIP.
-
+# Invoice Module › Events
 
 This module exposes the following events through the [Nails Events Service](https://github.com/nails/common/blob/master/docs/intro/events.md) in the `nails/module-invoice` namespace.
 
