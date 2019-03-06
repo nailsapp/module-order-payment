@@ -18,7 +18,9 @@ use Nails\Invoice\Exception\InvoiceException;
 class Customer extends Base
 {
     /**
-     * Construct the model
+     * Customer constructor.
+     *
+     * @throws \Nails\Common\Exception\ModelException
      */
     public function __construct()
     {

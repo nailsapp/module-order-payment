@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Model;
 
+use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Factory;
@@ -48,11 +49,15 @@ class Invoice extends Base
     const STATE_PAID_PROCESSING = 'PAID_PROCESSING';
     const STATE_PAID            = 'PAID';
     const STATE_WRITTEN_OFF     = 'WRITTEN_OFF';
+    const STATE_CANCELLED       = 'CANCELLED';
 
     // --------------------------------------------------------------------------
 
     /**
-     * Construct the model
+     * Invoice constructor.
+     *
+     * @throws FactoryException
+     * @throws ModelException
      */
     public function __construct()
     {
@@ -61,47 +66,47 @@ class Invoice extends Base
         $this->defaultSortColumn = 'created';
         $this->searchableFields  = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
-
-        $this->addExpandableField([
-            'trigger'   => 'customer',
-            'type'      => self::EXPANDABLE_TYPE_SINGLE,
-            'property'  => 'customer',
-            'model'     => 'Customer',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'customer_id',
-        ]);
-        $this->addExpandableField([
-            'trigger'   => 'emails',
-            'type'      => self::EXPANDABLE_TYPE_MANY,
-            'property'  => 'emails',
-            'model'     => 'InvoiceEmail',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'invoice_id',
-        ]);
-        $this->addExpandableField([
-            'trigger'   => 'payments',
-            'type'      => self::EXPANDABLE_TYPE_MANY,
-            'property'  => 'payments',
-            'model'     => 'Payment',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'invoice_id',
-        ]);
-        $this->addExpandableField([
-            'trigger'   => 'refunds',
-            'type'      => self::EXPANDABLE_TYPE_MANY,
-            'property'  => 'refunds',
-            'model'     => 'Refund',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'invoice_id',
-        ]);
-        $this->addExpandableField([
-            'trigger'   => 'items',
-            'type'      => self::EXPANDABLE_TYPE_MANY,
-            'property'  => 'items',
-            'model'     => 'InvoiceItem',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'invoice_id',
-        ]);
+        $this
+            ->addExpandableField([
+                'trigger'   => 'customer',
+                'type'      => self::EXPANDABLE_TYPE_SINGLE,
+                'property'  => 'customer',
+                'model'     => 'Customer',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'customer_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'emails',
+                'type'      => self::EXPANDABLE_TYPE_MANY,
+                'property'  => 'emails',
+                'model'     => 'InvoiceEmail',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'invoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'payments',
+                'type'      => self::EXPANDABLE_TYPE_MANY,
+                'property'  => 'payments',
+                'model'     => 'Payment',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'invoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'refunds',
+                'type'      => self::EXPANDABLE_TYPE_MANY,
+                'property'  => 'refunds',
+                'model'     => 'Refund',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'invoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'items',
+                'type'      => self::EXPANDABLE_TYPE_MANY,
+                'property'  => 'items',
+                'model'     => 'InvoiceItem',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'invoice_id',
+            ]);
     }
 
     // --------------------------------------------------------------------------
@@ -111,7 +116,7 @@ class Invoice extends Base
      *
      * @return array
      */
-    public function getStates()
+    public function getStates(): array
     {
         return [
             self::STATE_DRAFT           => 'Draft',
@@ -120,6 +125,7 @@ class Invoice extends Base
             self::STATE_PAID_PROCESSING => 'Paid (payments processing)',
             self::STATE_PAID            => 'Paid',
             self::STATE_WRITTEN_OFF     => 'Written Off',
+            self::STATE_CANCELLED       => 'Cancelled',
         ];
     }
 
@@ -130,7 +136,7 @@ class Invoice extends Base
      *
      * @return array
      */
-    public function getSelectableStates()
+    public function getSelectableStates(): array
     {
         return [
             self::STATE_DRAFT => 'Draft',
@@ -140,6 +146,18 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Fetches all objects, optionally paginated. Returns the basic query object with no formatting.
+     *
+     * @param  int|null $iPage           The page number of the results, if null then no pagination
+     * @param  int|null $iPerPage        How many items per page of paginated results
+     * @param  array    $aData           Any data to pass to getCountCommon()
+     * @param  bool     $bIncludeDeleted If non-destructive delete is enabled then this flag allows you to include deleted items
+     *
+     * @return object
+     * @throws FactoryException
+     * @throws ModelException
+     */
     public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
         $oDb            = Factory::service('Database');
@@ -151,6 +169,16 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Counts all objects
+     *
+     * @param  array $aData           An array of data to pass to getCountCommon()
+     * @param  bool  $bIncludeDeleted Whether to include deleted objects or not
+     *
+     * @return int
+     * @throws FactoryException
+     * @throws ModelException
+     */
     public function countAll($aData = [], $bIncludeDeleted = false)
     {
         $oDb            = Factory::service('Database');
@@ -163,14 +191,15 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Retrieve all invoices from the databases
+     * Fetches all objects and formats them, optionally paginated
      *
-     * @param  int     $iPage           The page number to return
-     * @param  int     $iPerPage        The number of results per page
-     * @param  array   $aData           Data to pass to getCountCommon()
-     * @param  boolean $bIncludeDeleted Whether to include deleted results
+     * @param int|null $iPage           The page number of the results, if null then no pagination
+     * @param int|null $iPerPage        How many items per page of paginated results
+     * @param mixed    $aData           Any data to pass to getCountCommon()
+     * @param bool     $bIncludeDeleted If non-destructive delete is enabled then this flag allows you to include deleted items
      *
      * @return array
+     * @throws FactoryException
      */
     public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
     {
@@ -241,12 +270,13 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Create a new invoice
+     * Creates a new object
      *
-     * @param  array   $aData         The data to create the invoice with
-     * @param  boolean $bReturnObject Whether to return the complete invoice object
+     * @param  array $aData         The data to create the object with
+     * @param  bool  $bReturnObject Whether to return just the new ID or the full object
      *
-     * @return mixed
+     * @return bool|mixed
+     * @throws FactoryException
      */
     public function create(array $aData = [], $bReturnObject = false)
     {
@@ -301,13 +331,16 @@ class Invoice extends Base
     /**
      * Update an invoice
      *
-     * @param  integer $iInvoiceId The ID of the invoice to update
-     * @param  array   $aData      The data to update the invoice with
+     * @param  int|array $mIds  The ID (or array of IDs) of the object(s) to update
+     * @param  array     $aData The data to update the object(s) with
      *
-     * @return boolean
+     * @return bool
+     * @throws FactoryException
      */
-    public function update($iInvoiceId, array $aData = [])
+    public function update($mIds, array $aData = [])
     {
+        //  @todo (Pablo - 2019-03-06) - Support passing in multiple IDs so as to be compatible with parent
+
         $oDb = Factory::service('Database');
 
         try {
@@ -335,7 +368,7 @@ class Invoice extends Base
 
             $oDb->trans_begin();
 
-            $this->prepareInvoice($aData, $iInvoiceId);
+            $this->prepareInvoice($aData, $mIds);
 
             if (array_key_exists('items', $aData)) {
                 $aItems = $aData['items'];
@@ -345,20 +378,20 @@ class Invoice extends Base
             unset($aData['ref']);
             unset($aData['token']);
 
-            $bResult = parent::update($iInvoiceId, $aData);
+            $bResult = parent::update($mIds, $aData);
 
             if (!$bResult) {
                 throw new InvoiceException('Failed to update invoice.', 1);
             }
 
             if (!empty($aItems)) {
-                $this->updateLineItems($iInvoiceId, $aItems);
+                $this->updateLineItems($mIds, $aItems);
             }
 
             $oDb->trans_commit();
             $this->triggerEvent(
                 Events::INVOICE_UPDATED,
-                [$this->getInvoiceForEvent($iInvoiceId)]
+                [$this->getInvoiceForEvent($mIds)]
             );
 
             return $bResult;
@@ -375,13 +408,14 @@ class Invoice extends Base
     /**
      * Format and validate passed data
      *
-     * @param  array   &$aData      The data to format/validate
-     * @param  integer  $iInvoiceId The invoice ID
+     * @param array $aData      The data to format/validate
+     * @param int   $iInvoiceId The invoice ID
      *
-     * @return void
+     * @throws FactoryException
      * @throws InvoiceException
+     * @throws ModelException
      */
-    private function prepareInvoice(&$aData, $iInvoiceId = null)
+    protected function prepareInvoice(array &$aData, int $iInvoiceId = null): void
     {
         //  Always has an uppercase state
         if (array_key_exists('state', $aData)) {
@@ -562,7 +596,7 @@ class Invoice extends Base
                 $aItem['sub_total'] = $aItem['quantity'] * $aItem['unit_cost'];
 
                 //  Calculate tax
-                if (!empty($aItem['tax_id'])) {
+                if (!empty($aItem['tax_id']) && !empty($aTaxRates)) {
                     foreach ($aTaxRates as $oTaxRate) {
                         if ($oTaxRate->id == $aItem['tax_id']) {
                             $aItem['tax_total'] = $aItem['sub_total'] * $oTaxRate->rate_decimal;
@@ -594,13 +628,13 @@ class Invoice extends Base
     /**
      * Update the line items of an invoice
      *
-     * @param  integer $iInvoiceId The invoice ID
-     * @param  array   $aItems     The items to update
+     * @param int   $iInvoiceId The invoice ID
+     * @param array $aItems     The items to update
      *
-     * @return void
+     * @throws FactoryException
      * @throws InvoiceException
      */
-    private function updateLineItems($iInvoiceId, $aItems)
+    protected function updateLineItems(int $iInvoiceId, array $aItems): void
     {
         $oItemModel  = Factory::model('InvoiceItem', 'nails/module-invoice');
         $aTouchedIds = [];
@@ -671,26 +705,12 @@ class Invoice extends Base
      * @param  string $sRef  The ref of the invoice to fetch
      * @param  mixed  $aData Any data to pass to getCountCommon()
      *
-     * @return mixed
+     * @return null|\stdClass
+     * @throws ModelException
      */
-    public function getByRef($sRef, array $aData = [])
+    public function getByRef(string $sRef, array $aData = []): ?\stdClass
     {
         return $this->getByColumn('ref', $sRef, $aData);
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Fetch an invoice by it's token
-     *
-     * @param  string $sToken The token of the invoice to fetch
-     * @param  mixed  $aData  Any data to pass to getCountCommon()
-     *
-     * @return mixed
-     */
-    public function getByToken($sToken, array $aData = [])
-    {
-        return $this->getByColumn('token', $sToken, $aData);
     }
 
     // --------------------------------------------------------------------------
@@ -699,8 +719,9 @@ class Invoice extends Base
      * Generates a valid invoice ref
      *
      * @return string
+     * @throws FactoryException
      */
-    public function generateValidRef()
+    public function generateValidRef(): string
     {
         Factory::helper('string');
 
@@ -723,12 +744,12 @@ class Invoice extends Base
     /**
      * Send an invoice by email
      *
-     * @param  integer $iInvoiceId     The ID of the invoice to send
-     * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
+     * @param  int    $iInvoiceId     The ID of the invoice to send
+     * @param  string $sEmailOverride Send to this email instead of the email defined by the invoice object
      *
-     * @return boolean
+     * @return bool
      */
-    public function send($iInvoiceId, $sEmailOverride = null)
+    public function send(int $iInvoiceId, string $sEmailOverride = null): bool
     {
         try {
 
@@ -807,12 +828,13 @@ class Invoice extends Base
     /**
      * Whether an invoice has been fully paid or not
      *
-     * @param  integer $iInvoiceId         The Invoice to query
-     * @param  boolean $bIncludeProcessing Whether to include payments which are still processing
+     * @param  int  $iInvoiceId         The Invoice to query
+     * @param  bool $bIncludeProcessing Whether to include payments which are still processing
      *
-     * @return boolean
+     * @return bool
+     * @throws ModelException
      */
-    public function isPaid($iInvoiceId, $bIncludeProcessing = false)
+    public function isPaid(int $iInvoiceId, bool $bIncludeProcessing = false): bool
     {
         $oInvoice = $this->getById($iInvoiceId);
 
@@ -834,11 +856,13 @@ class Invoice extends Base
     /**
      * Set an invoice as paid
      *
-     * @param  integer $iInvoiceId The Invoice to query
+     * @param  int $iInvoiceId The Invoice to query
      *
-     * @return boolean
+     * @return bool
+     * @throws ModelException
+     * @throws FactoryException
      */
-    public function setPaid($iInvoiceId)
+    public function setPaid($iInvoiceId): bool
     {
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
@@ -849,10 +873,12 @@ class Invoice extends Base
             ]
         );
 
-        $this->triggerEvent(
-            Events::INVOICE_PAID,
-            [$this->getInvoiceForEvent($iInvoiceId)]
-        );
+        if ($bResult) {
+            $this->triggerEvent(
+                Events::INVOICE_PAID,
+                [$this->getInvoiceForEvent($iInvoiceId)]
+            );
+        }
 
         return $bResult;
     }
@@ -862,11 +888,13 @@ class Invoice extends Base
     /**
      * Set an invoice as paid but with processing payments
      *
-     * @param  integer $iInvoiceId The Invoice to query
+     * @param  int $iInvoiceId The Invoice to query
      *
-     * @return boolean
+     * @return bool
+     * @throws ModelException
+     * @throws FactoryException
      */
-    public function setPaidProcessing($iInvoiceId)
+    public function setPaidProcessing($iInvoiceId): bool
     {
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
@@ -877,10 +905,12 @@ class Invoice extends Base
             ]
         );
 
-        $this->triggerEvent(
-            Events::INVOICE_PAID_PROCESSING,
-            [$this->getInvoiceForEvent($iInvoiceId)]
-        );
+        if ($bResult) {
+            $this->triggerEvent(
+                Events::INVOICE_PAID_PROCESSING,
+                [$this->getInvoiceForEvent($iInvoiceId)]
+            );
+        }
 
         return $bResult;
     }
@@ -888,13 +918,15 @@ class Invoice extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Set an invoice as paid but with processing payments
+     * Set an invoice as written off
      *
-     * @param  integer $iInvoiceId The Invoice to query
+     * @param  int $iInvoiceId The Invoice to query
      *
-     * @return boolean
+     * @return bool
+     * @throws ModelException
+     * @throws FactoryException
      */
-    public function setWrittenOff($iInvoiceId)
+    public function setWrittenOff($iInvoiceId): bool
     {
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
@@ -905,10 +937,44 @@ class Invoice extends Base
             ]
         );
 
-        $this->triggerEvent(
-            Events::INVOICE_WRITTEN_OFF,
-            [$this->getInvoiceForEvent($iInvoiceId)]
+        if ($bResult) {
+            $this->triggerEvent(
+                Events::INVOICE_WRITTEN_OFF,
+                [$this->getInvoiceForEvent($iInvoiceId)]
+            );
+        }
+
+        return $bResult;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set an invoice as cancelled
+     *
+     * @param  int $iInvoiceId The Invoice to query
+     *
+     * @return bool
+     * @throws ModelException
+     * @throws FactoryException
+     */
+    public function setCancelled($iInvoiceId): bool
+    {
+        $oNow    = Factory::factory('DateTime');
+        $bResult = $this->update(
+            $iInvoiceId,
+            [
+                'state'       => self::STATE_CANCELLED,
+                'written_off' => $oNow->format('Y-m-d H:i:s'),
+            ]
         );
+
+        if ($bResult) {
+            $this->triggerEvent(
+                Events::INVOICE_CANCELLED,
+                [$this->getInvoiceForEvent($iInvoiceId)]
+            );
+        }
 
         return $bResult;
     }
@@ -946,7 +1012,8 @@ class Invoice extends Base
      * @param  array  $aBools    Fields which should be cast as booleans if not null
      * @param  array  $aFloats   Fields which should be cast as floats if not null
      *
-     * @return void
+     * @throws FactoryException
+     * @throws \Nails\Currency\Exception\CurrencyException
      */
     protected function formatObject(
         &$oObj,
@@ -955,9 +1022,7 @@ class Invoice extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
-
         $aIntegers[] = 'terms';
-
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
         //  Sate

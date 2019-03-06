@@ -64,7 +64,9 @@ class Invoice extends BaseAdmin
     // --------------------------------------------------------------------------
 
     /**
-     * Construct the controller
+     * Invoice constructor.
+     *
+     * @throws \Nails\Common\Exception\FactoryException
      */
     public function __construct()
     {

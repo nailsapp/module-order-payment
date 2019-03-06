@@ -57,6 +57,13 @@ class Events extends Base
      */
     const INVOICE_WRITTEN_OFF = 'INVOICE:WRITTEN_OFF';
 
+    /**
+     * Fired when an invoice is marked as cancelled
+     *
+     * @param \stdClass $oInvoice The invoice which was cancelled
+     */
+    const INVOICE_CANCELLED = 'INVOICE:CANCELLED';
+
     // --------------------------------------------------------------------------
 
     /**

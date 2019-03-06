@@ -12,6 +12,7 @@ This module exposes the following events through the [Nails Events Service](http
     - [Nails\Invoice\Events::INVOICE\_PAID\_PARTIAL](#invoice-paid-partial)
     - [Nails\Invoice\Events::INVOICE\_PAID\_PROCESSING](#invoice-paid-processing)
     - [Nails\Invoice\Events::INVOICE\_WRITTEN\_OFF](#invoice-written-off)
+    - [Nails\Invoice\Events::INVOICE\_CANCELLED](#invoice-cancelled)
 - [Payments](#payments)
     - [Nails\Invoice\Events::PAYMENT_CREATED](#payment-created)
     - [Nails\Invoice\Events::PAYMENT_UPDATED](#payment-updated)
@@ -92,6 +93,18 @@ Fired when an invoice is marked as written off
 
 > ```
 > \stdClass $oInvoice The invoice which was written off
+> ```
+
+
+<a name="invoice-cancelled"></a>
+### `Nails\Invoice\Events::INVOICE_CANCELLED`
+
+Fired when an invoice is marked as cancelled
+
+**Receives:**
+
+> ```
+> \stdClass $oInvoice The invoice which was cancelled
 > ```
 
 
