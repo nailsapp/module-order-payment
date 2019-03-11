@@ -423,7 +423,15 @@ class Payment extends Base
                 $iPaymentId,
                 [
                     'expand' => [
-                        ['invoice', ['expand' => ['customer']]],
+                        [
+                            'invoice',
+                            [
+                                'expand' => [
+                                    'customer',
+                                    'items',
+                                ],
+                            ],
+                        ],
                     ],
                 ]
             );
