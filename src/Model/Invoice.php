@@ -708,7 +708,7 @@ class Invoice extends Base
      * @return null|\stdClass
      * @throws ModelException
      */
-    public function getByRef(string $sRef, array $aData = []): ?\stdClass
+    public function getByRef(?string $sRef, array $aData = []): ?\stdClass
     {
         return $this->getByColumn('ref', $sRef, $aData);
     }
