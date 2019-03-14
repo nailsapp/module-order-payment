@@ -13,6 +13,7 @@
 namespace Nails\Invoice\Model;
 
 use Nails\Common\Model\Base;
+use Nails\Common\Resource;
 use Nails\Factory;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
@@ -367,10 +368,10 @@ class Refund extends Base
      *
      * @param int $iRefundId The refund ID
      *
-     * @return \stdClass
+     * @return Resource
      * @throws ModelException
      */
-    protected function getRefundForEvent(int $iRefundId): \stdClass
+    protected function getRefundForEvent(int $iRefundId): Resource
     {
         $oRefund = $this->getById($iRefundId);
         if (empty($oRefund)) {

@@ -15,6 +15,7 @@ namespace Nails\Invoice\Model;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
+use Nails\Common\Resource;
 use Nails\Factory;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
@@ -986,10 +987,10 @@ class Invoice extends Base
      *
      * @param int $iInvoiceId The invoice ID
      *
-     * @return \stdClass
+     * @return Resource
      * @throws ModelException
      */
-    protected function getInvoiceForEvent(int $iInvoiceId): \stdClass
+    protected function getInvoiceForEvent(int $iInvoiceId): Resource
     {
         $oInvoice = $this->getById($iInvoiceId, ['expand' => ['customer', 'items']]);
         if (empty($oInvoice)) {

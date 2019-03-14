@@ -14,6 +14,7 @@ namespace Nails\Invoice\Model;
 
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
+use Nails\Common\Resource;
 use Nails\Factory;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
@@ -571,10 +572,10 @@ class Payment extends Base
      *
      * @param int $iPaymentId The payment ID
      *
-     * @return \stdClass
+     * @return Resource
      * @throws \Nails\Common\Exception\ModelException
      */
-    protected function getPaymentForEvent(int $iPaymentId): \stdClass
+    protected function getPaymentForEvent(int $iPaymentId): Resource
     {
         $oPayment = $this->getById($iPaymentId);
         if (empty($oPayment)) {
