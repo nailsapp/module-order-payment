@@ -121,7 +121,7 @@ class Invoice
      * @param array  $aArguments Any passed arguments
      *
      * @return $this
-     * @throws \Exception
+     * @throws InvoiceException
      */
     public function __call($sMethod, $aArguments)
     {
@@ -136,7 +136,7 @@ class Invoice
                 return $this->{$this->aMethods[$sMethod]};
             }
         } else {
-            throw new \Exception('Call to undefined method ' . get_called_class() . '::' . $sMethod . '()');
+            throw new InvoiceException('Call to undefined method ' . get_called_class() . '::' . $sMethod . '()');
         }
     }
 

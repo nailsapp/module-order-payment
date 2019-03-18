@@ -11,6 +11,7 @@
 
 namespace Nails\Invoice\Factory\Invoice;
 
+use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Model\Invoice;
 
 class Item
@@ -96,7 +97,7 @@ class Item
      * @param array  $aArguments Any passed arguments
      *
      * @return $this
-     * @throws \Exception
+     * @throws InvoiceException
      */
     public function __call($sMethod, $aArguments)
     {
@@ -108,7 +109,7 @@ class Item
                 return $this->{$this->aMethods[$sMethod]};
             }
         } else {
-            throw new \Exception('Call to undefined method ' . get_called_class() . '::' . $sMethod . '()');
+            throw new InvoiceException('Call to undefined method ' . get_called_class() . '::' . $sMethod . '()');
         }
     }
 
