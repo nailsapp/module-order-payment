@@ -21,6 +21,7 @@ class Settings extends BaseAdmin
 {
     /**
      * Announces this controller's navGroups
+     *
      * @return stdClass
      */
     public static function announce()
@@ -40,6 +41,7 @@ class Settings extends BaseAdmin
 
     /**
      * Returns an array of permissions which can be configured for the user
+     *
      * @return array
      */
     public static function permissions(): array
@@ -57,6 +59,7 @@ class Settings extends BaseAdmin
 
     /**
      * Manage invoice settings
+     *
      * @return void
      */
     public function index()
@@ -67,7 +70,7 @@ class Settings extends BaseAdmin
 
         $oInput              = Factory::service('Input');
         $oDb                 = Factory::service('Database');
-        $oAppSettingModel    = Factory::model('AppSetting');
+        $oAppSettingService  = Factory::service('AppSetting');
         $oPaymentDriverModel = Factory::model('PaymentDriver', 'nails/module-invoice');
         $oInvoiceSkinModel   = Factory::model('InvoiceSkin', 'nails/module-invoice');
 
@@ -100,7 +103,7 @@ class Settings extends BaseAdmin
 
                 try {
 
-                    $aSettings = array(
+                    $aSettings = [
                         'business_name'           => trim(strip_tags($oInput->post('business_name'))),
                         'business_address'        => trim(strip_tags($oInput->post('business_address'))),
                         'business_phone'          => trim(strip_tags($oInput->post('business_phone'))),
@@ -109,14 +112,14 @@ class Settings extends BaseAdmin
                         'default_additional_text' => trim(strip_tags($oInput->post('default_additional_text'))),
                         'default_payment_terms'   => (int) $oInput->post('default_payment_terms'),
                         'saved_cards_enabled'     => (bool) $oInput->post('saved_cards_enabled'),
-                        'saved_addresses_enabled' => (bool) $oInput->post('saved_addresses_enabled')
-                    );
+                        'saved_addresses_enabled' => (bool) $oInput->post('saved_addresses_enabled'),
+                    ];
 
                     $oDb->trans_begin();
 
                     //  Normal settings
-                    if (!$oAppSettingModel->set($aSettings, 'nails/module-invoice')) {
-                        throw new NailsException($oAppSettingModel->lastError(), 1);
+                    if (!$oAppSettingService->set($aSettings, 'nails/module-invoice')) {
+                        throw new NailsException($oAppSettingService->lastError(), 1);
                     }
 
                     //  Drivers & Skins
