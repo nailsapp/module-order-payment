@@ -706,10 +706,10 @@ class Invoice extends Base
      * @param  string $sRef  The ref of the invoice to fetch
      * @param  mixed  $aData Any data to pass to getCountCommon()
      *
-     * @return null|\stdClass
+     * @return null|Resource
      * @throws ModelException
      */
-    public function getByRef(?string $sRef, array $aData = []): ?\stdClass
+    public function getByRef(?string $sRef, array $aData = []): ?Resource
     {
         return $this->getByColumn('ref', $sRef, $aData);
     }
