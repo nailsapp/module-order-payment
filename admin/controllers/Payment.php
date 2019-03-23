@@ -21,7 +21,7 @@ class Payment extends BaseAdmin
 {
     protected $oInvoiceModel;
     protected $oPaymentModel;
-    protected $oDriverModel;
+    protected $oDriverService;
 
     // --------------------------------------------------------------------------
 
@@ -81,10 +81,10 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oInput        = Factory::service('Input');
-        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
-        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
-        $oDriverModel  = Factory::model('PaymentDriver', 'nails/module-invoice');
+        $oInput         = Factory::service('Input');
+        $oDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $oPaymentModel  = Factory::model('Payment', 'nails/module-invoice');
+        $oInvoiceModel  = Factory::model('Invoice', 'nails/module-invoice');
 
         // --------------------------------------------------------------------------
 
@@ -114,7 +114,7 @@ class Payment extends BaseAdmin
         //  Define the filters
         $aCbFilters = [];
         $aOptions   = [];
-        $aDrivers   = $oDriverModel->getAll();
+        $aDrivers   = $oDriverService->getAll();
 
         foreach ($aDrivers as $sSlug => $oDriver) {
             $aOptions[] = [

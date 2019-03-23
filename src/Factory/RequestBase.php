@@ -18,7 +18,7 @@ use Nails\Invoice\Exception\RequestException;
 class RequestBase
 {
     protected $oDriver;
-    protected $oDriverModel;
+    protected $oDriverService;
     protected $oInvoice;
     protected $oInvoiceModel;
     protected $oPayment;
@@ -33,10 +33,10 @@ class RequestBase
      */
     public function __construct()
     {
-        $this->oDriverModel  = Factory::model('PaymentDriver', 'nails/module-invoice');
-        $this->oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
-        $this->oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
-        $this->oRefundModel  = Factory::model('Refund', 'nails/module-invoice');
+        $this->oDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $this->oInvoiceModel  = Factory::model('Invoice', 'nails/module-invoice');
+        $this->oPaymentModel  = Factory::model('Payment', 'nails/module-invoice');
+        $this->oRefundModel   = Factory::model('Refund', 'nails/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -52,12 +52,12 @@ class RequestBase
     public function setDriver($sDriverSlug)
     {
         //  Validate the driver
-        $aDrivers = $this->oDriverModel->getEnabled();
+        $aDrivers = $this->oDriverService->getEnabled();
         $oDriver  = null;
 
         foreach ($aDrivers as $oDriverConfig) {
             if ($oDriverConfig->slug == $sDriverSlug) {
-                $oDriver = $this->oDriverModel->getInstance($oDriverConfig->slug);
+                $oDriver = $this->oDriverService->getInstance($oDriverConfig->slug);
                 break;
             }
         }

@@ -68,18 +68,18 @@ class Settings extends BaseAdmin
             unauthorised();
         }
 
-        $oInput              = Factory::service('Input');
-        $oDb                 = Factory::service('Database');
-        $oAppSettingService  = Factory::service('AppSetting');
-        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nails/module-invoice');
-        $oInvoiceSkinModel   = Factory::model('InvoiceSkin', 'nails/module-invoice');
+        $oInput                = Factory::service('Input');
+        $oDb                   = Factory::service('Database');
+        $oAppSettingService    = Factory::service('AppSetting');
+        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $oInvoiceSkinService   = Factory::service('InvoiceSkin', 'nails/module-invoice');
 
         //  Process POST
         if ($oInput->post()) {
 
             //  Settings keys
-            $sKeyPaymentDriver = $oPaymentDriverModel->getSettingKey();
-            $sKeyInvoiceSkin   = $oInvoiceSkinModel->getSettingKey();
+            $sKeyPaymentDriver = $oPaymentDriverService->getSettingKey();
+            $sKeyInvoiceSkin   = $oInvoiceSkinService->getSettingKey();
 
             //  Validation
             $oFormValidation = Factory::service('FormValidation');
@@ -123,8 +123,8 @@ class Settings extends BaseAdmin
                     }
 
                     //  Drivers & Skins
-                    $oPaymentDriverModel->saveEnabled($oInput->post($sKeyPaymentDriver));
-                    $oInvoiceSkinModel->saveEnabled($oInput->post($sKeyInvoiceSkin));
+                    $oPaymentDriverService->saveEnabled($oInput->post($sKeyPaymentDriver));
+                    $oInvoiceSkinService->saveEnabled($oInput->post($sKeyInvoiceSkin));
 
                     $oDb->trans_commit();
                     $this->data['success'] = 'Invoice &amp; Payment settings were saved.';

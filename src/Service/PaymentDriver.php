@@ -1,16 +1,16 @@
 <?php
 
 /**
- * This model manages the Invoice payment drivers
+ * This service manages the Invoice payment drivers
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    Model
+ * @category    Service
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Invoice\Model;
+namespace Nails\Invoice\Service;
 
 use Nails\Common\Model\BaseDriver;
 

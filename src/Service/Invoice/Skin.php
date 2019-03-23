@@ -1,16 +1,16 @@
 <?php
 
 /**
- * This model manages the Invoice skins
+ * This service manages the Invoice skins
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    Model
+ * @category    Service
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Invoice\Model\Invoice;
+namespace Nails\Invoice\Service\Invoice;
 
 use Nails\Common\Model\BaseSkin;
 

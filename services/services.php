@@ -1,15 +1,31 @@
 <?php
 
 return [
+    'services'  => [
+        'InvoiceSkin'   => function () {
+            if (class_exists('\App\Invoice\Service\Invoice\Skin')) {
+                return new \App\Invoice\Service\Invoice\Skin();
+            } else {
+                return new \Nails\Invoice\Service\Invoice\Skin();
+            }
+        },
+        'PaymentDriver' => function () {
+            if (class_exists('\App\Invoice\Service\PaymentDriver')) {
+                return new \App\Invoice\Service\PaymentDriver();
+            } else {
+                return new \Nails\Invoice\Service\PaymentDriver();
+            }
+        },
+    ],
     'models'    => [
-        'Customer' => function () {
+        'Customer'     => function () {
             if (class_exists('\App\Invoice\Model\Customer')) {
                 return new \App\Invoice\Model\Customer();
             } else {
                 return new \Nails\Invoice\Model\Customer();
             }
         },
-        'Invoice' => function () {
+        'Invoice'      => function () {
             if (class_exists('\App\Invoice\Model\Invoice')) {
                 return new \App\Invoice\Model\Invoice();
             } else {
@@ -23,42 +39,28 @@ return [
                 return new \Nails\Invoice\Model\Invoice\Email();
             }
         },
-        'InvoiceItem' => function () {
+        'InvoiceItem'  => function () {
             if (class_exists('\App\Invoice\Model\Invoice\Item')) {
                 return new \App\Invoice\Model\Invoice\Item();
             } else {
                 return new \Nails\Invoice\Model\Invoice\Item();
             }
         },
-        'InvoiceSkin' => function () {
-            if (class_exists('\App\Invoice\Model\Invoice\Skin')) {
-                return new \App\Invoice\Model\Invoice\Skin();
-            } else {
-                return new \Nails\Invoice\Model\Invoice\Skin();
-            }
-        },
-        'Payment' => function () {
+        'Payment'      => function () {
             if (class_exists('\App\Invoice\Model\Payment')) {
                 return new \App\Invoice\Model\Payment();
             } else {
                 return new \Nails\Invoice\Model\Payment();
             }
         },
-        'Refund' => function () {
+        'Refund'       => function () {
             if (class_exists('\App\Invoice\Model\Refund')) {
                 return new \App\Invoice\Model\Refund();
             } else {
                 return new \Nails\Invoice\Model\Refund();
             }
         },
-        'PaymentDriver' => function () {
-            if (class_exists('\App\Invoice\Model\PaymentDriver')) {
-                return new \App\Invoice\Model\PaymentDriver();
-            } else {
-                return new \Nails\Invoice\Model\PaymentDriver();
-            }
-        },
-        'Tax' => function () {
+        'Tax'          => function () {
             if (class_exists('\App\Invoice\Model\Tax')) {
                 return new \App\Invoice\Model\Tax();
             } else {
@@ -67,21 +69,21 @@ return [
         },
     ],
     'factories' => [
-        'ChargeRequest' => function () {
+        'ChargeRequest'    => function () {
             if (class_exists('\App\Invoice\Factory\ChargeRequest')) {
                 return new \App\Invoice\Factory\ChargeRequest();
             } else {
                 return new \Nails\Invoice\Factory\ChargeRequest();
             }
         },
-        'ChargeResponse' => function () {
+        'ChargeResponse'   => function () {
             if (class_exists('\App\Invoice\Factory\ChargeResponse')) {
                 return new \App\Invoice\Factory\ChargeResponse();
             } else {
                 return new \Nails\Invoice\Factory\ChargeResponse();
             }
         },
-        'CompleteRequest' => function () {
+        'CompleteRequest'  => function () {
             if (class_exists('\App\Invoice\Factory\CompleteRequest')) {
                 return new \App\Invoice\Factory\CompleteRequest();
             } else {
@@ -95,28 +97,28 @@ return [
                 return new \Nails\Invoice\Factory\CompleteResponse();
             }
         },
-        'Invoice' => function () {
+        'Invoice'          => function () {
             if (class_exists('\App\Invoice\Factory\Invoice')) {
                 return new \App\Invoice\Factory\Invoice();
             } else {
                 return new \Nails\Invoice\Factory\Invoice();
             }
         },
-        'InvoiceItem' => function () {
+        'InvoiceItem'      => function () {
             if (class_exists('\App\Invoice\Factory\Invoice\Item')) {
                 return new \App\Invoice\Factory\Invoice\Item();
             } else {
                 return new \Nails\Invoice\Factory\Invoice\Item();
             }
         },
-        'RefundRequest' => function () {
+        'RefundRequest'    => function () {
             if (class_exists('\App\Invoice\Factory\RefundRequest')) {
                 return new \App\Invoice\Factory\RefundRequest();
             } else {
                 return new \Nails\Invoice\Factory\RefundRequest();
             }
         },
-        'RefundResponse' => function () {
+        'RefundResponse'   => function () {
             if (class_exists('\App\Invoice\Factory\RefundResponse')) {
                 return new \App\Invoice\Factory\RefundResponse();
             } else {

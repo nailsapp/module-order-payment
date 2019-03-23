@@ -626,9 +626,9 @@ class Payment extends Base
         $oObj->status->label = !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus));
 
         //  Driver
-        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nails/module-invoice');
-        $sDriver             = $oObj->driver;
-        $oDriver             = $oPaymentDriverModel->getBySlug($sDriver);
+        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $sDriver               = $oObj->driver;
+        $oDriver               = $oPaymentDriverService->getBySlug($sDriver);
 
         if (!empty($oDriver)) {
 

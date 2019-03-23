@@ -44,11 +44,11 @@ class Invoice extends Base
             'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
         ];
 
-        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nails/module-invoice');
-        $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
+        $oInvoiceSkinService   = Factory::service('InvoiceSkin', 'nails/module-invoice');
+        $sEnabledSkin          = $oInvoiceSkinService->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
         $this->data['isPdf']   = true;
-        $sHtml                 = $oInvoiceSkinModel->view($sEnabledSkin, 'render', $this->data, true);
+        $sHtml                 = $oInvoiceSkinService->view($sEnabledSkin, 'render', $this->data, true);
 
         $oPdf = Factory::service('Pdf', 'nails/module-pdf');
         $oPdf->setPaperSize('A4', 'portrait');
@@ -77,12 +77,12 @@ class Invoice extends Base
             'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
         ];
 
-        $oInvoiceSkinModel     = Factory::model('InvoiceSkin', 'nails/module-invoice');
-        $sEnabledSkin          = $oInvoiceSkinModel->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
+        $oInvoiceSkinService   = Factory::service('InvoiceSkin', 'nails/module-invoice');
+        $sEnabledSkin          = $oInvoiceSkinService->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
         $this->data['isPdf']   = false;
 
-        $oInvoiceSkinModel->view($sEnabledSkin, 'render', $this->data);
+        $oInvoiceSkinService->view($sEnabledSkin, 'render', $this->data);
     }
 
     // --------------------------------------------------------------------------
@@ -154,11 +154,11 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         //  Payment drivers
-        $oPaymentDriverModel = Factory::model('PaymentDriver', 'nails/module-invoice');
-        $aDrivers            = $oPaymentDriverModel->getEnabled();
+        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $aDrivers              = $oPaymentDriverService->getEnabled();
         foreach ($aDrivers as $oDriver) {
 
-            $oDriverInstance = $oPaymentDriverModel->getInstance($oDriver->slug);
+            $oDriverInstance = $oPaymentDriverService->getInstance($oDriver->slug);
 
             if ($oDriverInstance->isAvailable($oInvoice)) {
                 $this->data['aDrivers'][] = $oDriverInstance;
