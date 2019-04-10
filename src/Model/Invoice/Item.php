@@ -19,6 +19,7 @@ class Item extends Base
 {
     /**
      * The Currency service
+     *
      * @var \Nails\Currency\Service\Currency
      */
     protected $oCurrency;
@@ -44,21 +45,27 @@ class Item extends Base
         $this->table             = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'order';
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
-        $this->addExpandableField([
-            'trigger'     => 'tax',
-            'type'        => self::EXPANDABLE_TYPE_SINGLE,
-            'property'    => 'tax',
-            'model'       => 'Tax',
-            'provider'    => 'nails/module-invoice',
-            'id_column'   => 'tax_id',
-            'auto_expand' => true,
-        ]);
+        $this
+            ->addExpandableField([
+                'trigger'   => 'invoice',
+                'model'     => 'Invoice',
+                'provider'  => 'nails/module-invoice',
+                'id_column' => 'invoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'     => 'tax',
+                'model'       => 'Tax',
+                'provider'    => 'nails/module-invoice',
+                'id_column'   => 'tax_id',
+                'auto_expand' => true,
+            ]);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns the item quantity units with human friendly names
+     *
      * @return array
      */
     public function getUnits()
@@ -79,7 +86,7 @@ class Item extends Base
     /**
      * Retrieve items which relate to a particular set of invoice IDs
      *
-     * @param  array $aInvoiceIds The invoice IDs
+     * @param array $aInvoiceIds The invoice IDs
      *
      * @return array
      */
@@ -100,11 +107,11 @@ class Item extends Base
      * The getAll() method iterates over each returned item with this method so as to
      * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
      *
-     * @param  object $oObj      A reference to the object being formatted.
-     * @param  array  $aData     The same data array which is passed to getCountCommon, for reference if needed
-     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param  array  $aBools    Fields which should be cast as booleans if not null
-     * @param  array  $aFloats   Fields which should be cast as floats if not null
+     * @param object $oObj      A reference to the object being formatted.
+     * @param array  $aData     The same data array which is passed to getCountCommon, for reference if needed
+     * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
+     * @param array  $aBools    Fields which should be cast as booleans if not null
+     * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @return void
      */
