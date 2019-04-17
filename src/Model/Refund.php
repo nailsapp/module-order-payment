@@ -153,7 +153,7 @@ class Refund extends Base
      *
      * @return boolean
      */
-    public function update($iRefundId, array $aData = [])
+    public function update($iRefundId, array $aData = []): bool
     {
         $oDb = Factory::service('Database');
 

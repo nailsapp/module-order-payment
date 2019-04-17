@@ -242,7 +242,7 @@ class Payment extends Base
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
      */
-    public function update($iPaymentId, array $aData = [])
+    public function update($iPaymentId, array $aData = []): bool
     {
         $oDb = Factory::service('Database');
 

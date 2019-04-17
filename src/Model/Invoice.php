@@ -338,7 +338,7 @@ class Invoice extends Base
      * @return bool
      * @throws FactoryException
      */
-    public function update($mIds, array $aData = [])
+    public function update($mIds, array $aData = []): bool
     {
         //  @todo (Pablo - 2019-03-06) - Support passing in multiple IDs so as to be compatible with parent
 

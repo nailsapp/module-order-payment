@@ -120,7 +120,7 @@ class Customer extends Base
      *
      * @return mixed
      */
-    public function update($iCustomerId, array $aData = [])
+    public function update($iCustomerId, array $aData = []): bool
     {
         try {
 
