@@ -7,28 +7,28 @@ use Nails\Factory;
 
 class Invoices implements Source
 {
-    public function getLabel()
+    public function getLabel(): string
     {
         return 'Invoices';
     }
 
     // --------------------------------------------------------------------------
 
-    public function getFileName()
+    public function getFileName(): string
     {
         return 'invoices';
     }
 
     // --------------------------------------------------------------------------
 
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Export invoices';
     }
 
     // --------------------------------------------------------------------------
 
-    public function getOptions()
+    public function getOptions(): array
     {
         $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
         return [
@@ -64,7 +64,7 @@ class Invoices implements Source
 
     // --------------------------------------------------------------------------
 
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return true;
     }
