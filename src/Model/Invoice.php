@@ -159,7 +159,7 @@ class Invoice extends Base
      * @throws FactoryException
      * @throws ModelException
      */
-    public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
+    public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): \CI_DB_mysqli_result
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
@@ -202,7 +202,7 @@ class Invoice extends Base
      * @return array
      * @throws FactoryException
      */
-    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false)
+    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): array
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         if (is_array($iPage)) {
