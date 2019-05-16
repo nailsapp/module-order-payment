@@ -224,7 +224,7 @@ class Payment extends BaseAdmin
         $oInput        = Factory::service('Input');
         $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
         $iPaymentId    = $oUri->segment(5);
-        $sAmount       = $oInput->post('amount') ?: null;
+        $sAmount       = preg_replace('/[^0-9\.]/', '', $oInput->post('amount')) ?: null;
         $sReason       = $oInput->post('reason') ?: null;
         $sRedirect     = urldecode($oInput->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
 
