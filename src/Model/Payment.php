@@ -138,7 +138,7 @@ class Payment extends Base
      *
      * @throws \Nails\Common\Exception\FactoryException
      */
-    protected function getCountCommon(array $data = [])
+    protected function getCountCommon(array $data = []): void
     {
         $oDb           = Factory::service('Database');
         $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
