@@ -34,7 +34,7 @@ class Email extends Base
      *
      * @return void
      **/
-    protected function getCountCommon(array $aData = [])
+    protected function getCountCommon(array $aData = []): void
     {
         if (empty($aData['select'])) {
             $aData['select'] = [

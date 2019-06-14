@@ -51,7 +51,7 @@ class Customer extends Base
      *
      * @return void
      */
-    protected function getCountCommon(array $aData = [])
+    protected function getCountCommon(array $aData = []): void
     {
         //  If there's a search term, then we better get %LIKING%
         if (!empty($aData['keywords'])) {
