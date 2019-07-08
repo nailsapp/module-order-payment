@@ -16,6 +16,36 @@ use Nails\Factory;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
 
+/**
+ * Class Invoice
+ *
+ * @package Nails\Invoice\Factory
+ *
+ * @method setId($mValue)
+ * @method getId()
+ * @method setRef($mValue)
+ * @method getRef()
+ * @method setState($mValue)
+ * @method getState()
+ * @method setDated($mValue)
+ * @method getDated()
+ * @method setTerms($mValue)
+ * @method getTerms()
+ * @method setCustomerId($mValue)
+ * @method getCustomerId()
+ * @method setEmail($mValue)
+ * @method getEmail()
+ * @method setCurrency($mValue)
+ * @method getCurrency()
+ * @method setAdditionalText($mValue)
+ * @method getAdditionalText()
+ * @method setCallbackData($mValue)
+ * @method getCallbackData()
+ * @method setItems($mValue)
+ * @method getItems()
+ * @method setErrors($mValue)
+ * @method getErrors()
+ */
 class Invoice
 {
     use ErrorHandling;
@@ -24,72 +54,84 @@ class Invoice
 
     /**
      * Stores an array of the getter/setters for the other properties
+     *
      * @var array
      */
     protected $aMethods = [];
 
     /**
      * The invoice's ID
+     *
      * @var integer
      */
     protected $iId;
 
     /**
      * The invoice's ref
+     *
      * @var string
      */
     protected $sRef;
 
     /**
      * The invoice's state
+     *
      * @var string
      */
     protected $sState = \Nails\Invoice\Model\Invoice::STATE_OPEN;
 
     /**
      * The invoice's dated date
+     *
      * @var string
      */
     protected $sDated;
 
     /**
      * The invoice's terms
+     *
      * @var integer
      */
     protected $iTerms;
 
     /**
      * The invoice's customer ID
+     *
      * @var integer
      */
     protected $iCustomerId;
 
     /**
      * The invoice's email
+     *
      * @var string
      */
     protected $sEmail;
 
     /**
      * The invoice's currency
+     *
      * @var string
      */
     protected $sCurrency;
 
     /**
      * The invoice's additional text
+     *
      * @var string
      */
     protected $sAdditionalText;
 
     /**
      * The invoice's callback data
+     *
      * @var mixed
      */
     protected $mCallbackData;
 
     /**
      * The invoice's items
+     *
      * @var string
      */
     protected $aItems;
@@ -180,6 +222,7 @@ class Invoice
 
     /**
      * Saves a new invoice
+     *
      * @return \stdClass
      * @throws InvoiceException
      */
@@ -203,6 +246,7 @@ class Invoice
 
     /**
      * Deletes an invoice
+     *
      * @return $this
      * @throws InvoiceException
      */
@@ -222,6 +266,7 @@ class Invoice
 
     /**
      * Writes an invoice off
+     *
      * @return $this
      * @throws InvoiceException
      */
@@ -268,6 +313,7 @@ class Invoice
 
     /**
      * Returns the item as an array
+     *
      * @return array
      */
     public function toArray()

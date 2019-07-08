@@ -14,58 +14,89 @@ namespace Nails\Invoice\Factory\Invoice;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Model\Invoice;
 
+/**
+ * Class Item
+ *
+ * @package Nails\Invoice\Factory\Invoice
+ *
+ * @method setId($mValue)
+ * @method getId()
+ * @method setLabel($mValue)
+ * @method getLabel()
+ * @method setBody($mValue)
+ * @method getBody()
+ * @method setUnit($mValue)
+ * @method getUnit()
+ * @method setTaxId($mValue)
+ * @method getTaxId()
+ * @method setQuantity($mValue)
+ * @method getQuantity()
+ * @method setUnitCost($mValue)
+ * @method getUnitCost()
+ * @method setCallbackData($mValue)
+ * @method getCallbackData()
+ */
 class Item
 {
     /**
      * Stores an array of the getter/setters for the other properties
+     *
      * @var array
      */
     protected $aMethods = [];
 
     /**
      * The item's id
+     *
      * @var integer
      */
     protected $iId;
 
     /**
      * The item's label
+     *
      * @var string
      */
     protected $sLabel;
 
     /**
      * The item's body
+     *
      * @var string
      */
     protected $sBody;
 
     /**
      * The item's unit
+     *
      * @var string
      */
     protected $iUnit = Invoice\Item::UNIT_NONE;
 
     /**
      * The item's tax ID
+     *
      * @var integer
      */
     protected $iTaxId;
 
     /**
      * The item's quantity
+     *
      * @var string
      */
     protected $iQuantity = 1;
 
     /**
      * The item's unit cost
+     *
      * @var integer
      */
     protected $iUnitCost = 0;
 
     /**
      * The item's callback data
+     *
      * @var mixed
      */
     protected $mCallbackData;
@@ -86,6 +117,8 @@ class Item
             $this->aMethods['set' . $sNormalised] = $sVar;
             $this->aMethods['get' . $sNormalised] = $sVar;
         }
+
+        dd($this->aMethods);
     }
 
     // --------------------------------------------------------------------------
@@ -117,6 +150,7 @@ class Item
 
     /**
      * Returns the item as an array
+     *
      * @return array
      */
     public function toArray()
