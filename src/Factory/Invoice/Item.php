@@ -117,8 +117,6 @@ class Item
             $this->aMethods['set' . $sNormalised] = $sVar;
             $this->aMethods['get' . $sNormalised] = $sVar;
         }
-
-        dd($this->aMethods);
     }
 
     // --------------------------------------------------------------------------
