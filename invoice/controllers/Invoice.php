@@ -127,7 +127,7 @@ class Invoice extends Base
             unauthorised();
         }
 
-        $this->data['sUrlCancel'] = $oInput->get('cancel') ?: site_url();
+        $this->data['sUrlCancel'] = $oInput->get('cancel') ?: siteUrl();
 
         // --------------------------------------------------------------------------
 

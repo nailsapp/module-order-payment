@@ -85,7 +85,7 @@ class Email extends Base
                 'slug'  => $oObj->email_type,
                 'label' => '',
             ],
-            'preview_url' => $oObj->email_id ? site_url('email/view/' . $oObj->email_ref) : null,
+            'preview_url' => $oObj->email_id ? siteUrl('email/view/' . $oObj->email_ref) : null,
         ];
 
         if (!empty($aTypes[$oEmail->type->slug])) {

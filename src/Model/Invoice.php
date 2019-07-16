@@ -1107,9 +1107,9 @@ class Invoice extends Base
 
         //  URLs
         $oObj->urls           = new \stdClass();
-        $oObj->urls->payment  = site_url('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/pay');
-        $oObj->urls->download = site_url('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/download');
-        $oObj->urls->view     = site_url('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/view');
+        $oObj->urls->payment  = siteUrl('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/pay');
+        $oObj->urls->download = siteUrl('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/download');
+        $oObj->urls->view     = siteUrl('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/view');
 
         //  Callback data
         $oObj->callback_data = json_decode($oObj->callback_data);

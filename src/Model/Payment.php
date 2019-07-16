@@ -698,10 +698,10 @@ class Payment extends Base
 
         //  URLs
         $oObj->urls             = new \stdClass();
-        $oObj->urls->complete   = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
-        $oObj->urls->thanks     = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
-        $oObj->urls->processing = site_url('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
-        $oObj->urls->continue   = !empty($oObj->url_continue) ? site_url($oObj->url_continue) : null;
+        $oObj->urls->complete   = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
+        $oObj->urls->thanks     = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
+        $oObj->urls->processing = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
+        $oObj->urls->continue   = !empty($oObj->url_continue) ? siteUrl($oObj->url_continue) : null;
 
         //  Custom data
         $oObj->custom_data = json_decode($oObj->custom_data);

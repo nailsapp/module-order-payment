@@ -453,8 +453,8 @@ class ChargeRequest extends RequestBase
         }
 
         //  Return URL for drivers which implement a redirect flow
-        $sSuccessUrl = site_url('invoice/payment/' . $this->oPayment->id . '/' . $this->oPayment->token . '/complete');
-        $sFailUrl    = site_url('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
+        $sSuccessUrl = siteUrl('invoice/payment/' . $this->oPayment->id . '/' . $this->oPayment->token . '/complete');
+        $sFailUrl    = siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
 
         //  Execute the charge
         $oChargeResponse = $this->oDriver->charge(
