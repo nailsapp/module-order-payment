@@ -10,22 +10,32 @@
  * @link
  */
 
+use Nails\Auth\Service\Session;
 use Nails\Common\Exception\NailsException;
+use Nails\Common\Service\Input;
+use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Controller\Base;
+use Nails\Invoice\Factory\CompleteRequest;
 
+/**
+ * Class Payment
+ */
 class Payment extends Base
 {
     /**
      * Completes a payment
      *
-     * @param  \stdClass $oPayment The invoice object
+     * @param \stdClass $oPayment The invoice object
      *
      * @return void
      */
     protected function complete($oPayment)
     {
+        /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
         $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
 
         $this->data['oPayment'] = $oPayment;
         $this->data['oInvoice'] = $oPayment->invoice;
@@ -49,6 +59,7 @@ class Payment extends Base
             try {
 
                 //  Set up CompleteRequest object
+                /** @var CompleteRequest $oCompleteRequest */
                 $oCompleteRequest = Factory::factory('CompleteRequest', 'nails/module-invoice');
 
                 //  Set the driver to use for the request
@@ -64,7 +75,6 @@ class Payment extends Base
                 $oCompleteRequest->setContinueUrl($oPayment->urls->continue);
 
                 //  Attempt completion
-                $oInput            = Factory::service('Input');
                 $oCompleteResponse = $oCompleteRequest->execute(
                     $oInput->get(),
                     $oInput->post()
@@ -95,6 +105,7 @@ class Payment extends Base
                 }
 
             } catch (\Exception $e) {
+                /** @var Session $oSession */
                 $oSession = Factory::service('Session', 'nails/module-auth');
                 $oSession->setFlashData('error', $e->getMessage());
                 redirect($oPayment->invoice->urls->payment);
@@ -107,7 +118,7 @@ class Payment extends Base
     /**
      * Shows a thank you page
      *
-     * @param  \stdClass $oPayment The invoice object
+     * @param \stdClass $oPayment The invoice object
      *
      * @return void
      */
@@ -125,11 +136,14 @@ class Payment extends Base
 
         // --------------------------------------------------------------------------
 
-        $oView = Factory::service('View');
         $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/thanks/index.php');
-        $oView->load('structure/header', $this->data);
-        $oView->load('invoice/thanks/index', $this->data);
-        $oView->load('structure/footer', $this->data);
+
+        Factory::service('View')
+            ->load([
+                'structure/header',
+                'invoice/thanks/index',
+                'structure/footer',
+            ]);
     }
 
     // --------------------------------------------------------------------------
@@ -137,7 +151,7 @@ class Payment extends Base
     /**
      * Shows a thank you page which informs the user that their payment is processing
      *
-     * @param  \stdClass $oPayment The invoice object
+     * @param \stdClass $oPayment The invoice object
      *
      * @return void
      */
@@ -155,26 +169,33 @@ class Payment extends Base
 
         // --------------------------------------------------------------------------
 
-        $oView = Factory::service('View');
         $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/thanks/processing.php');
-        $oView->load('structure/header', $this->data);
-        $oView->load('invoice/thanks/processing', $this->data);
-        $oView->load('structure/footer', $this->data);
+
+        Factory::service('View')
+            ->load([
+                'structure/header',
+                'invoice/thanks/processing',
+                'structure/footer',
+            ]);
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Remap requests for valid payments to the appropriate controller method
+     *
      * @return void
      */
     public function _remap()
     {
-        $oUri          = Factory::service('Uri');
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+
         $iPaymentId    = (int) $oUri->rsegment(2);
         $sPaymentToken = $oUri->rsegment(3);
         $sMethod       = $oUri->rsegment(4);
-        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
         $oPayment      = $oPaymentModel->getById($iPaymentId, ['expand' => ['invoice']]);
 
         if (empty($oPayment) || $sPaymentToken !== $oPayment->token || !method_exists($this, $sMethod)) {

@@ -7,6 +7,11 @@
             <p>Thank you for your payment of <?=$oPayment->amount->formatted?>.</p>
             <p>Your payment reference is <strong><?=$oPayment->ref?></strong>.</p>
             <p>
+                <a href="<?=$oPayment->urls->continue?>" class="btn btn--block btn--primary">
+                    Continue
+                </a>
+            </p>
+            <p>
                 <a href="<?=$oPayment->invoice->urls->download?>" class="btn btn--block">
                     Download Invoice
                 </a>

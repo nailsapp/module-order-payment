@@ -1,247 +1,340 @@
 <?php
 
 /**
- * Manage invoices
+ * View invoices
  *
  * @package     Nails
  * @subpackage  module-invoice
- * @category    AdminController
+ * @category    controller
  * @author      Nails Dev Team
  * @link
  */
 
-namespace Nails\Admin\Invoice;
-
-use Nails\Admin\Helper;
-use Nails\Admin\Nav;
+use Nails\Common\Exception\NailsException;
+use Nails\Common\Service\Asset;
+use Nails\Common\Service\FormValidation;
+use Nails\Common\Service\Input;
+use Nails\Common\Service\Uri;
 use Nails\Factory;
-use Nails\Invoice\Controller\BaseAdmin;
+use Nails\Invoice\Controller\Base;
+use Nails\Invoice\Exception\DriverException;
+use Nails\Invoice\Factory\ChargeRequest;
+use Nails\Invoice\Service\Invoice\Skin;
+use Nails\Invoice\Service\PaymentDriver;
 
-class Invoice extends BaseAdmin
+/**
+ * Class Invoice
+ */
+class Invoice extends Base
 {
-    protected $oInvoiceModel;
-    protected $oInvoiceItemModel;
-    protected $oTaxModel;
+    /**
+     * The default invoice skin to use
+     *
+     * @type string
+     */
+    const DEFAULT_INVOICE_SKIN = 'nails/skin-invoice-classic';
 
     // --------------------------------------------------------------------------
 
     /**
-     * Announces this controller's navGroups
+     * Download a single invoice
      *
-     * @return Nav
-     * @throws \Nails\Common\Exception\FactoryException
+     * @param \stdClass $oInvoice The invoice object
+     *
+     * @return void
      */
-    public static function announce()
+    protected function download($oInvoice)
     {
-        if (userHasPermission('admin:invoice:invoice:manage')) {
-            $oNavGroup = Factory::factory('Nav', 'nails/module-admin')
-                ->setLabel('Invoices &amp; Payments')
-                ->setIcon('fa-credit-card')
-                ->addAction('Manage Invoices', 'index', [], 0);
-            return $oNavGroup;
+        //  Business details
+        $this->data['business'] = (object) [
+            'name'       => appSetting('business_name', 'nails/module-invoice'),
+            'address'    => appSetting('business_address', 'nails/module-invoice'),
+            'telephone'  => appSetting('business_telephone', 'nails/module-invoice'),
+            'email'      => appSetting('business_email', 'nails/module-invoice'),
+            'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
+        ];
+
+        /** @var Skin $oInvoiceSkinService */
+        $oInvoiceSkinService = Factory::service('InvoiceSkin', 'nails/module-invoice');
+
+        $sEnabledSkin          = $oInvoiceSkinService->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
+        $this->data['invoice'] = $oInvoice;
+        $this->data['isPdf']   = true;
+        $sHtml                 = $oInvoiceSkinService->view($sEnabledSkin, 'render', $this->data, true);
+
+        $oPdf = Factory::service('Pdf', 'nails/module-pdf');
+        $oPdf->setPaperSize('A4', 'portrait');
+        $oPdf->load_html($sHtml);
+
+        $oPdf->download('INVOICE-' . $oInvoice->ref . '.pdf');
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * View a single invoice
+     *
+     * @param \stdClass $oInvoice The invoice object
+     *
+     * @return void
+     */
+    protected function view($oInvoice)
+    {
+        //  Business details
+        $this->data['business'] = (object) [
+            'name'       => appSetting('business_name', 'nails/module-invoice'),
+            'address'    => appSetting('business_address', 'nails/module-invoice'),
+            'telephone'  => appSetting('business_telephone', 'nails/module-invoice'),
+            'email'      => appSetting('business_email', 'nails/module-invoice'),
+            'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
+        ];
+
+        /** @var Skin $oInvoiceSkinService */
+        $oInvoiceSkinService = Factory::service('InvoiceSkin', 'nails/module-invoice');
+
+        $sEnabledSkin          = $oInvoiceSkinService->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
+        $this->data['invoice'] = $oInvoice;
+        $this->data['isPdf']   = false;
+
+        $oInvoiceSkinService->view($sEnabledSkin, 'render', $this->data);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Pay a single invoice
+     *
+     * @param \stdClass $oInvoice The invoice object
+     *
+     * @return void
+     * @throws NailsException
+     */
+    protected function pay($oInvoice)
+    {
+        /** @var Asset $oAsset */
+        $oAsset = Factory::service('Asset');
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+
+        $this->data['oInvoice']       = $oInvoice;
+        $this->data['headerOverride'] = 'structure/header/blank';
+        $this->data['footerOverride'] = 'structure/footer/blank';
+
+        //  Only open invoices can be paid
+        if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->is_scheduled) {
+
+            if ($oInvoice->state->id === 'PAID') {
+
+                $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
+
+                Factory::service('View')
+                    ->load([
+                        'structure/header',
+                        'invoice/pay/paid',
+                        'structure/footer',
+                    ]);
+                return;
+
+            } else {
+                show404();
+            }
         }
-    }
 
-    // --------------------------------------------------------------------------
-
-    /**
-     * Returns an array of extra permissions for this controller
-     *
-     * @return array
-     */
-    public static function permissions(): array
-    {
-        $aPermissions = parent::permissions();
-
-        $aPermissions['manage'] = 'Can manage invoices';
-        $aPermissions['create'] = 'Can create invoices';
-        $aPermissions['edit']   = 'Can edit invoices';
-        $aPermissions['delete'] = 'Can delete invoices';
-
-        return $aPermissions;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Invoice constructor.
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->oInvoiceModel     = Factory::model('Invoice', 'nails/module-invoice');
-        $this->oInvoiceItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
-        $this->oTaxModel         = Factory::model('Tax', 'nails/module-invoice');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Browse invoices
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function index()
-    {
-        if (!userHasPermission('admin:invoice:invoice:manage')) {
+        //  If a user ID is specified, then the user must be logged in as that user
+        if (!empty($oInvoice->user->id) && $oInvoice->user->id != activeUser('id')) {
             unauthorised();
         }
 
+        $this->data['sUrlCancel'] = $oInput->get('cancel') ?: siteUrl();
+
         // --------------------------------------------------------------------------
 
-        //  Are we dealing with a filtered view?
-        $oInput         = Factory::service('Input');
-        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
-        $iCustomerId    = $oInput->get('customer_id');
+        //  If there are payments against this invoice which are processing, then deny payment
+        if ($oInvoice->has_processing_payments) {
 
-        if ($iCustomerId) {
-            $oCustomer = $oCustomerModel->getbyId($iCustomerId);
+            /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+            $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+
+            $this->data['aProcessingPayments'] = [];
+            foreach ($oInvoice->payments->data as $oPayment) {
+                if ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
+                    $this->data['aProcessingPayments'][] = $oPayment;
+                }
+            }
+
+            $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/hasProcessing.php');
+
+            Factory::service('View')
+                ->load([
+                    'structure/header',
+                    'invoice/pay/hasProcessing',
+                    'structure/footer',
+                ]);
+            return;
         }
 
         // --------------------------------------------------------------------------
 
-        //  Set method info
-        $this->data['page']->title = empty($oCustomer) ? 'Manage Invoices' : possessive($oCustomer->label) . ' invoices';
+        //  Payment drivers
+        /** @var PaymentDriver $oPaymentDriverService */
+        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $aDrivers              = $oPaymentDriverService->getEnabled();
+        foreach ($aDrivers as $oDriver) {
 
-        // --------------------------------------------------------------------------
+            $oDriverInstance = $oPaymentDriverService->getInstance($oDriver->slug);
 
-        $sTableAlias = $this->oInvoiceModel->getTableAlias();
-
-        //  Get pagination and search/sort variables
-        $iPage      = $oInput->get('page') ? $oInput->get('page') : 0;
-        $iPerPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
-        $sSortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
-        $sSortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
-        $sKeywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
-
-        // --------------------------------------------------------------------------
-
-        //  Define the sortable columns
-        $aSortColumns = [
-            $sTableAlias . '.created'  => 'Created Date',
-            $sTableAlias . '.modified' => 'Modified Date',
-            $sTableAlias . '.state'    => 'Invoice State',
-        ];
-
-        // --------------------------------------------------------------------------
-
-        //  Define the filters
-        $aCbFilters = [];
-
-        //  States
-        $aStateOptions = [];
-        $aStates       = $this->oInvoiceModel->getStates();
-
-        foreach ($aStates as $sState => $sLabel) {
-            $aStateOptions[] = [
-                $sLabel,
-                $sState,
-                true,
-            ];
+            if ($oDriverInstance->isAvailable($oInvoice)) {
+                $this->data['aDrivers'][] = $oDriverInstance;
+            }
         }
 
-        $aCbFilters[] = Helper::searchFilterObject(
-            $sTableAlias . '.state',
-            'State',
-            $aStateOptions
-        );
-
-        //  Currencies
-        $oCurrency        = Factory::service('Currency', 'nails/module-currency');
-        $aCurrencyOptions = [];
-        $aCurrencies      = $oCurrency->getAllEnabled();
-
-        foreach ($aCurrencies as $oCurrency) {
-            $aCurrencyOptions[] = [
-                $oCurrency->code,
-                $oCurrency->code,
-                true,
-            ];
-        }
-
-        $aCbFilters[] = Helper::searchFilterObject(
-            $sTableAlias . '.currency',
-            'Currency',
-            $aCurrencyOptions
-        );
-
-        // --------------------------------------------------------------------------
-
-        //  Define the $aData variable for the queries
-        $aData = [
-            'where'     => array_filter([
-                !empty($oCustomer) ? ['customer_id', $oCustomer->id] : null,
-            ]),
-            'sort'      => [
-                [$sSortOn, $sSortOrder],
-            ],
-            'expand'    => ['customer', 'payments'],
-            'keywords'  => $sKeywords,
-            'cbFilters' => $aCbFilters,
-        ];
-
-        //  Get the items for the page
-        $iTotalRows             = $this->oInvoiceModel->countAll($aData);
-        $this->data['invoices'] = $this->oInvoiceModel->getAll($iPage, $iPerPage, $aData);
-
-        //  Set Search and Pagination objects for the view
-        $this->data['search']     = Helper::searchObject(true, $aSortColumns, $sSortOn, $sSortOrder, $iPerPage, $sKeywords, $aCbFilters);
-        $this->data['pagination'] = Helper::paginationObject($iPage, $iPerPage, $iTotalRows);
-
-        //  Add a header button
-        if (userHasPermission('admin:invoice:invoice:create')) {
-            Helper::addHeaderButton(
-                'admin/invoice/invoice/create',
-                'Create Invoice'
-            );
+        if (empty($this->data['aDrivers'])) {
+            throw new DriverException('No enabled payment drivers', 1);
         }
 
         // --------------------------------------------------------------------------
-
-        Helper::loadView('index');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Create a new invoice
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function create()
-    {
-        if (!userHasPermission('admin:invoice:invoice:create')) {
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Page Title
-        $this->data['page']->title = 'Create Invoice';
-
-        // --------------------------------------------------------------------------
-
-        $oInput                    = Factory::service('Input');
-        $this->data['customer_id'] = $oInput->get('customer_id');
 
         if ($oInput->post()) {
-            if ($this->validatePost()) {
-                $oInvoice = $this->oInvoiceModel->create($this->getObjectFromPost(), true);
-                if (!empty($oInvoice)) {
 
-                    //  Send invoice if needed
-                    $this->sendInvoice($oInvoice);
+            /**
+             * Validation works by looking at which driver has been chosen and then
+             * validating the respective fields accordingly. If the driver's fields
+             * is simply CARD then we validate the cc[] field.
+             */
 
-                    $oSession = Factory::service('Session', 'nails/module-auth');
-                    $oSession->setFlashData('success', 'Invoice created successfully.');
+            /** @var FormValidation $oFormValidation */
+            $oFormValidation = Factory::service('FormValidation');
 
-                    redirect('admin/invoice/invoice/index');
+            $aRules = [
+                'driver'   => ['trim', 'required'],
+                'cc[name]' => ['trim'],
+                'cc[num]'  => ['trim'],
+                'cc[exp]'  => ['trim'],
+                'cc[cvc]'  => ['trim'],
+            ];
 
-                } else {
-                    $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->lastError();
+            $sSelectedDriver = md5($oInput->post('driver'));
+            $oSelectedDriver = null;
+
+            foreach ($this->data['aDrivers'] as $oDriver) {
+
+                $sSlug   = $oDriver->getSlug();
+                $aFields = $oDriver->getPaymentFields();
+
+                if ($sSelectedDriver == md5($sSlug)) {
+
+                    $oSelectedDriver = $oDriver;
+
+                    if ($aFields === $oSelectedDriver::PAYMENT_FIELDS_CARD) {
+
+                        $aRules['cc[name]'][] = 'required';
+                        $aRules['cc[num]'][]  = 'required';
+                        $aRules['cc[exp]'][]  = 'required';
+                        $aRules['cc[cvc]'][]  = 'required';
+
+                    } elseif (!empty($aFields)) {
+                        foreach ($aFields as $aField) {
+                            $aRules[md5($sSlug) . '[' . $aField['key'] . ']'] = array_filter([
+                                'trim',
+                                !empty($aField['required']) ? 'required' : '',
+                            ]);
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            foreach ($aRules as $sKey => $sRules) {
+                $oFormValidation->set_rules($sKey, '', implode('|', array_unique($sRules)));
+            }
+
+            if ($oFormValidation->run()) {
+
+                try {
+
+                    //  Set up ChargeRequest object
+                    /** @var ChargeRequest $oChargeRequest */
+                    $oChargeRequest = Factory::factory('ChargeRequest', 'nails/module-invoice');
+
+                    //  Set the driver to use for the request
+                    $oChargeRequest->setDriver($oSelectedDriver->getSlug());
+                    $oChargeRequest->setDescription('Payment for invoice #' . $oInvoice->ref);
+                    $oChargeRequest->setInvoice($oInvoice->id);
+
+                    if ($oInput->get('continue')) {
+                        $oChargeRequest->setContinueUrl(
+                            $oInput->get('continue')
+                        );
+                    }
+
+                    //  If the driver expects card data then set it, if it expects custom data then set that
+                    $mPaymentFields = $oSelectedDriver->getPaymentFields();
+
+                    if (!empty($mPaymentFields) && $mPaymentFields == $oSelectedDriver::PAYMENT_FIELDS_CARD) {
+
+                        $sName = !empty($_POST['cc']['name']) ? $_POST['cc']['name'] : '';
+                        $sNum  = !empty($_POST['cc']['num']) ? $_POST['cc']['num'] : '';
+                        $sExp  = !empty($_POST['cc']['exp']) ? $_POST['cc']['exp'] : '';
+                        $sCvc  = !empty($_POST['cc']['cvc']) ? $_POST['cc']['cvc'] : '';
+
+                        $aExp   = explode('/', $sExp);
+                        $aExp   = array_map('trim', $aExp);
+                        $sMonth = !empty($aExp[0]) ? $aExp[0] : null;
+                        $sYear  = !empty($aExp[1]) ? $aExp[1] : null;
+
+                        $oChargeRequest->setCardName($sName);
+                        $oChargeRequest->setCardNumber($sNum);
+                        $oChargeRequest->setCardExpMonth($sMonth);
+                        $oChargeRequest->setCardExpYear($sYear);
+                        $oChargeRequest->setCardCvc($sCvc);
+
+                    } elseif (!empty($mPaymentFields)) {
+                        foreach ($mPaymentFields as $aField) {
+                            if (!empty($_POST[$sSelectedDriver][$aField['key']])) {
+                                $sValue = $_POST[$sSelectedDriver][$aField['key']];
+                            } else {
+                                $sValue = null;
+                            }
+                            $oChargeRequest->setCustomData($aField['key'], $sValue);
+                        }
+                    }
+
+                    //  Attempt payment
+                    $oChargeResponse = $oChargeRequest->execute(
+                        $oInvoice->totals->raw->grand,
+                        $oInvoice->currency->code
+                    );
+
+                    //  Handle response
+                    if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete()) {
+
+                        /**
+                         * Payment was successful (but potentially unconfirmed). Send the user off to
+                         * complete the request.
+                         */
+                        redirect($oChargeResponse->getSuccessUrl());
+
+                    } elseif ($oChargeResponse->isFailed()) {
+
+                        /**
+                         * Payment failed, throw an error which will be caught and displayed to the user
+                         */
+                        throw new NailsException(
+                            'Payment failed: ' . $oChargeResponse->getError()->user,
+                            1
+                        );
+
+                    } else {
+
+                        /**
+                         * Something which we've not accounted for went wrong.
+                         */
+                        throw new NailsException('Payment failed.', 1);
+                    }
+
+                } catch (\Exception $e) {
+                    $this->data['error'] = $e->getMessage();
                 }
 
             } else {
@@ -251,493 +344,77 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        //  Page data
-        $aItemUnits = $this->oInvoiceItemModel->getUnits();
-        $aTaxes     = $this->oTaxModel->getAll();
+        $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/index.php');
 
-        $this->data['invoiceStates'] = $this->oInvoiceModel->getSelectableStates();
+        $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
+        $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
 
-        // --------------------------------------------------------------------------
-
-        //  Invoice Items
-        $oInput = Factory::service('Input');
-        if ($oInput->post()) {
-
-            $aItems = $oInput->post('items') ?: [];
-            //  Tidy up post data as expected by JS
-            foreach ($aItems as &$aItem) {
-
-                $aItem['label'] = html_entity_decode($aItem['label'], ENT_QUOTES, 'UTF-8');
-                $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
-
-                $sUnitCost                     = $aItem['unit_cost'];
-                $aItem['unit_cost']            = new \stdClass();
-                $aItem['unit_cost']->formatted = new \stdClass();
-                $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
-
-                $aItem['tax']     = new \stdClass();
-                $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
-
-                $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
-                $aItem['unit']     = new \stdClass();
-                $aItem['unit']->id = $sUnit;
-            }
-
-        } else {
-            $aItems = [];
-        }
-
-        // --------------------------------------------------------------------------
-
-        $oCurrency                = Factory::service('Currency', 'nails/module-currency');
-        $aCurrencies              = $oCurrency->getAllEnabled();
-        $this->data['currencies'] = $aCurrencies;
-
-        // --------------------------------------------------------------------------
-
-        $oAsset = Factory::service('Asset');
-        //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
-        $oAsset->load('invoice.edit.js', 'nails/module-invoice');
-        $oAsset->inline(
-            'ko.applyBindings(
-                new invoiceEdit(
-                    ' . json_encode($aItemUnits) . ',
-                    ' . json_encode($aTaxes) . ',
-                    ' . json_encode($aItems) . ',
-                    ' . json_encode($aCurrencies) . '
-                )
-            );',
-            'JS'
-        );
-
-        //  Load views
-        Helper::loadView('edit');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Edit an invoice
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function edit()
-    {
-        if (!userHasPermission('admin:invoice:invoice:edit')) {
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        $oUri   = Factory::service('Uri');
-        $oInput = Factory::service('Input');
-
-        $iInvoiceId            = (int) $oUri->segment(5);
-        $oModel                = $this->oInvoiceModel;
-        $this->data['invoice'] = $oModel->getById(
-            $iInvoiceId,
-            ['expand' => $oModel::EXPAND_ALL]
-        );
-
-        if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
-            show404();
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Page Title
-        $this->data['page']->title = 'Edit Invoice &rsaquo; ' . $this->data['invoice']->ref;
-
-        // --------------------------------------------------------------------------
-
-        if ($oInput->post()) {
-            if ($this->validatePost()) {
-                if ($oModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
-
-                    //  Send invoice if needed
-                    $oInvoice = $oModel->getById($this->data['invoice']->id);
-                    $this->sendInvoice($oInvoice);
-
-                    $oSession = Factory::service('Session', 'nails/module-auth');
-                    $oSession->setFlashData('success', 'Invoice was saved successfully.');
-
-                    redirect('admin/invoice/invoice/index');
-
-                } else {
-                    $this->data['error'] = 'Failed to update invoice. ' . $oModel->lastError();
+        //  Let the drivers load assets
+        foreach ($this->data['aDrivers'] as $oDriver) {
+            foreach ($oDriver->getCheckoutAssets() as $sCheckoutAsset) {
+                if (is_string($sCheckoutAsset)) {
+                    $oAsset->load($sCheckoutAsset, $oDriver->getSlug());
+                } elseif (is_array($sCheckoutAsset)) {
+                    $oAsset->load(
+                        getFromArray(0, $sCheckoutAsset),
+                        getFromArray(1, $sCheckoutAsset),
+                        getFromArray(2, $sCheckoutAsset)
+                    );
                 }
-            } else {
-                $this->data['error'] = lang('fv_there_were_errors');
             }
         }
 
         // --------------------------------------------------------------------------
 
-        //  Page data
-        $aItemUnits = $this->oInvoiceItemModel->getUnits();
-        $aTaxes     = $this->oTaxModel->getAll();
-
-        $this->data['invoiceStates'] = $oModel->getSelectableStates();
-
-        // --------------------------------------------------------------------------
-
-        //  Invoice Items
-        if ($oInput->post()) {
-
-            $aItems = $oInput->post('items') ?: [];
-            //  Tidy up post data as expected by JS
-            foreach ($aItems as &$aItem) {
-
-                $aItem['label'] = html_entity_decode($aItem['label'], ENT_QUOTES, 'UTF-8');
-                $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
-
-                $sUnitCost                     = $aItem['unit_cost'];
-                $aItem['unit_cost']            = new \stdClass();
-                $aItem['unit_cost']->formatted = new \stdClass();
-                $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
-
-                $aItem['tax']     = new \stdClass();
-                $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
-
-                $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
-                $aItem['unit']     = new \stdClass();
-                $aItem['unit']->id = $sUnit;
+        $sFormUrl = current_url();
+        if ($oInput->get()) {
+            $sFormUrl .= '?';
+            foreach ($oInput->get() as $sKey => $sValue) {
+                $sFormUrl .= $sKey . '=' . urlencode($sValue) . '&';
             }
-
-        } else {
-            $aItems = $this->data['invoice']->items->data;
+            $sFormUrl = substr($sFormUrl, 0, -1);
         }
 
         // --------------------------------------------------------------------------
 
-        $oCurrency                = Factory::service('Currency', 'nails/module-currency');
-        $aCurrencies              = $oCurrency->getAllEnabled();
-        $this->data['currencies'] = $aCurrencies;
-        //  A customer ID can be specified when creating an invoice; this prevents undefined var errors
-        $this->data['customer_id'] = null;
+        Factory::service('View')
+            ->setData([
+                'sFormUrl' => $sFormUrl,
+            ])
+            ->load([
+                'structure/header',
+                'invoice/pay/index',
+                'structure/footer',
+            ]);
+    }
 
-        // --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
-        $oAsset = Factory::service('Asset');
-        //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
-        $oAsset->load('invoice.edit.js', 'nails/module-invoice');
-        $oAsset->inline(
-            'ko.applyBindings(
-                new invoiceEdit(
-                    ' . json_encode($aItemUnits) . ',
-                    ' . json_encode($aTaxes) . ',
-                    ' . json_encode($aItems) . ',
-                    ' . json_encode($aCurrencies) . '
-                )
-            );',
-            'JS'
+    /**
+     * Remap requests for valid payments to the appropriate controller method
+     *
+     * @return void
+     */
+    public function _remap()
+    {
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+
+        $sInvoiceRef   = $oUri->rsegment(2);
+        $sInvoiceToken = $oUri->rsegment(3);
+        $sMethod       = $oUri->rsegment(4);
+
+        $oInvoice = $oInvoiceModel->getByRef(
+            $sInvoiceRef,
+            ['expand' => ['customer', 'items', 'payments', 'refunds']]
         );
 
-        //  Load views
-        Helper::loadView('edit');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * View an invoice
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function view()
-    {
-        if (!userHasPermission('admin:invoice:invoice:edit')) {
-            unauthorised();
-        }
-
-        $oUri                  = Factory::service('Uri');
-        $oModel                = $this->oInvoiceModel;
-        $iInvoiceId            = (int) $oUri->segment(5);
-        $this->data['invoice'] = $this->oInvoiceModel->getById(
-            $iInvoiceId,
-            ['expand' => $oModel::EXPAND_ALL]
-        );
-
-        if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {
+        if (empty($oInvoice) || $sInvoiceToken !== $oInvoice->token || !method_exists($this, $sMethod)) {
             show404();
         }
 
-        $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
-
-        $oAsset = Factory::service('Asset');
-        $oAsset->load('admin.invoice.view.min.js', 'nails/module-invoice');
-
-        Helper::loadView('view');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Form validation cal;back to validate currency selection
-     *
-     * @param string $sCode the currency code
-     *
-     * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function _callbackValidCurrency($sCode)
-    {
-        $oFormValidation = Factory::service('FormValidation');
-        $oFormValidation->set_message('_callbackValidCurrency', 'Invalid currency.');
-
-        $oCurrency = Factory::service('Currency', 'nails/module-currency');
-        $aEnabled  = $oCurrency->getAllEnabled();
-
-        foreach ($aEnabled as $oCurrency) {
-            if ($oCurrency->code === $sCode) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Make an invoice a draft
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function make_draft()
-    {
-        if (!userHasPermission('admin:invoice:invoice:edit')) {
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        $oUri     = Factory::service('Uri');
-        $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
-        if (!$oInvoice) {
-            show404();
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Allow getting a constant
-        $oInvoiceModel = $this->oInvoiceModel;
-
-        $aData = [
-            'state' => $oInvoiceModel::STATE_DRAFT,
-        ];
-        if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-            $sStatus  = 'success';
-            $sMessage = 'Invoice updated successfully!';
-        } else {
-            $sStatus  = 'error';
-            $sMessage = 'Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError();
-        }
-
-        $oSession = Factory::service('Session', 'nails/module-auth');
-        $oSession->setFlashData($sStatus, $sMessage);
-
-        redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Write an invoice off
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function write_off()
-    {
-        if (!userHasPermission('admin:invoice:invoice:edit')) {
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        $oUri     = Factory::service('Uri');
-        $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
-        if (!$oInvoice) {
-            show404();
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Allow getting a constant
-        $oInvoiceModel = $this->oInvoiceModel;
-
-        $aData = [
-            'state' => $oInvoiceModel::STATE_WRITTEN_OFF,
-        ];
-        if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-            $sStatus  = 'success';
-            $sMessage = 'Invoice written off successfully!';
-        } else {
-            $sStatus  = 'error';
-            $sMessage = 'Failed to write off invoice. ' . $this->oInvoiceModel->lastError();
-        }
-
-        $oSession = Factory::service('Session', 'nails/module-auth');
-        $oSession->setFlashData($sStatus, $sMessage);
-
-        redirect('admin/invoice/invoice');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Delete an invoice
-     *
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    public function delete()
-    {
-        if (!userHasPermission('admin:invoice:invoice:delete')) {
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        $oUri     = Factory::service('Uri');
-        $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
-        if (!$oInvoice) {
-            show404();
-        }
-
-        // --------------------------------------------------------------------------
-
-        if ($this->oInvoiceModel->delete($oInvoice->id)) {
-            $sStatus  = 'success';
-            $sMessage = 'Invoice deleted successfully!';
-        } else {
-            $sStatus  = 'error';
-            $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
-        }
-
-        $oSession = Factory::service('Session', 'nails/module-auth');
-        $oSession->setFlashData($sStatus, $sMessage);
-
-        redirect('admin/invoice/invoice/index');
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Validate the POST data
-     *
-     * @return boolean
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    protected function validatePost()
-    {
-        $oFormValidation = Factory::service('FormValidation');
-
-        $aRules = [
-            'ref'             => 'trim',
-            'state'           => 'trim|required',
-            'dated'           => 'trim|required|valid_date',
-            'currency'        => 'trim|required|callback__callbackValidCurrency',
-            'terms'           => 'trim|is_natural',
-            'customer_id'     => 'trim',
-            'additional_text' => 'trim',
-            'items'           => '',
-        ];
-
-        $aRulesFV = [];
-        foreach ($aRules as $sKey => $sRules) {
-            $aRulesFV[] = [
-                'field' => $sKey,
-                'label' => '',
-                'rules' => $sRules,
-            ];
-        }
-
-        $oFormValidation->set_rules($aRulesFV);
-
-        $oFormValidation->set_message('required', lang('fv_required'));
-        $oFormValidation->set_message('valid_date', lang('fv_valid_date'));
-        $oFormValidation->set_message('is_natural', lang('fv_is_natural'));
-        $oFormValidation->set_message('valid_email', lang('fv_valid_email'));
-
-        return $oFormValidation->run($this);
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Get an object generated from the POST data
-     *
-     * @return array
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    protected function getObjectFromPost()
-    {
-        $oInput = Factory::service('Input');
-        $oUri   = Factory::service('Uri');
-        $aData  = [
-            'ref'             => $oInput->post('ref') ?: null,
-            'state'           => $oInput->post('state') ?: null,
-            'dated'           => $oInput->post('dated') ?: null,
-            'currency'        => $oInput->post('currency') ?: null,
-            'terms'           => (int) $oInput->post('terms') ?: 0,
-            'customer_id'     => (int) $oInput->post('customer_id') ?: null,
-            'additional_text' => $oInput->post('additional_text') ?: null,
-            'items'           => [],
-            'currency'        => $oInput->post('currency'),
-        ];
-
-        if ($oInput->post('items')) {
-            foreach ($oInput->post('items') as $aItem) {
-
-                //  @todo convert to pence using a model
-                $aData['items'][] = [
-                    'id'        => array_key_exists('id', $aItem) ? $aItem['id'] : null,
-                    'quantity'  => array_key_exists('quantity', $aItem) ? $aItem['quantity'] : null,
-                    'unit'      => array_key_exists('unit', $aItem) ? $aItem['unit'] : null,
-                    'label'     => array_key_exists('label', $aItem) ? $aItem['label'] : null,
-                    'body'      => array_key_exists('body', $aItem) ? $aItem['body'] : null,
-                    'unit_cost' => array_key_exists('unit_cost', $aItem) ? intval($aItem['unit_cost'] * 100) : null,
-                    'tax_id'    => array_key_exists('tax_id', $aItem) ? $aItem['tax_id'] : null,
-                ];
-            }
-        }
-
-        if ($oUri->rsegment(5) == 'edit') {
-            unset($aData['ref']);
-        }
-
-        return $aData;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Send an invoice by email
-     *
-     * @param \stdClass $oInvoice The Invoice to send
-     *
-     * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
-     */
-    protected function sendInvoice($oInvoice)
-    {
-        if (empty($oInvoice)) {
-            return false;
-        }
-
-        $sInvoiceClass = get_class($this->oInvoiceModel);
-
-        if ($oInvoice->state->id !== $sInvoiceClass::STATE_OPEN) {
-            return false;
-        }
-
-        $oNow   = Factory::factory('DateTime');
-        $oDated = new \DateTime($oInvoice->dated->raw);
-
-        if ($oNow->format('Y-m-d') != $oDated->format('Y-m-d')) {
-            return false;
-        }
-
-        return $this->oInvoiceModel->send($oInvoice->id);
+        call_user_func([$this, $sMethod], $oInvoice);
     }
 }

@@ -1,6 +1,6 @@
 <div class="nails-invoice pay u-center-screen" id="js-invoice">
     <div class="panel shakeable">
-        <?=form_open(null, 'id="js-invoice-main-form"')?>
+        <?=form_open($sFormUrl, 'id="js-invoice-main-form"')?>
         <div class="mask" id="js-invoice-mask">
             Loading...
         </div>
@@ -20,6 +20,35 @@
             <p class="alert alert--info <?=empty($info) ? 'hidden' : ''?>">
                 <?=$info?>
             </p>
+            <table class="table">
+                <tbody>
+                    <?php
+                    foreach ($oInvoice->items->data as $oItem) {
+                        ?>
+                        <tr>
+                            <td>
+                                <?=$oItem->label?>
+                            </td>
+                            <td align="right">
+                                <?=$oItem->totals->formatted->grand?>
+                            </td>
+                        </tr>
+                        <?php
+                    }
+                    ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>
+                            Total
+                        </td>
+                        <td align="right">
+                            <?=$oInvoice->totals->formatted->grand?>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+            <hr>
             <h5>Choose Payment Method</h5>
             <ul class="list list--unstyled list--bordered" id="js-invoice-driver-select">
                 <?php
@@ -75,7 +104,7 @@
             foreach ($aDrivers as $oDriver) {
 
                 $mFields    = $oDriver->getPaymentFields();
-                $sDriverKey = $oDriver->getSlug();
+                $sDriverKey = md5($oDriver->getSlug());
 
                 if (!empty($mFields) && $mFields === 'CARD') {
 
@@ -99,49 +128,52 @@
                             $aOptions     = !empty($aField['options']) ? $aField['options'] : [];
                             $sErrorClass  = form_error($sKey) ? 'has-error' : '';
 
-                            echo '<label>';
-                            echo $sLabel;
+                            $sId   = empty($aField['id']) ? 'input-' . $sKey : $aField['id'];
+                            $aAttr = [
+                                'id="' . $sId . '"',
+                                'placeholder="' . $sPlaceholder . '" ',
+                                'data-is-required="' . $sRequired . '"',
+                            ];
 
-                            switch ($sType) {
+                            ?>
+                            <div class="form__group <?=form_error($sKey) ? 'has-error' : ''?>">
+                                <label for="<?=$sId?>"><?=$sLabel?></label>
+                                <?php
 
-                                case 'dropdown':
-                                case 'select':
+                                switch ($sType) {
 
-                                    echo form_dropdown(
-                                        $sKey,
-                                        $aOptions,
-                                        set_value($sKey),
-                                        'class="' . $sErrorClass . '" ' .
-                                        'placeholder="' . $sPlaceholder . '" ' .
-                                        'data-is-required="' . $sRequired . '"'
-                                    );
-                                    break;
+                                    case 'dropdown':
+                                    case 'select':
 
-                                case 'password':
-                                    echo form_password(
-                                        $sKey,
-                                        null,
-                                        'class="' . $sErrorClass . '" ' .
-                                        'placeholder="' . $sPlaceholder . '" ' .
-                                        'data-is-required="' . $sRequired . '"'
-                                    );
-                                    break;
+                                        echo form_dropdown(
+                                            $sKey,
+                                            $aOptions,
+                                            set_value($sKey),
+                                            implode(' ', $aAttr)
+                                        );
+                                        break;
 
-                                case 'text':
-                                default:
-                                    echo form_input(
-                                        $sKey,
-                                        set_value($sKey),
-                                        'class="' . $sErrorClass . '" ' .
-                                        'placeholder="' . $sPlaceholder . '" ' .
-                                        'data-is-required="' . $sRequired . '"'
-                                    );
-                                    break;
-                            }
+                                    case 'password':
+                                        echo form_password(
+                                            $sKey,
+                                            null,
+                                            implode(' ', $aAttr)
+                                        );
+                                        break;
 
-                            echo form_error($sKey, '<p class="alert alert--danger">', '</p>');
-
-                            echo '</label>';
+                                    case 'text':
+                                    default:
+                                        echo form_input(
+                                            $sKey,
+                                            set_value($sKey),
+                                            implode(' ', $aAttr)
+                                        );
+                                        break;
+                                }
+                                ?>
+                                <?=form_error($sKey, '<p class="form__error">', '</p>')?>
+                            </div>
+                            <?php
                         }
 
                         ?>
@@ -249,15 +281,16 @@
             }
 
             ?>
+            <hr>
             <p>
-                <button type="submit" class="btn btn--block btn--disabled" id="js-invoice-pay-now">
+                <button type="submit" class="btn btn--block btn--primary btn--disabled" id="js-invoice-pay-now">
                     Choose a Payment Method
                 </button>
             </p>
             <p class="text-center">
-                <small>
-                    <?=anchor($sUrlCancel, 'Cancel Payment')?>
-                </small>
+                <a href="<?=$sUrlCancel?>" class="btn btn--link">
+                    Cancel payment
+                </a>
             </p>
 
         </div>
