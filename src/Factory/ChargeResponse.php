@@ -55,7 +55,7 @@ class ChargeResponse extends ResponseBase
     /**
      * Set whether the response is a SCA redirect
      *
-     * @param boolean $bIsScaWhether the response is a SCA edirect
+     * @param array $aData Any data to save for the SCA flow
      *
      * @return $this
      */
