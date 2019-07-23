@@ -15,6 +15,8 @@ namespace Nails\Invoice\Factory;
 class ChargeResponse extends ResponseBase
 {
     //  Redirect variables
+    protected $bIsSca;
+    protected $aScaData;
     protected $bIsRedirect;
     protected $sRedirectUrl;
     protected $aRedirectPostData;
@@ -32,13 +34,52 @@ class ChargeResponse extends ResponseBase
     public function __construct()
     {
         parent::__construct();
+        $this->bIsSca      = false;
         $this->bIsRedirect = false;
     }
 
     // --------------------------------------------------------------------------
 
     /**
+     * Whether the response is a SCA redirect
+     *
+     * @return boolean
+     */
+    public function isSca()
+    {
+        return $this->bIsSca;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set whether the response is a SCA redirect
+     *
+     * @param boolean $bIsScaWhether the response is a SCA edirect
+     *
+     * @return $this
+     */
+    public function setIsSca(array $aData)
+    {
+        if (!$this->bIsLocked) {
+            $this->bIsSca   = true;
+            $this->aScaData = $aData;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    public function getScaData()
+    {
+        return $this->aScaData;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Whether the response is a redirect
+     *
      * @return boolean
      */
     public function isRedirect()
@@ -85,6 +126,7 @@ class ChargeResponse extends ResponseBase
 
     /**
      * The URL to redirect to
+     *
      * @return string
      */
     public function getRedirectUrl()
@@ -113,6 +155,7 @@ class ChargeResponse extends ResponseBase
 
     /**
      * The URL to redirect to on successful payment
+     *
      * @return string
      */
     public function getSuccessUrl()
@@ -124,6 +167,7 @@ class ChargeResponse extends ResponseBase
 
     /**
      * The URL to redirect to on failed payment
+     *
      * @return string
      */
     public function getFailUrl()
@@ -169,6 +213,7 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Get the URL to go to when a payment is completed
+     *
      * @return string
      */
     public function getContinueUrl()
@@ -198,6 +243,7 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Any data which should be POST'ed to the endpoint
+     *
      * @return string
      */
     public function getRedirectPostData()

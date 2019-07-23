@@ -71,6 +71,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the cardholder's Name
+     *
      * @return string
      */
     public function getCardName()
@@ -103,6 +104,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's number
+     *
      * @return string
      */
     public function getCardNumber()
@@ -150,6 +152,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's expiry month
+     *
      * @return string
      */
     public function getCardExpMonth()
@@ -214,6 +217,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's expiry year
+     *
      * @return string
      */
     public function getCardExpYear()
@@ -241,6 +245,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's CVC number
+     *
      * @return string
      */
     public function getCardCvc()
@@ -269,7 +274,7 @@ class ChargeRequest extends RequestBase
     /**
      * Retrieve a custom field
      *
-     * @param  string $sProperty The property to retrieve
+     * @param string $sProperty The property to retrieve
      *
      * @return mixed
      */
@@ -299,7 +304,7 @@ class ChargeRequest extends RequestBase
     /**
      * Retrieve a custom value
      *
-     * @param  string $sProperty The property to retrieve
+     * @param string $sProperty The property to retrieve
      *
      * @return mixed
      */
@@ -327,6 +332,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the description
+     *
      * @return string
      */
     public function getDescription()
@@ -354,6 +360,7 @@ class ChargeRequest extends RequestBase
     /**
      * Whether the charge request will automatically redirect in the case of a
      * driver requesting a redirect flow.
+     *
      * @return boolean
      */
     public function isAutoRedirect()
@@ -380,6 +387,7 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the URL to go to when a payment is completed
+     *
      * @return string
      */
     public function getContinueUrl()
@@ -392,11 +400,11 @@ class ChargeRequest extends RequestBase
     /**
      * execute the charge
      *
-     * @param  integer $iAmount   The amount to charge the card
-     * @param  string  $sCurrency The currency in which to charge
+     * @param integer $iAmount   The amount to charge the card
+     * @param string  $sCurrency The currency in which to charge
      *
-     * @throws ChargeRequestException
      * @return \Nails\Invoice\Factory\ChargeResponse
+     * @throws ChargeRequestException
      */
     public function execute($iAmount, $sCurrency)
     {
@@ -483,7 +491,21 @@ class ChargeRequest extends RequestBase
         }
 
         //  Handle the response
-        if ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
+        if ($oChargeResponse->isSca()) {
+
+            /**
+             * Payment requires SCA, redirect to handle this
+             */
+
+            $sScaData = json_encode($oChargeResponse->getScaData());
+            $this->oPaymentModel->update(
+                $this->oPayment->id,
+                ['sca_data' => $sScaData]
+            );
+
+            redirect('invoice/payment/sca/' . $this->oPayment->token . '/' . md5($sScaData));
+
+        } elseif ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
 
             /**
              * Driver uses a redirect flow, determine whether we can use a basic header redirect,
