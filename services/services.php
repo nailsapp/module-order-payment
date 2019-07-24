@@ -125,5 +125,19 @@ return [
                 return new \Nails\Invoice\Factory\RefundResponse();
             }
         },
+        'ScaRequest'       => function () {
+            if (class_exists('\App\Invoice\Factory\ScaRequest')) {
+                return new \App\Invoice\Factory\ScaRequest();
+            } else {
+                return new \Nails\Invoice\Factory\ScaRequest();
+            }
+        },
+        'ScaResponse'      => function () {
+            if (class_exists('\App\Invoice\Factory\ScaResponse')) {
+                return new \App\Invoice\Factory\ScaResponse();
+            } else {
+                return new \Nails\Invoice\Factory\ScaResponse();
+            }
+        },
     ],
 ];

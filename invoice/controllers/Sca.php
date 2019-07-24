@@ -10,9 +10,12 @@
  * @link
  */
 
+use Nails\Auth\Service\Session;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Controller\Base;
+use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Factory\ScaRequest;
 use Nails\Invoice\Service\PaymentDriver;
 
 /**
@@ -29,40 +32,44 @@ class Sca extends Base
         /** @var PaymentDriver $oPaymentDriverService */
         $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
 
-        $oPayment = $oPaymentModel->getByToken($oUri->segment(4));
+        $oPayment = $oPaymentModel->getByToken($oUri->segment(4), ['expand' => ['invoice']]);
         if (empty($oPayment) || md5($oPayment->sca_data) !== $oUri->segment(5)) {
             show404();
         }
 
-        //  Clears loaded styles, so load first in case the driver laods anything
-        $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/sca.php');
+        // --------------------------------------------------------------------------
 
-        try {
+        /** @var ScaRequest $oScaRequest */
+        $oScaRequest = Factory::factory('ScaRequest', 'nails/module-invoice');
 
-            $oDriver  = $oPaymentDriverService->getInstance($oPayment->driver->slug);
-            $aScaData = json_decode($oPayment->sca_data, JSON_OBJECT_AS_ARRAY);
+        $oScaRequest->setPayment($oPayment->id);
+        $oScaRequest->setInvoice($oPayment->invoice->id);
+        $oScaRequest->setDriver($oPayment->driver->slug);
 
-            if ($oUri->segment(6) === 'complete') {
-                $oResponse = $oDriver->scaComplete($aScaData);
-                //  @todo (Pablo - 2019-07-23) - Update payment record and redirect
-                dd($oResponse);
+        $oScaResponse = $oScaRequest->execute();
+
+        if ($oScaResponse->isComplete()) {
+
+            if (!empty($oPayment->urls->continue)) {
+                redirect($oPayment->urls->continue);
+            } else {
+                redirect($oPayment->urls->thanks);
             }
 
-            $oDriver->scaRequest(
-                $aScaData,
-                siteUrl('invoice/payment/sca/' . $oPayment->token . '/' . $oUri->segment(5) . '/complete')
-            );
+        } elseif ($oScaResponse->isRedirect()) {
 
-        } catch (\Exception $e) {
-            //  @todo (Pablo - 2019-07-23) - Handle errors
-            d($e);
+            redirect($oScaResponse->getRedirectUrl());
+
+        } elseif ($oScaResponse->isFail()) {
+
+            /** @var Session $oSession */
+            $oSession = Factory::service('Session', 'nails/module-auth');
+            $oSession->setFlashData('error', $oScaResponse->getError());
+
+            redirect($oPayment->invoice->urls->payment);
+
+        } else {
+            throw new InvoiceException('Unhandled SCA status');
         }
-
-        Factory::service('View')
-            ->load([
-                'structure/header/blank',
-                'invoice/pay/sca',
-                'structure/footer/blank',
-            ]);
     }
 }

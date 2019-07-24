@@ -12,7 +12,10 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Factory;
+use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
 
 class RequestBase
@@ -236,6 +239,36 @@ class RequestBase
         $this->oPaymentModel->sendReceipt($this->oPayment->id);
 
         return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets a payment as failed
+     *
+     * @param string $sMessage The error message
+     * @param string $sCode    The error code
+     *
+     * @throws ChargeRequestException
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    protected function setPaymentFailed($sMessage, $sCode): void
+    {
+        //  Update the payment
+        $sPaymentClass = get_class($this->oPaymentModel);
+        $bResult       = $this->oPaymentModel->update(
+            $this->oPayment->id,
+            [
+                'status'    => $sPaymentClass::STATUS_FAILED,
+                'fail_msg'  => $sMessage,
+                'fail_code' => $sCode,
+            ]
+        );
+
+        if (empty($bResult)) {
+            throw new ChargeRequestException('Failed to update existing payment.', 1);
+        }
     }
 
     // --------------------------------------------------------------------------

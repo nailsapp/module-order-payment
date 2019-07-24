@@ -521,9 +521,9 @@ class ChargeRequest extends RequestBase
 
             } else {
 
-                $oCi = get_instance();
-                echo $oCi->load->view('structure/header/blank', getControllerData(), true);
-                echo $oCi->load->view(
+                $oView = Factory::service('View');
+                echo $oView->load('structure/header/blank', getControllerData(), true);
+                echo $oView->load(
                     'invoice/pay/post',
                     [
                         'redirectUrl' => $sRedirectUrl,
@@ -531,7 +531,7 @@ class ChargeRequest extends RequestBase
                     ],
                     true
                 );
-                echo $oCi->load->view('structure/footer/blank', getControllerData(), true);
+                echo $oView->load('structure/footer/blank', getControllerData(), true);
                 exit();
             }
 
@@ -553,20 +553,11 @@ class ChargeRequest extends RequestBase
 
         } elseif ($oChargeResponse->isFailed()) {
 
-            //  Update the payment
-            $sPaymentClass = get_class($this->oPaymentModel);
-            $bResult       = $this->oPaymentModel->update(
-                $this->oPayment->id,
-                [
-                    'status'    => $sPaymentClass::STATUS_FAILED,
-                    'fail_msg'  => $oChargeResponse->getError()->msg,
-                    'fail_code' => $oChargeResponse->getError()->code,
-                ]
+            //  Driver reported a failure
+            $this->setPaymentFailed(
+                $oChargeResponse->getError()->msg,
+                $oChargeResponse->getError()->code
             );
-
-            if (empty($bResult)) {
-                throw new ChargeRequestException('Failed to update existing payment.', 1);
-            }
         }
 
         //  Set the success and fail URLs
