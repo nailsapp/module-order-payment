@@ -377,6 +377,10 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
+        $this->data['page']->title = 'Pay Invoice ' . $oInvoice->ref;
+
+        // --------------------------------------------------------------------------
+
         Factory::service('View')
             ->setData([
                 'sFormUrl' => $sFormUrl,
