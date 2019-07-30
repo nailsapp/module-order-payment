@@ -54,7 +54,7 @@ class InvoicePay {
                 let cardCvc = $('.js-invoice-cc-cvc');
 
                 cardCvc.removeClass('amex other');
-                $el.removeClass('has-error');
+                $el.closest('.form__group').removeClass('has-error');
 
                 if (cardNum.length > 0) {
                     switch (cardType) {
