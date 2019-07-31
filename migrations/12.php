@@ -24,5 +24,6 @@ class Migration12 extends Base
     public function execute()
     {
         $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `sca_data` TEXT NULL AFTER `custom_data`;');
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` CHANGE `fail_msg` `fail_msg` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL;');
     }
 }
