@@ -1,6 +1,14 @@
 class InvoicePay {
     constructor() {
 
+        //  Create validator handler
+        this.$form = $('#js-invoice-main-form');
+        this.$btn = $('#js-invoice-pay-now');
+        this.$form.data('validators', []);
+        this.$form.data('validated', false);
+
+        // --------------------------------------------------------------------------
+
         //  Bind to driver selection
         $('.js-invoice-driver-select input')
             .on('click', (e) => {
@@ -19,24 +27,18 @@ class InvoicePay {
                 $('.js-invoice-panel-payment-details')
                     .addClass('hidden');
 
-                if ($el.data('is-card')) {
-                    $('#js-invoice-panel-payment-details-card')
-                        .removeClass('hidden');
-                } else {
-                    $('.js-invoice-panel-payment-details[data-driver="' + $el.data('driver') + '"]')
-                        .removeClass('hidden');
-                }
+                $('.js-invoice-panel-payment-details[data-driver="' + $el.data('driver') + '"]')
+                    .removeClass('hidden');
 
                 //  Update button
                 let btnString = $el.data('is-redirect') ? 'Continue' : 'Pay Now';
 
-                $('#js-invoice-pay-now')
+                this.$btn
                     .removeClass('btn--warning btn--disabled')
                     .text(btnString);
 
-            });
-
-        $('.js-invoice-driver-select input:checked')
+            })
+            .filter(':checked')
             .trigger('click');
 
         //  Card input formatting
@@ -71,47 +73,98 @@ class InvoicePay {
             .trigger('keyup');
 
         //  Validation
-        $('#js-invoice-main-form')
-            .on('submit', function() {
+        this.$form
+            .on('submit', (e) => {
 
+                //  If validated, let the form fly
+                if (this.$form.data('validated')) {
+                    return true;
+                } else {
+                    e.preventDefault();
+                    this.$btn
+                        .addClass('btn--working')
+                        .prop('disabled', true);
+                }
+
+                // --------------------------------------------------------------------------
+
+                let deferred = new $.Deferred();
                 let isValid = true;
 
-                //  Hide errors
-                $('#js-error')
-                    .addClass('hidden');
+                // --------------------------------------------------------------------------
 
-                //  Driver selected
-                let selectedDriver = $('.js-invoice-driver-select input:checked');
-                if (selectedDriver.length !== 0) {
+                //  Set up the resolution actions
+                deferred
+                    .done(() => {
+                        this.$form
+                            .data('validated', true)
+                            .submit();
+                    })
+                    .fail((message) => {
 
+                        $('#js-error')
+                            .html(message)
+                            .removeClass('hidden');
+
+                        $('#js-invoice')
+                            .addClass('shake');
+
+                        setTimeout(() => {
+                            $('#js-invoice')
+                                .removeClass('shake');
+                        }, 500);
+
+                        this.$btn
+                            .removeClass('btn--working')
+                            .prop('disabled', false);
+                    });
+
+                // --------------------------------------------------------------------------
+
+                try {
+
+                    //  Hide errors
+                    $('#js-error')
+                        .addClass('hidden');
+
+                    //  Ensure a driver selected
+                    let $selectedDriver = $('.js-invoice-driver-select input:checked');
+                    if ($selectedDriver.length === 0) {
+                        deferred.reject('Please select a payment option');
+                        return;
+                    }
+
+                    //  Validate any fields
                     $('.js-invoice-panel-payment-details:not(.hidden) :input')
                         .each((index, element) => {
 
                             let $el = $(element);
+                            let $group = $el.closest('.form__group');
                             let val = $.trim($el.val());
+
+                            $group.removeClass('has-error');
 
                             if ($el.data('is-required') && val.length === 0) {
                                 isValid = false;
-                                $el.closest('.form__group').addClass('has-error');
+                                $group.addClass('has-error');
                             }
 
                             if ($el.data('cc-num') && !$.payment.validateCardNumber(val)) {
                                 isValid = false;
-                                $el.closest('.form__group').addClass('has-error');
+                                $group.addClass('has-error');
                             }
 
                             if ($el.data('cc-exp')) {
                                 let expObj = $.payment.cardExpiryVal(val);
                                 if (!$.payment.validateCardExpiry(expObj.month, expObj.year)) {
-
                                     isValid = false;
-                                    $el.closest('.form__group').addClass('has-error');
+                                    $group.addClass('has-error');
                                 }
                             }
 
                             if ($el.data('cc-cvc') && !$.payment.validateCardCVC(val)) {
                                 isValid = false;
-                                $el.closest('.form__group').addClass('has-error');
+                                $group.addClass('has-error');
                             }
 
                             if (!isValid) {
@@ -121,24 +174,29 @@ class InvoicePay {
                             }
                         });
 
-                } else {
+                    if (!isValid) {
+                        deferred.reject('Please correct highlighted fields');
+                        return;
+                    }
 
-                    isValid = false;
-                    $('#js-error')
-                        .html('Please select an option')
-                        .removeClass('hidden');
+                    //  Execute any custom validator
+                    let validators = this.$form.data('validators');
+                    let validator = null;
+                    for (let i = 0; i < validators.length; i++) {
+                        if (validators[i].slug === $selectedDriver.val()) {
+                            validator = validators[i].instance;
+                        }
+                    }
+
+                    if (validator) {
+                        validator.validate(deferred);
+                    } else {
+                        deferred.resolve();
+                    }
+
+                } catch (error) {
+                    deferred.reject(error.message);
                 }
-
-                if (!isValid) {
-                    $('#js-invoice').addClass('shake');
-                    setTimeout(() => {
-                        $('#js-invoice').removeClass('shake');
-                    }, 500);
-                } else {
-                    $('#js-invoice').addClass('masked');
-                }
-
-                return isValid;
             });
     }
 }

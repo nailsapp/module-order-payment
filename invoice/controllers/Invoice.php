@@ -17,6 +17,7 @@ use Nails\Common\Service\Input;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Controller\Base;
+use Nails\Invoice\Driver\PaymentBase;
 use Nails\Invoice\Exception\DriverException;
 use Nails\Invoice\Factory\ChargeRequest;
 use Nails\Invoice\Service\Invoice\Skin;
@@ -196,149 +197,79 @@ class Invoice extends Base
 
         if ($oInput->post()) {
 
-            /**
-             * Validation works by looking at which driver has been chosen and then
-             * validating the respective fields accordingly. If the driver's fields
-             * is simply CARD then we validate the cc[] field.
-             */
+            try {
 
-            /** @var FormValidation $oFormValidation */
-            $oFormValidation = Factory::service('FormValidation');
+                $sSelectedDriver = md5($oInput->post('driver'));
+                $oSelectedDriver = null;
 
-            $aRules = [
-                'driver'   => ['trim', 'required'],
-                'cc[name]' => ['trim'],
-                'cc[num]'  => ['trim'],
-                'cc[exp]'  => ['trim'],
-                'cc[cvc]'  => ['trim'],
-            ];
-
-            $sSelectedDriver = md5($oInput->post('driver'));
-            $oSelectedDriver = null;
-
-            foreach ($this->data['aDrivers'] as $oDriver) {
-
-                $sSlug   = $oDriver->getSlug();
-                $aFields = $oDriver->getPaymentFields();
-
-                if ($sSelectedDriver == md5($sSlug)) {
-
-                    $oSelectedDriver = $oDriver;
-
-                    if ($aFields === $oSelectedDriver::PAYMENT_FIELDS_CARD) {
-
-                        $aRules['cc[name]'][] = 'required';
-                        $aRules['cc[num]'][]  = 'required';
-                        $aRules['cc[exp]'][]  = 'required';
-                        $aRules['cc[cvc]'][]  = 'required';
-
-                    } elseif (!empty($aFields)) {
-                        foreach ($aFields as $aField) {
-                            $aRules[md5($sSlug) . '[' . $aField['key'] . ']'] = array_filter([
-                                'trim',
-                                !empty($aField['required']) ? 'required' : '',
-                            ]);
-                        }
+                foreach ($this->data['aDrivers'] as $oDriver) {
+                    if ($sSelectedDriver == md5($oDriver->getSlug())) {
+                        $oSelectedDriver = $oDriver;
+                        break;
                     }
-
-                    break;
                 }
-            }
 
-            foreach ($aRules as $sKey => $sRules) {
-                $oFormValidation->set_rules($sKey, '', implode('|', array_unique($sRules)));
-            }
+                if (empty($oSelectedDriver)) {
+                    throw new \Nails\Common\Exception\ValidationException('No payment driver selected.');
+                }
 
-            if ($oFormValidation->run()) {
+                //  @todo (Pablo - 2019-07-31) - Think about validation here
 
-                try {
+                //  Set up ChargeRequest object
+                /** @var ChargeRequest $oChargeRequest */
+                $oChargeRequest = Factory::factory('ChargeRequest', 'nails/module-invoice');
 
-                    //  Set up ChargeRequest object
-                    /** @var ChargeRequest $oChargeRequest */
-                    $oChargeRequest = Factory::factory('ChargeRequest', 'nails/module-invoice');
+                $oChargeRequest->setDriver($oSelectedDriver->getSlug());
+                $oChargeRequest->setDescription('Payment for invoice #' . $oInvoice->ref);
+                $oChargeRequest->setInvoice($oInvoice->id);
 
-                    //  Set the driver to use for the request
-                    $oChargeRequest->setDriver($oSelectedDriver->getSlug());
-                    $oChargeRequest->setDescription('Payment for invoice #' . $oInvoice->ref);
-                    $oChargeRequest->setInvoice($oInvoice->id);
+                if ($oInput->get('continue')) {
+                    $oChargeRequest->setContinueUrl(
+                        $oInput->get('continue')
+                    );
+                }
 
-                    if ($oInput->get('continue')) {
-                        $oChargeRequest->setContinueUrl(
-                            $oInput->get('continue')
-                        );
-                    }
+                //  Let the driver prepare the charge request to its liking
+                $oSelectedDriver->prepareChargeRequest(
+                    $oChargeRequest,
+                    getFromArray($sSelectedDriver, $_POST)
+                );
 
-                    //  If the driver expects card data then set it, if it expects custom data then set that
-                    $mPaymentFields = $oSelectedDriver->getPaymentFields();
+                //  Attempt payment
+                $oChargeResponse = $oChargeRequest->execute(
+                    $oInvoice->totals->raw->grand,
+                    $oInvoice->currency->code
+                );
 
-                    if (!empty($mPaymentFields) && $mPaymentFields == $oSelectedDriver::PAYMENT_FIELDS_CARD) {
+                //  Handle response
+                if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete()) {
 
-                        $sName = !empty($_POST['cc']['name']) ? $_POST['cc']['name'] : '';
-                        $sNum  = !empty($_POST['cc']['num']) ? $_POST['cc']['num'] : '';
-                        $sExp  = !empty($_POST['cc']['exp']) ? $_POST['cc']['exp'] : '';
-                        $sCvc  = !empty($_POST['cc']['cvc']) ? $_POST['cc']['cvc'] : '';
+                    /**
+                     * Payment was successful (but potentially unconfirmed). Send the user off to
+                     * complete the request.
+                     */
+                    redirect($oChargeResponse->getSuccessUrl());
 
-                        $aExp   = explode('/', $sExp);
-                        $aExp   = array_map('trim', $aExp);
-                        $sMonth = !empty($aExp[0]) ? $aExp[0] : null;
-                        $sYear  = !empty($aExp[1]) ? $aExp[1] : null;
+                } elseif ($oChargeResponse->isFailed()) {
 
-                        $oChargeRequest->setCardName($sName);
-                        $oChargeRequest->setCardNumber($sNum);
-                        $oChargeRequest->setCardExpMonth($sMonth);
-                        $oChargeRequest->setCardExpYear($sYear);
-                        $oChargeRequest->setCardCvc($sCvc);
-
-                    } elseif (!empty($mPaymentFields)) {
-                        foreach ($mPaymentFields as $aField) {
-                            if (!empty($_POST[$sSelectedDriver][$aField['key']])) {
-                                $sValue = $_POST[$sSelectedDriver][$aField['key']];
-                            } else {
-                                $sValue = null;
-                            }
-                            $oChargeRequest->setCustomData($aField['key'], $sValue);
-                        }
-                    }
-
-                    //  Attempt payment
-                    $oChargeResponse = $oChargeRequest->execute(
-                        $oInvoice->totals->raw->grand,
-                        $oInvoice->currency->code
+                    /**
+                     * Payment failed, throw an error which will be caught and displayed to the user
+                     */
+                    throw new NailsException(
+                        'Payment failed: ' . $oChargeResponse->getError()->user,
+                        1
                     );
 
-                    //  Handle response
-                    if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete()) {
+                } else {
 
-                        /**
-                         * Payment was successful (but potentially unconfirmed). Send the user off to
-                         * complete the request.
-                         */
-                        redirect($oChargeResponse->getSuccessUrl());
-
-                    } elseif ($oChargeResponse->isFailed()) {
-
-                        /**
-                         * Payment failed, throw an error which will be caught and displayed to the user
-                         */
-                        throw new NailsException(
-                            'Payment failed: ' . $oChargeResponse->getError()->user,
-                            1
-                        );
-
-                    } else {
-
-                        /**
-                         * Something which we've not accounted for went wrong.
-                         */
-                        throw new NailsException('Payment failed.', 1);
-                    }
-
-                } catch (\Exception $e) {
-                    $this->data['error'] = $e->getMessage();
+                    /**
+                     * Something which we've not accounted for went wrong.
+                     */
+                    throw new NailsException('Payment failed.', 1);
                 }
 
-            } else {
-                $this->data['error'] = lang('fv_there_were_errors');
+            } catch (\Exception $e) {
+                $this->data['error'] = $e->getMessage();
             }
         }
 

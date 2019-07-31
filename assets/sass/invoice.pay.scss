@@ -1,5 +1,6 @@
 .nails-invoice {
     max-width: 500px;
+
     &.pay {
         &.shake {
             perspective: 800px;
@@ -11,35 +12,6 @@
             }
         }
 
-        &.masked {
-            > form {
-                > * {
-                    opacity: 0.5;
-                }
-
-                > .mask {
-                    opacity: 1;
-                    display: block;
-                }
-            }
-        }
-        .mask {
-            display: none;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-
-            b {
-                position: relative;
-                left: 48%;
-                top: 50%;
-                transform: translate3d(-50%, -50%, 0);
-                font-size: 2em;
-                animation: spin 2s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045);
-                transform-origin: 50% 47%;
-            }
-        }
         .js-invoice-cc-num {
             padding-right: 50px;
             background-size: 32px 32px;
@@ -95,6 +67,7 @@
             }
         }
     }
+
     &.pending {
         .list-group {
             margin-bottom: 0;

@@ -13,6 +13,8 @@
 namespace Nails\Invoice\Driver;
 
 use Nails\Common\Driver\Base;
+use Nails\Invoice\Exception\ChargeRequestException;
+use Nails\Invoice\Factory\ChargeRequest;
 use Nails\Invoice\Interfaces\Driver\Payment;
 
 abstract class PaymentBase extends Base implements Payment
@@ -23,4 +25,82 @@ abstract class PaymentBase extends Base implements Payment
      * @var string
      */
     const PAYMENT_FIELDS_CARD = 'CARD';
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Prepares a ChargeRequest object
+     *
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object to prepare
+     * @param array         $aData          Any data which was requested by getPaymentFields()
+     *
+     * @throws ChargeRequestException
+     */
+    public function prepareChargeRequest(ChargeRequest $oChargeRequest, array $aData)
+    {
+        $mPaymentFields = $this->getPaymentFields();
+
+        if (is_string($mPaymentFields) && $mPaymentFields == static::PAYMENT_FIELDS_CARD) {
+            $this->setChargeRequestCardDetails($oChargeRequest, $aData);
+        } elseif (is_array($mPaymentFields)) {
+            $this->setChargeRequestFields($oChargeRequest, $aData, $mPaymentFields);
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the card details of a ChargeRequest
+     *
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object
+     * @param array         $aData
+     *
+     * @throws ChargeRequestException
+     */
+    protected function setChargeRequestCardDetails(ChargeRequest $oChargeRequest, array $aData)
+    {
+        $aCard = getFromArray('card', $aData, []);
+
+        $sName = getFromArray('name', $aCard);
+        $sNum  = getFromArray('number', $aCard);
+        $sExp  = getFromArray('expire', $aCard);
+        $sCvc  = getFromArray('cvc', $aCard);
+
+        $aExp   = explode('/', $sExp);
+        $aExp   = array_map('trim', $aExp);
+        $sMonth = !empty($aExp[0]) ? $aExp[0] : null;
+        $sYear  = !empty($aExp[1]) ? $aExp[1] : null;
+
+        $oChargeRequest
+            ->setCardName($sName)
+            ->setCardNumber($sNum)
+            ->setCardExpMonth($sMonth)
+            ->setCardExpYear($sYear)
+            ->setCardCvc($sCvc);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the values of the payment fields
+     *
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object
+     * @param array         $aData          The data sent to the driver
+     * @param array|null    $aFields        The payment fields
+     */
+    protected function setChargeRequestFields(ChargeRequest $oChargeRequest, array $aData, array $aFields = null)
+    {
+        if (is_null($aFields)) {
+            $aFields = $this->getPaymentFields();
+        }
+
+        foreach ($aFields as $aField) {
+
+            $sKey   = getFromArray('key', $aField);
+            $sValue = getFromArray($sKey, $aData);
+
+            $oChargeRequest
+                ->setCustomData($aField['key'], $sValue);
+        }
+    }
 }

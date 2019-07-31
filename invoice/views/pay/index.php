@@ -1,9 +1,11 @@
+<?php
+
+use Nails\Invoice\Driver\PaymentBase;
+
+?>
 <div class="nails-invoice pay u-center-screen" id="js-invoice">
     <div class="panel shakeable">
         <?=form_open($sFormUrl, 'id="js-invoice-main-form"')?>
-        <div class="mask" id="js-invoice-mask">
-            Loading...
-        </div>
         <h1 class="panel__header text-center">
             Invoice <?=$oInvoice->ref?>
         </h1>
@@ -56,13 +58,12 @@
                 foreach ($aDrivers as $oDriver) {
 
                     $sHasFields  = json_encode(!empty($oDriver->getPaymentFields()));
-                    $sIsCard     = json_encode($oDriver->getPaymentFields() === 'CARD');
+                    $sIsCard     = json_encode($oDriver->getPaymentFields() === PaymentBase::PAYMENT_FIELDS_CARD);
                     $sIsRedirect = json_encode($oDriver->isRedirect());
 
                     $aData = [
                         'data-driver="' . $oDriver->getSlug() . '"',
                         'data-has-fields="' . $sHasFields . '"',
-                        'data-is-card="' . $sIsCard . '"',
                         'data-is-redirect="' . $sIsRedirect . '"',
                     ];
 
@@ -106,17 +107,99 @@
                 $mFields    = $oDriver->getPaymentFields();
                 $sDriverKey = md5($oDriver->getSlug());
 
-                if (!empty($mFields) && $mFields === 'CARD') {
+                ?>
+                <div class="hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
+                    <h5>Payment Details</h5>
+                    <?php
 
-                    $bShowCardFields = true;
+                    if (!empty($mFields) && $mFields === PaymentBase::PAYMENT_FIELDS_CARD) {
 
-                } elseif (!empty($mFields)) {
+                        $sFieldKey         = $sDriverKey . '[card][name]';
+                        $sFieldLabel       = 'Cardholder Name';
+                        $sFieldPlaceholder = '';
+                        $sFieldDefault     = activeUser('first_name, last_name');
+                        $sFieldAttr        = implode(' ', [
+                            'class="js-invoice-cc-name"',
+                            'id="input-' . $sFieldKey . '"',
+                            'placeholder="' . $sFieldPlaceholder . '"',
+                            'autocomplete="on"',
+                            'data-is-required="true"',
+                        ]);
 
-                    ?>
-                    <div class="hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
-                        <h5>Payment Details</h5>
+                        ?>
+                        <div class="form__group <?=form_error($sFieldKey) ? 'has-error' : ''?>">
+                            <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
+                            <?=form_text($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
+                            <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
+                        </div>
                         <?php
 
+                        $sFieldKey         = $sDriverKey . '[card][number]';
+                        $sFieldLabel       = 'Card Number';
+                        $sFieldPlaceholder = '•••• •••• •••• ••••';
+                        $sFieldDefault     = '';
+                        $sFieldAttr        = implode(' ', [
+                            'class="js-invoice-cc-num"',
+                            'id="input-' . $sFieldKey . '"',
+                            'placeholder="' . $sFieldPlaceholder . '"',
+                            'autocomplete="on"',
+                            'data-is-required="true"',
+                            'data-cc-num="true"',
+                        ]);
+
+                        ?>
+                        <div class="form__group <?=form_error($sFieldKey) ? 'has-error' : ''?>">
+                            <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
+                            <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
+                            <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
+                        </div>
+                        <div class="form__row">
+                            <?php
+
+                            $sFieldKey         = $sDriverKey . '[card][expire]';
+                            $sFieldLabel       = 'Expiry';
+                            $sFieldPlaceholder = '•• / ••';
+                            $sFieldDefault     = '';
+                            $sFieldAttr        = implode(' ', [
+                                'class="js-invoice-cc-exp"',
+                                'id="input-' . $sFieldKey . '"',
+                                'placeholder="' . $sFieldPlaceholder . '"',
+                                'autocomplete="on"',
+                                'data-is-required="true"',
+                                'data-cc-exp="true"',
+                            ]);
+
+                            ?>
+                            <div class="form__group form__group--half <?=form_error($sFieldKey) ? 'has-error' : ''?>">
+                                <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
+                                <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
+                                <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
+                            </div>
+                            <?php
+
+                            $sFieldKey         = $sDriverKey . '[card][cvc]';
+                            $sFieldLabel       = 'CVC';
+                            $sFieldPlaceholder = '•••';
+                            $sFieldDefault     = '';
+                            $sFieldAttr        = implode(' ', [
+                                'class="js-invoice-cc-cvc"',
+                                'id="input-' . $sFieldKey . '"',
+                                'placeholder="' . $sFieldPlaceholder . '"',
+                                'autocomplete="on"',
+                                'data-is-required="true"',
+                                'data-cc-cvc="true"',
+                            ]);
+
+                            ?>
+                            <div class="form__group form__group--half <?=form_error($sFieldKey) ? 'has-error' : ''?>">
+                                <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
+                                <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
+                                <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
+                            </div>
+                        </div>
+                        <?php
+
+                    } elseif (!empty($mFields)) {
                         foreach ($mFields as $aField) {
 
                             $sKey         = $sDriverKey . '[' . $aField['key'] . ']';
@@ -175,102 +258,8 @@
                             </div>
                             <?php
                         }
-
-                        ?>
-                    </div>
-                    <?php
-                }
-            }
-
-            if ($bShowCardFields) {
-                ?>
-                <div class="hidden js-invoice-panel-payment-details" id="js-invoice-panel-payment-details-card">
-                    <h5>Payment Details</h5>
-                    <?php
-
-                    $sFieldKey         = 'card_name';
-                    $sFieldLabel       = 'Cardholder Name';
-                    $sFieldPlaceholder = '';
-                    $sFieldDefault     = activeUser('first_name, last_name');
-                    $sFieldAttr        = implode(' ', [
-                        'class="js-invoice-cc-name"',
-                        'id="input-' . $sFieldKey . '"',
-                        'placeholder="' . $sFieldPlaceholder . '"',
-                        'autocomplete="on"',
-                        'data-is-required="true"',
-                    ]);
-
+                    }
                     ?>
-                    <div class="form__group <?=form_error($sFieldKey) ? 'has-error' : ''?>">
-                        <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
-                        <?=form_text($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
-                        <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
-                    </div>
-                    <?php
-
-                    $sFieldKey         = 'card_number';
-                    $sFieldLabel       = 'Card Number';
-                    $sFieldPlaceholder = '•••• •••• •••• ••••';
-                    $sFieldDefault     = '';
-                    $sFieldAttr        = implode(' ', [
-                        'class="js-invoice-cc-num"',
-                        'id="input-' . $sFieldKey . '"',
-                        'placeholder="' . $sFieldPlaceholder . '"',
-                        'autocomplete="on"',
-                        'data-is-required="true"',
-                        'data-cc-num="true"',
-                    ]);
-
-                    ?>
-                    <div class="form__group <?=form_error($sFieldKey) ? 'has-error' : ''?>">
-                        <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
-                        <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
-                        <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
-                    </div>
-                    <div class="form__row">
-                        <?php
-
-                        $sFieldKey         = 'card_expire';
-                        $sFieldLabel       = 'Expiry';
-                        $sFieldPlaceholder = '•• / ••';
-                        $sFieldDefault     = '';
-                        $sFieldAttr        = implode(' ', [
-                            'class="js-invoice-cc-exp"',
-                            'id="input-' . $sFieldKey . '"',
-                            'placeholder="' . $sFieldPlaceholder . '"',
-                            'autocomplete="on"',
-                            'data-is-required="true"',
-                            'data-cc-exp="true"',
-                        ]);
-
-                        ?>
-                        <div class="form__group form__group--half <?=form_error($sFieldKey) ? 'has-error' : ''?>">
-                            <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
-                            <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
-                            <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
-                        </div>
-                        <?php
-
-                        $sFieldKey         = 'card_cvc';
-                        $sFieldLabel       = 'CVC';
-                        $sFieldPlaceholder = '•••';
-                        $sFieldDefault     = '';
-                        $sFieldAttr        = implode(' ', [
-                            'class="js-invoice-cc-cvc"',
-                            'id="input-' . $sFieldKey . '"',
-                            'placeholder="' . $sFieldPlaceholder . '"',
-                            'autocomplete="on"',
-                            'data-is-required="true"',
-                            'data-cc-cvc="true"',
-                        ]);
-
-                        ?>
-                        <div class="form__group form__group--half <?=form_error($sFieldKey) ? 'has-error' : ''?>">
-                            <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
-                            <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
-                            <?=form_error($sFieldKey, '<p class="form__error">', '</p>')?>
-                        </div>
-                    </div>
                 </div>
                 <?php
             }
