@@ -232,7 +232,7 @@ class Invoice extends Base
                 //  Let the driver prepare the charge request to its liking
                 $oSelectedDriver->prepareChargeRequest(
                     $oChargeRequest,
-                    getFromArray($sSelectedDriver, $_POST)
+                    getFromArray($sSelectedDriver, $_POST, [])
                 );
 
                 //  Attempt payment
