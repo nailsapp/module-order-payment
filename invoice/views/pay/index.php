@@ -6,7 +6,7 @@ use Nails\Invoice\Driver\PaymentBase;
 <div class="nails-invoice pay u-center-screen" id="js-invoice">
     <div class="panel shakeable">
         <h1 class="panel__header text-center">
-            Invoice <?=$oInvoice->ref?>
+            Checkout
         </h1>
         <?=form_open($sFormUrl, 'id="js-invoice-main-form"')?>
         <div class="panel__body">
@@ -117,10 +117,20 @@ use Nails\Invoice\Driver\PaymentBase;
 
                         ?>
                         <div class="hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
+                            <h5>
+                                Saved Payment Details
+                            </h5>
+                            <p class="alert">
+                                @todo - List valid saved details
+                            </p>
                             <?php
                             if (!empty($mFields) && $mFields === PaymentBase::PAYMENT_FIELDS_CARD) {
 
-                                echo '<h5>Payment Details</h5>';
+                                ?>
+                                <h5>
+                                    Payment Details
+                                </h5>
+                                <?php
 
                                 $sFieldKey         = $sDriverKey . '[card][name]';
                                 $sFieldLabel       = 'Cardholder Name';
@@ -209,7 +219,11 @@ use Nails\Invoice\Driver\PaymentBase;
 
                             } elseif (!empty($mFields)) {
 
-                                echo '<h5>Payment Details</h5>';
+                                ?>
+                                <h5>
+                                    Payment Details
+                                </h5>
+                                <?php
 
                                 foreach ($mFields as $aField) {
 
