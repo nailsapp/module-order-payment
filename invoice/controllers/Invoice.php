@@ -178,24 +178,21 @@ class Invoice extends Base
 
         //  Payment drivers
         /** @var PaymentDriver $oPaymentDriverService */
-        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
-        $aDrivers              = $oPaymentDriverService->getEnabled();
+        $oPaymentDriverService  = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $aDrivers               = $oPaymentDriverService->getEnabled();
+        $this->data['aDrivers'] = [];
         foreach ($aDrivers as $oDriver) {
 
             $oDriverInstance = $oPaymentDriverService->getInstance($oDriver->slug);
 
-            if ($oDriverInstance->isAvailable($oInvoice)) {
+            if ($oDriverInstance->isAvailable($oInvoice) && $oDriverInstance->supportsCurrency($oInvoice->currency)) {
                 $this->data['aDrivers'][] = $oDriverInstance;
             }
         }
 
-        if (empty($this->data['aDrivers'])) {
-            throw new DriverException('No enabled payment drivers', 1);
-        }
-
         // --------------------------------------------------------------------------
 
-        if ($oInput->post()) {
+        if (!empty($this->data['aDrivers']) && $oInput->post()) {
 
             try {
 
@@ -277,20 +274,23 @@ class Invoice extends Base
 
         $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/index.php');
 
-        $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
-        $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
+        if (!empty($this->data['aDrivers'])) {
 
-        //  Let the drivers load assets
-        foreach ($this->data['aDrivers'] as $oDriver) {
-            foreach ($oDriver->getCheckoutAssets() as $sCheckoutAsset) {
-                if (is_string($sCheckoutAsset)) {
-                    $oAsset->load($sCheckoutAsset, $oDriver->getSlug());
-                } elseif (is_array($sCheckoutAsset)) {
-                    $oAsset->load(
-                        getFromArray(0, $sCheckoutAsset),
-                        getFromArray(1, $sCheckoutAsset),
-                        getFromArray(2, $sCheckoutAsset)
-                    );
+            $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
+            $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
+
+            //  Let the drivers load assets
+            foreach ($this->data['aDrivers'] as $oDriver) {
+                foreach ($oDriver->getCheckoutAssets() as $sCheckoutAsset) {
+                    if (is_string($sCheckoutAsset)) {
+                        $oAsset->load($sCheckoutAsset, $oDriver->getSlug());
+                    } elseif (is_array($sCheckoutAsset)) {
+                        $oAsset->load(
+                            getFromArray(0, $sCheckoutAsset),
+                            getFromArray(1, $sCheckoutAsset),
+                            getFromArray(2, $sCheckoutAsset)
+                        );
+                    }
                 }
             }
         }

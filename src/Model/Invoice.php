@@ -16,6 +16,8 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
+use Nails\Currency\Exception\CurrencyException;
+use Nails\Currency\Service\Currency;
 use Nails\Factory;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
@@ -150,10 +152,10 @@ class Invoice extends Base
     /**
      * Fetches all objects, optionally paginated. Returns the basic query object with no formatting.
      *
-     * @param  int|null $iPage           The page number of the results, if null then no pagination
-     * @param  int|null $iPerPage        How many items per page of paginated results
-     * @param  array    $aData           Any data to pass to getCountCommon()
-     * @param  bool     $bIncludeDeleted If non-destructive delete is enabled then this flag allows you to include deleted items
+     * @param int|null $iPage           The page number of the results, if null then no pagination
+     * @param int|null $iPerPage        How many items per page of paginated results
+     * @param array    $aData           Any data to pass to getCountCommon()
+     * @param bool     $bIncludeDeleted If non-destructive delete is enabled then this flag allows you to include deleted items
      *
      * @return object
      * @throws FactoryException
@@ -173,8 +175,8 @@ class Invoice extends Base
     /**
      * Counts all objects
      *
-     * @param  array $aData           An array of data to pass to getCountCommon()
-     * @param  bool  $bIncludeDeleted Whether to include deleted objects or not
+     * @param array $aData           An array of data to pass to getCountCommon()
+     * @param bool  $bIncludeDeleted Whether to include deleted objects or not
      *
      * @return int
      * @throws FactoryException
@@ -273,8 +275,8 @@ class Invoice extends Base
     /**
      * Creates a new object
      *
-     * @param  array $aData         The data to create the object with
-     * @param  bool  $bReturnObject Whether to return just the new ID or the full object
+     * @param array $aData         The data to create the object with
+     * @param bool  $bReturnObject Whether to return just the new ID or the full object
      *
      * @return bool|mixed
      * @throws FactoryException
@@ -332,8 +334,8 @@ class Invoice extends Base
     /**
      * Update an invoice
      *
-     * @param  int|array $mIds  The ID (or array of IDs) of the object(s) to update
-     * @param  array     $aData The data to update the object(s) with
+     * @param int|array $mIds  The ID (or array of IDs) of the object(s) to update
+     * @param array     $aData The data to update the object(s) with
      *
      * @return bool
      * @throws FactoryException
@@ -538,11 +540,10 @@ class Invoice extends Base
 
         //  Invalid currency
         if (array_key_exists('currency', $aData)) {
+            /** @var Currency $oCurrency */
             $oCurrency = Factory::service('Currency', 'nails/module-currency');
-            try {
-                $oCurrency->getByIsoCode($aData['currency']);
-            } catch (\Exception $e) {
-                throw new InvoiceException('"' . $aData['currency'] . '" is not a valid currency.', 1);
+            if (!$oCurrency->isEnabled($aData['currency'])) {
+                throw new InvoiceException('"' . $aData['currency'] . '" is not a supported currency.', 1);
             }
         }
 
@@ -703,8 +704,8 @@ class Invoice extends Base
     /**
      * Fetch an invoice by it's ref
      *
-     * @param  string $sRef  The ref of the invoice to fetch
-     * @param  mixed  $aData Any data to pass to getCountCommon()
+     * @param string $sRef  The ref of the invoice to fetch
+     * @param mixed  $aData Any data to pass to getCountCommon()
      *
      * @return null|Resource
      * @throws ModelException
@@ -745,8 +746,8 @@ class Invoice extends Base
     /**
      * Send an invoice by email
      *
-     * @param  int    $iInvoiceId     The ID of the invoice to send
-     * @param  string $sEmailOverride Send to this email instead of the email defined by the invoice object
+     * @param int    $iInvoiceId     The ID of the invoice to send
+     * @param string $sEmailOverride Send to this email instead of the email defined by the invoice object
      *
      * @return bool
      */
@@ -829,8 +830,8 @@ class Invoice extends Base
     /**
      * Whether an invoice has been fully paid or not
      *
-     * @param  int  $iInvoiceId         The Invoice to query
-     * @param  bool $bIncludeProcessing Whether to include payments which are still processing
+     * @param int  $iInvoiceId         The Invoice to query
+     * @param bool $bIncludeProcessing Whether to include payments which are still processing
      *
      * @return bool
      * @throws ModelException
@@ -857,7 +858,7 @@ class Invoice extends Base
     /**
      * Set an invoice as paid
      *
-     * @param  int $iInvoiceId The Invoice to query
+     * @param int $iInvoiceId The Invoice to query
      *
      * @return bool
      * @throws ModelException
@@ -889,7 +890,7 @@ class Invoice extends Base
     /**
      * Set an invoice as paid but with processing payments
      *
-     * @param  int $iInvoiceId The Invoice to query
+     * @param int $iInvoiceId The Invoice to query
      *
      * @return bool
      * @throws ModelException
@@ -921,7 +922,7 @@ class Invoice extends Base
     /**
      * Set an invoice as written off
      *
-     * @param  int $iInvoiceId The Invoice to query
+     * @param int $iInvoiceId The Invoice to query
      *
      * @return bool
      * @throws ModelException
@@ -953,7 +954,7 @@ class Invoice extends Base
     /**
      * Set an invoice as cancelled
      *
-     * @param  int $iInvoiceId The Invoice to query
+     * @param int $iInvoiceId The Invoice to query
      *
      * @return bool
      * @throws ModelException
@@ -1007,11 +1008,11 @@ class Invoice extends Base
      * The getAll() method iterates over each returned item with this method so as to
      * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
      *
-     * @param  object $oObj      A reference to the object being formatted.
-     * @param  array  $aData     The same data array which is passed to getCountCommon, for reference if needed
-     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param  array  $aBools    Fields which should be cast as booleans if not null
-     * @param  array  $aFloats   Fields which should be cast as floats if not null
+     * @param object $oObj      A reference to the object being formatted.
+     * @param array  $aData     The same data array which is passed to getCountCommon, for reference if needed
+     * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
+     * @param array  $aBools    Fields which should be cast as booleans if not null
+     * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @throws FactoryException
      * @throws \Nails\Currency\Exception\CurrencyException

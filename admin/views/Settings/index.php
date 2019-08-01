@@ -24,15 +24,6 @@ $oInput = \Nails\Factory::service('Input');
             <?php
         }
 
-        if (userHasPermission('admin:invoice:settings:currency')) {
-
-            ?>
-            <li class="tab">
-                <a href="#" data-tab="tab-currency">Currency</a>
-            </li>
-            <?php
-        }
-
         if (userHasPermission('admin:invoice:settings:drivers')) {
 
             ?>
@@ -149,17 +140,6 @@ $oInput = \Nails\Factory::service('Input');
 
                     ?>
                 </fieldset>
-            </div>
-            <?php
-        }
-
-        if (userHasPermission('admin:invoice:settings:currency')) {
-
-            ?>
-            <div class="tab-page tab-currency">
-                <p class="alert alert-warning">
-                    <strong>@todo:</strong> Currency settings
-                </p>
             </div>
             <?php
         }

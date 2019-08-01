@@ -14,13 +14,34 @@ namespace Nails\Admin\Invoice;
 
 use Nails\Admin\Helper;
 use Nails\Admin\Nav;
+use Nails\Common\Exception\FactoryException;
+use Nails\Currency\Service\Currency;
 use Nails\Factory;
 use Nails\Invoice\Controller\BaseAdmin;
+use Nails\Invoice\Model;
+use Nails\Invoice\Model\Invoice\Item;
+use Nails\Invoice\Model\Tax;
 
+/**
+ * Class Invoice
+ *
+ * @package Nails\Admin\Invoice
+ */
 class Invoice extends BaseAdmin
 {
+    /**
+     * @var Model\Invoice
+     */
     protected $oInvoiceModel;
+
+    /**
+     * @var Item
+     */
     protected $oInvoiceItemModel;
+
+    /**
+     * @var Tax
+     */
     protected $oTaxModel;
 
     // --------------------------------------------------------------------------
@@ -29,7 +50,7 @@ class Invoice extends BaseAdmin
      * Announces this controller's navGroups
      *
      * @return Nav
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public static function announce()
     {
@@ -66,15 +87,18 @@ class Invoice extends BaseAdmin
     /**
      * Invoice constructor.
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function __construct()
     {
         parent::__construct();
 
-        $this->oInvoiceModel     = Factory::model('Invoice', 'nails/module-invoice');
+        /** @var Model\Invoice oInvoiceModel */
+        $this->oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        /** @var Item oInvoiceItemModel */
         $this->oInvoiceItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
-        $this->oTaxModel         = Factory::model('Tax', 'nails/module-invoice');
+        /** @var Tax oTaxModel */
+        $this->oTaxModel = Factory::model('Tax', 'nails/module-invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -82,7 +106,7 @@ class Invoice extends BaseAdmin
     /**
      * Browse invoices
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function index()
     {
@@ -150,6 +174,7 @@ class Invoice extends BaseAdmin
         );
 
         //  Currencies
+        /** @var Currency $oCurrency */
         $oCurrency        = Factory::service('Currency', 'nails/module-currency');
         $aCurrencyOptions = [];
         $aCurrencies      = $oCurrency->getAllEnabled();
@@ -209,7 +234,7 @@ class Invoice extends BaseAdmin
     /**
      * Create a new invoice
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function create()
     {
@@ -319,7 +344,7 @@ class Invoice extends BaseAdmin
     /**
      * Edit an invoice
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function edit()
     {
@@ -442,7 +467,7 @@ class Invoice extends BaseAdmin
     /**
      * View an invoice
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function view()
     {
@@ -478,7 +503,7 @@ class Invoice extends BaseAdmin
      * @param string $sCode the currency code
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function _callbackValidCurrency($sCode)
     {
@@ -502,7 +527,7 @@ class Invoice extends BaseAdmin
     /**
      * Make an invoice a draft
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function make_draft()
     {
@@ -545,7 +570,7 @@ class Invoice extends BaseAdmin
     /**
      * Write an invoice off
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function write_off()
     {
@@ -588,7 +613,7 @@ class Invoice extends BaseAdmin
     /**
      * Delete an invoice
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function delete()
     {
@@ -626,7 +651,7 @@ class Invoice extends BaseAdmin
      * Validate the POST data
      *
      * @return boolean
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     protected function validatePost()
     {
@@ -668,7 +693,7 @@ class Invoice extends BaseAdmin
      * Get an object generated from the POST data
      *
      * @return array
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     protected function getObjectFromPost()
     {
@@ -717,7 +742,7 @@ class Invoice extends BaseAdmin
      * @param \stdClass $oInvoice The Invoice to send
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     protected function sendInvoice($oInvoice)
     {

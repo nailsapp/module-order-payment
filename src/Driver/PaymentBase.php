@@ -13,10 +13,17 @@
 namespace Nails\Invoice\Driver;
 
 use Nails\Common\Driver\Base;
+use Nails\Currency\Resource\Currency;
 use Nails\Invoice\Exception\ChargeRequestException;
+use Nails\Invoice\Exception\DriverException;
 use Nails\Invoice\Factory\ChargeRequest;
 use Nails\Invoice\Interfaces\Driver\Payment;
 
+/**
+ * Class PaymentBase
+ *
+ * @package Nails\Invoice\Driver
+ */
 abstract class PaymentBase extends Base implements Payment
 {
     /**
@@ -29,6 +36,35 @@ abstract class PaymentBase extends Base implements Payment
     // --------------------------------------------------------------------------
 
     /**
+     * Determines whether the driver supports the specified currency
+     *
+     * @param Currency|string $mCurrency The currency
+     *
+     * @return bool
+     * @throws DriverException
+     */
+    public function supportsCurrency($mCurrency): bool
+    {
+        $aSupported = $this->getSupportedCurrencies();
+        if (is_null($aSupported)) {
+            throw new DriverException('Currency support not configured for driver "' . $this->getSlug() . '"');
+        } elseif (empty($aSupported)) {
+            //  If not defined assume support for all currencies
+            return true;
+        } elseif ($mCurrency instanceof Currency) {
+            return in_array($mCurrency->code, $aSupported);
+        } elseif (is_string($mCurrency)) {
+            return in_array($mCurrency, $aSupported);
+        }
+
+        throw new DriverException(
+            'Argument must be an instant of ' . Currency::class . ' or a string'
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Prepares a ChargeRequest object
      *
      * @param ChargeRequest $oChargeRequest The ChargeRequest object to prepare
@@ -36,7 +72,7 @@ abstract class PaymentBase extends Base implements Payment
      *
      * @throws ChargeRequestException
      */
-    public function prepareChargeRequest(ChargeRequest $oChargeRequest, array $aData)
+    public function prepareChargeRequest(ChargeRequest $oChargeRequest, array $aData): void
     {
         $mPaymentFields = $this->getPaymentFields();
 

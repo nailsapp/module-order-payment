@@ -9,6 +9,11 @@ class InvoicePay {
 
         // --------------------------------------------------------------------------
 
+        //  If there is only one driver enabled - hide the radios
+        if ($('.js-invoice-driver-select input').length === 1) {
+            $('#js-invoice-main-form-payment-drivers').hide();
+        }
+
         //  Bind to driver selection
         $('.js-invoice-driver-select input')
             .on('click', (e) => {

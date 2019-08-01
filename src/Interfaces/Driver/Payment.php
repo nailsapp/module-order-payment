@@ -2,8 +2,16 @@
 
 namespace Nails\Invoice\Interfaces\Driver;
 
+use Nails\Invoice\Factory\ChargeResponse;
+use Nails\Invoice\Factory\CompleteResponse;
+use Nails\Invoice\Factory\RefundResponse;
 use Nails\Invoice\Factory\ScaResponse;
 
+/**
+ * Interface Payment
+ *
+ * @package Nails\Invoice\Interfaces\Driver
+ */
 interface Payment
 {
     /**
@@ -11,18 +19,28 @@ interface Payment
      *
      * @param \stdClass $oInvoice The invoice being charged
      *
-     * @return boolean
+     * @return bool
      */
-    public function isAvailable($oInvoice);
+    public function isAvailable($oInvoice): bool;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the currencies which this driver supports, it will only be presented
+     * when attempting to pay an invoice in a supported currency
+     *
+     * @return string[]|null
+     */
+    public function getSupportedCurrencies(): ?array;
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns whether the driver uses a redirect payment flow or not.
      *
-     * @return boolean
+     * @return bool
      */
-    public function isRedirect();
+    public function isRedirect(): bool;
 
     // --------------------------------------------------------------------------
 
@@ -59,7 +77,7 @@ interface Payment
      * @param string    $sFailUrl     The URL to go to after failed payment
      * @param string    $sContinueUrl The URL to go to after payment is completed
      *
-     * @return \Nails\Invoice\Factory\ChargeResponse
+     * @return ChargeResponse
      */
     public function charge(
         $iAmount,
@@ -72,7 +90,7 @@ interface Payment
         $sSuccessUrl,
         $sFailUrl,
         $sContinueUrl
-    );
+    ): ChargeResponse;
 
     // --------------------------------------------------------------------------
 
@@ -97,9 +115,9 @@ interface Payment
      * @param array     $aGetVars  Any $_GET variables passed from the redirect flow
      * @param array     $aPostVars Any $_POST variables passed from the redirect flow
      *
-     * @return \Nails\Invoice\Factory\CompleteResponse
+     * @return CompleteResponse
      */
-    public function complete($oPayment, $oInvoice, $aGetVars, $aPostVars);
+    public function complete($oPayment, $oInvoice, $aGetVars, $aPostVars): CompleteResponse;
 
     // --------------------------------------------------------------------------
 
@@ -114,7 +132,7 @@ interface Payment
      * @param \stdClass $oPayment    The payment object
      * @param \stdClass $oInvoice    The invoice object
      *
-     * @return \Nails\Invoice\Factory\RefundResponse
+     * @return RefundResponse
      */
-    public function refund($sTxnId, $iAmount, $sCurrency, $oCustomData, $sReason, $oPayment, $oInvoice);
+    public function refund($sTxnId, $iAmount, $sCurrency, $oCustomData, $sReason, $oPayment, $oInvoice): RefundResponse;
 }
