@@ -117,9 +117,6 @@ use Nails\Invoice\Driver\PaymentBase;
 
                         ?>
                         <div class="hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
-                            <h5>
-                                Saved Payment Details
-                            </h5>
                             <?php
                             if (!empty($mFields) && $mFields === PaymentBase::PAYMENT_FIELDS_CARD) {
 
