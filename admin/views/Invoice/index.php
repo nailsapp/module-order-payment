@@ -1,4 +1,4 @@
-<div class="group-invoice invoice browse">
+
     <p>
         Browse invoices which have been raised.
     </p>
@@ -56,19 +56,19 @@
 
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
-                                $sText  .= '<small>paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
+                                if ($oInvoice->paid->raw) {
+                                    $sText .= '<small>Paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
+                                }
 
                             } else {
-
                                 $sClass = '';
                                 $sText  = $oInvoice->state->label;
                             }
 
-                            echo '<td class="state ' . $sClass . '">';
-                            echo $sText;
-                            echo '</td>';
-
                             ?>
+                            <td class="state <?=$sClass?>">
+                                <?=$sText?>
+                            </td>
                             <td class="customer">
                                 <?php
 
@@ -97,7 +97,6 @@
                                     echo mailto($oInvoice->email);
 
                                 } else {
-
                                     echo '<span class="text-muted">Unknown</span>';
                                 }
 
@@ -189,7 +188,6 @@
                                 }
 
                                 if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == 'DRAFT') {
-
                                     echo anchor(
                                         'admin/invoice/invoice/delete/' . $oInvoice->id,
                                         lang('action_delete'),
@@ -204,7 +202,6 @@
                     }
 
                 } else {
-
                     ?>
                     <tr>
                         <td colspan="10" class="no-data">
