@@ -120,9 +120,6 @@ use Nails\Invoice\Driver\PaymentBase;
                             <h5>
                                 Saved Payment Details
                             </h5>
-                            <p class="alert">
-                                @todo - List valid saved details
-                            </p>
                             <?php
                             if (!empty($mFields) && $mFields === PaymentBase::PAYMENT_FIELDS_CARD) {
 

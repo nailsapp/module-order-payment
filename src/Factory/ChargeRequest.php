@@ -478,6 +478,11 @@ class ChargeRequest extends RequestBase
             $this->getContinueUrl()
         );
 
+        //  Set the success and fail URLs
+        $oChargeResponse->setSuccessUrl($sSuccessUrl);
+        $oChargeResponse->setFailUrl($sFailUrl);
+        $oChargeResponse->setContinueUrl($this->getContinueUrl());
+
         //  Validate driver response
         if (empty($oChargeResponse)) {
             throw new ChargeRequestException('Response from driver was empty.', 1);
@@ -503,7 +508,15 @@ class ChargeRequest extends RequestBase
                 ['sca_data' => $sScaData]
             );
 
-            redirect('invoice/payment/sca/' . $this->oPayment->token . '/' . md5($sScaData));
+            $sRedirectUrl = siteUrl('invoice/payment/sca/' . $this->oPayment->token . '/' . md5($sScaData));
+            if ($this->isAutoRedirect()) {
+                redirect($sRedirectUrl);
+            } else {
+                $oChargeResponse->setScaUrl($sRedirectUrl);
+                //  Set the redirect values too, in case dev has not considered SCA
+                $oChargeResponse->setIsRedirect(true);
+                $oChargeResponse->setRedirectUrl($sRedirectUrl);
+            }
 
         } elseif ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
 
@@ -559,11 +572,6 @@ class ChargeRequest extends RequestBase
                 $oChargeResponse->getError()->code
             );
         }
-
-        //  Set the success and fail URLs
-        $oChargeResponse->setSuccessUrl($sSuccessUrl);
-        $oChargeResponse->setFailUrl($sFailUrl);
-        $oChargeResponse->setContinueUrl($this->getContinueUrl());
 
         //  Lock the response so it cannot be altered
         $oChargeResponse->lock();

@@ -288,7 +288,7 @@ class Invoice extends Base
         try {
 
             if (empty($aData['customer_id']) && empty($aData['email'])) {
-                throw new InvoiceException('Either "customer_id" or "email" field must be supplied.', 1);
+                throw new InvoiceException('Either "customer_id" or "email" field must be supplied.');
             }
 
             $oDb->trans_begin();
@@ -307,7 +307,7 @@ class Invoice extends Base
             $oInvoice = parent::create($aData, true);
 
             if (!$oInvoice) {
-                throw new InvoiceException('Failed to create invoice.', 1);
+                throw new InvoiceException('Failed to create invoice.');
             }
 
             if (!empty($aItems)) {
@@ -352,18 +352,18 @@ class Invoice extends Base
             $sKeyExistsEmail      = array_key_exists('email', $aData);
 
             if ($sKeyExistsCustomerId && $sKeyExistsEmail) {
-                throw new InvoiceException('An invoice cannot be assigned to both an email and a customer.', 1);
+                throw new InvoiceException('An invoice cannot be assigned to both an email and a customer.');
             }
 
             if ($sKeyExistsCustomerId && empty($aData['customer_id'])) {
-                throw new InvoiceException('If supplied, "customer_id" cannot be empty.', 1);
+                throw new InvoiceException('If supplied, "customer_id" cannot be empty.');
             } elseif ($sKeyExistsCustomerId && $sKeyExistsEmail) {
                 //  Ensure the email field is empty if it has been supplied
                 $aData['email'] = null;
             }
 
             if ($sKeyExistsEmail && empty($aData['email'])) {
-                throw new InvoiceException('If supplied, "email" cannot be empty.', 1);
+                throw new InvoiceException('If supplied, "email" cannot be empty.');
             } elseif ($sKeyExistsEmail && $sKeyExistsCustomerId) {
                 //  Ensure the customer_id field is empty if it has been supplied
                 $aData['customer_id'] = null;
@@ -384,7 +384,7 @@ class Invoice extends Base
             $bResult = parent::update($mIds, $aData);
 
             if (!$bResult) {
-                throw new InvoiceException('Failed to update invoice.', 1);
+                throw new InvoiceException('Failed to update invoice.');
             }
 
             if (!empty($aItems)) {
@@ -510,7 +510,7 @@ class Invoice extends Base
         if (array_key_exists('ref', $aData)) {
             $oInvoice = $this->getByRef($aData['ref']);
             if (!empty($oInvoice) && $iInvoiceId != $oInvoice->id) {
-                throw new InvoiceException('Reference "' . $aData['ref'] . '" is already in use.', 1);
+                throw new InvoiceException('Reference "' . $aData['ref'] . '" is already in use.');
             }
         }
 
@@ -518,7 +518,7 @@ class Invoice extends Base
         if (array_key_exists('state', $aData)) {
             $aStates = $this->getStates();
             if (!array_key_exists($aData['state'], $aStates)) {
-                throw new InvoiceException('State "' . $aData['ref'] . '" does not exist.', 1);
+                throw new InvoiceException('State "' . $aData['ref'] . '" does not exist.');
             }
         }
 
@@ -526,7 +526,7 @@ class Invoice extends Base
         if (array_key_exists('customer_id', $aData) && !empty($aData['customer_id'])) {
             $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
             if (!$oCustomerModel->getById($aData['customer_id'])) {
-                throw new InvoiceException('"' . $aData['customer_id'] . '" is not a valid customer ID.', 1);
+                throw new InvoiceException('"' . $aData['customer_id'] . '" is not a valid customer ID.');
             }
         }
 
@@ -534,7 +534,7 @@ class Invoice extends Base
         if (array_key_exists('email', $aData) && !empty($aData['email'])) {
             Factory::helper('email');
             if (!valid_email($aData['email'])) {
-                throw new InvoiceException('"' . $aData['email'] . '" is not a valid email address.', 1);
+                throw new InvoiceException('"' . $aData['email'] . '" is not a valid email address.');
             }
         }
 
@@ -543,7 +543,7 @@ class Invoice extends Base
             /** @var Currency $oCurrency */
             $oCurrency = Factory::service('Currency', 'nails/module-currency');
             if (!$oCurrency->isEnabled($aData['currency'])) {
-                throw new InvoiceException('"' . $aData['currency'] . '" is not a supported currency.', 1);
+                throw new InvoiceException('"' . $aData['currency'] . '" is not a supported currency.');
             }
         }
 
@@ -552,7 +552,7 @@ class Invoice extends Base
             $oTaxModel = Factory::model('Tax', 'nails/module-invoice');
             $aTaxRates = $oTaxModel->getByIds($aTaxIds);
             if (count($aTaxRates) != count($aTaxIds)) {
-                throw new InvoiceException('An invalid Tax Rate was supplied.', 1);
+                throw new InvoiceException('An invalid Tax Rate was supplied.');
             }
         }
 
@@ -572,18 +572,18 @@ class Invoice extends Base
 
                 //  Has a positive quantity
                 if ($aItem['quantity'] <= 0) {
-                    throw new InvoiceException('Each item must have a positive quantity.', 1);
+                    throw new InvoiceException('Each item must have a positive quantity.');
                 }
 
                 //  Has a valid unit
                 $aUnits = $oItemModel->getUnits();
                 if (!empty($aItem['unit']) && !array_key_exists($aItem['unit'], $aUnits)) {
-                    throw new InvoiceException('Unit "' . $aItem['unit'] . '" does not exist.', 1);
+                    throw new InvoiceException('Unit "' . $aItem['unit'] . '" does not exist.');
                 }
 
                 //  Has a label
                 if (empty($aItem['label'])) {
-                    throw new InvoiceException('Each item must be given a label.', 1);
+                    throw new InvoiceException('Each item must be given a label.');
                 }
             }
 
@@ -668,7 +668,7 @@ class Invoice extends Base
 
                 //  Update
                 if (!$oItemModel->update($aItem['id'], $aData)) {
-                    throw new InvoiceException('Failed to update invoice item.', 1);
+                    throw new InvoiceException('Failed to update invoice item.');
                 } else {
                     $aTouchedIds[] = $aItem['id'];
                 }
@@ -680,7 +680,7 @@ class Invoice extends Base
                 $iItemId             = $oItemModel->create($aData);
 
                 if (!$iItemId) {
-                    throw new InvoiceException('Failed to create invoice item.', 1);
+                    throw new InvoiceException('Failed to create invoice item.');
                 } else {
                     $aTouchedIds[] = $iItemId;
                 }
@@ -694,7 +694,7 @@ class Invoice extends Base
             $oDb->where_not_in('id', $aTouchedIds);
             $oDb->where('invoice_id', $iInvoiceId);
             if (!$oDb->delete($oItemModel->getTableName())) {
-                throw new InvoiceException('Failed to delete old invoice items.', 1);
+                throw new InvoiceException('Failed to delete old invoice items.');
             }
         }
     }
@@ -755,19 +755,19 @@ class Invoice extends Base
     {
         try {
 
-            $oInvoice = $this->getById($iInvoiceId);
+            $oInvoice = $tsublhis->getById($iInvoiceId, ['expand' => ['customer']]);
 
             if (empty($oInvoice)) {
-                throw new InvoiceException('Invalid Invoice ID', 1);
+                throw new InvoiceException('Invalid Invoice ID');
             }
 
             if ($oInvoice->state->id !== self::STATE_OPEN) {
-                throw new InvoiceException('Invoice must be in an open state to send.', 1);
+                throw new InvoiceException('Invoice must be in an open state to send.');
             }
 
             if (!empty($sEmailOverride)) {
 
-                //  @todo, validate email address (or addresses if an array)
+                //  @todo (Pablo - 2019-08-02) - validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
 
             } elseif (!empty($oInvoice->customer->billing_email)) {
@@ -783,7 +783,7 @@ class Invoice extends Base
                 $aEmails = [$oInvoice->email];
 
             } else {
-                throw new InvoiceException('No email address to send the invoice to', 1);
+                throw new InvoiceException('No email address to send the invoice to.');
             }
 
             $oEmailer           = Factory::service('Emailer', 'nails/module-email');
@@ -813,7 +813,7 @@ class Invoice extends Base
                     );
 
                 } else {
-                    throw new InvoiceException($oEmailer->lastError(), 1);
+                    throw new InvoiceException($oEmailer->lastError());
                 }
             }
 

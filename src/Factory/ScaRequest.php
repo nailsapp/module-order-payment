@@ -52,7 +52,7 @@ class ScaRequest extends RequestBase
         } elseif ($oScaResponse->isFail()) {
             $this->setPaymentFailed(
                 $oScaResponse->getErrorMessage(),
-                $oScaResponse->getErrorCode(),
+                $oScaResponse->getErrorCode()
             );
         }
 

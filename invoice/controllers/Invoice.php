@@ -192,6 +192,17 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
+        if (isLoggedIn()) {
+            $oSourceModel = Factory::model('Source', 'nails/module-invoice');
+            $aSources     = $oSourceModel->getAll([
+                'where' => [
+
+                ],
+            ]);
+        }
+
+        // --------------------------------------------------------------------------
+
         if (!empty($this->data['aDrivers']) && $oInput->post()) {
 
             try {

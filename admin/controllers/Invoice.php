@@ -14,7 +14,12 @@ namespace Nails\Admin\Invoice;
 
 use Nails\Admin\Helper;
 use Nails\Admin\Nav;
+use Nails\Auth\Service\Session;
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Service\Asset;
+use Nails\Common\Service\FormValidation;
+use Nails\Common\Service\Input;
+use Nails\Common\Service\Uri;
 use Nails\Currency\Service\Currency;
 use Nails\Factory;
 use Nails\Invoice\Controller\BaseAdmin;
@@ -55,6 +60,7 @@ class Invoice extends BaseAdmin
     public static function announce()
     {
         if (userHasPermission('admin:invoice:invoice:manage')) {
+            /** @var Nav $oNavGroup */
             $oNavGroup = Factory::factory('Nav', 'nails/module-admin')
                 ->setLabel('Invoices &amp; Payments')
                 ->setIcon('fa-credit-card')
@@ -117,7 +123,9 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Are we dealing with a filtered view?
-        $oInput         = Factory::service('Input');
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+        /** @var Customer $oCustomerModel */
         $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
         $iCustomerId    = $oInput->get('customer_id');
 
@@ -249,6 +257,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        /** @var Input $oInput */
         $oInput                    = Factory::service('Input');
         $this->data['customer_id'] = $oInput->get('customer_id');
 
@@ -257,13 +266,13 @@ class Invoice extends BaseAdmin
                 $oInvoice = $this->oInvoiceModel->create($this->getObjectFromPost(), true);
                 if (!empty($oInvoice)) {
 
-                    //  Send invoice if needed
                     $this->sendInvoice($oInvoice);
 
+                    /** @var Session $oSession */
                     $oSession = Factory::service('Session', 'nails/module-auth');
                     $oSession->setFlashData('success', 'Invoice created successfully.');
 
-                    redirect('admin/invoice/invoice/index');
+                    redirect('admin/invoice/invoice');
 
                 } else {
                     $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->lastError();
@@ -285,6 +294,7 @@ class Invoice extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Invoice Items
+        /** @var Input $oInput */
         $oInput = Factory::service('Input');
         if ($oInput->post()) {
 
@@ -314,12 +324,14 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        /** @var Currency $oCurrency */
         $oCurrency                = Factory::service('Currency', 'nails/module-currency');
         $aCurrencies              = $oCurrency->getAllEnabled();
         $this->data['currencies'] = $aCurrencies;
 
         // --------------------------------------------------------------------------
 
+        /** @var Asset $oAsset */
         $oAsset = Factory::service('Asset');
         //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
         $oAsset->load('invoice.edit.js', 'nails/module-invoice');
@@ -354,7 +366,9 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oUri   = Factory::service('Uri');
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var Input $oInput */
         $oInput = Factory::service('Input');
 
         $iInvoiceId            = (int) $oUri->segment(5);
@@ -379,14 +393,19 @@ class Invoice extends BaseAdmin
             if ($this->validatePost()) {
                 if ($oModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
 
-                    //  Send invoice if needed
                     $oInvoice = $oModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
+                    /** @var Session $oSession */
                     $oSession = Factory::service('Session', 'nails/module-auth');
                     $oSession->setFlashData('success', 'Invoice was saved successfully.');
 
-                    redirect('admin/invoice/invoice/index');
+                    if ($oInvoice->state->id === $oModel::STATE_DRAFT) {
+                        dd($oInvoice);
+                        redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
+                    } else {
+                        redirect('admin/invoice/invoice');
+                    }
 
                 } else {
                     $this->data['error'] = 'Failed to update invoice. ' . $oModel->lastError();
@@ -435,6 +454,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        /** @var Currency $oCurrency */
         $oCurrency                = Factory::service('Currency', 'nails/module-currency');
         $aCurrencies              = $oCurrency->getAllEnabled();
         $this->data['currencies'] = $aCurrencies;
@@ -443,6 +463,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        /** @var Asset $oAsset */
         $oAsset = Factory::service('Asset');
         //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
         $oAsset->load('invoice.edit.js', 'nails/module-invoice');
@@ -475,6 +496,7 @@ class Invoice extends BaseAdmin
             unauthorised();
         }
 
+        /** @var Uri $oUri */
         $oUri                  = Factory::service('Uri');
         $oModel                = $this->oInvoiceModel;
         $iInvoiceId            = (int) $oUri->segment(5);
@@ -489,6 +511,7 @@ class Invoice extends BaseAdmin
 
         $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
 
+        /** @var Asset $oAsset */
         $oAsset = Factory::service('Asset');
         $oAsset->load('admin.invoice.view.min.js', 'nails/module-invoice');
 
@@ -507,6 +530,7 @@ class Invoice extends BaseAdmin
      */
     public function _callbackValidCurrency($sCode)
     {
+        /** @var FormValidation $oFormValidation */
         $oFormValidation = Factory::service('FormValidation');
         $oFormValidation->set_message('_callbackValidCurrency', 'Invalid currency.');
 
@@ -537,6 +561,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        /** @var Uri $oUri */
         $oUri     = Factory::service('Uri');
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
@@ -559,6 +584,7 @@ class Invoice extends BaseAdmin
             $sMessage = 'Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError();
         }
 
+        /** @var Session $oSession */
         $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
 
@@ -580,6 +606,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        /** @var Uri $oUri */
         $oUri     = Factory::service('Uri');
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
@@ -602,6 +629,7 @@ class Invoice extends BaseAdmin
             $sMessage = 'Failed to write off invoice. ' . $this->oInvoiceModel->lastError();
         }
 
+        /** @var Session $oSession */
         $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
 
@@ -623,6 +651,7 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
+        /** @var Uri $oUri */
         $oUri     = Factory::service('Uri');
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
@@ -639,10 +668,11 @@ class Invoice extends BaseAdmin
             $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
         }
 
+        /** @var Session $oSession */
         $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
 
-        redirect('admin/invoice/invoice/index');
+        redirect('admin/invoice/invoice');
     }
 
     // --------------------------------------------------------------------------
@@ -655,6 +685,7 @@ class Invoice extends BaseAdmin
      */
     protected function validatePost()
     {
+        /** @var FormValidation $oFormValidation */
         $oFormValidation = Factory::service('FormValidation');
 
         $aRules = [
@@ -697,9 +728,11 @@ class Invoice extends BaseAdmin
      */
     protected function getObjectFromPost()
     {
+        /** @var Input $oInput */
         $oInput = Factory::service('Input');
-        $oUri   = Factory::service('Uri');
-        $aData  = [
+        /** @var Uri $oUri */
+        $oUri  = Factory::service('Uri');
+        $aData = [
             'ref'             => $oInput->post('ref') ?: null,
             'state'           => $oInput->post('state') ?: null,
             'dated'           => $oInput->post('dated') ?: null,
@@ -744,7 +777,7 @@ class Invoice extends BaseAdmin
      * @return bool
      * @throws FactoryException
      */
-    protected function sendInvoice($oInvoice)
+    protected function sendInvoice($oInvoice): bool
     {
         if (empty($oInvoice)) {
             return false;
@@ -752,17 +785,19 @@ class Invoice extends BaseAdmin
 
         $sInvoiceClass = get_class($this->oInvoiceModel);
 
-        if ($oInvoice->state->id !== $sInvoiceClass::STATE_OPEN) {
-            return false;
+        if ($oInvoice->state->id === $sInvoiceClass::STATE_OPEN) {
+            if (!$this->oInvoiceModel->send($oInvoice->id)) {
+                /** @var Session     $oSession */
+                $oSession = Factory::service('Session', 'nails/module-auth');
+                $oSession->setFlashData(
+                    'warning',
+                    'Failed to email invoice to customer. ' . $this->oInvoiceModel->lastError()
+                );
+                return false;
+            }
+            return true;
         }
 
-        $oNow   = Factory::factory('DateTime');
-        $oDated = new \DateTime($oInvoice->dated->raw);
-
-        if ($oNow->format('Y-m-d') != $oDated->format('Y-m-d')) {
-            return false;
-        }
-
-        return $this->oInvoiceModel->send($oInvoice->id);
+        return false;
     }
 }

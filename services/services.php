@@ -60,6 +60,13 @@ return [
                 return new \Nails\Invoice\Model\Refund();
             }
         },
+        'Source'       => function () {
+            if (class_exists('\App\Invoice\Model\Source')) {
+                return new \App\Invoice\Model\Source();
+            } else {
+                return new \Nails\Invoice\Model\Source();
+            }
+        },
         'Tax'          => function () {
             if (class_exists('\App\Invoice\Model\Tax')) {
                 return new \App\Invoice\Model\Tax();
@@ -137,6 +144,15 @@ return [
                 return new \App\Invoice\Factory\ScaResponse();
             } else {
                 return new \Nails\Invoice\Factory\ScaResponse();
+            }
+        },
+    ],
+    'resources' => [
+        'Source' => function () {
+            if (class_exists('\App\Invoice\Resource\Source')) {
+                return new \App\Invoice\Resource\Source();
+            } else {
+                return new \Nails\Invoice\Resource\Source();
             }
         },
     ],
