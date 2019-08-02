@@ -17,3 +17,4 @@ Amount:    {{{refund.amount.formatted}}}
 ---
 
 If you have any questions regarding this refund, please don't hesitate to contact us.
+

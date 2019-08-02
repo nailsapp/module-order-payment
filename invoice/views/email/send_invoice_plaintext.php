@@ -9,3 +9,4 @@ To pay this invoice online, please use the following link:
 To download a copy this invoice as a PDF, please use the following link:
 
 {{invoice.urls.download}}
+
