@@ -1048,10 +1048,16 @@ class Invoice extends Base
         $oObj->due->formatted = toUserDate($oDue);
 
         //  Paid
-        $oPaid                 = new \DateTime($oObj->paid);
-        $oObj->paid            = new \stdClass();
-        $oObj->paid->raw       = $oPaid->format('Y-m-d H:i:s');
-        $oObj->paid->formatted = toUserDateTime($oPaid);
+        if ($oObj->paid) {
+            $oPaid                 = new \DateTime($oObj->paid);
+            $oObj->paid            = new \stdClass();
+            $oObj->paid->raw       = $oPaid->format('Y-m-d H:i:s');
+            $oObj->paid->formatted = toUserDateTime($oPaid);
+        } else {
+            $oObj->paid            = new \stdClass();
+            $oObj->paid->raw       = null;
+            $oObj->paid->formatted = null;
+        }
 
         //  Compute boolean flags
         $oNow = Factory::factory('DateTime');
