@@ -1,4 +1,4 @@
-
+<div class="group-invoice invoice browse">
     <p>
         Browse invoices which have been raised.
     </p>
@@ -129,7 +129,7 @@
                                             'class="btn btn-xs btn-primary"'
                                         );
 
-                                    } elseif ($oInvoice->state->id == 'WRITTEN_OFF') {
+                                    } elseif (in_array($oInvoice->state->id, ['WRITTEN_OFF', 'PAID', 'PAID_PROCESING'])) {
 
                                         echo anchor(
                                             'admin/invoice/invoice/view/' . $oInvoice->id,
