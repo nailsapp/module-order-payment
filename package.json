@@ -7,13 +7,13 @@
     "repository": "https://github.com/nails/module-invoice",
     "devDependencies": {
         "autoprefixer": "^9.6",
-        "css-loader": "^3.1",
+        "css-loader": "^3.2",
         "mini-css-extract-plugin": "^0.8",
         "node-sass": "^4.12",
         "postcss-loader": "^3.0",
-        "sass-loader": "^7.1",
-        "webpack": "^4.38",
-        "webpack-command": "^0.4"
+        "sass-loader": "^7.3",
+        "webpack": "^4.39",
+        "webpack-command": "^0.5"
     },
     "dependencies": {
         "jquery.payment": "~3.0.0"
