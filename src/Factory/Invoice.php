@@ -29,6 +29,8 @@ use Nails\Invoice\Factory\Invoice\Item;
  * @method getState()
  * @method setDated($mValue)
  * @method getDated()
+ * @method setPaidDate($mValue)
+ * @method getPaidDate()
  * @method setTerms($mValue)
  * @method getTerms()
  * @method setCustomerId($mValue)
@@ -107,6 +109,13 @@ class Invoice
      * @var string
      */
     protected $sEmail;
+
+    /**
+     * The date the invoice was paid
+     *
+     * @var string
+     */
+    protected $sPaidDate;
 
     /**
      * The invoice's currency
@@ -322,6 +331,7 @@ class Invoice
             'ref'             => $this->sRef,
             'state'           => $this->sState,
             'dated'           => $this->sDated,
+            'paid'            => $this->sPaidDate,
             'terms'           => (int) $this->iTerms ?: null,
             'customer_id'     => (int) $this->iCustomerId ?: null,
             'email'           => $this->sEmail,
