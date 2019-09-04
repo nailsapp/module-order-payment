@@ -17,12 +17,47 @@ use Nails\Invoice\Exception\ChargeRequestException;
 
 class ChargeRequest extends RequestBase
 {
+    /**
+     * The Card object
+     *
+     * @var \stdClass
+     */
     protected $oCard;
+
+    /**
+     * The custom fields object
+     *
+     * @var \stdClass
+     */
     protected $oCustomField;
+
+    /**
+     * The custom data object
+     *
+     * @var \stdClass
+     */
     protected $oCustomData;
-    protected $sDescription;
-    protected $bAutoRedirect;
-    protected $sContinueUrl;
+
+    /**
+     * The charge description
+     *
+     * @var string
+     */
+    protected $sDescription = '';
+
+    /**
+     * Whether to honour automatic redirects or not
+     *
+     * @var bool
+     */
+    protected $bAutoRedirect = true;
+
+    /**
+     * The URL to continue to after the charge is attempted
+     *
+     * @var string
+     */
+    protected $sContinueUrl = '';
 
     // --------------------------------------------------------------------------
 
@@ -35,21 +70,18 @@ class ChargeRequest extends RequestBase
 
         //  Card details
         $this->oCard = (object) [
-            'name'   => null,
-            'number' => null,
+            'name'   => '',
+            'number' => '',
             'exp'    => (object) [
-                'month' => null,
-                'year'  => null,
+                'month' => '',
+                'year'  => '',
             ],
-            'cvc'    => null,
+            'cvc'    => '',
         ];
 
         //  Container for custom fields and data
         $this->oCustomField = (object) [];
         $this->oCustomData  = (object) [];
-
-        //  Auto redirect by default
-        $this->bAutoRedirect = true;
     }
 
     // --------------------------------------------------------------------------
@@ -61,7 +93,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setCardName($sCardName)
+    public function setCardName(string $sCardName): ChargeRequest
     {
         $this->oCard->name = $sCardName;
         return $this;
@@ -74,7 +106,7 @@ class ChargeRequest extends RequestBase
      *
      * @return string
      */
-    public function getCardName()
+    public function getCardName(): string
     {
         return $this->oCard->name;
     }
@@ -89,7 +121,7 @@ class ChargeRequest extends RequestBase
      * @throws ChargeRequestException
      * @return $this
      */
-    public function setCardNumber($sCardNumber)
+    public function setCardNumber(string $sCardNumber): ChargeRequest
     {
         //  Validate
         if (preg_match('/[^\d ]/', $sCardNumber)) {
@@ -107,7 +139,7 @@ class ChargeRequest extends RequestBase
      *
      * @return string
      */
-    public function getCardNumber()
+    public function getCardNumber(): string
     {
         return $this->oCard->number;
     }
@@ -122,7 +154,7 @@ class ChargeRequest extends RequestBase
      * @throws ChargeRequestException
      * @return $this
      */
-    public function setCardExpMonth($sCardExpMonth)
+    public function setCardExpMonth(string $sCardExpMonth): ChargeRequest
     {
         //  Validate
         if (is_numeric($sCardExpMonth)) {
@@ -155,7 +187,7 @@ class ChargeRequest extends RequestBase
      *
      * @return string
      */
-    public function getCardExpMonth()
+    public function getCardExpMonth(): string
     {
         return $this->oCard->exp->month;
     }
@@ -170,7 +202,7 @@ class ChargeRequest extends RequestBase
      * @throws ChargeRequestException
      * @return $this
      */
-    public function setCardExpYear($sCardExpYear)
+    public function setCardExpYear(string $sCardExpYear): ChargeRequest
     {
         //  Validate
         if (is_numeric($sCardExpYear)) {
@@ -220,7 +252,7 @@ class ChargeRequest extends RequestBase
      *
      * @return string
      */
-    public function getCardExpYear()
+    public function getCardExpYear(): string
     {
         return $this->oCard->exp->year;
     }
@@ -234,7 +266,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setCardCvc($sCardCvc)
+    public function setCardCvc(string $sCardCvc): ChargeRequest
     {
         //  Validate
         $this->oCard->cvc = $sCardCvc;
@@ -248,7 +280,7 @@ class ChargeRequest extends RequestBase
      *
      * @return string
      */
-    public function getCardCvc()
+    public function getCardCvc(): string
     {
         return $this->oCard->cvc;
     }
@@ -263,7 +295,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setCustomField($sProperty, $mValue)
+    public function setCustomField(string $sProperty, $mValue): ChargeRequest
     {
         $this->oCustomField->{$sProperty} = $mValue;
         return $this;
@@ -278,7 +310,7 @@ class ChargeRequest extends RequestBase
      *
      * @return mixed
      */
-    public function getCustomField($sProperty)
+    public function getCustomField(string $sProperty)
     {
         return property_exists($this->oCustomField, $sProperty) ? $this->oCustomField->{$sProperty} : null;
     }
@@ -293,7 +325,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setCustomData($sProperty, $mValue)
+    public function setCustomData(string $sProperty, $mValue): ChargeRequest
     {
         $this->oCustomData->{$sProperty} = $mValue;
         return $this;
@@ -308,7 +340,7 @@ class ChargeRequest extends RequestBase
      *
      * @return mixed
      */
-    public function getCustomData($sProperty)
+    public function getCustomData(string $sProperty)
     {
         return property_exists($this->oCustomData, $sProperty) ? $this->oCustomData->{$sProperty} : null;
     }
@@ -322,7 +354,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setDescription($sDescription)
+    public function setDescription(string $sDescription): ChargeRequest
     {
         $this->sDescription = $sDescription;
         return $this;
@@ -335,7 +367,7 @@ class ChargeRequest extends RequestBase
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->sDescription;
     }
@@ -345,11 +377,11 @@ class ChargeRequest extends RequestBase
     /**
      * Set whether the charge should automatically redirect
      *
-     * @param boolean $bAutoRedirect Whether to auto redirect or not
+     * @param bool $bAutoRedirect Whether to auto redirect or not
      *
      * @return $this
      */
-    public function setAutoRedirect($bAutoRedirect)
+    public function setAutoRedirect(bool $bAutoRedirect): ChargeRequest
     {
         $this->bAutoRedirect = (bool) $bAutoRedirect;
         return $this;
@@ -361,9 +393,9 @@ class ChargeRequest extends RequestBase
      * Whether the charge request will automatically redirect in the case of a
      * driver requesting a redirect flow.
      *
-     * @return boolean
+     * @return bool
      */
-    public function isAutoRedirect()
+    public function isAutoRedirect(): bool
     {
         return $this->bAutoRedirect;
     }
@@ -377,7 +409,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setContinueUrl($sContinueUrl)
+    public function setContinueUrl(string $sContinueUrl): ChargeRequest
     {
         $this->sContinueUrl = $sContinueUrl;
         return $this;
@@ -390,7 +422,7 @@ class ChargeRequest extends RequestBase
      *
      * @return string
      */
-    public function getContinueUrl()
+    public function getContinueUrl(): string
     {
         return $this->sContinueUrl;
     }
@@ -400,13 +432,13 @@ class ChargeRequest extends RequestBase
     /**
      * execute the charge
      *
-     * @param integer $iAmount   The amount to charge the card
-     * @param string  $sCurrency The currency in which to charge
+     * @param int    $iAmount   The amount to charge the card
+     * @param string $sCurrency The currency in which to charge
      *
-     * @return \Nails\Invoice\Factory\ChargeResponse
+     * @return ChargeResponse
      * @throws ChargeRequestException
      */
-    public function execute($iAmount, $sCurrency)
+    public function execute(int $iAmount, string $sCurrency): ChargeResponse
     {
         //  Ensure we have a driver
         if (empty($this->oDriver)) {
@@ -426,7 +458,7 @@ class ChargeRequest extends RequestBase
 
         // --------------------------------------------------------------------------
 
-        //  @todo: validate currency
+        //  @todo (Pablo - 2019-09-04) - Validate currency is enabled
 
         // --------------------------------------------------------------------------
 
