@@ -52,5 +52,8 @@ class Migration12 extends Base
         ');
         $this->query('DROP TABLE `{{NAILS_DB_PREFIX}}user_meta_invoice_card`;');
         $this->query('DROP TABLE `{{NAILS_DB_PREFIX}}user_meta_invoice_address`;');
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` CHANGE `url_continue` `url_success` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;');
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `url_error` VARCHAR(255) NULL DEFAULT NULL AFTER `url_success`;');
+
     }
 }

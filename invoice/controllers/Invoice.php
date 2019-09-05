@@ -231,9 +231,15 @@ class Invoice extends Base
                 $oChargeRequest->setDescription('Payment for invoice #' . $oInvoice->ref);
                 $oChargeRequest->setInvoice($oInvoice->id);
 
-                if ($oInput->get('continue')) {
-                    $oChargeRequest->setContinueUrl(
-                        $oInput->get('continue')
+                if ($oInput->get('success_url')) {
+                    $oChargeRequest->setSuccessUrl(
+                        $oInput->get('success_url')
+                    );
+                }
+
+                if ($oInput->get('error_url')) {
+                    $oChargeRequest->setErrorUrl(
+                        $oInput->get('error_url')
                     );
                 }
 
@@ -263,17 +269,14 @@ class Invoice extends Base
                     /**
                      * Payment failed, throw an error which will be caught and displayed to the user
                      */
-                    throw new NailsException(
-                        'Payment failed: ' . $oChargeResponse->getError()->user,
-                        1
-                    );
+                    throw new NailsException('Payment failed: ' . $oChargeResponse->getError()->user);
 
                 } else {
 
                     /**
                      * Something which we've not accounted for went wrong.
                      */
-                    throw new NailsException('Payment failed.', 1);
+                    throw new NailsException('Payment failed.');
                 }
 
             } catch (\Exception $e) {

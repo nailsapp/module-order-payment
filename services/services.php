@@ -148,11 +148,11 @@ return [
         },
     ],
     'resources' => [
-        'Source' => function () {
+        'Source' => function ($mObj) {
             if (class_exists('\App\Invoice\Resource\Source')) {
-                return new \App\Invoice\Resource\Source();
+                return new \App\Invoice\Resource\Source($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Source();
+                return new \Nails\Invoice\Resource\Source($mObj);
             }
         },
     ],

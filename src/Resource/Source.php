@@ -74,7 +74,7 @@ class Source extends Resource
      *
      * @var bool
      */
-    public $is_default;
+    public $is_default = false;
 
     /**
      * The source's creation date

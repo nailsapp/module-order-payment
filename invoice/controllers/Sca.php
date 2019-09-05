@@ -60,11 +60,13 @@ class Sca extends Base
 
             redirect($oScaResponse->getRedirectUrl());
 
-        } elseif ($oScaResponse->isFail()) {
+        } elseif ($oScaResponse->isFailed()) {
+
+            $oError = $oScaResponse->getError();
 
             /** @var Session $oSession */
             $oSession = Factory::service('Session', 'nails/module-auth');
-            $oSession->setFlashData('error', $oScaResponse->getError());
+            $oSession->setFlashData('error', $oError->user);
 
             redirect($oPayment->invoice->urls->payment);
 

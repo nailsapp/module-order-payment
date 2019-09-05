@@ -46,10 +46,10 @@ class ScaRequest extends RequestBase
 
         if ($oScaResponse->isComplete()) {
             $this->setPaymentComplete(
-                $oScaResponse->getTransactionId(),
-                $oScaResponse->getTransactionFee()
+                $oScaResponse->getTxnId(),
+                $oScaResponse->getFee()
             );
-        } elseif ($oScaResponse->isFail()) {
+        } elseif ($oScaResponse->isFailed()) {
             $this->setPaymentFailed(
                 $oScaResponse->getErrorMessage(),
                 $oScaResponse->getErrorCode()

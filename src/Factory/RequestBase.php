@@ -14,20 +14,92 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Resource;
 use Nails\Factory;
+use Nails\Invoice\Driver\PaymentBase;
 use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
+use Nails\Invoice\Model\Payment;
+use Nails\Invoice\Model\Refund;
+use Nails\Invoice\Service\PaymentDriver;
 
+/**
+ * Class RequestBase
+ *
+ * @package Nails\Invoice\Factory
+ */
 class RequestBase
 {
+    /**
+     *
+     * The dripayment driver instance
+     *
+     * @var PaymentBase
+     */
     protected $oDriver;
+
+    /**
+     * The Payment Driver service
+     *
+     * @var PaymentDriver
+     */
     protected $oDriverService;
+
+    /**
+     * The Invoice object
+     *
+     * @var Resource
+     */
     protected $oInvoice;
+
+    /**
+     * The Invoice model
+     *
+     * @var \Nails\Invoice\Model\Invoice
+     */
     protected $oInvoiceModel;
+
+    /**
+     * The payment object
+     *
+     * @var Resource
+     */
     protected $oPayment;
+
+    /**
+     * The Payment model
+     *
+     * @var Payment
+     */
     protected $oPaymentModel;
+
+    /**
+     * The Refund object
+     *
+     * @var Resource
+     */
     protected $oRefund;
+
+    /**
+     * The Refund model
+     *
+     * @var Refund
+     */
     protected $oRefundModel;
+
+    /**
+     * The URL to redirect to when successfull
+     *
+     * @var string
+     */
+    protected $sSuccessUrl = '';
+
+    /**
+     * The URL to redirect to in event of an error
+     *
+     * @var string
+     */
+    protected $sErrorUrl = '';
 
     // --------------------------------------------------------------------------
 
@@ -312,5 +384,59 @@ class RequestBase
         $this->oRefundModel->sendReceipt($this->oRefund->id);
 
         return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the success URL
+     *
+     * @param string $sSuccessUrl The success URL
+     *
+     * @return $this
+     */
+    public function setSuccessUrl(string $sSuccessUrl): RequestBase
+    {
+        $this->sSuccessUrl = $sSuccessUrl;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the success URL
+     *
+     * @return string
+     */
+    public function getSuccessUrl(): string
+    {
+        return $this->sSuccessUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the error URL
+     *
+     * @param string $sErrorUrl The the error URL
+     *
+     * @return $this
+     */
+    public function setErrorUrl(string $sErrorUrl): RequestBase
+    {
+        $this->sErrorUrl = $sErrorUrl;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the error URL
+     *
+     * @return string
+     */
+    public function getErrorUrl(): string
+    {
+        return $this->sErrorUrl;
     }
 }

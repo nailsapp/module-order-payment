@@ -59,29 +59,6 @@ class ChargeResponse extends ResponseBase
      */
     protected $sScaUrl = '';
 
-    /**
-     * The URL for successful payment
-     *
-     * @var string
-     */
-    protected $sSuccessUrl = '';
-
-    /**
-     * The URL for failed payment
-     *
-     * @var string
-     */
-    protected $sFailUrl = '';
-
-    /**
-     * The URL for where to go after payment is completed
-     *
-     * @todo (Pablo - 2019-08-02) - Clarify what exactly this is
-     *
-     * @var string
-     */
-    protected $sContinueUrl = '';
-
     // --------------------------------------------------------------------------
 
     /**
@@ -210,93 +187,6 @@ class ChargeResponse extends ResponseBase
     public function getScaUrl(): string
     {
         return $this->sScaUrl;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the sSuccessUrl value
-     *
-     * @param string $sSuccessUrl The URL to go to on successful payment
-     *
-     * @return $this
-     */
-    public function setSuccessUrl(string $sSuccessUrl): ChargeResponse
-    {
-        if (!$this->bIsLocked) {
-            $this->sSuccessUrl = $sSuccessUrl;
-        }
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * The URL to redirect to on successful payment
-     *
-     * @return string
-     */
-    public function getSuccessUrl(): string
-    {
-        return $this->sSuccessUrl;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * The URL to redirect to on failed payment
-     *
-     * @return string
-     */
-    public function getFailUrl(): string
-    {
-        return $this->sFailUrl;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the sFailUrl value
-     *
-     * @param string $sFailUrl The URL to go to on failed payment
-     *
-     * @return $this
-     */
-    public function setFailUrl(string $sFailUrl): ChargeResponse
-    {
-        if (!$this->bIsLocked) {
-            $this->sFailUrl = $sFailUrl;
-        }
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the URL to go to when a payment is completed
-     *
-     * @param string $sContinueUrl the URL to go to when payment is completed
-     *
-     * @return $this
-     */
-    public function setContinueUrl(string $sContinueUrl): ChargeResponse
-    {
-        if (!$this->bIsLocked) {
-            $this->sContinueUrl = $sContinueUrl;
-        }
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Get the URL to go to when a payment is completed
-     *
-     * @return string
-     */
-    public function getContinueUrl(): string
-    {
-        return $this->sContinueUrl;
     }
 
     // --------------------------------------------------------------------------

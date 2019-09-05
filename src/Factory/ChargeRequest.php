@@ -52,13 +52,6 @@ class ChargeRequest extends RequestBase
      */
     protected $bAutoRedirect = true;
 
-    /**
-     * The URL to continue to after the charge is attempted
-     *
-     * @var string
-     */
-    protected $sContinueUrl = '';
-
     // --------------------------------------------------------------------------
 
     /**
@@ -403,34 +396,7 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Set the URL to go to when a payment is completed
-     *
-     * @param string $sContinueUrl the URL to go to when payment is completed
-     *
-     * @return $this
-     */
-    public function setContinueUrl(string $sContinueUrl): ChargeRequest
-    {
-        $this->sContinueUrl = $sContinueUrl;
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Get the URL to go to when a payment is completed
-     *
-     * @return string
-     */
-    public function getContinueUrl(): string
-    {
-        return $this->sContinueUrl;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * execute the charge
+     * xecute the charge
      *
      * @param int    $iAmount   The amount to charge the card
      * @param string $sCurrency The currency in which to charge
@@ -467,13 +433,14 @@ class ChargeRequest extends RequestBase
 
             $iPaymentId = $this->oPaymentModel->create(
                 [
-                    'driver'       => $this->oDriver->getSlug(),
-                    'description'  => $this->getDescription(),
-                    'invoice_id'   => $this->oInvoice->id,
-                    'currency'     => $sCurrency,
-                    'amount'       => $iAmount,
-                    'url_continue' => $this->getContinueUrl(),
-                    'custom_data'  => $this->oCustomData,
+                    'driver'      => $this->oDriver->getSlug(),
+                    'description' => $this->getDescription(),
+                    'invoice_id'  => $this->oInvoice->id,
+                    'currency'    => $sCurrency,
+                    'amount'      => $iAmount,
+                    'url_success' => $this->getSuccessUrl(),
+                    'url_error'   => $this->getErrorUrl(),
+                    'custom_data' => $this->oCustomData,
                 ]
             );
 
@@ -494,7 +461,7 @@ class ChargeRequest extends RequestBase
 
         //  Return URL for drivers which implement a redirect flow
         $sSuccessUrl = siteUrl('invoice/payment/' . $this->oPayment->id . '/' . $this->oPayment->token . '/complete');
-        $sFailUrl    = siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
+        $sErrorUrl   = siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
 
         //  Execute the charge
         $oChargeResponse = $this->oDriver->charge(
@@ -506,14 +473,12 @@ class ChargeRequest extends RequestBase
             $this->oPayment,
             $this->oInvoice,
             $sSuccessUrl,
-            $sFailUrl,
-            $this->getContinueUrl()
+            $sErrorUrl
         );
 
         //  Set the success and fail URLs
         $oChargeResponse->setSuccessUrl($sSuccessUrl);
-        $oChargeResponse->setFailUrl($sFailUrl);
-        $oChargeResponse->setContinueUrl($this->getContinueUrl());
+        $oChargeResponse->setErrorUrl($sErrorUrl);
 
         //  Validate driver response
         if (empty($oChargeResponse)) {

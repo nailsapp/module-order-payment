@@ -115,7 +115,7 @@ class Payment extends Base
     /**
      * Retrieve payments which relate to a particular set of invoice IDs
      *
-     * @param  array $aInvoiceIds The invoice IDs
+     * @param array $aInvoiceIds The invoice IDs
      *
      * @return array
      */
@@ -134,7 +134,7 @@ class Payment extends Base
      * This method applies the conditionals which are common across the get_*()
      * methods and the count() method.
      *
-     * @param  array $data Data passed from the calling method
+     * @param array $data Data passed from the calling method
      *
      * @throws \Nails\Common\Exception\FactoryException
      */
@@ -186,8 +186,8 @@ class Payment extends Base
     /**
      * Create a new payment
      *
-     * @param  array   $aData         The data to create the payment with
-     * @param  boolean $bReturnObject Whether to return the complete payment object
+     * @param array   $aData         The data to create the payment with
+     * @param boolean $bReturnObject Whether to return the complete payment object
      *
      * @return bool|mixed
      * @throws \Nails\Common\Exception\FactoryException
@@ -236,8 +236,8 @@ class Payment extends Base
     /**
      * Update a payment
      *
-     * @param  integer $iPaymentId The ID of the payment to update
-     * @param  array   $aData      The data to update the payment with
+     * @param integer $iPaymentId The ID of the payment to update
+     * @param array   $aData      The data to update the payment with
      *
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
@@ -309,8 +309,8 @@ class Payment extends Base
     /**
      * Set a payment as PENDING
      *
-     * @param  integer $iPaymentId The payment to update
-     * @param  array   $aData      Any additional data to save to the transaction
+     * @param integer $iPaymentId The payment to update
+     * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
@@ -326,8 +326,8 @@ class Payment extends Base
     /**
      * Set a payment as PROCESSING
      *
-     * @param  integer $iPaymentId The payment to update
-     * @param  array   $aData      Any additional data to save to the transaction
+     * @param integer $iPaymentId The payment to update
+     * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
@@ -343,8 +343,8 @@ class Payment extends Base
     /**
      * Set a payment as COMPLETE
      *
-     * @param  integer $iPaymentId The payment to update
-     * @param  array   $aData      Any additional data to save to the transaction
+     * @param integer $iPaymentId The payment to update
+     * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
@@ -360,8 +360,8 @@ class Payment extends Base
     /**
      * Set a payment as FAILED
      *
-     * @param  integer $iPaymentId The payment to update
-     * @param  array   $aData      Any additional data to save to the transaction
+     * @param integer $iPaymentId The payment to update
+     * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
@@ -377,8 +377,8 @@ class Payment extends Base
     /**
      * Set a payment as REFUNDED
      *
-     * @param  integer $iPaymentId The payment to update
-     * @param  array   $aData      Any additional data to save to the transaction
+     * @param integer $iPaymentId The payment to update
+     * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
@@ -394,8 +394,8 @@ class Payment extends Base
     /**
      * Set a payment as REFUNDED_PARTIAL
      *
-     * @param  integer $iPaymentId The payment to update
-     * @param  array   $aData      Any additional data to save to the transaction
+     * @param integer $iPaymentId The payment to update
+     * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws \Nails\Common\Exception\FactoryException
@@ -411,8 +411,8 @@ class Payment extends Base
     /**
      * Send payment receipt
      *
-     * @param  integer $iPaymentId     The ID of the payment
-     * @param  string  $sEmailOverride Send to this email instead of the email defined by the invoice object
+     * @param integer $iPaymentId     The ID of the payment
+     * @param string  $sEmailOverride Send to this email instead of the email defined by the invoice object
      *
      * @return bool
      */
@@ -592,11 +592,11 @@ class Payment extends Base
      * The getAll() method iterates over each returned item with this method so as to
      * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
      *
-     * @param  object $oObj      A reference to the object being formatted.
-     * @param  array  $aData     The same data array which is passed to getCountCommon, for reference if needed
-     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param  array  $aBools    Fields which should be cast as booleans if not null
-     * @param  array  $aFloats   Fields which should be cast as floats if not null
+     * @param object $oObj      A reference to the object being formatted.
+     * @param array  $aData     The same data array which is passed to getCountCommon, for reference if needed
+     * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
+     * @param array  $aBools    Fields which should be cast as booleans if not null
+     * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @throws \Nails\Common\Exception\FactoryException
      * @throws \Nails\Currency\Exception\CurrencyException
@@ -701,7 +701,8 @@ class Payment extends Base
         $oObj->urls->complete   = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
         $oObj->urls->thanks     = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
         $oObj->urls->processing = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
-        $oObj->urls->continue   = !empty($oObj->url_continue) ? siteUrl($oObj->url_continue) : null;
+        $oObj->urls->success    = !empty($oObj->url_success) ? siteUrl($oObj->url_success) : null;
+        $oObj->urls->error      = !empty($oObj->url_error) ? siteUrl($oObj->url_error) : null;
 
         //  Custom data
         $oObj->custom_data = json_decode($oObj->custom_data);

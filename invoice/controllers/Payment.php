@@ -41,6 +41,7 @@ class Payment extends Base
         $this->data['oInvoice'] = $oPayment->invoice;
 
         if ($oPayment->status->id === $oPaymentModel::STATUS_FAILED) {
+
             //  Payments which FAILED should be ignored
             show404();
 
@@ -71,8 +72,8 @@ class Payment extends Base
                 //  Set the invoice we're completing
                 $oCompleteRequest->setInvoice($oPayment->invoice->id);
 
-                //  Set the complete URL, if there is one
-                $oCompleteRequest->setContinueUrl($oPayment->urls->continue);
+                //  Set the success URL, if there is one
+                $oCompleteRequest->setSuccessUrl($oPayment->urls->success);
 
                 //  Attempt completion
                 $oCompleteResponse = $oCompleteRequest->execute(
@@ -83,8 +84,8 @@ class Payment extends Base
                 if ($oCompleteResponse->isProcessing()) {
 
                     //  Payment was successful but has not been confirmed
-                    if ($oCompleteRequest->getContinueUrl()) {
-                        redirect($oCompleteRequest->getContinueUrl());
+                    if ($oCompleteRequest->getSuccessUrl()) {
+                        redirect($oCompleteRequest->getSuccessUrl());
                     } else {
                         redirect($oPayment->urls->processing);
                     }
@@ -92,8 +93,8 @@ class Payment extends Base
                 } elseif ($oCompleteResponse->isComplete()) {
 
                     //  Payment has completed fully
-                    if ($oCompleteRequest->getContinueUrl()) {
-                        redirect($oCompleteRequest->getContinueUrl());
+                    if ($oCompleteRequest->getSuccessUrl()) {
+                        redirect($oCompleteRequest->getSuccessUrl());
                     } else {
                         redirect($oPayment->urls->thanks);
                     }

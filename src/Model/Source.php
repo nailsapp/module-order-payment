@@ -12,8 +12,10 @@ namespace Nails\Invoice\Model;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
+use Nails\Common\Model\BaseDriver;
 use Nails\Common\Service\Database;
 use Nails\Factory;
+use Nails\Invoice\Driver\PaymentBase;
 use Nails\Invoice\Exception\DriverException;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Resource;
@@ -65,16 +67,17 @@ class Source extends Base
 
         /** @var PaymentDriver $oPaymentDriverService */
         $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
-        $oDriver               = $oPaymentDriverService->getBySlug($aData['driver']);
+        /** @var PaymentBase $oDriver */
+        $oDriver = $oPaymentDriverService->getInstance($aData['driver']);
 
         if (empty($oDriver)) {
-            throw new DriverException('"' . $sDriver . '" is not a valid payment driver.');
+            throw new DriverException('"' . $aData['driver'] . '" is not a valid payment driver.');
         }
 
         /** @var Resource\Source $oResource */
         $oResource = Factory::resource('Source', 'nails/module-invoice', [
             'customer_id' => $aData['customer_id'],
-            'driver'      => $oDriver->slug,
+            'driver'      => $aData['driver'],
         ]);
 
         unset($aData['driver']);
@@ -82,7 +85,7 @@ class Source extends Base
 
         $oDriver->createSource($oResource, $aData);
 
-        return parent::create((array) $oSource, $bReturnObject);
+        return parent::create((array) $oResource, $bReturnObject);
     }
 
     // --------------------------------------------------------------------------

@@ -75,8 +75,7 @@ interface Payment
      * @param \stdClass $oPayment     The payment object
      * @param \stdClass $oInvoice     The invoice object
      * @param string    $sSuccessUrl  The URL to go to after successful payment
-     * @param string    $sFailUrl     The URL to go to after failed payment
-     * @param string    $sContinueUrl The URL to go to after payment is completed
+     * @param string    $sErrorUrl    The URL to go to after failed payment
      *
      * @return ChargeResponse
      */
@@ -89,8 +88,7 @@ interface Payment
         $oPayment,
         $oInvoice,
         $sSuccessUrl,
-        $sFailUrl,
-        $sContinueUrl
+        $sErrorUrl
     ): ChargeResponse;
 
     // --------------------------------------------------------------------------
