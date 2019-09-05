@@ -34,7 +34,7 @@ class Migration12 extends Base
                 `data` text,
                 `label` varchar(150) DEFAULT NULL,
                 `brand` varchar(150) DEFAULT NULL,
-                `last_four` char(4) NOT NULL DEFAULT "",
+                `last_four` char(4) DEFAULT NULL,
                 `expiry` date DEFAULT NULL,
                 `is_default` tinyint(1) unsigned NOT NULL DEFAULT 0,
                 `created` datetime NOT NULL,
