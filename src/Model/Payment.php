@@ -551,9 +551,9 @@ class Payment extends Base
                 //  It's all good
             } elseif ($oRefundResponse->isFailed()) {
                 //  Refund failed, throw an error which will be caught and displayed to the user
-                throw new PaymentException('Refund failed: ' . $oRefundResponse->getError()->user);
+                throw new PaymentException('Refund failed: ' . $oRefundResponse->getErrorMessageUser());
             } else {
-                //Something which we've not accounted for went wrong.
+                //  Something which we've not accounted for went wrong.
                 throw new PaymentException('Refund failed.');
             }
 
@@ -701,7 +701,7 @@ class Payment extends Base
         $oObj->urls->complete   = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
         $oObj->urls->thanks     = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
         $oObj->urls->processing = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
-        $oObj->urls->success    = !empty($oObj->url_success) ? siteUrl($oObj->url_success) : null;
+        $oObj->urls->success    = !empty($oObj->url_success) ? siteUrl($oObj->url_success) : $oObj->urls->thanks;
         $oObj->urls->error      = !empty($oObj->url_error) ? siteUrl($oObj->url_error) : null;
 
         //  Custom data

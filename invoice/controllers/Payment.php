@@ -48,7 +48,11 @@ class Payment extends Base
         } elseif ($oPayment->status->id === $oPaymentModel::STATUS_COMPLETE) {
 
             //  Payment is already complete
-            redirect($oPayment->urls->thanks);
+            if ($oPayment->urls->success) {
+                redirect($oPayment->urls->success);
+            } else {
+                redirect($oPayment->urls->thanks);
+            }
 
         } elseif ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
 
@@ -100,9 +104,9 @@ class Payment extends Base
                     }
 
                 } elseif ($oCompleteResponse->isFailed()) {
-                    throw new NailsException('Payment failed: ' . $oCompleteResponse->getError()->user, 1);
+                    throw new NailsException('Payment failed: ' . $oCompleteResponse->getErrorMessageUser());
                 } else {
-                    throw new NailsException('Payment failed.', 1);
+                    throw new NailsException('Payment failed.');
                 }
 
             } catch (\Exception $e) {

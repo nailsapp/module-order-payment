@@ -431,18 +431,16 @@ class ChargeRequest extends RequestBase
         //  Create a charge against the invoice if one hasn't been specified
         if (empty($this->oPayment)) {
 
-            $iPaymentId = $this->oPaymentModel->create(
-                [
-                    'driver'      => $this->oDriver->getSlug(),
-                    'description' => $this->getDescription(),
-                    'invoice_id'  => $this->oInvoice->id,
-                    'currency'    => $sCurrency,
-                    'amount'      => $iAmount,
-                    'url_success' => $this->getSuccessUrl(),
-                    'url_error'   => $this->getErrorUrl(),
-                    'custom_data' => $this->oCustomData,
-                ]
-            );
+            $iPaymentId = $this->oPaymentModel->create([
+                'driver'      => $this->oDriver->getSlug(),
+                'description' => $this->getDescription(),
+                'invoice_id'  => $this->oInvoice->id,
+                'currency'    => $sCurrency,
+                'amount'      => $iAmount,
+                'url_success' => $this->getSuccessUrl(),
+                'url_error'   => $this->getErrorUrl(),
+                'custom_data' => $this->oCustomData,
+            ]);
 
             if (empty($iPaymentId)) {
                 throw new ChargeRequestException('Failed to create new payment.', 1);
@@ -459,9 +457,15 @@ class ChargeRequest extends RequestBase
             $oDriverData = $this->oCustomField;
         }
 
-        //  Return URL for drivers which implement a redirect flow
+        /**
+         * The "success" URL will always be this, this will perform final; checks and redirect as necessary
+         */
         $sSuccessUrl = siteUrl('invoice/payment/' . $this->oPayment->id . '/' . $this->oPayment->token . '/complete');
-        $sErrorUrl   = siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
+
+        /**
+         * The Error url is, by default, the checkout page, but can be overridden
+         */
+        $sErrorUrl = $this->getErrorUrl() ?: siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
 
         //  Execute the charge
         $oChargeResponse = $this->oDriver->charge(

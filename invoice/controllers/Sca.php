@@ -50,8 +50,8 @@ class Sca extends Base
 
         if ($oScaResponse->isComplete()) {
 
-            if (!empty($oPayment->urls->continue)) {
-                redirect($oPayment->urls->continue);
+            if (!empty($oPayment->urls->success)) {
+                redirect($oPayment->urls->success);
             } else {
                 redirect($oPayment->urls->thanks);
             }
@@ -68,7 +68,11 @@ class Sca extends Base
             $oSession = Factory::service('Session', 'nails/module-auth');
             $oSession->setFlashData('error', $oError->user);
 
-            redirect($oPayment->invoice->urls->payment);
+            if (!empty($oPayment->urls->error)) {
+                redirect($oPayment->urls->error);
+            } else {
+                redirect($oPayment->urls->thanks);
+            }
 
         } else {
             throw new InvoiceException('Unhandled SCA status');

@@ -10,6 +10,7 @@
  * @link
  */
 
+use Nails\Auth\Service\Session;
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\FormValidation;
@@ -231,15 +232,30 @@ class Invoice extends Base
                 $oChargeRequest->setDescription('Payment for invoice #' . $oInvoice->ref);
                 $oChargeRequest->setInvoice($oInvoice->id);
 
+                /** @var Input $oInput */
+                $oInput = Factory::service('Input');
+
                 if ($oInput->get('success_url')) {
+                    //  Explicity defined success URL
                     $oChargeRequest->setSuccessUrl(
                         $oInput->get('success_url')
+                    );
+                } else {
+                    //  Come back to the exact same page
+                    $oChargeRequest->setSuccessUrl(
+                        $oInput->server('REQUEST_URI')
                     );
                 }
 
                 if ($oInput->get('error_url')) {
+                    //  Explicity defined error URL
                     $oChargeRequest->setErrorUrl(
                         $oInput->get('error_url')
+                    );
+                } else {
+                    //  Come back to the exact same page
+                    $oChargeRequest->setErrorUrl(
+                        $oInput->server('REQUEST_URI')
                     );
                 }
 
@@ -269,7 +285,7 @@ class Invoice extends Base
                     /**
                      * Payment failed, throw an error which will be caught and displayed to the user
                      */
-                    throw new NailsException('Payment failed: ' . $oChargeResponse->getError()->user);
+                    throw new NailsException('Payment failed: ' . $oChargeResponse->getErrorMessageUser());
 
                 } else {
 
@@ -280,7 +296,18 @@ class Invoice extends Base
                 }
 
             } catch (\Exception $e) {
-                $this->data['error'] = $e->getMessage();
+
+                $sErrorUrl = $oChargeResponse->getErrorUrl();
+                if (!empty($sErrorUrl)) {
+
+                    /** @var Session $oSession */
+                    $oSession = Factory::service('Session', 'nails/module-auth');
+                    $oSession->setFlashData('error', $e->getMessage());
+
+                    redirect($oChargeResponse->getErrorUrl());
+                } else {
+                    $this->data['error'] = $e->getMessage();
+                }
             }
         }
 

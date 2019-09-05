@@ -11,7 +11,7 @@
                 be informed by email once the payment is complete at which point your purchases will be actioned.
             </p>
             <p>
-                <a href="<?=$oPayment->urls->continue?>" class="btn btn--block btn--primary">
+                <a href="<?=$oPayment->urls->success?>" class="btn btn--block btn--primary">
                     Continue
                 </a>
             </p>
