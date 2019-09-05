@@ -2,6 +2,7 @@
 
 namespace Nails\Invoice\Interfaces\Driver;
 
+use Nails\Invoice\Exception\DriverException;
 use Nails\Invoice\Factory\ChargeResponse;
 use Nails\Invoice\Factory\CompleteResponse;
 use Nails\Invoice\Factory\RefundResponse;
@@ -135,4 +136,19 @@ interface Payment
      * @return RefundResponse
      */
     public function refund($sTxnId, $iAmount, $sCurrency, $oCustomData, $sReason, $oPayment, $oInvoice): RefundResponse;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Creates a new payment source, returns a semi-populated source resource
+     *
+     * @param \Nails\Invoice\Resource\Source $oResource The Resouce object to update
+     * @param array                          $aData     Data passed from the caller
+     *
+     * @throws DriverException
+     */
+    public function createSource(
+        \Nails\Invoice\Resource\Source &$oResource,
+        array $aData
+    ): void;
 }
