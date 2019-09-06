@@ -149,12 +149,13 @@ class Source extends Base
     /**
      * Returns payment sources for a particular customer
      *
-     * @param int|null $iCustomerId The customer ID
+     * @param int|null $iCustomerId    The customer ID
+     * @param bool     $bRemoveExpired Whether to remove expired payment sources
      *
      * @return Source[]
      * @throws ModelException
      */
-    public function getForCustomer(int $iCustomerId = null)
+    public function getForCustomer(int $iCustomerId = null, bool $bRemoveExpired = true)
     {
         if (empty($iCustomerId)) {
             return [];
@@ -164,9 +165,10 @@ class Source extends Base
         $oPaymentDriver = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
 
         return $this->getAll([
-            'where'    => [
+            'where'    => array_filter([
                 ['customer_id', $iCustomerId],
-            ],
+                $bRemoveExpired ? ['expiry > ', 'CURDATE()', false] : null,
+            ]),
             'where_in' => [
                 ['driver', $oPaymentDriver->getEnabledSlug()],
             ],
