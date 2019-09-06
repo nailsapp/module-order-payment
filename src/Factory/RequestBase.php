@@ -101,6 +101,13 @@ class RequestBase
      */
     protected $sErrorUrl = '';
 
+    /**
+     * The URL to redirect to in event of user cancelation
+     *
+     * @var string
+     */
+    protected $sCancelUrl = '';
+
     // --------------------------------------------------------------------------
 
     /**
@@ -438,5 +445,32 @@ class RequestBase
     public function getErrorUrl(): string
     {
         return $this->sErrorUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the cancel URL
+     *
+     * @param string $sCancelUrl The the cancel URL
+     *
+     * @return $this
+     */
+    public function setCancelUrl(string $sCancelUrl): RequestBase
+    {
+        $this->sCancelUrl = $sCancelUrl;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the cancel URL
+     *
+     * @return string
+     */
+    public function getCancelUrl(): string
+    {
+        return $this->sCancelUrl;
     }
 }

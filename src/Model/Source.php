@@ -12,7 +12,6 @@ namespace Nails\Invoice\Model;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
-use Nails\Common\Model\BaseDriver;
 use Nails\Common\Service\Database;
 use Nails\Factory;
 use Nails\Invoice\Driver\PaymentBase;
@@ -21,6 +20,11 @@ use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Resource;
 use Nails\Invoice\Service\PaymentDriver;
 
+/**
+ * Class Source
+ *
+ * @package Nails\Invoice\Model
+ */
 class Source extends Base
 {
     /**
@@ -85,6 +89,10 @@ class Source extends Base
 
         $oDriver->createSource($oResource, $aData);
 
+        if (empty($oResource->label)) {
+            $oResource->label = $oResource->brand . ' ending ' . $oResource->last_four;
+        }
+
         return parent::create((array) $oResource, $bReturnObject);
     }
 
@@ -133,5 +141,32 @@ class Source extends Base
             $oDb->trans_rollback();
             return false;
         }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns payment sources for a particular customer
+     *
+     * @param int|null $iCustomerId The customer ID
+     *
+     * @return Source[]
+     * @throws ModelException
+     */
+    public function getForCustomer(int $iCustomerId = null)
+    {
+        if (empty($iCustomerId)) {
+            return [];
+        }
+
+        return $this->getAll([
+            'where' => [
+                ['customer_id', $iCustomerId],
+            ],
+            'sort'  => [
+                ['is_default', 'desc'],
+                ['created', 'desc'],
+            ],
+        ]);
     }
 }

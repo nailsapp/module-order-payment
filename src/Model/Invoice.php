@@ -23,8 +23,36 @@ use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
 
+/**
+ * Class Invoice
+ *
+ * @package Nails\Invoice\Model
+ */
 class Invoice extends Base
 {
+    /**
+     * The table this model represents
+     *
+     * @var string
+     */
+    const TABLE = NAILS_DB_PREFIX . 'invoice_invoice';
+
+    /**
+     * The name of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_NAME = 'Invoice';
+
+    /**
+     * The provider of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_PROVIDER = 'nails/module-invoice';
+
+    // --------------------------------------------------------------------------
+
     /**
      * Turn caching off due to dynamic subqueries in the select statement
      *
@@ -37,7 +65,7 @@ class Invoice extends Base
     /**
      * The Currency service
      *
-     * @var \Nails\Currency\Service\Currency
+     * @var Currency
      */
     protected $oCurrency;
 
@@ -65,7 +93,6 @@ class Invoice extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->table             = NAILS_DB_PREFIX . 'invoice_invoice';
         $this->defaultSortColumn = 'created';
         $this->searchableFields  = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
@@ -734,7 +761,7 @@ class Invoice extends Base
 
             $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
-            $bRefExists = (bool) $oDb->count_all_results($this->table);
+            $bRefExists = (bool) $oDb->count_all_results($this->getTableName());
 
         } while ($bRefExists);
 
@@ -755,7 +782,7 @@ class Invoice extends Base
     {
         try {
 
-            $oInvoice = $tsublhis->getById($iInvoiceId, ['expand' => ['customer']]);
+            $oInvoice = $this->getById($iInvoiceId, ['expand' => ['customer']]);
 
             if (empty($oInvoice)) {
                 throw new InvoiceException('Invalid Invoice ID');
@@ -1015,7 +1042,7 @@ class Invoice extends Base
      * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @throws FactoryException
-     * @throws \Nails\Currency\Exception\CurrencyException
+     * @throws CurrencyException
      */
     protected function formatObject(
         &$oObj,

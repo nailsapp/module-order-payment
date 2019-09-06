@@ -439,6 +439,7 @@ class ChargeRequest extends RequestBase
                 'amount'      => $iAmount,
                 'url_success' => $this->getSuccessUrl(),
                 'url_error'   => $this->getErrorUrl(),
+                'url_cancel'  => $this->getCancelUrl(),
                 'custom_data' => $this->oCustomData,
             ]);
 

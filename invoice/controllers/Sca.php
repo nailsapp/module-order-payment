@@ -71,7 +71,18 @@ class Sca extends Base
             if (!empty($oPayment->urls->error)) {
                 redirect($oPayment->urls->error);
             } else {
-                redirect($oPayment->urls->thanks);
+
+                $sUrl    = $oPayment->invoice->urls->payment;
+                $aParams = array_filter([
+                    'url_success' => $oPayment->urls->success,
+                    'url_error'   => $oPayment->urls->error,
+                    'url_cancel'  => $oPayment->urls->cancel,
+                ]);
+                if (!empty($aParams)) {
+                    $sUrl .= '?' . http_build_query($aParams);
+                }
+
+                redirect($sUrl);
             }
 
         } else {

@@ -148,11 +148,60 @@ return [
         },
     ],
     'resources' => [
+        'Customer' => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Customer')) {
+                return new \App\Invoice\Resource\Customer($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Customer($mObj);
+            }
+        },
+        'Invoice' => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Invoice')) {
+                return new \App\Invoice\Resource\Invoice($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Invoice($mObj);
+            }
+        },
+        'InvoiceEmail' => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Invoice\Email')) {
+                return new \App\Invoice\Resource\Invoice\Email($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Invoice\Email($mObj);
+            }
+        },
+        'InvoiceItem' => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Invoice\Item')) {
+                return new \App\Invoice\Resource\Invoice\Item($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Invoice\Item($mObj);
+            }
+        },
+        'Payment' => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Payment')) {
+                return new \App\Invoice\Resource\Payment($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Payment($mObj);
+            }
+        },
+        'Refund' => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Refund')) {
+                return new \App\Invoice\Resource\Refund($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Refund($mObj);
+            }
+        },
         'Source' => function ($mObj) {
             if (class_exists('\App\Invoice\Resource\Source')) {
                 return new \App\Invoice\Resource\Source($mObj);
             } else {
                 return new \Nails\Invoice\Resource\Source($mObj);
+            }
+        },
+        'Tax' => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Tax')) {
+                return new \App\Invoice\Resource\Tax($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Tax($mObj);
             }
         },
     ],

@@ -12,15 +12,46 @@
 
 namespace Nails\Invoice\Model\Invoice;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
+use Nails\Currency\Service\Currency;
 use Nails\Factory;
 
+/**
+ * Class Item
+ *
+ * @package Nails\Invoice\Model\Invoice
+ */
 class Item extends Base
 {
     /**
+     * The table this model represents
+     *
+     * @var string
+     */
+    const TABLE = NAILS_DB_PREFIX . 'invoice_invoice_item';
+
+    /**
+     * The name of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_NAME = 'InvoiceItem';
+
+    /**
+     * The provider of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_PROVIDER = 'nails/module-invoice';
+
+    // --------------------------------------------------------------------------
+
+    /**
      * The Currency service
      *
-     * @var \Nails\Currency\Service\Currency
+     * @var Currency
      */
     protected $oCurrency;
 
@@ -39,10 +70,15 @@ class Item extends Base
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Item constructor.
+     *
+     * @throws FactoryException
+     * @throws ModelException
+     */
     public function __construct()
     {
         parent::__construct();
-        $this->table             = NAILS_DB_PREFIX . 'invoice_invoice_item';
         $this->defaultSortColumn = 'order';
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
         $this

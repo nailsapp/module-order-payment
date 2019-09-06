@@ -12,21 +12,55 @@
 
 namespace Nails\Invoice\Model;
 
+use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
+use Nails\Common\Service\Database;
+use Nails\Currency\Exception\CurrencyException;
+use Nails\Currency\Service\Currency;
 use Nails\Factory;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
+use Nails\Invoice\Exception\RefundRequestException;
+use Nails\Invoice\Exception\RequestException;
 use Nails\Invoice\Factory\RefundRequest;
 use Nails\Invoice\Factory\RefundResponse;
 
+/**
+ * Class Payment
+ *
+ * @package Nails\Invoice\Model
+ */
 class Payment extends Base
 {
     /**
+     * The table this model represents
+     *
+     * @var string
+     */
+    const TABLE = NAILS_DB_PREFIX . 'invoice_payment';
+
+    /**
+     * The name of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_NAME = 'Payment';
+
+    /**
+     * The provider of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_PROVIDER = 'nails/module-invoice';
+
+    // --------------------------------------------------------------------------
+
+    /**
      * The Currency service
      *
-     * @var \Nails\Currency\Service\Currency
+     * @var Currency
      */
     protected $oCurrency;
 
@@ -45,14 +79,12 @@ class Payment extends Base
     /**
      * Payment constructor.
      *
-     * @throws \Nails\Common\Exception\FactoryException
-     * @throws \Nails\Common\Exception\ModelException
+     * @throws FactoryException
+     * @throws ModelException
      */
     public function __construct()
     {
         parent::__construct();
-        $this->table             = NAILS_DB_PREFIX . 'invoice_payment';
-        $this->tableAlias        = 'p';
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
         $this->searchableFields  = ['id', 'ref', 'description', 'txn_id'];
@@ -136,15 +168,18 @@ class Payment extends Base
      *
      * @param array $data Data passed from the calling method
      *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     protected function getCountCommon(array $data = []): void
     {
-        $oDb           = Factory::service('Database');
+        /** @var Database $oDb */
+        $oDb = Factory::service('Database');
+        /** @var Invoice $oInvoiceModel */
         $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
-        $oRefundModel  = Factory::model('Refund', 'nails/module-invoice');
+        /** @var Refund $oRefundModel */
+        $oRefundModel = Factory::model('Refund', 'nails/module-invoice');
 
-        $oDb->select($this->tableAlias . '.*, i.ref invoice_ref, i.state invoice_state');
+        $oDb->select($this->getTableAlias() . '.*, i.ref invoice_ref, i.state invoice_state');
 
         $oDb->select('
             (
@@ -152,7 +187,7 @@ class Payment extends Base
                     SUM(amount)
                 FROM ' . $oRefundModel->getTableName() . ' r
                 WHERE
-                r.payment_id = ' . $this->tableAlias . '.id
+                r.payment_id = ' . $this->getTableAlias() . '.id
                 AND
                 (
                     status = "' . $oRefundModel::STATUS_COMPLETE . '"
@@ -167,7 +202,7 @@ class Payment extends Base
                     SUM(fee)
                 FROM ' . $oRefundModel->getTableName() . ' r
                 WHERE
-                r.payment_id = ' . $this->tableAlias . '.id
+                r.payment_id = ' . $this->getTableAlias() . '.id
                 AND
                 (
                     status = "' . $oRefundModel::STATUS_COMPLETE . '"
@@ -177,7 +212,7 @@ class Payment extends Base
             ) fee_refunded
         ');
 
-        $oDb->join($oInvoiceModel->getTableName() . ' i', $this->tableAlias . '.invoice_id = i.id');
+        $oDb->join($oInvoiceModel->getTableName() . ' i', $this->getTableAlias() . '.invoice_id = i.id');
         parent::getCountCommon($data);
     }
 
@@ -190,7 +225,7 @@ class Payment extends Base
      * @param boolean $bReturnObject Whether to return the complete payment object
      *
      * @return bool|mixed
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function create(array $aData = [], $bReturnObject = false)
     {
@@ -240,7 +275,7 @@ class Payment extends Base
      * @param array   $aData      The data to update the payment with
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function update($iPaymentId, array $aData = []): bool
     {
@@ -284,7 +319,7 @@ class Payment extends Base
      * Generates a valid invoice ref
      *
      * @return string
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function generateValidRef(): string
     {
@@ -297,7 +332,7 @@ class Payment extends Base
 
             $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
-            $bRefExists = (bool) $oDb->count_all_results($this->table);
+            $bRefExists = (bool) $oDb->count_all_results($this->getTableName());
 
         } while ($bRefExists);
 
@@ -313,7 +348,7 @@ class Payment extends Base
      * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function setPending($iPaymentId, $aData = []): bool
     {
@@ -330,7 +365,7 @@ class Payment extends Base
      * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function setProcessing($iPaymentId, $aData = []): bool
     {
@@ -347,7 +382,7 @@ class Payment extends Base
      * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function setComplete($iPaymentId, $aData = []): bool
     {
@@ -364,7 +399,7 @@ class Payment extends Base
      * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function setFailed($iPaymentId, $aData = []): bool
     {
@@ -381,7 +416,7 @@ class Payment extends Base
      * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function setRefunded($iPaymentId, $aData = []): bool
     {
@@ -398,7 +433,7 @@ class Payment extends Base
      * @param array   $aData      Any additional data to save to the transaction
      *
      * @return bool
-     * @throws \Nails\Common\Exception\FactoryException
+     * @throws FactoryException
      */
     public function setRefundedPartial($iPaymentId, $aData = []): bool
     {
@@ -516,9 +551,9 @@ class Payment extends Base
      *
      * @return bool
      * @throws ModelException
-     * @throws \Nails\Common\Exception\FactoryException
-     * @throws \Nails\Invoice\Exception\RefundRequestException
-     * @throws \Nails\Invoice\Exception\RequestException
+     * @throws FactoryException
+     * @throws RefundRequestException
+     * @throws RequestException
      */
     public function refund(int $iPaymentId, int $iAmount = null, string $sReason = null): bool
     {
@@ -573,7 +608,7 @@ class Payment extends Base
      * @param int $iPaymentId The payment ID
      *
      * @return Resource
-     * @throws \Nails\Common\Exception\ModelException
+     * @throws ModelException
      */
     protected function getPaymentForEvent(int $iPaymentId): Resource
     {
@@ -598,8 +633,8 @@ class Payment extends Base
      * @param array  $aBools    Fields which should be cast as booleans if not null
      * @param array  $aFloats   Fields which should be cast as floats if not null
      *
-     * @throws \Nails\Common\Exception\FactoryException
-     * @throws \Nails\Currency\Exception\CurrencyException
+     * @throws FactoryException
+     * @throws CurrencyException
      */
     protected function formatObject(
         &$oObj,
@@ -703,6 +738,7 @@ class Payment extends Base
         $oObj->urls->processing = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
         $oObj->urls->success    = !empty($oObj->url_success) ? siteUrl($oObj->url_success) : $oObj->urls->thanks;
         $oObj->urls->error      = !empty($oObj->url_error) ? siteUrl($oObj->url_error) : null;
+        $oObj->urls->cancel     = !empty($oObj->url_cancel) ? siteUrl($oObj->url_cancel) : null;
 
         //  Custom data
         $oObj->custom_data = json_decode($oObj->custom_data);

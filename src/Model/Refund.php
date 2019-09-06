@@ -12,14 +12,44 @@
 
 namespace Nails\Invoice\Model;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Factory;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
 
+/**
+ * Class Refund
+ *
+ * @package Nails\Invoice\Model
+ */
 class Refund extends Base
 {
+    /**
+     * The table this model represents
+     *
+     * @var string
+     */
+    const TABLE = NAILS_DB_PREFIX . 'invoice_refund';
+
+    /**
+     * The name of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_NAME = 'Refund';
+
+    /**
+     * The provider of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_PROVIDER = 'nails/module-invoice';
+
+    // --------------------------------------------------------------------------
+
     /**
      * The Currency library
      *
@@ -38,13 +68,14 @@ class Refund extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Construct the model
+     * Refund constructor.
+     *
+     * @throws FactoryException
+     * @throws ModelException
      */
     public function __construct()
     {
         parent::__construct();
-        $this->table             = NAILS_DB_PREFIX . 'invoice_refund';
-        $this->tableAlias        = 'pr';
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
         $this
@@ -105,8 +136,8 @@ class Refund extends Base
     /**
      * Create a new refund
      *
-     * @param  array   $aData         The data to create the refund with
-     * @param  boolean $bReturnObject Whether to return the complete refund object
+     * @param array   $aData         The data to create the refund with
+     * @param boolean $bReturnObject Whether to return the complete refund object
      *
      * @return mixed
      */
@@ -148,8 +179,8 @@ class Refund extends Base
     /**
      * Update a payment
      *
-     * @param  integer $iRefundId The ID of the refund to update
-     * @param  array   $aData     The data to update the payment with
+     * @param integer $iRefundId The ID of the refund to update
+     * @param array   $aData     The data to update the payment with
      *
      * @return boolean
      */
@@ -202,7 +233,7 @@ class Refund extends Base
 
             $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
-            $bRefExists = (bool) $oDb->count_all_results($this->table);
+            $bRefExists = (bool) $oDb->count_all_results($this->getTableName());
 
         } while ($bRefExists);
 
@@ -214,8 +245,8 @@ class Refund extends Base
     /**
      * Set a refund as PENDING
      *
-     * @param  integer $iRefundId The refund to update
-     * @param  array   $aData     Any additional data to save to the transaction
+     * @param integer $iRefundId The refund to update
+     * @param array   $aData     Any additional data to save to the transaction
      *
      * @return boolean
      */
@@ -230,8 +261,8 @@ class Refund extends Base
     /**
      * Set a refund as PROCESSING
      *
-     * @param  integer $iRefundId The refund to update
-     * @param  array   $aData     Any additional data to save to the transaction
+     * @param integer $iRefundId The refund to update
+     * @param array   $aData     Any additional data to save to the transaction
      *
      * @return boolean
      */
@@ -246,8 +277,8 @@ class Refund extends Base
     /**
      * Set a refund as COMPLETE
      *
-     * @param  integer $iRefundId The refund to update
-     * @param  array   $aData     Any additional data to save to the transaction
+     * @param integer $iRefundId The refund to update
+     * @param array   $aData     Any additional data to save to the transaction
      *
      * @return boolean
      */
@@ -262,8 +293,8 @@ class Refund extends Base
     /**
      * Set a refund as FAILED
      *
-     * @param  integer $iRefundId The refund to update
-     * @param  array   $aData     Any additional data to save to the transaction
+     * @param integer $iRefundId The refund to update
+     * @param array   $aData     Any additional data to save to the transaction
      *
      * @return boolean
      */
@@ -278,8 +309,8 @@ class Refund extends Base
     /**
      * Sends refund receipt email
      *
-     * @param  integer $iRefundId      The ID of the refund
-     * @param  string  $sEmailOverride The email address to send the email to
+     * @param integer $iRefundId      The ID of the refund
+     * @param string  $sEmailOverride The email address to send the email to
      *
      * @return bool
      */
@@ -388,11 +419,11 @@ class Refund extends Base
      * The getAll() method iterates over each returned item with this method so as to
      * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
      *
-     * @param  object $oObj      A reference to the object being formatted.
-     * @param  array  $aData     The same data array which is passed to _getcount_common, for reference if needed
-     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param  array  $aBools    Fields which should be cast as booleans if not null
-     * @param  array  $aFloats   Fields which should be cast as floats if not null
+     * @param object $oObj      A reference to the object being formatted.
+     * @param array  $aData     The same data array which is passed to _getcount_common, for reference if needed
+     * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
+     * @param array  $aBools    Fields which should be cast as booleans if not null
+     * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @return void
      */
@@ -414,9 +445,10 @@ class Refund extends Base
         $aStatuses = $this->getStatusesHuman();
         $sStatus   = $oObj->status;
 
-        $oObj->status        = new \stdClass();
-        $oObj->status->id    = $sStatus;
-        $oObj->status->label = !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus));
+        $oObj->status = (object) [
+            'id'    => $sStatus,
+            'label' => !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus)),
+        ];
 
         //  Currency
         $oCurrency = $this->oCurrency->getByIsoCode($oObj->currency);
