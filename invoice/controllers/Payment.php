@@ -15,6 +15,7 @@ use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Input;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Controller\Base;
 use Nails\Invoice\Factory\CompleteRequest;
 
@@ -33,7 +34,7 @@ class Payment extends Base
     protected function complete($oPayment)
     {
         /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
-        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
 
@@ -65,7 +66,7 @@ class Payment extends Base
 
                 //  Set up CompleteRequest object
                 /** @var CompleteRequest $oCompleteRequest */
-                $oCompleteRequest = Factory::factory('CompleteRequest', 'nails/module-invoice');
+                $oCompleteRequest = Factory::factory('CompleteRequest', Constants::MODULE_SLUG);
 
                 //  Set the driver to use for the request
                 $oCompleteRequest->setDriver($oPayment->driver->slug);
@@ -196,7 +197,7 @@ class Payment extends Base
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
         /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
-        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
         $iPaymentId    = (int) $oUri->rsegment(2);
         $sPaymentToken = $oUri->rsegment(3);

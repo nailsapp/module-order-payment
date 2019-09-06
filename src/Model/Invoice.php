@@ -16,9 +16,9 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
-use Nails\Currency\Exception\CurrencyException;
-use Nails\Currency\Service\Currency;
+use Nails\Currency;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
@@ -49,7 +49,7 @@ class Invoice extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ class Invoice extends Base
     /**
      * The Currency service
      *
-     * @var Currency
+     * @var Currency\Service\Currency
      */
     protected $oCurrency;
 
@@ -95,14 +95,14 @@ class Invoice extends Base
         parent::__construct();
         $this->defaultSortColumn = 'created';
         $this->searchableFields  = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
-        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
+        $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->addExpandableField([
                 'trigger'   => 'customer',
                 'type'      => self::EXPANDABLE_TYPE_SINGLE,
                 'property'  => 'customer',
                 'model'     => 'Customer',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'customer_id',
             ])
             ->addExpandableField([
@@ -110,7 +110,7 @@ class Invoice extends Base
                 'type'      => self::EXPANDABLE_TYPE_MANY,
                 'property'  => 'emails',
                 'model'     => 'InvoiceEmail',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'invoice_id',
             ])
             ->addExpandableField([
@@ -118,7 +118,7 @@ class Invoice extends Base
                 'type'      => self::EXPANDABLE_TYPE_MANY,
                 'property'  => 'payments',
                 'model'     => 'Payment',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'invoice_id',
             ])
             ->addExpandableField([
@@ -126,7 +126,7 @@ class Invoice extends Base
                 'type'      => self::EXPANDABLE_TYPE_MANY,
                 'property'  => 'refunds',
                 'model'     => 'Refund',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'invoice_id',
             ])
             ->addExpandableField([
@@ -134,7 +134,7 @@ class Invoice extends Base
                 'type'      => self::EXPANDABLE_TYPE_MANY,
                 'property'  => 'items',
                 'model'     => 'InvoiceItem',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'invoice_id',
             ]);
     }
@@ -191,7 +191,7 @@ class Invoice extends Base
     public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): \CI_DB_mysqli_result
     {
         $oDb            = Factory::service('Database');
-        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
+        $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
         $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
 
         return parent::getAllRawQuery($iPage, $iPerPage, $aData, $bIncludeDeleted);
@@ -212,7 +212,7 @@ class Invoice extends Base
     public function countAll($aData = [], $bIncludeDeleted = false)
     {
         $oDb            = Factory::service('Database');
-        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
+        $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
         $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
 
         return parent::countAll($aData, $bIncludeDeleted);
@@ -241,7 +241,7 @@ class Invoice extends Base
 
         if (empty($aData['select'])) {
 
-            $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+            $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
             $sPaymentClass = get_class($oPaymentModel);
 
             $aData['select'] = [
@@ -470,7 +470,7 @@ class Invoice extends Base
             if (array_key_exists('terms', $aData)) {
                 $iTerms = (int) $aData['terms'];
             } else {
-                $iTerms = (int) appSetting('default_payment_terms', 'nails/module-invoice');
+                $iTerms = (int) appSetting('default_payment_terms', Constants::MODULE_SLUG);
             }
 
             $oDate = new \DateTime($aData['dated']);
@@ -551,7 +551,7 @@ class Invoice extends Base
 
         //  Invalid Customer ID
         if (array_key_exists('customer_id', $aData) && !empty($aData['customer_id'])) {
-            $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
+            $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
             if (!$oCustomerModel->getById($aData['customer_id'])) {
                 throw new InvoiceException('"' . $aData['customer_id'] . '" is not a valid customer ID.');
             }
@@ -567,8 +567,8 @@ class Invoice extends Base
 
         //  Invalid currency
         if (array_key_exists('currency', $aData)) {
-            /** @var Currency $oCurrency */
-            $oCurrency = Factory::service('Currency', 'nails/module-currency');
+            /** @var Currency\Service\Currency $oCurrency */
+            $oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
             if (!$oCurrency->isEnabled($aData['currency'])) {
                 throw new InvoiceException('"' . $aData['currency'] . '" is not a supported currency.');
             }
@@ -576,7 +576,7 @@ class Invoice extends Base
 
         //  Invalid Tax IDs
         if (!empty($aTaxIds)) {
-            $oTaxModel = Factory::model('Tax', 'nails/module-invoice');
+            $oTaxModel = Factory::model('Tax', Constants::MODULE_SLUG);
             $aTaxRates = $oTaxModel->getByIds($aTaxIds);
             if (count($aTaxRates) != count($aTaxIds)) {
                 throw new InvoiceException('An invalid Tax Rate was supplied.');
@@ -594,7 +594,7 @@ class Invoice extends Base
         } elseif (array_key_exists('items', $aData)) {
 
             //  Check each item
-            $oItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
+            $oItemModel = Factory::model('InvoiceItem', Constants::MODULE_SLUG);
             foreach ($aData['items'] as &$aItem) {
 
                 //  Has a positive quantity
@@ -665,7 +665,7 @@ class Invoice extends Base
      */
     protected function updateLineItems(int $iInvoiceId, array $aItems): void
     {
-        $oItemModel  = Factory::model('InvoiceItem', 'nails/module-invoice');
+        $oItemModel  = Factory::model('InvoiceItem', Constants::MODULE_SLUG);
         $aTouchedIds = [];
 
         //  Update/insert all known items
@@ -814,7 +814,7 @@ class Invoice extends Base
             }
 
             $oEmailer           = Factory::service('Emailer', 'nails/module-email');
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nails/module-invoice');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             $oEmail       = new \stdClass();
             $oEmail->type = 'send_invoice';
@@ -1042,7 +1042,7 @@ class Invoice extends Base
      * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @throws FactoryException
-     * @throws CurrencyException
+     * @throws Currency\Exception\CurrencyException
      */
     protected function formatObject(
         &$oObj,

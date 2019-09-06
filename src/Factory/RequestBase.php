@@ -16,6 +16,7 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Resource;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Driver\PaymentBase;
 use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
@@ -111,14 +112,16 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Construct the request
+     * RequestBase constructor.
+     *
+     * @throws FactoryException
      */
     public function __construct()
     {
-        $this->oDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
-        $this->oInvoiceModel  = Factory::model('Invoice', 'nails/module-invoice');
-        $this->oPaymentModel  = Factory::model('Payment', 'nails/module-invoice');
-        $this->oRefundModel   = Factory::model('Refund', 'nails/module-invoice');
+        $this->oDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+        $this->oInvoiceModel  = Factory::model('Invoice', Constants::MODULE_SLUG);
+        $this->oPaymentModel  = Factory::model('Payment', Constants::MODULE_SLUG);
+        $this->oRefundModel   = Factory::model('Refund', Constants::MODULE_SLUG);
     }
 
     // --------------------------------------------------------------------------

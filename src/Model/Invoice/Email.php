@@ -13,7 +13,10 @@
 namespace Nails\Invoice\Model\Invoice;
 
 use Nails\Common\Model\Base;
+use Nails\Common\Service\Database;
+use Nails\Email\Service\Emailer;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 
 /**
  * Class Email
@@ -41,7 +44,7 @@ class Email extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
@@ -73,7 +76,7 @@ class Email extends Base
             ];
         }
 
-        //  Common joins
+        /** @var Database $oDb */
         $oDb = Factory::service('Database');
         $oDb->join(NAILS_DB_PREFIX . 'email_archive ea', $this->getTableAlias() . '.email_id = ea.id', 'LEFT');
 
@@ -105,6 +108,7 @@ class Email extends Base
     ) {
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
+        /** @var Emailer $oEmailer */
         $oEmailer = factory::service('Emailer', 'nails/module-email');
         $aTypes   = $oEmailer->getTypes();
 

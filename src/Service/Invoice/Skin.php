@@ -13,10 +13,16 @@
 namespace Nails\Invoice\Service\Invoice;
 
 use Nails\Common\Model\BaseSkin;
+use Nails\Invoice\Constants;
 
+/**
+ * Class Skin
+ *
+ * @package Nails\Invoice\Service\Invoice
+ */
 class Skin extends BaseSkin
 {
-    protected $sModule         = 'nails/module-invoice';
+    protected $sModule         = Constants::MODULE_SLUG;
     protected $sType           = 'invoice';
     protected $bEnableMultiple = false;
 }

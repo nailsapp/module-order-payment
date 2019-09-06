@@ -20,8 +20,9 @@ use Nails\Common\Service\Asset;
 use Nails\Common\Service\FormValidation;
 use Nails\Common\Service\Input;
 use Nails\Common\Service\Uri;
-use Nails\Currency\Service\Currency;
+use Nails\Currency;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Controller\BaseAdmin;
 use Nails\Invoice\Model;
 use Nails\Invoice\Model\Invoice\Item;
@@ -35,16 +36,22 @@ use Nails\Invoice\Model\Tax;
 class Invoice extends BaseAdmin
 {
     /**
+     * The Invoice model
+     *
      * @var Model\Invoice
      */
     protected $oInvoiceModel;
 
     /**
+     * The Invoice Item model
+     *
      * @var Item
      */
     protected $oInvoiceItemModel;
 
     /**
+     * The Tax model
+     *
      * @var Tax
      */
     protected $oTaxModel;
@@ -54,7 +61,7 @@ class Invoice extends BaseAdmin
     /**
      * Announces this controller's navGroups
      *
-     * @return Nav
+     * @return array|Nav
      * @throws FactoryException
      */
     public static function announce()
@@ -100,11 +107,11 @@ class Invoice extends BaseAdmin
         parent::__construct();
 
         /** @var Model\Invoice oInvoiceModel */
-        $this->oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $this->oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         /** @var Item oInvoiceItemModel */
-        $this->oInvoiceItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
+        $this->oInvoiceItemModel = Factory::model('InvoiceItem', Constants::MODULE_SLUG);
         /** @var Tax oTaxModel */
-        $this->oTaxModel = Factory::model('Tax', 'nails/module-invoice');
+        $this->oTaxModel = Factory::model('Tax', Constants::MODULE_SLUG);
     }
 
     // --------------------------------------------------------------------------
@@ -126,7 +133,7 @@ class Invoice extends BaseAdmin
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
         /** @var Customer $oCustomerModel */
-        $oCustomerModel = Factory::model('Customer', 'nails/module-invoice');
+        $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
         $iCustomerId    = $oInput->get('customer_id');
 
         if ($iCustomerId) {
@@ -182,8 +189,8 @@ class Invoice extends BaseAdmin
         );
 
         //  Currencies
-        /** @var Currency $oCurrency */
-        $oCurrency        = Factory::service('Currency', 'nails/module-currency');
+        /** @var Currency\Service\Currency $oCurrency */
+        $oCurrency        = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $aCurrencyOptions = [];
         $aCurrencies      = $oCurrency->getAllEnabled();
 
@@ -324,8 +331,8 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        /** @var Currency $oCurrency */
-        $oCurrency                = Factory::service('Currency', 'nails/module-currency');
+        /** @var Currency\Service\Currency $oCurrency */
+        $oCurrency                = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $aCurrencies              = $oCurrency->getAllEnabled();
         $this->data['currencies'] = $aCurrencies;
 
@@ -334,7 +341,7 @@ class Invoice extends BaseAdmin
         /** @var Asset $oAsset */
         $oAsset = Factory::service('Asset');
         //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
-        $oAsset->load('invoice.edit.js', 'nails/module-invoice');
+        $oAsset->load('invoice.edit.js', Constants::MODULE_SLUG);
         $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
@@ -419,7 +426,8 @@ class Invoice extends BaseAdmin
 
         //  Page data
         $aItemUnits = $this->oInvoiceItemModel->getUnits();
-        $aTaxes     = $this->oTaxModel->getAll();
+        /** @var \Nails\Invoice\Resource\Tax[] $aTaxes */
+        $aTaxes = $this->oTaxModel->getAll();
 
         $this->data['invoiceStates'] = $oModel->getSelectableStates();
 
@@ -454,8 +462,8 @@ class Invoice extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        /** @var Currency $oCurrency */
-        $oCurrency                = Factory::service('Currency', 'nails/module-currency');
+        /** @var Currency\Service\Currency $oCurrency */
+        $oCurrency                = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $aCurrencies              = $oCurrency->getAllEnabled();
         $this->data['currencies'] = $aCurrencies;
         //  A customer ID can be specified when creating an invoice; this prevents undefined var errors
@@ -466,7 +474,7 @@ class Invoice extends BaseAdmin
         /** @var Asset $oAsset */
         $oAsset = Factory::service('Asset');
         //  @todo (Pablo - 2018-11-30) - Load the minified version once the JS bundling has been sorted
-        $oAsset->load('invoice.edit.js', 'nails/module-invoice');
+        $oAsset->load('invoice.edit.js', Constants::MODULE_SLUG);
         $oAsset->inline(
             'ko.applyBindings(
                 new invoiceEdit(
@@ -513,7 +521,7 @@ class Invoice extends BaseAdmin
 
         /** @var Asset $oAsset */
         $oAsset = Factory::service('Asset');
-        $oAsset->load('admin.invoice.view.min.js', 'nails/module-invoice');
+        $oAsset->load('admin.invoice.view.min.js', Constants::MODULE_SLUG);
 
         Helper::loadView('view');
     }
@@ -534,7 +542,7 @@ class Invoice extends BaseAdmin
         $oFormValidation = Factory::service('FormValidation');
         $oFormValidation->set_message('_callbackValidCurrency', 'Invalid currency.');
 
-        $oCurrency = Factory::service('Currency', 'nails/module-currency');
+        $oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $aEnabled  = $oCurrency->getAllEnabled();
 
         foreach ($aEnabled as $oCurrency) {
@@ -787,7 +795,7 @@ class Invoice extends BaseAdmin
 
         if ($oInvoice->state->id === $sInvoiceClass::STATE_OPEN) {
             if (!$this->oInvoiceModel->send($oInvoice->id)) {
-                /** @var Session     $oSession */
+                /** @var Session $oSession */
                 $oSession = Factory::service('Session', 'nails/module-auth');
                 $oSession->setFlashData(
                     'warning',

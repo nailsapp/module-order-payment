@@ -1,6 +1,16 @@
 <?php
 
 use Nails\Invoice\Driver\PaymentBase;
+use Nails\Invoice\Resource\Invoice;
+use Nails\Invoice\Resource\Source;
+
+/**
+ * @var string        $sFormUrl
+ * @var PaymentBase[] $aDrivers
+ * @var Invoice       $oInvoice
+ * @var Source[]      $aSavedPaymentSources
+ * @var string        $sUrlCancel
+ */
 
 ?>
 <div class="nails-invoice pay u-center-screen" id="js-invoice">
@@ -63,6 +73,31 @@ use Nails\Invoice\Driver\PaymentBase;
                     <ul class="list list--unstyled list--bordered" id="js-invoice-driver-select">
                         <?php
 
+
+                        $i = 0;
+                        foreach ($aSavedPaymentSources as $oSource) {
+                            ?>
+                            <li>
+                                <label class="form__group form__group--radio js-invoice-driver-select">
+                                    <?php
+                                    $aData = [
+                                        'data-has-fields="false"',
+                                        'data-is-redirect="false"',
+                                    ];
+                                    echo form_radio(
+                                        'driver',
+                                        $oSource->id,
+                                        set_radio('driver', $oSource->id, $i === 0),
+                                        implode(' ', $aData)
+                                    );
+                                    echo $oSource->label;
+                                    ?>
+                                </label>
+                            </li>
+                            <?php
+                            $i++;
+                        }
+
                         foreach ($aDrivers as $oDriver) {
 
                             $sHasFields  = json_encode(!empty($oDriver->getPaymentFields()));
@@ -83,7 +118,7 @@ use Nails\Invoice\Driver\PaymentBase;
                                     echo form_radio(
                                         'driver',
                                         $oDriver->getSlug(),
-                                        set_radio('driver', $oDriver->getSlug(), count($aDrivers) === 1),
+                                        set_radio('driver', $oDriver->getSlug(), empty($aSavedPaymentSources) && count($aDrivers) === 1),
                                         implode(' ', $aData)
                                     );
 
@@ -118,6 +153,7 @@ use Nails\Invoice\Driver\PaymentBase;
                         ?>
                         <div class="hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
                             <?php
+
                             if (!empty($mFields) && $mFields === PaymentBase::PAYMENT_FIELDS_CARD) {
 
                                 ?>

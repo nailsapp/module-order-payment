@@ -14,6 +14,7 @@ use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Service\Database;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Driver\PaymentBase;
 use Nails\Invoice\Exception\DriverException;
 use Nails\Invoice\Exception\InvoiceException;
@@ -46,7 +47,7 @@ class Source extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
@@ -70,7 +71,7 @@ class Source extends Base
         }
 
         /** @var PaymentDriver $oPaymentDriverService */
-        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
         /** @var PaymentBase $oDriver */
         $oDriver = $oPaymentDriverService->getInstance($aData['driver']);
 
@@ -79,7 +80,7 @@ class Source extends Base
         }
 
         /** @var Resource\Source $oResource */
-        $oResource = Factory::resource('Source', 'nails/module-invoice', [
+        $oResource = Factory::resource('Source', Constants::MODULE_SLUG, [
             'customer_id' => $aData['customer_id'],
             'driver'      => $aData['driver'],
         ]);
@@ -159,11 +160,17 @@ class Source extends Base
             return [];
         }
 
+        /** @var PaymentDriver $oPaymentDriver */
+        $oPaymentDriver = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+
         return $this->getAll([
-            'where' => [
+            'where'    => [
                 ['customer_id', $iCustomerId],
             ],
-            'sort'  => [
+            'where_in' => [
+                ['driver', $oPaymentDriver->getEnabledSlug()],
+            ],
+            'sort'     => [
                 ['is_default', 'desc'],
                 ['created', 'desc'],
             ],

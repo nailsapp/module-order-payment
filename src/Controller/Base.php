@@ -12,7 +12,9 @@
 
 namespace Nails\Invoice\Controller;
 
+use Nails\Common\Service\Asset;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 
 // --------------------------------------------------------------------------
 
@@ -31,6 +33,11 @@ if (class_exists('\App\Invoice\Controller\Base')) {
 
 // --------------------------------------------------------------------------
 
+/**
+ * Class Base
+ *
+ * @package Nails\Invoice\Controller
+ */
 abstract class Base extends BaseMiddle
 {
     /**
@@ -42,11 +49,12 @@ abstract class Base extends BaseMiddle
     {
         //  Test if a view has been provided by the app
         if (!is_file($sView)) {
+            /** @var Asset $oAsset */
             $oAsset = Factory::service('Asset');
             $oAsset->clear();
             $oAsset->load('https://code.jquery.com/jquery-2.2.4.min.js');
             $oAsset->load('nails.min.css', 'nails/common');
-            $oAsset->load('invoice.pay.min.css', 'nails/module-invoice');
+            $oAsset->load('invoice.pay.min.css', Constants::MODULE_SLUG);
         }
     }
 }

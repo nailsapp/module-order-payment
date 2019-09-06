@@ -12,30 +12,40 @@
 
 namespace Nails\Admin\Invoice;
 
+use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
+use Nails\Auth\Service\Session;
+use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\NailsException;
+use Nails\Common\Service\Input;
+use Nails\Common\Service\Uri;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Controller\BaseAdmin;
+use Nails\Invoice\Service\PaymentDriver;
 
+/**
+ * Class Payment
+ *
+ * @package Nails\Admin\Invoice
+ */
 class Payment extends BaseAdmin
 {
-    protected $oInvoiceModel;
-    protected $oPaymentModel;
-    protected $oDriverService;
-
-    // --------------------------------------------------------------------------
-
     /**
      * Announces this controller's navGroups
      *
-     * @return stdClass
+     * @return array|Nav
+     * @throws FactoryException
      */
     public static function announce()
     {
         if (userHasPermission('admin:invoice:payment:view')) {
+
+            /** @var Nav $oNavGroup */
             $oNavGroup = Factory::factory('Nav', 'nails/module-admin')
                 ->setLabel('Invoices &amp; Payments')
                 ->setIcon('fa-credit-card');
+
             if (userHasPermission('admin:invoice:payment:view')) {
                 $oNavGroup->addAction('Manage Payments');
             }
@@ -81,10 +91,14 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oInput         = Factory::service('Input');
-        $oDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
-        $oPaymentModel  = Factory::model('Payment', 'nails/module-invoice');
-        $oInvoiceModel  = Factory::model('Invoice', 'nails/module-invoice');
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+        /** @var PaymentDriver $oDriverService */
+        $oDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+        /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
 
         // --------------------------------------------------------------------------
 
@@ -186,8 +200,10 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oUri          = Factory::service('Uri');
-        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
         // --------------------------------------------------------------------------
 
@@ -220,13 +236,17 @@ class Payment extends BaseAdmin
 
         // --------------------------------------------------------------------------
 
-        $oUri          = Factory::service('Uri');
-        $oInput        = Factory::service('Input');
-        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
-        $iPaymentId    = $oUri->segment(5);
-        $sAmount       = preg_replace('/[^0-9\.]/', '', $oInput->post('amount')) ?: null;
-        $sReason       = $oInput->post('reason') ?: null;
-        $sRedirect     = urldecode($oInput->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+        /** @var \Nails\Invoice\Model\Paymentt $oPaymentModel */
+        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
+
+        $iPaymentId = $oUri->segment(5);
+        $sAmount    = preg_replace('/[^0-9\.]/', '', $oInput->post('amount')) ?: null;
+        $sReason    = $oInput->post('reason') ?: null;
+        $sRedirect  = urldecode($oInput->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
 
         try {
 
@@ -254,6 +274,7 @@ class Payment extends BaseAdmin
             $sMessage = $e->getMessage();
         }
 
+        /** @var Session $oSession */
         $oSession = Factory::service('Session', 'nails/module-auth');
         $oSession->setFlashData($sStatus, $sMessage);
         redirect($sRedirect);

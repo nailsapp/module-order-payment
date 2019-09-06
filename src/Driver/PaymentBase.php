@@ -18,6 +18,7 @@ use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\DriverException;
 use Nails\Invoice\Factory\ChargeRequest;
 use Nails\Invoice\Interfaces\Driver\Payment;
+use Nails\Invoice\Resource\Source;
 
 /**
  * Class PaymentBase
@@ -67,19 +68,35 @@ abstract class PaymentBase extends Base implements Payment
     /**
      * Prepares a ChargeRequest object
      *
-     * @param ChargeRequest $oChargeRequest The ChargeRequest object to prepare
-     * @param array         $aData          Any data which was requested by getPaymentFields()
+     * @param ChargeRequest $oChargeRequest      The ChargeRequest object to prepare
+     * @param array         $aData               Any data which was requested by getPaymentFields()
+     * @param Source        $oSavedPaymentSource The saved payment source to use
      *
      * @throws ChargeRequestException
      */
-    public function prepareChargeRequest(ChargeRequest $oChargeRequest, array $aData): void
-    {
+    public function prepareChargeRequest(
+        ChargeRequest $oChargeRequest,
+        array $aData,
+        Source $oSavedPaymentSource = null
+    ): void {
+
         $mPaymentFields = $this->getPaymentFields();
 
         if (is_string($mPaymentFields) && $mPaymentFields == static::PAYMENT_FIELDS_CARD) {
-            $this->setChargeRequestCardDetails($oChargeRequest, $aData);
+
+            $this->setChargeRequestCardDetails(
+                $oChargeRequest,
+                $aData
+            );
+
         } elseif (is_array($mPaymentFields)) {
-            $this->setChargeRequestFields($oChargeRequest, $aData, $mPaymentFields);
+
+            $this->setChargeRequestFields(
+                $oChargeRequest,
+                $aData,
+                $mPaymentFields,
+                $oSavedPaymentSource
+            );
         }
     }
 
@@ -120,12 +137,18 @@ abstract class PaymentBase extends Base implements Payment
     /**
      * Sets the values of the payment fields
      *
-     * @param ChargeRequest $oChargeRequest The ChargeRequest object
-     * @param array         $aData          The data sent to the driver
-     * @param array|null    $aFields        The payment fields
+     * @param ChargeRequest $oChargeRequest      The ChargeRequest object
+     * @param array         $aData               The data sent to the driver
+     * @param array|null    $aFields             The payment fields
+     * @param Source|null   $oSavedPaymentSource The saved payment source to use, if any
      */
-    protected function setChargeRequestFields(ChargeRequest $oChargeRequest, array $aData, array $aFields = null)
-    {
+    protected function setChargeRequestFields(
+        ChargeRequest $oChargeRequest,
+        array $aData,
+        array $aFields = null,
+        Source $oSavedPaymentSource = null
+    ) {
+
         if (is_null($aFields)) {
             $aFields = $this->getPaymentFields();
         }
@@ -136,7 +159,12 @@ abstract class PaymentBase extends Base implements Payment
             $sValue = getFromArray($sKey, $aData);
 
             $oChargeRequest
-                ->setCustomData($aField['key'], $sValue);
+                ->setCustomData($sKey, $sValue);
+        }
+
+        if (!empty($oSavedPaymentSource)) {
+            $oChargeRequest
+                ->setCustomData('source_id', $oSavedPaymentSource->id);
         }
     }
 }

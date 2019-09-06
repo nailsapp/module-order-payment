@@ -16,9 +16,13 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
+use Nails\Currency;
+use Nails\Email\Service\Emailer;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
+use Nails\Invoice\Model\Invoice\Email;
 
 /**
  * Class Refund
@@ -46,14 +50,14 @@ class Refund extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
     /**
      * The Currency library
      *
-     * @var Nails\Currency\Service\Currency
+     * @var Currency\Service\Currency
      */
     protected $oCurrency;
 
@@ -77,14 +81,14 @@ class Refund extends Base
     {
         parent::__construct();
         $this->defaultSortColumn = 'created';
-        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
+        $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->addExpandableField([
                 'trigger'   => 'invoice',
                 'type'      => self::EXPANDABLE_TYPE_SINGLE,
                 'property'  => 'invoice',
                 'model'     => 'Invoice',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'invoice_id',
             ])
             ->addExpandableField([
@@ -92,7 +96,7 @@ class Refund extends Base
                 'type'      => self::EXPANDABLE_TYPE_SINGLE,
                 'property'  => 'payment',
                 'model'     => 'Payment',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'payment_id',
             ]);
     }
@@ -362,8 +366,10 @@ class Refund extends Base
             $aEmails = array_unique($aEmails);
             $aEmails = array_filter($aEmails);
 
-            $oEmailer           = Factory::service('Emailer', 'nails/module-email');
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nails/module-invoice');
+            /** @var Emailer $oEmailer */
+            $oEmailer = Factory::service('Emailer', 'nails/module-email');
+            /** @var Email $oInvoiceEmailModel */
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
 

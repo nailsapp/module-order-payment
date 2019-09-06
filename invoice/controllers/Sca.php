@@ -13,6 +13,7 @@
 use Nails\Auth\Service\Session;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Controller\Base;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\ScaRequest;
@@ -28,9 +29,9 @@ class Sca extends Base
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
         /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
-        $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
+        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
         /** @var PaymentDriver $oPaymentDriverService */
-        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
 
         $oPayment = $oPaymentModel->getByToken($oUri->segment(4), ['expand' => ['invoice']]);
         if (empty($oPayment) || md5($oPayment->sca_data) !== $oUri->segment(5)) {
@@ -40,7 +41,7 @@ class Sca extends Base
         // --------------------------------------------------------------------------
 
         /** @var ScaRequest $oScaRequest */
-        $oScaRequest = Factory::factory('ScaRequest', 'nails/module-invoice');
+        $oScaRequest = Factory::factory('ScaRequest', Constants::MODULE_SLUG);
 
         $oScaRequest->setPayment($oPayment->id);
         $oScaRequest->setInvoice($oPayment->invoice->id);

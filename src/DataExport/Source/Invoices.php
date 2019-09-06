@@ -4,7 +4,13 @@ namespace Nails\Invoice\DataExport\Source;
 
 use Nails\Admin\Interfaces\DataExport\Source;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 
+/**
+ * Class Invoices
+ *
+ * @package Nails\Invoice\DataExport\Source
+ */
 class Invoices implements Source
 {
     public function getLabel(): string
@@ -30,7 +36,7 @@ class Invoices implements Source
 
     public function getOptions(): array
     {
-        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         return [
             [
                 'key'     => 'state',
@@ -74,8 +80,8 @@ class Invoices implements Source
     public function execute($aOptions = [])
     {
         $oDb               = Factory::service('Database');
-        $oInvoiceModel     = Factory::model('Invoice', 'nails/module-invoice');
-        $oInvoiceItemModel = Factory::model('InvoiceItem', 'nails/module-invoice');
+        $oInvoiceModel     = Factory::model('Invoice', Constants::MODULE_SLUG);
+        $oInvoiceItemModel = Factory::model('InvoiceItem', Constants::MODULE_SLUG);
 
         $sState     = getFromArray('state', $aOptions);
         $sDateStart = getFromArray('date_start', $aOptions);
@@ -108,15 +114,15 @@ class Invoices implements Source
 
         return [
             Factory::factory('DataExportSourceResponse', 'nails/module-admin')
-                   ->setLabel('Table: ' . $sTableInvoice)
-                   ->setFileName('invoice')
-                   ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoice)->result(), 'Field'))
-                   ->setSource($oDb->query($sSqlInvoice)),
+                ->setLabel('Table: ' . $sTableInvoice)
+                ->setFileName('invoice')
+                ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoice)->result(), 'Field'))
+                ->setSource($oDb->query($sSqlInvoice)),
             Factory::factory('DataExportSourceResponse', 'nails/module-admin')
-                   ->setLabel('Table: ' . $sTableInvoiceItem)
-                   ->setFileName('invoice_item')
-                   ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoiceItem)->result(), 'Field'))
-                   ->setSource($oDb->query($sSqlInvoiceItem)),
+                ->setLabel('Table: ' . $sTableInvoiceItem)
+                ->setFileName('invoice_item')
+                ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoiceItem)->result(), 'Field'))
+                ->setSource($oDb->query($sSqlInvoiceItem)),
         ];
     }
 }

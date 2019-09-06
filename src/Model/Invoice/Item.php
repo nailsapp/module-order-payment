@@ -15,8 +15,9 @@ namespace Nails\Invoice\Model\Invoice;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
-use Nails\Currency\Service\Currency;
+use Nails\Currency;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 
 /**
  * Class Item
@@ -44,14 +45,14 @@ class Item extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
     /**
      * The Currency service
      *
-     * @var Currency
+     * @var Currency\Service\Currency
      */
     protected $oCurrency;
 
@@ -80,18 +81,18 @@ class Item extends Base
     {
         parent::__construct();
         $this->defaultSortColumn = 'order';
-        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
+        $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->addExpandableField([
                 'trigger'   => 'invoice',
                 'model'     => 'Invoice',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'invoice_id',
             ])
             ->addExpandableField([
                 'trigger'     => 'tax',
                 'model'       => 'Tax',
-                'provider'    => 'nails/module-invoice',
+                'provider'    => Constants::MODULE_SLUG,
                 'id_column'   => 'tax_id',
                 'auto_expand' => true,
             ]);
@@ -102,7 +103,7 @@ class Item extends Base
     /**
      * Returns the item quantity units with human friendly names
      *
-     * @return array
+     * @return string[]
      */
     public function getUnits()
     {

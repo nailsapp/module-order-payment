@@ -13,9 +13,15 @@
 namespace Nails\Invoice\Service;
 
 use Nails\Common\Model\BaseDriver;
+use Nails\Invoice\Constants;
 
+/**
+ * Class PaymentDriver
+ *
+ * @package Nails\Invoice\Service
+ */
 class PaymentDriver extends BaseDriver
 {
-    protected $sModule = 'nails/module-invoice';
+    protected $sModule = Constants::MODULE_SLUG;
     protected $sType   = 'payment';
 }

@@ -17,9 +17,9 @@ use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Common\Service\Database;
-use Nails\Currency\Exception\CurrencyException;
-use Nails\Currency\Service\Currency;
+use Nails\Currency;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
 use Nails\Invoice\Exception\RefundRequestException;
@@ -53,14 +53,14 @@ class Payment extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
     /**
      * The Currency service
      *
-     * @var Currency
+     * @var Currency\Service\Currency
      */
     protected $oCurrency;
 
@@ -86,20 +86,20 @@ class Payment extends Base
     {
         parent::__construct();
         $this->defaultSortColumn = 'created';
-        $this->oCurrency         = Factory::service('Currency', 'nails/module-currency');
+        $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this->searchableFields  = ['id', 'ref', 'description', 'txn_id'];
         $this
             ->addExpandableField([
                 'trigger'   => 'invoice',
                 'model'     => 'Invoice',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'invoice_id',
             ])
             ->addExpandableField([
                 'trigger'   => 'refunds',
                 'type'      => self::EXPANDABLE_TYPE_MANY,
                 'model'     => 'Refund',
-                'provider'  => 'nails/module-invoice',
+                'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'payment_id',
             ]);
     }
@@ -175,9 +175,9 @@ class Payment extends Base
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
         /** @var Invoice $oInvoiceModel */
-        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         /** @var Refund $oRefundModel */
-        $oRefundModel = Factory::model('Refund', 'nails/module-invoice');
+        $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
 
         $oDb->select($this->getTableAlias() . '.*, i.ref invoice_ref, i.state invoice_state');
 
@@ -509,7 +509,7 @@ class Payment extends Base
             $aEmails = array_filter($aEmails);
 
             $oEmailer           = Factory::service('Emailer', 'nails/module-email');
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', 'nails/module-invoice');
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
 
@@ -567,7 +567,7 @@ class Payment extends Base
 
             //  Set up RefundRequest object
             /** @var RefundRequest $oRefundRequest */
-            $oRefundRequest = Factory::factory('RefundRequest', 'nails/module-invoice');
+            $oRefundRequest = Factory::factory('RefundRequest', Constants::MODULE_SLUG);
 
             //  Set the driver to use for the request
             $oRefundRequest->setDriver($oPayment->driver->slug);
@@ -634,7 +634,7 @@ class Payment extends Base
      * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @throws FactoryException
-     * @throws CurrencyException
+     * @throws Currency\Exception\CurrencyException
      */
     protected function formatObject(
         &$oObj,
@@ -661,7 +661,7 @@ class Payment extends Base
         $oObj->status->label = !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus));
 
         //  Driver
-        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
+        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
         $sDriver               = $oObj->driver;
         $oDriver               = $oPaymentDriverService->getBySlug($sDriver);
 

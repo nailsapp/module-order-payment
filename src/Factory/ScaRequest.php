@@ -14,6 +14,7 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Common\Exception\FactoryException;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 
 /**
  * Class ScaRequest
@@ -22,7 +23,6 @@ use Nails\Factory;
  */
 class ScaRequest extends RequestBase
 {
-
     /**
      * Executes the SCA request
      *
@@ -32,7 +32,7 @@ class ScaRequest extends RequestBase
     public function execute(): ScaResponse
     {
         /** @var ScaResponse $oScaResponse */
-        $oScaResponse = Factory::factory('ScaResponse', 'nails/module-invoice');
+        $oScaResponse = Factory::factory('ScaResponse', Constants::MODULE_SLUG);
 
         $oScaResponse = $this->oDriver->sca(
             $oScaResponse,

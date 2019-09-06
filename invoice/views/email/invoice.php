@@ -96,12 +96,14 @@
                                             </table>
                                             <?php
 
+                                            use Nails\Invoice\Constants;
+
                                             $aDetails = [
-                                                appSetting('business_name', 'nails/module-invoice') ? '<strong>' . appSetting('business_name', 'nails/module-invoice') . '</strong>' : '',
-                                                appSetting('business_address', 'nails/module-invoice') ? nl2br(appSetting('business_address', 'nails/module-invoice')) : '',
-                                                appSetting('business_phone', 'nails/module-invoice'),
-                                                appSetting('business_email', 'nails/module-invoice'),
-                                                appSetting('business_vat_number', 'nails/module-invoice') ? '<br>VAT Registration No. ' . appSetting('business_vat_number', 'nails/module-invoice') : '',
+                                                appSetting('business_name', Constants::MODULE_SLUG) ? '<strong>' . appSetting('business_name', Constants::MODULE_SLUG) . '</strong>' : '',
+                                                appSetting('business_address', Constants::MODULE_SLUG) ? nl2br(appSetting('business_address', Constants::MODULE_SLUG)) : '',
+                                                appSetting('business_phone', Constants::MODULE_SLUG),
+                                                appSetting('business_email', Constants::MODULE_SLUG),
+                                                appSetting('business_vat_number', Constants::MODULE_SLUG) ? '<br>VAT Registration No. ' . appSetting('business_vat_number', Constants::MODULE_SLUG) : '',
                                             ];
 
                                             $aDetails = array_filter($aDetails);

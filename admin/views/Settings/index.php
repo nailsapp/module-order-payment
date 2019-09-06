@@ -3,7 +3,7 @@
 //  Get any additional libraries we'll need
 $oInput = \Nails\Factory::service('Input');
 
-?>
+use Nails\Invoice\Constants; ?>
 <div class="group-invoice settings">
     <?php
 
@@ -151,7 +151,7 @@ $oInput = \Nails\Factory::service('Input');
                 <?=adminHelper(
                     'loadSettingsDriverTable',
                     'PaymentDriver',
-                    'nails/module-invoice'
+                    Constants::MODULE_SLUG
                 )?>
             </div>
             <?php
@@ -164,7 +164,7 @@ $oInput = \Nails\Factory::service('Input');
                 <?=adminHelper(
                     'loadSettingsDriverTable',
                     'InvoiceSkin',
-                    'nails/module-invoice'
+                    Constants::MODULE_SLUG
                 )?>
             </div>
             <?php

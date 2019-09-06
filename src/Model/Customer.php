@@ -14,6 +14,7 @@ namespace Nails\Invoice\Model;
 
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\InvoiceException;
 
 /**
@@ -42,7 +43,7 @@ class Customer extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
@@ -58,15 +59,15 @@ class Customer extends Base
         $this->destructiveDelete  = false;
         $this->searchableFields[] = 'email';
         $this->searchableFields[] = 'billing_email';
-
-        $this->addExpandableField([
-            'trigger'   => 'invoices',
-            'type'      => self::EXPANDABLE_TYPE_MANY,
-            'property'  => 'invoices',
-            'model'     => 'Invoice',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'customer_id',
-        ]);
+        $this
+            ->addExpandableField([
+                'trigger'   => 'invoices',
+                'type'      => self::EXPANDABLE_TYPE_MANY,
+                'property'  => 'invoices',
+                'model'     => 'Invoice',
+                'provider'  => Constants::MODULE_SLUG,
+                'id_column' => 'customer_id',
+            ]);
     }
 
     // --------------------------------------------------------------------------

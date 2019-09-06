@@ -13,6 +13,7 @@
 namespace Nails\Invoice\Model;
 
 use Nails\Common\Model\Base;
+use Nails\Invoice\Constants;
 
 /**
  * Class Tax
@@ -40,7 +41,7 @@ class Tax extends Base
      *
      * @var string
      */
-    const RESOURCE_PROVIDER = 'nails/module-invoice';
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
@@ -65,9 +66,7 @@ class Tax extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
-
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
         $oObj->rate_decimal = $oObj->rate / 100;
     }
 }
