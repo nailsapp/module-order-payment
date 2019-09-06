@@ -2,6 +2,7 @@
 
 namespace Nails\Invoice\Interfaces\Driver;
 
+use Nails\Currency\Resource\Currency;
 use Nails\Invoice\Exception\DriverException;
 use Nails\Invoice\Factory\ChargeResponse;
 use Nails\Invoice\Factory\CompleteResponse;
@@ -20,11 +21,11 @@ interface Payment
     /**
      * Returns whether the driver is available to be used against the selected invoice
      *
-     * @param stdClass $oInvoice The invoice being charged
+     * @param Resource\Invoice $oInvoice The invoice being charged
      *
      * @return bool
      */
-    public function isAvailable($oInvoice): bool;
+    public function isAvailable(Resource\Invoice $oInvoice): bool;
 
     // --------------------------------------------------------------------------
 
@@ -70,7 +71,7 @@ interface Payment
      * Initiate a payment
      *
      * @param int                  $iAmount      The payment amount
-     * @param string               $sCurrency    The payment currency
+     * @param Currency             $oCurrency    The payment currency
      * @param stdClass             $oData        An array of driver data
      * @param stdClass             $oCustomData  The custom data object
      * @param string               $sDescription The charge description
@@ -84,7 +85,7 @@ interface Payment
      */
     public function charge(
         int $iAmount,
-        string $sCurrency,
+        Currency $oCurrency,
         stdClass $oData,
         stdClass $oCustomData,
         string $sDescription,
@@ -113,31 +114,44 @@ interface Payment
     /**
      * Complete the payment
      *
-     * @param stdClass $oPayment  The Payment object
-     * @param stdClass $oInvoice  The Invoice object
-     * @param array    $aGetVars  Any $_GET variables passed from the redirect flow
-     * @param array    $aPostVars Any $_POST variables passed from the redirect flow
+     * @param Resource\Payment $oPayment  The Payment object
+     * @param Resource\Invoice $oInvoice  The Invoice object
+     * @param array            $aGetVars  Any $_GET variables passed from the redirect flow
+     * @param array            $aPostVars Any $_POST variables passed from the redirect flow
      *
      * @return CompleteResponse
      */
-    public function complete($oPayment, $oInvoice, $aGetVars, $aPostVars): CompleteResponse;
+    public function complete(
+        Resource\Payment $oPayment,
+        Resource\Invoice $oInvoice,
+        $aGetVars,
+        $aPostVars
+    ): CompleteResponse;
 
     // --------------------------------------------------------------------------
 
     /**
      * Issue a refund for a payment
      *
-     * @param string   $sTxnId      The transaction's ID
-     * @param integer  $iAmount     The amount to refund
-     * @param string   $sCurrency   The currency in which to refund
-     * @param stdClass $oCustomData The custom data object
-     * @param string   $sReason     The refund's reason
-     * @param stdClass $oPayment    The payment object
-     * @param stdClass $oInvoice    The invoice object
+     * @param string           $sTxnId      The transaction's ID
+     * @param int              $iAmount     The amount to refund
+     * @param Currency         $oCurrency   The currency in which to refund
+     * @param stdClass         $oCustomData The custom data object
+     * @param string           $sReason     The refund's reason
+     * @param Resource\Payment $oPayment    The payment object
+     * @param Resource\Invoice $oInvoice    The invoice object
      *
      * @return RefundResponse
      */
-    public function refund($sTxnId, $iAmount, $sCurrency, $oCustomData, $sReason, $oPayment, $oInvoice): RefundResponse;
+    public function refund(
+        string $sTxnId,
+        int $iAmount,
+        Currency $oCurrency,
+        stdClass $oCustomData,
+        string $sReason,
+        Resource\Payment $oPayment,
+        Resource\Invoice $oInvoice
+    ): RefundResponse;
 
     // --------------------------------------------------------------------------
 

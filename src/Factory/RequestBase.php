@@ -18,10 +18,10 @@ use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
-use Nails\Invoice\Interfaces\Driver\Payment;
+use Nails\Invoice\Interfaces\Driver;
 use Nails\Invoice\Model;
 use Nails\Invoice\Resource;
-use Nails\Invoice\Service\PaymentDriver;
+use Nails\Invoice\Service;
 
 /**
  * Class RequestBase
@@ -33,14 +33,14 @@ class RequestBase
     /**
      * The payment driver instance
      *
-     * @var Payment
+     * @var Driver\Payment
      */
     protected $oDriver;
 
     /**
      * The Payment Driver service
      *
-     * @var PaymentDriver
+     * @var Service\PaymentDriver
      */
     protected $oDriverService;
 
@@ -141,20 +141,21 @@ class RequestBase
     /**
      * Set the driver to be used for the request
      *
-     * @param string|Payment $mDriver A driver object or slug
+     * @param string|Driver\Payment $mDriver A driver object or slug
      *
      * @return $this
      * @throws RequestException
      */
     public function setDriver($mDriver)
     {
-        if (!($mDriver instanceof Payment)) {
+        if (!($mDriver instanceof Driver\Payment)) {
 
             $aDrivers = $this->oDriverService->getEnabled();
             $oDriver  = null;
 
             foreach ($aDrivers as $oDriverConfig) {
                 if ($oDriverConfig->slug == $mDriver) {
+                    /** @var Driver\Payment $oDriver */
                     $oDriver = $this->oDriverService->getInstance($oDriverConfig->slug);
                     break;
                 }
@@ -163,9 +164,13 @@ class RequestBase
             if (empty($oDriver)) {
                 throw new RequestException('"' . $mDriver . '" is not a valid payment driver.');
             }
+
+            $this->oDriver = $oDriver;
+
+        } else {
+            $this->oDriver = $mDriver;
         }
 
-        $this->oDriver = $oDriver;
         return $this;
     }
 
@@ -176,7 +181,7 @@ class RequestBase
      *
      * @return Payment|null
      */
-    public function getDriver(): ?Payment
+    public function getDriver(): ?Driver\Payment
     {
         return $this->oDriver;
     }
@@ -195,7 +200,8 @@ class RequestBase
     {
         if (!($mInvoice instanceof Resource\Invoice)) {
 
-            $oModel   = $this->oInvoiceModel;
+            $oModel = $this->oInvoiceModel;
+            /** @var Resource\Invoice $oInvoice */
             $oInvoice = $oModel->getById(
                 $mInvoice,
                 ['expand' => $oModel::EXPAND_ALL]
@@ -204,9 +210,13 @@ class RequestBase
             if (empty($oInvoice)) {
                 throw new RequestException('Invalid invoice ID.');
             }
+
+            $this->oInvoice = $oInvoice;
+
+        } else {
+            $this->oInvoice = $mInvoice;
         }
 
-        $this->oInvoice = $oInvoice;
         return $this;
     }
 
@@ -236,6 +246,7 @@ class RequestBase
     {
         if (!($mPayment instanceof Resource\Payment)) {
 
+            /** @var Resource\Payment $oPayment */
             $oPayment = $this->oPaymentModel->getById(
                 $mPayment,
                 ['expand' => ['invoice']]
@@ -244,10 +255,68 @@ class RequestBase
             if (empty($oPayment)) {
                 throw new RequestException('Invalid payment ID.');
             }
+
+            $this->oPayment = $oPayment;
+
+        } else {
+            $this->oPayment = $mPayment;
         }
 
-        $this->oPayment = $oPayment;
         return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the Payment object
+     *
+     * @return Resource\Payment|null
+     */
+    public function getPayment(): ?Resource\Payment
+    {
+        return $this->oPayment;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the source object
+     *
+     * @param Resource\Source|int $mSource The source to use for the request
+     *
+     * @return $this
+     * @throws RequestException
+     */
+    public function setSource($mSource)
+    {
+        if (!($mSource instanceof Resource\Source)) {
+
+            /** @var Resource\Source $oSource */
+            $oSource = $this->oSourceModel->getById($mSource);
+
+            if (empty($oSource)) {
+                throw new RequestException('Invalid source ID.');
+            }
+
+            $this->oSource = $oSource;
+
+        } else {
+            $this->oSource = $mSource;
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the Source object
+     *
+     * @return Resource\Source|null
+     */
+    public function getSource(): ?Resource\Source
+    {
+        return $this->oSource;
     }
 
     // --------------------------------------------------------------------------
@@ -313,14 +382,19 @@ class RequestBase
     {
         if (!($mRefund instanceof Resource\Refund)) {
 
+            /** @var Resource\Refund $oRefund */
             $oRefund = $this->oRefundModel->getById($mRefund);
 
             if (empty($oRefund)) {
                 throw new RequestException('Invalid refund ID.');
             }
+
+            $this->oRefund = $oRefund;
+
+        } else {
+            $this->oRefund = $mRefund;
         }
 
-        $this->oRefund = $oRefund;
         return $this;
     }
 
@@ -355,7 +429,9 @@ class RequestBase
         }
 
         //  Update the payment
-        $aData = ['txn_id' => $sTxnId ? $sTxnId : null];
+        $aData = [
+            'txn_id' => $sTxnId ? $sTxnId : null,
+        ];
 
         if (!is_null($iFee)) {
             $aData['fee'] = $iFee;

@@ -12,6 +12,8 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Currency;
 use Nails\Factory;
 use Nails\Invoice\Exception\ChargeRequestException;
 use stdClass;
@@ -52,6 +54,20 @@ class ChargeRequest extends RequestBase
      * @var bool
      */
     protected $bAutoRedirect = true;
+
+    /**
+     * The amount to charge
+     *
+     * @var int
+     */
+    protected $iAmount = 0;
+
+    /**
+     * The currency in which to charge
+     *
+     * @var Currency\Resource\Currency|null
+     */
+    protected $oCurrency = null;
 
     // --------------------------------------------------------------------------
 
@@ -397,35 +413,124 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * xecute the charge
+     * Set the amount to charge
      *
-     * @param int    $iAmount   The amount to charge the card
-     * @param string $sCurrency The currency in which to charge
+     * @param int $iAmount The amount to charge
+     *
+     * @return $this
+     * @throws ChargeRequestException
+     */
+    public function setAmount(int $iAmount): ChargeRequest
+    {
+        if ($iAmount <= 0) {
+            throw new ChargeRequestException('Amount must be positive');
+        }
+        $this->iAmount = $iAmount;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the amount to charge
+     *
+     * @return int
+     */
+    public function getAmount(): int
+    {
+        return $this->iAmount;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the charge currency
+     *
+     * @param Currency\Resource\Currency|string $mCurrency The currency in which to charge
+     *
+     * @return $this
+     * @throws ChargeRequestException
+     * @throws Currency\Exception\CurrencyException
+     * @throws FactoryException
+     */
+    public function setCurrency($mCurrency): ChargeRequest
+    {
+        /** @var Currency\Service\Currency $oCurrencyService */
+        $oCurrencyService = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
+
+        if (is_string($mCurrency)) {
+            $mCurrency = $oCurrencyService->getByIsoCode($mCurrency);
+        }
+
+        if (!($mCurrency instanceof Currency\Resource\Currency)) {
+            throw new ChargeRequestException('Invalid currency.');
+        }
+
+        if (!$oCurrencyService->isSupported($mCurrency)) {
+            throw new ChargeRequestException('"' . $mCurrency->code . '"" is not a supported currency.');
+        }
+
+        $this->oCurrency = $mCurrency;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the charge currency
+     *
+     * @return Currency\Resource\Currency|null
+     */
+    public function getCurrency(): ?Currency\Resource\Currency
+    {
+        return $this->oCurrency;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Execute the charge
+     *
+     * @param int|null             $iAmount   The amount to charge the card
+     * @param Currency|string|null $mCurrency The currency in which to charge
      *
      * @return ChargeResponse
      * @throws ChargeRequestException
      */
-    public function execute(int $iAmount, string $sCurrency): ChargeResponse
+    public function execute(int $iAmount = null, $mCurrency = null): ChargeResponse
     {
-        //  Ensure we have a driver
+        /**
+         * If a specific amount has been passed, use it
+         * If the charge amount is empty and an invoice has been applied, assume the outstanding total
+         */
+        if (null !== $iAmount) {
+            $this->setAmount($iAmount);
+        } elseif (empty($this->iAmount) && !empty($this->oInvoice)) {
+
+            $iTotal      = $this->oInvoice->totals->raw->grand;
+            $iPaid       = $this->oInvoice->totals->raw->paid;
+            $iProcessing = $this->oInvoice->totals->raw->processing;
+
+            $this->setAmount(
+                $iTotal - $iPaid - $iProcessing
+            );
+        }
+
+        if (null !== $mCurrency) {
+            $this->setCurrency($mCurrency);
+        }
+
+        // --------------------------------------------------------------------------
+
         if (empty($this->oDriver)) {
-            throw new ChargeRequestException('No driver selected.', 1);
+            throw new ChargeRequestException('No driver selected.');
+        } elseif (empty($this->oInvoice)) {
+            throw new ChargeRequestException('No invoice selected.');
+        } elseif (empty($this->iAmount)) {
+            throw new ChargeRequestException('Amount must be greater than zero.');
+        } elseif (empty($this->oCurrency)) {
+            throw new ChargeRequestException('No currency selected.');
         }
-
-        //  Ensure we have an invoice
-        if (empty($this->oInvoice)) {
-            throw new ChargeRequestException('No invoice selected.', 1);
-        }
-
-        // --------------------------------------------------------------------------
-
-        if (!is_int($iAmount) || $iAmount <= 0) {
-            throw new ChargeRequestException('Amount must be a positive integer.', 1);
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  @todo (Pablo - 2019-09-04) - Validate currency is enabled
 
         // --------------------------------------------------------------------------
 
@@ -437,8 +542,8 @@ class ChargeRequest extends RequestBase
                 'description' => $this->getDescription(),
                 'invoice_id'  => $this->oInvoice->id,
                 'source_id'   => $this->oSource ? $this->oSource->id : null,
-                'currency'    => $sCurrency,
-                'amount'      => $iAmount,
+                'currency'    => $this->getCurrency()->code,
+                'amount'      => $this->getAmount(),
                 'url_success' => $this->getSuccessUrl(),
                 'url_error'   => $this->getErrorUrl(),
                 'url_cancel'  => $this->getCancelUrl(),
@@ -446,7 +551,7 @@ class ChargeRequest extends RequestBase
             ]);
 
             if (empty($iPaymentId)) {
-                throw new ChargeRequestException('Failed to create new payment.', 1);
+                throw new ChargeRequestException('Failed to create new payment.');
             }
 
             $this->setPayment($iPaymentId);
@@ -472,8 +577,8 @@ class ChargeRequest extends RequestBase
 
         //  Execute the charge
         $oChargeResponse = $this->oDriver->charge(
-            $iAmount,
-            $sCurrency,
+            $this->getAmount(),
+            $this->getCurrency(),
             $oDriverData,
             $this->oCustomData,
             $this->getDescription(),
@@ -481,7 +586,7 @@ class ChargeRequest extends RequestBase
             $this->getInvoice(),
             $sSuccessUrl,
             $sErrorUrl,
-            $this->getSource(),
+            $this->getSource()
         );
 
         //  Set the success and fail URLs
@@ -490,7 +595,7 @@ class ChargeRequest extends RequestBase
 
         //  Validate driver response
         if (empty($oChargeResponse)) {
-            throw new ChargeRequestException('Response from driver was empty.', 1);
+            throw new ChargeRequestException('Response from driver was empty.');
         }
 
         if (!($oChargeResponse instanceof ChargeResponse)) {
