@@ -55,5 +55,7 @@ class Migration12 extends Base
         $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` CHANGE `url_continue` `url_success` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;');
         $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `url_error` VARCHAR(255) NULL DEFAULT NULL AFTER `url_success`;');
         $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `url_cancel` VARCHAR(255) NULL DEFAULT NULL AFTER `url_error`;')
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `source_id` INT(11)  UNSIGNED  NULL  DEFAULT NULL  AFTER `invoice_id`;');
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD FOREIGN KEY (`source_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_source` (`id`) ON DELETE SET NULL;');
     }
 }

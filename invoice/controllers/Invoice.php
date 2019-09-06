@@ -284,9 +284,14 @@ class Invoice extends Base
                 /** @var ChargeRequest $oChargeRequest */
                 $oChargeRequest = Factory::factory('ChargeRequest', Constants::MODULE_SLUG);
                 $oChargeRequest
-                    ->setDriver($oSelectedDriver->getSlug())
+                    ->setDriver($oSelectedDriver)
                     ->setDescription('Payment for invoice #' . $oInvoice->ref)
-                    ->setInvoice($oInvoice->id);
+                    ->setInvoice($oInvoice);
+
+                if (!empty($oSavedPaymentSource)) {
+                    $oChargeRequest
+                        ->setSource($oSavedPaymentSource);
+                }
 
                 /** @var Input $oInput */
                 $oInput = Factory::service('Input');
@@ -325,8 +330,7 @@ class Invoice extends Base
                 //  Let the driver prepare the charge request to its liking
                 $oSelectedDriver->prepareChargeRequest(
                     $oChargeRequest,
-                    $oInput->post($sSelectedDriver) ?: [],
-                    isset($oSavedPaymentSource) ? $oSavedPaymentSource : null
+                    $oInput->post($sSelectedDriver) ?: []
                 );
 
                 //  Attempt payment

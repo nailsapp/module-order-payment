@@ -96,6 +96,12 @@ class Payment extends Base
                 'id_column' => 'invoice_id',
             ])
             ->addExpandableField([
+                'trigger'   => 'source',
+                'model'     => 'Source',
+                'provider'  => Constants::MODULE_SLUG,
+                'id_column' => 'source_id',
+            ])
+            ->addExpandableField([
                 'trigger'   => 'refunds',
                 'type'      => self::EXPANDABLE_TYPE_MANY,
                 'model'     => 'Refund',

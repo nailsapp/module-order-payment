@@ -14,27 +14,28 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Factory;
 use Nails\Invoice\Exception\ChargeRequestException;
+use stdClass;
 
 class ChargeRequest extends RequestBase
 {
     /**
      * The Card object
      *
-     * @var \stdClass
+     * @var stdClass
      */
     protected $oCard;
 
     /**
      * The custom fields object
      *
-     * @var \stdClass
+     * @var stdClass
      */
     protected $oCustomField;
 
     /**
      * The custom data object
      *
-     * @var \stdClass
+     * @var stdClass
      */
     protected $oCustomData;
 
@@ -435,6 +436,7 @@ class ChargeRequest extends RequestBase
                 'driver'      => $this->oDriver->getSlug(),
                 'description' => $this->getDescription(),
                 'invoice_id'  => $this->oInvoice->id,
+                'source_id'   => $this->oSource ? $this->oSource->id : null,
                 'currency'    => $sCurrency,
                 'amount'      => $iAmount,
                 'url_success' => $this->getSuccessUrl(),
@@ -475,10 +477,11 @@ class ChargeRequest extends RequestBase
             $oDriverData,
             $this->oCustomData,
             $this->getDescription(),
-            $this->oPayment,
-            $this->oInvoice,
+            $this->getPayment(),
+            $this->getInvoice(),
             $sSuccessUrl,
-            $sErrorUrl
+            $sErrorUrl,
+            $this->getSource(),
         );
 
         //  Set the success and fail URLs

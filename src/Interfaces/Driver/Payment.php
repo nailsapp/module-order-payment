@@ -7,6 +7,8 @@ use Nails\Invoice\Factory\ChargeResponse;
 use Nails\Invoice\Factory\CompleteResponse;
 use Nails\Invoice\Factory\RefundResponse;
 use Nails\Invoice\Factory\ScaResponse;
+use Nails\Invoice\Resource;
+use stdClass;
 
 /**
  * Interface Payment
@@ -18,7 +20,7 @@ interface Payment
     /**
      * Returns whether the driver is available to be used against the selected invoice
      *
-     * @param \stdClass $oInvoice The invoice being charged
+     * @param stdClass $oInvoice The invoice being charged
      *
      * @return bool
      */
@@ -67,28 +69,30 @@ interface Payment
     /**
      * Initiate a payment
      *
-     * @param integer   $iAmount      The payment amount
-     * @param string    $sCurrency    The payment currency
-     * @param \stdClass $oData        An array of driver data
-     * @param \stdClass $oCustomData  The custom data object
-     * @param string    $sDescription The charge description
-     * @param \stdClass $oPayment     The payment object
-     * @param \stdClass $oInvoice     The invoice object
-     * @param string    $sSuccessUrl  The URL to go to after successful payment
-     * @param string    $sErrorUrl    The URL to go to after failed payment
+     * @param int                  $iAmount      The payment amount
+     * @param string               $sCurrency    The payment currency
+     * @param stdClass             $oData        An array of driver data
+     * @param stdClass             $oCustomData  The custom data object
+     * @param string               $sDescription The charge description
+     * @param Resource\Payment     $oPayment     The payment object
+     * @param Resource\Invoice     $oInvoice     The invoice object
+     * @param string               $sSuccessUrl  The URL to go to after successful payment
+     * @param string               $sErrorUrl    The URL to go to after failed payment
+     * @param Resource\Source|null $oSource      The saved payment source to use
      *
      * @return ChargeResponse
      */
     public function charge(
-        $iAmount,
-        $sCurrency,
-        $oData,
-        $oCustomData,
-        $sDescription,
-        $oPayment,
-        $oInvoice,
-        $sSuccessUrl,
-        $sErrorUrl
+        int $iAmount,
+        string $sCurrency,
+        stdClass $oData,
+        stdClass $oCustomData,
+        string $sDescription,
+        Resource\Payment $oPayment,
+        Resource\Invoice $oInvoice,
+        string $sSuccessUrl,
+        string $sErrorUrl,
+        Resource\Source $oSource = null
     ): ChargeResponse;
 
     // --------------------------------------------------------------------------
@@ -109,10 +113,10 @@ interface Payment
     /**
      * Complete the payment
      *
-     * @param \stdClass $oPayment  The Payment object
-     * @param \stdClass $oInvoice  The Invoice object
-     * @param array     $aGetVars  Any $_GET variables passed from the redirect flow
-     * @param array     $aPostVars Any $_POST variables passed from the redirect flow
+     * @param stdClass $oPayment  The Payment object
+     * @param stdClass $oInvoice  The Invoice object
+     * @param array    $aGetVars  Any $_GET variables passed from the redirect flow
+     * @param array    $aPostVars Any $_POST variables passed from the redirect flow
      *
      * @return CompleteResponse
      */
@@ -123,13 +127,13 @@ interface Payment
     /**
      * Issue a refund for a payment
      *
-     * @param string    $sTxnId      The transaction's ID
-     * @param integer   $iAmount     The amount to refund
-     * @param string    $sCurrency   The currency in which to refund
-     * @param \stdClass $oCustomData The custom data object
-     * @param string    $sReason     The refund's reason
-     * @param \stdClass $oPayment    The payment object
-     * @param \stdClass $oInvoice    The invoice object
+     * @param string   $sTxnId      The transaction's ID
+     * @param integer  $iAmount     The amount to refund
+     * @param string   $sCurrency   The currency in which to refund
+     * @param stdClass $oCustomData The custom data object
+     * @param string   $sReason     The refund's reason
+     * @param stdClass $oPayment    The payment object
+     * @param stdClass $oInvoice    The invoice object
      *
      * @return RefundResponse
      */

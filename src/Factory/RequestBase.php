@@ -14,14 +14,13 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
-use Nails\Common\Resource;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Driver\PaymentBase;
 use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
-use Nails\Invoice\Model\Payment;
-use Nails\Invoice\Model\Refund;
+use Nails\Invoice\Interfaces\Driver\Payment;
+use Nails\Invoice\Model;
+use Nails\Invoice\Resource;
 use Nails\Invoice\Service\PaymentDriver;
 
 /**
@@ -32,10 +31,9 @@ use Nails\Invoice\Service\PaymentDriver;
 class RequestBase
 {
     /**
+     * The payment driver instance
      *
-     * The dripayment driver instance
-     *
-     * @var PaymentBase
+     * @var Payment
      */
     protected $oDriver;
 
@@ -49,42 +47,56 @@ class RequestBase
     /**
      * The Invoice object
      *
-     * @var Resource
+     * @var Resource\Invoice
      */
     protected $oInvoice;
 
     /**
      * The Invoice model
      *
-     * @var \Nails\Invoice\Model\Invoice
+     * @var Model\Invoice
      */
     protected $oInvoiceModel;
 
     /**
      * The payment object
      *
-     * @var Resource
+     * @var Resource\Payment
      */
     protected $oPayment;
 
     /**
      * The Payment model
      *
-     * @var Payment
+     * @var Model\Payment
      */
     protected $oPaymentModel;
 
     /**
+     * The source object
+     *
+     * @var Resource\Source
+     */
+    protected $oSource;
+
+    /**
+     * The Source model
+     *
+     * @var Model\Source
+     */
+    protected $oSourceModel;
+
+    /**
      * The Refund object
      *
-     * @var Resource
+     * @var Resource\Refund
      */
     protected $oRefund;
 
     /**
      * The Refund model
      *
-     * @var Refund
+     * @var Model\Refund
      */
     protected $oRefundModel;
 
@@ -129,26 +141,28 @@ class RequestBase
     /**
      * Set the driver to be used for the request
      *
-     * @param string $sDriverSlug The driver's slug
+     * @param string|Payment $mDriver A driver object or slug
      *
      * @return $this
      * @throws RequestException
      */
-    public function setDriver($sDriverSlug)
+    public function setDriver($mDriver)
     {
-        //  Validate the driver
-        $aDrivers = $this->oDriverService->getEnabled();
-        $oDriver  = null;
+        if (!($mDriver instanceof Payment)) {
 
-        foreach ($aDrivers as $oDriverConfig) {
-            if ($oDriverConfig->slug == $sDriverSlug) {
-                $oDriver = $this->oDriverService->getInstance($oDriverConfig->slug);
-                break;
+            $aDrivers = $this->oDriverService->getEnabled();
+            $oDriver  = null;
+
+            foreach ($aDrivers as $oDriverConfig) {
+                if ($oDriverConfig->slug == $mDriver) {
+                    $oDriver = $this->oDriverService->getInstance($oDriverConfig->slug);
+                    break;
+                }
             }
-        }
 
-        if (empty($oDriver)) {
-            throw new RequestException('"' . $sDriverSlug . '" is not a valid payment driver.');
+            if (empty($oDriver)) {
+                throw new RequestException('"' . $mDriver . '" is not a valid payment driver.');
+            }
         }
 
         $this->oDriver = $oDriver;
@@ -158,24 +172,38 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Returns the payment driver
+     *
+     * @return Payment|null
+     */
+    public function getDriver(): ?Payment
+    {
+        return $this->oDriver;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set the invoice object
      *
-     * @param integer $iInvoiceId The invoice to use for the request
+     * @param Resource\Invoice|int $mInvoice The invoice to use for the request
      *
      * @return $this
      * @throws RequestException
      */
-    public function setInvoice($iInvoiceId)
+    public function setInvoice($mInvoice)
     {
-        //  Validate
-        $oModel   = $this->oInvoiceModel;
-        $oInvoice = $oModel->getById(
-            $iInvoiceId,
-            ['expand' => $oModel::EXPAND_ALL]
-        );
+        if (!($mInvoice instanceof Resource\Invoice)) {
 
-        if (empty($oInvoice)) {
-            throw new RequestException('Invalid invoice ID.');
+            $oModel   = $this->oInvoiceModel;
+            $oInvoice = $oModel->getById(
+                $mInvoice,
+                ['expand' => $oModel::EXPAND_ALL]
+            );
+
+            if (empty($oInvoice)) {
+                throw new RequestException('Invalid invoice ID.');
+            }
         }
 
         $this->oInvoice = $oInvoice;
@@ -185,23 +213,37 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Returns the Invoice object
+     *
+     * @return Resource\Invoice|null
+     */
+    public function getInvoice(): ?Resource\Invoice
+    {
+        return $this->oInvoice;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set the payment object
      *
-     * @param integer $iPaymentId The payment to use for the request
+     * @param Resource\Payment|int $mPayment The payment to use for the request
      *
      * @return $this
      * @throws RequestException
      */
-    public function setPayment($iPaymentId)
+    public function setPayment($mPayment)
     {
-        //  Validate
-        $oPayment = $this->oPaymentModel->getById(
-            $iPaymentId,
-            ['expand' => ['invoice']]
-        );
+        if (!($mPayment instanceof Resource\Payment)) {
 
-        if (empty($oPayment)) {
-            throw new RequestException('Invalid payment ID.');
+            $oPayment = $this->oPaymentModel->getById(
+                $mPayment,
+                ['expand' => ['invoice']]
+            );
+
+            if (empty($oPayment)) {
+                throw new RequestException('Invalid payment ID.');
+            }
         }
 
         $this->oPayment = $oPayment;
@@ -211,20 +253,71 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Set the refund  object
+     * Returns the Payment object
      *
-     * @param integer $iRefundId The refund to use for the request
+     * @return Resource\Payment|null
+     */
+    public function getPayment(): ?Resource\Payment
+    {
+        return $this->oPayment;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the source object
+     *
+     * @param Resource\Source|int $mSource The source to use for the request
      *
      * @return $this
      * @throws RequestException
      */
-    public function setRefund($iRefundId)
+    public function setSource($mSource)
     {
-        //  Validate
-        $oRefund = $this->oRefundModel->getById($iRefundId);
+        if (!($mSource instanceof Resource\Source)) {
 
-        if (empty($oRefund)) {
-            throw new RequestException('Invalid refund ID.');
+            $oSource = $this->oSourceModel->getById($mSource);
+
+            if (empty($oSource)) {
+                throw new RequestException('Invalid source ID.');
+            }
+        }
+
+        $this->oSource = $oSource;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the Source object
+     *
+     * @return Resource\Source|null
+     */
+    public function getSource(): ?Resource\Source
+    {
+        return $this->oSource;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the refund  object
+     *
+     * @param Resource\Refund|int $mRefund The refund to use for the request
+     *
+     * @return $this
+     * @throws RequestException
+     */
+    public function setRefund($mRefund)
+    {
+        if (!($mRefund instanceof Resource\Refund)) {
+
+            $oRefund = $this->oRefundModel->getById($mRefund);
+
+            if (empty($oRefund)) {
+                throw new RequestException('Invalid refund ID.');
+            }
         }
 
         $this->oRefund = $oRefund;
@@ -234,10 +327,22 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Returns the Refund object
+     *
+     * @return Resource\Refund|null
+     */
+    public function getRefund(): ?Resource\Refund
+    {
+        return $this->oRefund;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set a payment as PROCESSING
      *
-     * @param string  $sTxnId The payment's transaction ID
-     * @param integer $iFee   The fee charged by the processor, if known
+     * @param string $sTxnId The payment's transaction ID
+     * @param int    $iFee   The fee charged by the processor, if known
      *
      * @return $this
      * @throws RequestException
@@ -279,8 +384,8 @@ class RequestBase
     /**
      * Set a payment as COMPLETE, and mark the invoice as paid if so
      *
-     * @param string  $sTxnId The payment's transaction ID
-     * @param integer $iFee   The fee charged by the processor, if known
+     * @param string $sTxnId The payment's transaction ID
+     * @param int    $iFee   The fee charged by the processor, if known
      *
      * @return $this
      * @throws RequestException
@@ -358,8 +463,8 @@ class RequestBase
     /**
      * Set a refund as COMPLETE
      *
-     * @param string  $sTxnId       The refund's transaction ID
-     * @param integer $iFeeRefunded The fee refunded by the processor, if known
+     * @param string $sTxnId       The refund's transaction ID
+     * @param int    $iFeeRefunded The fee refunded by the processor, if known
      *
      * @return $this
      * @throws RequestException
