@@ -322,55 +322,6 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Returns the Payment object
-     *
-     * @return Resource\Payment|null
-     */
-    public function getPayment(): ?Resource\Payment
-    {
-        return $this->oPayment;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the source object
-     *
-     * @param Resource\Source|int $mSource The source to use for the request
-     *
-     * @return $this
-     * @throws RequestException
-     */
-    public function setSource($mSource)
-    {
-        if (!($mSource instanceof Resource\Source)) {
-
-            $oSource = $this->oSourceModel->getById($mSource);
-
-            if (empty($oSource)) {
-                throw new RequestException('Invalid source ID.');
-            }
-        }
-
-        $this->oSource = $oSource;
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Returns the Source object
-     *
-     * @return Resource\Source|null
-     */
-    public function getSource(): ?Resource\Source
-    {
-        return $this->oSource;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Set the refund  object
      *
      * @param Resource\Refund|int $mRefund The refund to use for the request
