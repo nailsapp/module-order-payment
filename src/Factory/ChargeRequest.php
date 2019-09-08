@@ -540,6 +540,13 @@ class ChargeRequest extends RequestBase
 
         // --------------------------------------------------------------------------
 
+        $aDriverCurrencies = $this->oDriver->getSupportedCurrencies();
+        if (!empty($aDriverCurrencies) && !in_array($this->oCurrency->code, $aDriverCurrencies)) {
+            throw new ChargeRequestException('Selected currency is not supported by payment driver.');
+        }
+
+        // --------------------------------------------------------------------------
+
         //  Create a charge against the invoice if one hasn't been specified
         if (empty($this->oPayment)) {
 
