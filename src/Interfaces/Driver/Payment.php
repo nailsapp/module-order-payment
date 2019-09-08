@@ -107,7 +107,11 @@ interface Payment
      *
      * @return ScaResponse
      */
-    public function sca(ScaResponse $oScaResponse, array $aData, string $sSuccessUrl): ScaResponse;
+    public function sca(
+        ScaResponse $oScaResponse,
+        array $aData,
+        string $sSuccessUrl
+    ): ScaResponse;
 
     // --------------------------------------------------------------------------
 
@@ -124,8 +128,8 @@ interface Payment
     public function complete(
         Resource\Payment $oPayment,
         Resource\Invoice $oInvoice,
-        $aGetVars,
-        $aPostVars
+        array $aGetVars,
+        array $aPostVars
     ): CompleteResponse;
 
     // --------------------------------------------------------------------------
@@ -158,13 +162,13 @@ interface Payment
     /**
      * Creates a new payment source, returns a semi-populated source resource
      *
-     * @param \Nails\Invoice\Resource\Source $oResource The Resouce object to update
-     * @param array                          $aData     Data passed from the caller
+     * @param Resource\Source $oResource The Resouce object to update
+     * @param array           $aData     Data passed from the caller
      *
      * @throws DriverException
      */
     public function createSource(
-        \Nails\Invoice\Resource\Source &$oResource,
+        Resource\Source &$oResource,
         array $aData
     ): void;
 }
