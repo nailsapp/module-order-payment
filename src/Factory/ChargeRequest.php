@@ -516,8 +516,14 @@ class ChargeRequest extends RequestBase
             );
         }
 
+        /**
+         * If a specific currency has been passed, use it
+         * If the charge currency is empty and an invoice has been passed, assume the invoice's currency
+         */
         if (null !== $mCurrency) {
             $this->setCurrency($mCurrency);
+        } elseif (empty($this->oCurrency) && !empty($this->oInvoice)) {
+            $this->setCurrency($this->oInvoice->currency);
         }
 
         // --------------------------------------------------------------------------
