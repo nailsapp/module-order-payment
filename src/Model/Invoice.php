@@ -1062,40 +1062,21 @@ class Invoice extends Base
         $oObj->state->id    = $sState;
         $oObj->state->label = $aStateLabels[$sState];
 
-        //  Dated
-        $oDated                 = new \DateTime($oObj->dated . ' 00:00:00');
-        $oObj->dated            = new \stdClass();
-        $oObj->dated->raw       = $oDated->format('Y-m-d');
-        $oObj->dated->formatted = toUserDate($oDated);
-
-        //  Due
-        $oDue                 = new \DateTime($oObj->due . ' 23:59:59');
-        $oObj->due            = new \stdClass();
-        $oObj->due->raw       = $oDue->format('Y-m-d');
-        $oObj->due->formatted = toUserDate($oDue);
-
-        //  Paid
-        if ($oObj->paid) {
-            $oPaid                 = new \DateTime($oObj->paid);
-            $oObj->paid            = new \stdClass();
-            $oObj->paid->raw       = $oPaid->format('Y-m-d H:i:s');
-            $oObj->paid->formatted = toUserDateTime($oPaid);
-        } else {
-            $oObj->paid            = new \stdClass();
-            $oObj->paid->raw       = null;
-            $oObj->paid->formatted = null;
-        }
+        //  Dates
+        $oObj->dated = Factory::resource('DateTime', null, ['raw' => $oObj->dated . ' 00:00:00']);
+        $oObj->due   = Factory::resource('DateTime', null, ['raw' => $oObj->due . ' 23:59:59']);
+        $oObj->paid  = Factory::resource('DateTime', null, ['raw' => $oObj->paid]);
 
         //  Compute boolean flags
         $oNow = Factory::factory('DateTime');
 
         $oObj->is_scheduled = false;
-        if ($oObj->state->id == self::STATE_OPEN && $oNow < $oDated) {
+        if ($oObj->state->id == self::STATE_OPEN && $oNow < (new \DateTime($oObj->dated))) {
             $oObj->is_scheduled = true;
         }
 
         $oObj->is_overdue = false;
-        if ($oObj->state->id == self::STATE_OPEN && $oNow > $oDue) {
+        if ($oObj->state->id == self::STATE_OPEN && $oNow > (new \DateTime($oObj->due))) {
             $oObj->is_overdue = true;
         }
 
