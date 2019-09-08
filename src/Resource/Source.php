@@ -65,7 +65,7 @@ class Source extends Resource
     /**
      * The source's expiry date
      *
-     * @var string
+     * @var Resource\Date
      */
     public $expiry;
 

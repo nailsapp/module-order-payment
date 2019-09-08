@@ -178,4 +178,17 @@ class Source extends Base
             ],
         ]);
     }
+
+    // --------------------------------------------------------------------------
+
+    protected function formatObject(
+        &$oObj,
+        array $aData = [],
+        array $aIntegers = [],
+        array $aBools = [],
+        array $aFloats = []
+    ) {
+        parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
+        $oObj->expiry = Factory::resource('Date', null, ['raw' => $oObj->expiry]);
+    }
 }
