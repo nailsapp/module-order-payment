@@ -136,7 +136,7 @@ class ResponseBase
      * @return $this
      * @throws ResponseException
      */
-    public function setStatus($sStatus): ResponseBase
+    public function setStatus(string $sStatus): ResponseBase
     {
         if (!$this->isLocked()) {
 
@@ -192,15 +192,15 @@ class ResponseBase
     /**
      * Set the status as FAILED
      *
-     * @param string $sReasonMsg    The exception message, logged against the payment and not shown to the customer
-     * @param string $sReasonCode   The exception code, logged against the payment and not shown to the customer
-     * @param string $sUserFeedback The message to show to the user explaining the error
+     * @param string|null $sReasonMsg    The exception message, logged against the payment and not shown to the customer
+     * @param string|null $sReasonCode   The exception code, logged against the payment and not shown to the customer
+     * @param string      $sUserFeedback The message to show to the user explaining the error
      *
      * @return $this
      */
     public function setStatusFailed(
-        string $sReasonMsg = '',
-        string $sReasonCode = '',
+        $sReasonMsg = null,
+        $sReasonCode = null,
         string $sUserFeedback = ''
     ): ResponseBase {
 
