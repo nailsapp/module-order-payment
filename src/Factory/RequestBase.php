@@ -304,6 +304,9 @@ class RequestBase
             $this->oSource = $mSource;
         }
 
+        //  If a payment source is passed then the Driver to use must be that of the payment source
+        $this->setDriver($this->oSource->driver);
+
         return $this;
     }
 
