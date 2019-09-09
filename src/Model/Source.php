@@ -169,7 +169,7 @@ class Source extends Base
         return $this->getAll([
             'where'    => array_filter([
                 ['customer_id', $iCustomerId],
-                $bRemoveExpired ? ['expiry > ', 'CURDATE()', false] : null,
+                $bRemoveExpired ? '(expiry IS NULL OR expiry > CURDATE())' : null,
             ]),
             'where_in' => [
                 ['driver', $oPaymentDriver->getEnabledSlug()],
