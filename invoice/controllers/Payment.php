@@ -58,7 +58,11 @@ class Payment extends Base
         } elseif ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
 
             //  Payment is already complete and is being processed
-            redirect($oPayment->urls->processing);
+            if ($oPayment->urls->success) {
+                redirect($oPayment->urls->success);
+            } else {
+                redirect($oPayment->urls->processing);
+            }
 
         } else {
 
