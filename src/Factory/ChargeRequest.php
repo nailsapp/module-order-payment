@@ -609,8 +609,9 @@ class ChargeRequest extends RequestBase
         );
 
         //  Set the success and fail URLs
-        $oChargeResponse->setSuccessUrl($sSuccessUrl);
-        $oChargeResponse->setErrorUrl($sErrorUrl);
+        $oChargeResponse
+            ->setSuccessUrl($sSuccessUrl)
+            ->setErrorUrl($sErrorUrl);
 
         //  Validate driver response
         if (empty($oChargeResponse)) {
@@ -619,8 +620,7 @@ class ChargeRequest extends RequestBase
 
         if (!($oChargeResponse instanceof ChargeResponse)) {
             throw new ChargeRequestException(
-                'Response from driver must be an instance of \Nails\Invoice\Factory\ChargeResponse.',
-                1
+                'Response from driver must be an instance of \Nails\Invoice\Factory\ChargeResponse.'
             );
         }
 
