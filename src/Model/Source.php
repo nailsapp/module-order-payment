@@ -90,8 +90,10 @@ class Source extends Base
 
         $oDriver->createSource($oResource, $aData);
 
-        if (empty($oResource->label)) {
+        if (empty($oResource->label) && !empty($oResource->brand) && !empty($oResource->last_four)) {
             $oResource->label = $oResource->brand . ' ending ' . $oResource->last_four;
+        } elseif (empty($oResource->label)) {
+            $oResource->label = 'Payment Source';
         }
 
         return parent::create((array) $oResource, $bReturnObject);
