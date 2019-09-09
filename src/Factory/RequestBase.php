@@ -325,7 +325,7 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Set the refund  object
+     * Set the refund object
      *
      * @param Resource\Refund|int $mRefund The refund to use for the request
      *
@@ -391,7 +391,7 @@ class RequestBase
             $aData['fee'] = $iFee;
         }
 
-        if (!$this->oPaymentModel->setComplete($this->oPayment->id, $aData)) {
+        if (!$this->oPaymentModel->setProcessing($this->oPayment->id, $aData)) {
             throw new RequestException('Failed to update existing payment.');
         }
 
