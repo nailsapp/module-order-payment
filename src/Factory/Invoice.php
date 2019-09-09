@@ -11,41 +11,20 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Common\Resource\Date;
+use Nails\Common\Resource\DateTime;
 use Nails\Common\Traits\ErrorHandling;
+use Nails\Currency\Resource\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
+use Nails\Invoice\Resource\Customer;
 
 /**
  * Class Invoice
  *
  * @package Nails\Invoice\Factory
- *
- * @method setId($mValue)
- * @method getId()
- * @method setRef($mValue)
- * @method getRef()
- * @method setState($mValue)
- * @method getState()
- * @method setDated($mValue)
- * @method getDated()
- * @method setTerms($mValue)
- * @method getTerms()
- * @method setCustomerId($mValue)
- * @method getCustomerId()
- * @method setEmail($mValue)
- * @method getEmail()
- * @method setCurrency($mValue)
- * @method getCurrency()
- * @method setAdditionalText($mValue)
- * @method getAdditionalText()
- * @method setCallbackData($mValue)
- * @method getCallbackData()
- * @method setItems($mValue)
- * @method getItems()
- * @method setErrors($mValue)
- * @method getErrors()
  */
 class Invoice
 {
@@ -54,25 +33,18 @@ class Invoice
     // --------------------------------------------------------------------------
 
     /**
-     * Stores an array of the getter/setters for the other properties
-     *
-     * @var array
-     */
-    protected $aMethods = [];
-
-    /**
      * The invoice's ID
      *
-     * @var integer
+     * @var int
      */
-    protected $iId;
+    protected $iId = null;
 
     /**
      * The invoice's ref
      *
      * @var string
      */
-    protected $sRef;
+    protected $sRef = '';
 
     /**
      * The invoice's state
@@ -86,72 +58,420 @@ class Invoice
      *
      * @var string
      */
-    protected $sDated;
+    protected $sDated = '';
 
     /**
      * The invoice's terms
      *
-     * @var integer
+     * @var int
      */
-    protected $iTerms;
+    protected $iTerms = 0;
 
     /**
      * The invoice's customer ID
      *
-     * @var integer
+     * @var int
      */
-    protected $iCustomerId;
+    protected $iCustomerId = null;
 
     /**
      * The invoice's email
      *
      * @var string
      */
-    protected $sEmail;
+    protected $sEmail = '';
 
     /**
      * The invoice's currency
      *
      * @var string
      */
-    protected $sCurrency;
+    protected $sCurrency = '';
 
     /**
      * The invoice's additional text
      *
      * @var string
      */
-    protected $sAdditionalText;
+    protected $sAdditionalText = '';
 
     /**
      * The invoice's callback data
      *
      * @var mixed
      */
-    protected $mCallbackData;
+    protected $mCallbackData = null;
 
     /**
      * The invoice's items
      *
-     * @var string
+     * @var array
      */
-    protected $aItems;
+    protected $aItems = [];
 
     // --------------------------------------------------------------------------
 
     /**
-     * Invoice constructor.
+     * Sets the invoice's ID
+     *
+     * @param int $iId The invoice's ID
+     *
+     * @return $this
+     * @throws InvoiceException
      */
-    public function __construct()
+    public function setId(int $iId): Invoice
     {
-        $aVars = get_object_vars($this);
-        unset($aVars['aMethods']);
-        $aVars = array_keys($aVars);
+        $this->ensureNotSaved();
+        $this->iId = $iId;
+        return $this;
+    }
 
-        foreach ($aVars as $sVar) {
-            $sNormalised                          = substr($sVar, 1);
-            $this->aMethods['set' . $sNormalised] = $sVar;
-            $this->aMethods['get' . $sNormalised] = $sVar;
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's ID
+     *
+     * @return int
+     */
+    public function getId(): ?int
+    {
+        return $this->iId;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's ref
+     *
+     * @param string $sRef The invoice's ref
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setRef(string $sRef): Invoice
+    {
+        $this->ensureNotSaved();
+        $this->sRef = $sRef;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's ref
+     *
+     * @return string
+     */
+    public function getRef(): string
+    {
+        return $this->sRef;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's state
+     *
+     * @param string $sState The invoice's state
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setState(string $sState): Invoice
+    {
+        $this->ensureNotSaved();
+        $this->sState = $sState;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's state
+     *
+     * @return string
+     */
+    public function getState(): string
+    {
+        return $this->sState;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's dated date
+     *
+     * @param \DateTime|Date|string $mDate The invoice's dated date
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setDated($mDate): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mDate instanceof \DateTime) {
+            $this->sDated = $mDate->format('Y-m-d H:i:s');
+        } elseif ($mDate instanceof Date) {
+            $this->sDated = (string) $mDate;
+        } elseif (is_string($mDate)) {
+            $this->sDated = $mDate;
+        } else {
+            throw new InvoiceException(
+                'Invalid data type (' . gettype($mDate) . ') passed to ' . __METHOD__
+            );
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's dated date
+     *
+     * @return string
+     */
+    public function getDated()
+    {
+        return $this->sDated;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's terms
+     *
+     * @param int $iTerms The invoice's terms
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setTerms(int $iTerms): Invoice
+    {
+        $this->ensureNotSaved();
+        $this->iTerms = $iTerms;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's terms
+     *
+     * @return mixed
+     */
+    public function getTerms()
+    {
+        return $this->iTerms;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's Customer ID
+     *
+     * @param int|Customer $mCustomer The invoice's Customer ID
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setCustomerId($mCustomer): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mCustomer instanceof Customer) {
+            $this->iCustomerId = $mCustomer->id;
+        } elseif (is_int($mCustomer)) {
+            $this->iCustomerId = $mCustomer;
+        } else {
+            throw new InvoiceException(
+                'Invalid data type (' . gettype($mCustomer) . ') passed to ' . __METHOD__
+            );
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's Customer ID
+     *
+     * @return int
+     */
+    public function getCustomerId(): ?int
+    {
+        return $this->iCustomerId;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's email
+     *
+     * @param string $sEmail The invoice's email
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setEmail(string $sEmail): Invoice
+    {
+        $this->ensureNotSaved();
+        $this->sEmail = $sEmail;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's email
+     *
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->sEmail;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's currency
+     *
+     * @param $mCurrency The invoice's currency
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setCurrency($mCurrency): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mCurrency instanceof Currency) {
+            $this->sCurrency = $mCurrency->code;
+        } elseif (is_string($mCurrency)) {
+            $this->sCurrency = $mCurrency;
+        } else {
+            throw new InvoiceException(
+                'Invalid data type (' . gettype($mCurrency) . ') passed to ' . __METHOD__
+            );
+        }
+
+        $this->sCurrency = $mCurrency;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's currency
+     *
+     * @return string
+     */
+    public function getCurrency(): string
+    {
+        return $this->sCurrency;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's additional text
+     *
+     * @param string $sAdditionalText The invoice's additional text
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setAdditionalText(string $sAdditionalText): Invoice
+    {
+        $this->ensureNotSaved();
+        $this->sAdditionalText = $sAdditionalText;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's additional text
+     *
+     * @return string
+     */
+    public function getAdditionalText(): string
+    {
+        return $this->sAdditionalText;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's callback data
+     *
+     * @param $mCallbackData The invoice's callback data
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setCallbackData($mCallbackData): Invoice
+    {
+        $this->ensureNotSaved();
+        $this->mCallbackData = $mCallbackData;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's callback data
+     *
+     * @return mixed
+     */
+    public function getCallbackData()
+    {
+        return $this->mCallbackData;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's items
+     *
+     * @param $aItems The invoice's items
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setItems($aItems): Invoice
+    {
+        $this->ensureNotSaved();
+        $this->aItems = $aItems;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's items
+     *
+     * @return array
+     */
+    public function getItems(): array
+    {
+        return $this->aItems;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Throws an exception if the item's ID has been set
+     *
+     * @throws InvoiceException
+     */
+    protected function ensureNotSaved()
+    {
+        if (!empty($this->iId)) {
+            throw new InvoiceException('Invoice has been saved and cannot be modified.');
         }
     }
 
@@ -229,6 +549,7 @@ class Invoice
      */
     public function save()
     {
+        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
         $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         if (empty($this->iId)) {
             $oInvoice = $oInvoiceModel->create($this->toArray(), true);
@@ -254,6 +575,7 @@ class Invoice
     public function delete()
     {
         if (!empty($this->iId)) {
+            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
             $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
             if (!$oInvoiceModel->delete($this->iId)) {
                 throw new InvoiceException('Failed to delete invoice.');
@@ -274,9 +596,31 @@ class Invoice
     public function writeOff()
     {
         if (!empty($this->iId)) {
+            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
             $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
             if (!$oInvoiceModel->setWrittenOff($this->iId)) {
                 throw new InvoiceException('Failed to write off invoice.');
+            }
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Cancels an invoice
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function cancel()
+    {
+        if (!empty($this->iId)) {
+            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+            $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
+            if (!$oInvoiceModel->setCancelled($this->iId)) {
+                throw new InvoiceException('Failed to cancel invoice.');
             }
         }
 
@@ -298,16 +642,18 @@ class Invoice
         if (empty($this->iId)) {
             $oInvoice = $this->save();
         } else {
+            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
             $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
             $oInvoice      = $oInvoiceModel->getById($this->iId);
         }
 
-        $oChargeRequest->setInvoice($this->iId);
-        $oChargeRequest->setDescription('Payment for invoice ' . $this->sRef);
-        return $oChargeRequest->execute(
-            $oInvoice->totals->raw->grand,
-            $oInvoice->currency->code
-        );
+        return $oChargeRequest
+            ->setInvoice($this->iId)
+            ->setDescription('Payment for invoice ' . $this->sRef)
+            ->execute(
+                $oInvoice->totals->raw->grand,
+                $oInvoice->currency->code
+            );
     }
 
     // --------------------------------------------------------------------------
