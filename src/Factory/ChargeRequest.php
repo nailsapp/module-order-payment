@@ -547,6 +547,12 @@ class ChargeRequest extends RequestBase
 
         // --------------------------------------------------------------------------
 
+        if (!empty($this->oSource) && $this->oSource->driver !== $this->oDriver->getSlug()) {
+            throw new ChargeRequestException('Selected payment source is incompatible with the selected driver');
+        }
+
+        // --------------------------------------------------------------------------
+
         //  Create a charge against the invoice if one hasn't been specified
         if (empty($this->oPayment)) {
 
