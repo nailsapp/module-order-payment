@@ -128,60 +128,57 @@ class Invoice extends Base
         $oAsset = Factory::service('Asset');
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
+        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
 
         $this->data['oInvoice']       = $oInvoice;
         $this->data['headerOverride'] = 'structure/header/blank';
         $this->data['footerOverride'] = 'structure/footer/blank';
 
         //  Only open invoices can be paid
-        if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->is_scheduled) {
+        if ($oInvoice->state->id !== $oInvoiceModel::STATE_OPEN && !$oInvoice->is_scheduled) {
 
-            if ($oInvoice->state->id === 'PAID') {
+            if (in_array($oInvoice->state->id, [$oInvoiceModel::STATE_PAID, $oInvoiceModel::STATE_PAID_PROCESSING])) {
 
-                $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
+                //  If there are payments against this invoice which are processing, then deny payment
+                if ($oInvoice->has_processing_payments) {
 
-                Factory::service('View')
-                    ->load([
-                        'structure/header',
-                        'invoice/pay/paid',
-                        'structure/footer',
-                    ]);
-                return;
+                    /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+                    $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
+
+                    $this->data['aProcessingPayments'] = [];
+                    foreach ($oInvoice->payments->data as $oPayment) {
+                        if ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
+                            $this->data['aProcessingPayments'][] = $oPayment;
+                        }
+                    }
+
+                    $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/hasProcessing.php');
+
+                    Factory::service('View')
+                        ->load([
+                            'structure/header',
+                            'invoice/pay/hasProcessing',
+                            'structure/footer',
+                        ]);
+                    return;
+
+                } else {
+
+                    $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
+
+                    Factory::service('View')
+                        ->load([
+                            'structure/header',
+                            'invoice/pay/paid',
+                            'structure/footer',
+                        ]);
+                    return;
+                }
 
             } else {
                 show404();
             }
-        }
-
-        //  If a user ID is specified, then the user must be logged in as that user
-        if (!empty($oInvoice->user->id) && $oInvoice->user->id != activeUser('id')) {
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  If there are payments against this invoice which are processing, then deny payment
-        if ($oInvoice->has_processing_payments) {
-
-            /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
-            $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
-
-            $this->data['aProcessingPayments'] = [];
-            foreach ($oInvoice->payments->data as $oPayment) {
-                if ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
-                    $this->data['aProcessingPayments'][] = $oPayment;
-                }
-            }
-
-            $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/hasProcessing.php');
-
-            Factory::service('View')
-                ->load([
-                    'structure/header',
-                    'invoice/pay/hasProcessing',
-                    'structure/footer',
-                ]);
-            return;
         }
 
         // --------------------------------------------------------------------------
