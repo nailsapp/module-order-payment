@@ -15,7 +15,9 @@ namespace Nails\Invoice\Factory;
 use Nails\Common\Exception\FactoryException;
 use Nails\Currency;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\ChargeRequestException;
+use Nails\Invoice\Resource\Invoice\Data\Payment;
 use stdClass;
 
 class ChargeRequest extends RequestBase
@@ -37,7 +39,7 @@ class ChargeRequest extends RequestBase
     /**
      * The payment data object
      *
-     * @var stdClass
+     * @var Payment
      */
     protected $oPaymentData;
 
@@ -319,13 +321,11 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Retrieve a custom field
-     *
-     * @param string $sProperty The property to retrieve
+     * Retrieve custom field object
      *
      * @return stdClass
      */
-    public function getCustomField(string $sProperty): stdClass
+    public function getCustomField(): stdClass
     {
         return $this->oCustomField;
     }
@@ -354,15 +354,13 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Retrieve a payment data value
+     * Retrieve payment data object
      *
-     * @param string|null $sProperty The property to retrieve
-     *
-     * @return stdClass
+     * @return Payment
      */
-    public function getPaymentData(string $sProperty = null): stdClass
+    public function getPaymentData(): Payment
     {
-        return $this->oPaymentData;
+        return Factory::resource('InvoiceDataPayment', Constants::MODULE_SLUG, $this->oPaymentData);
     }
 
     // --------------------------------------------------------------------------
@@ -575,16 +573,16 @@ class ChargeRequest extends RequestBase
         if (empty($this->oPayment)) {
 
             $iPaymentId = $this->oPaymentModel->create([
-                'driver'       => $this->oDriver->getSlug(),
-                'description'  => $this->getDescription(),
-                'invoice_id'   => $this->oInvoice->id,
-                'source_id'    => $this->oSource ? $this->oSource->id : null,
-                'currency'     => $this->getCurrency()->code,
-                'amount'       => $this->getAmount(),
-                'url_success'  => $this->getSuccessUrl(),
-                'url_error'    => $this->getErrorUrl(),
-                'url_cancel'   => $this->getCancelUrl(),
-                'custom_data'  => $oPaymentData,
+                'driver'      => $this->oDriver->getSlug(),
+                'description' => $this->getDescription(),
+                'invoice_id'  => $this->oInvoice->id,
+                'source_id'   => $this->oSource ? $this->oSource->id : null,
+                'currency'    => $this->getCurrency()->code,
+                'amount'      => $this->getAmount(),
+                'url_success' => $this->getSuccessUrl(),
+                'url_error'   => $this->getErrorUrl(),
+                'url_cancel'  => $this->getCancelUrl(),
+                'custom_data' => $oPaymentData,
             ]);
 
             if (empty($iPaymentId)) {

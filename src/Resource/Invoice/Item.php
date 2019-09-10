@@ -13,5 +13,4 @@ use Nails\Common\Resource\Entity;
 
 class Item extends Entity
 {
-
 }

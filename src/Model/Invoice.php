@@ -572,9 +572,7 @@ class Invoice extends Base
 
         //  Invalid currency
         if (array_key_exists('currency', $aData)) {
-            /** @var Currency\Service\Currency $oCurrency */
-            $oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
-            if (!$oCurrency->isEnabled($aData['currency'])) {
+            if (!$this->oCurrency->isEnabled($aData['currency'])) {
                 throw new InvoiceException('"' . $aData['currency'] . '" is not a supported currency.');
             }
         }
@@ -1045,9 +1043,6 @@ class Invoice extends Base
      * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
      * @param array  $aBools    Fields which should be cast as booleans if not null
      * @param array  $aFloats   Fields which should be cast as floats if not null
-     *
-     * @throws FactoryException
-     * @throws Currency\Exception\CurrencyException
      */
     protected function formatObject(
         &$oObj,
@@ -1056,90 +1051,15 @@ class Invoice extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
+
         $aIntegers[] = 'terms';
         $aIntegers[] = 'customer_id';
+        $aIntegers[] = 'sub_total';
+        $aIntegers[] = 'tax_total';
+        $aIntegers[] = 'grand_total';
+        $aIntegers[] = 'paid_total';
+        $aIntegers[] = 'processing_total';
+
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
-        //  Sate
-        $aStateLabels = $this->getStates();
-        $sState       = $oObj->state;
-
-        $oObj->state        = new \stdClass();
-        $oObj->state->id    = $sState;
-        $oObj->state->label = $aStateLabels[$sState];
-
-        //  Dates
-        $oObj->dated = Factory::resource('DateTime', null, ['raw' => $oObj->dated . ' 00:00:00']);
-        $oObj->due   = Factory::resource('DateTime', null, ['raw' => $oObj->due . ' 23:59:59']);
-        $oObj->paid  = Factory::resource('DateTime', null, ['raw' => $oObj->paid]);
-
-        //  Compute boolean flags
-        /** @var \DateTime $oNow */
-        $oNow = Factory::factory('DateTime');
-
-        $oObj->is_scheduled = false;
-        if ($oObj->state->id == self::STATE_OPEN && $oNow < (new \DateTime($oObj->dated))) {
-            $oObj->is_scheduled = true;
-        }
-
-        $oObj->is_overdue = false;
-        if ($oObj->state->id == self::STATE_OPEN && $oNow > (new \DateTime($oObj->due))) {
-            $oObj->is_overdue = true;
-        }
-
-        $oObj->has_processing_payments = $oObj->processing_payments > 0;
-        unset($oObj->processing_payments);
-
-        //  Currency
-        $oObj->currency = $this->oCurrency->getByIsoCode($oObj->currency);
-
-        //  Totals
-        $oObj->totals = (object) [
-            'raw'       => (object) [
-                'sub'        => (int) $oObj->sub_total,
-                'tax'        => (int) $oObj->tax_total,
-                'grand'      => (int) $oObj->grand_total,
-                'paid'       => (int) $oObj->paid_total,
-                'processing' => (int) $oObj->processing_total,
-            ],
-            'formatted' => (object) [
-                'sub'        => $this->oCurrency->format(
-                    $oObj->currency->code,
-                    $oObj->sub_total / pow(10, $oObj->currency->decimal_precision)
-                ),
-                'tax'        => $this->oCurrency->format(
-                    $oObj->currency->code,
-                    $oObj->tax_total / pow(10, $oObj->currency->decimal_precision)
-                ),
-                'grand'      => $this->oCurrency->format(
-                    $oObj->currency->code,
-                    $oObj->grand_total / pow(10, $oObj->currency->decimal_precision)
-                ),
-                'paid'       => $this->oCurrency->format(
-                    $oObj->currency->code,
-                    $oObj->paid_total / pow(10, $oObj->currency->decimal_precision)
-                ),
-                'processing' => $this->oCurrency->format(
-                    $oObj->currency->code,
-                    $oObj->processing_total / pow(10, $oObj->currency->decimal_precision)
-                ),
-            ],
-        ];
-
-        unset($oObj->sub_total);
-        unset($oObj->tax_total);
-        unset($oObj->grand_total);
-        unset($oObj->paid_total);
-        unset($oObj->processing_total);
-
-        //  URLs
-        $oObj->urls           = new \stdClass();
-        $oObj->urls->payment  = siteUrl('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/pay');
-        $oObj->urls->download = siteUrl('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/download');
-        $oObj->urls->view     = siteUrl('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/view');
-
-        //  Callback data
-        $oObj->callback_data = json_decode($oObj->callback_data) ?: (object) [];
-        $oObj->payment_data  = json_decode($oObj->payment_data) ?: (object) [];
     }
 }

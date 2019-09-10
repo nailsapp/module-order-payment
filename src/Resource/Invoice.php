@@ -9,9 +9,16 @@
 
 namespace Nails\Invoice\Resource;
 
+use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Entity;
+use Nails\Currency\Exception\CurrencyException;
 use Nails\Currency\Resource\Currency;
-use stdClass;
+use Nails\Factory;
+use Nails\Invoice\Constants;
+use Nails\Invoice\Resource\Invoice\Data;
+use Nails\Invoice\Resource\Invoice\State;
+use Nails\Invoice\Resource\Invoice\Totals;
+use Nails\Invoice\Resource\Invoice\Urls;
 
 class Invoice extends Entity
 {
@@ -30,9 +37,16 @@ class Invoice extends Entity
     public $token;
 
     /**
+     * The invoice's customer ID
+     *
+     * @var int
+     */
+    public $customer_id;
+
+    /**
      * The invoice's state
      *
-     * @var stdClass
+     * @var State
      */
     public $state;
 
@@ -88,14 +102,14 @@ class Invoice extends Entity
     /**
      * Any callback data
      *
-     * @var stdClass
+     * @var Data\Callback
      */
     public $callback_data;
 
     /**
      * Any payment data
      *
-     * @var stdClass
+     * @var Data\Payment
      */
     public $payment_data;
 
@@ -105,4 +119,153 @@ class Invoice extends Entity
      * @var string|null
      */
     public $payment_driver;
+
+    /**
+     * Whether the invoice is scheduled
+     *
+     * @var bool
+     */
+    public $is_scheduled;
+
+    /**
+     * Whether the invoice is overdue
+     *
+     * @var bool
+     */
+    public $is_overdue;
+
+    /**
+     * Whether the invoice has processing payments
+     *
+     * @var bool
+     */
+    public $has_processing_payments;
+
+    /**
+     * The invoice totals
+     *
+     * @var Totals
+     */
+    public $totals;
+
+    /**
+     * The invoice URLs
+     *
+     * @var Urls
+     */
+    public $urls;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Invoice constructor.
+     *
+     * @param array $mObj
+     *
+     * @throws FactoryException
+     * @throws CurrencyException
+     */
+    public function __construct($mObj = [])
+    {
+        parent::__construct($mObj);
+
+        // --------------------------------------------------------------------------
+
+        /** @var \Nails\Invoice\Model\Invoice $oModel */
+        $oModel  = Factory::model('Invoice', Constants::MODULE_SLUG);
+        $aStates = $oModel->getStates();
+
+        $this->state = Factory::resource(
+            'InvoiceState',
+            Constants::MODULE_SLUG,
+            (object) [
+                'id'    => $mObj->state,
+                'label' => $aStates[$mObj->state],
+            ]
+        );
+
+        // --------------------------------------------------------------------------
+
+        //  Dates
+        $this->dated = Factory::resource('DateTime', null, (object) ['raw' => $mObj->dated . ' 00:00:00']);
+        $this->due   = Factory::resource('DateTime', null, (object) ['raw' => $mObj->due . ' 23:59:59']);
+        $this->paid  = Factory::resource('DateTime', null, (object) ['raw' => $mObj->paid]);
+
+        // --------------------------------------------------------------------------
+
+        //  Computed booleans
+
+        /** @var \DateTime $oNow */
+        $oNow = Factory::factory('DateTime');
+
+        $this->is_scheduled = false;
+        if ($this->state->id == $oModel::STATE_OPEN && $oNow < (new \DateTime($mObj->dated))) {
+            $this->is_scheduled = true;
+        }
+
+        $this->is_overdue = false;
+        if ($this->state->id == $oModel::STATE_OPEN && $oNow > (new \DateTime($mObj->due))) {
+            $this->is_overdue = true;
+        }
+
+        $this->has_processing_payments = $mObj->processing_payments > 0;
+        unset($this->processing_payments);
+
+        // --------------------------------------------------------------------------
+
+        //  Currency
+        /** @var \Nails\Currency\Service\Currency $oCurrencyService */
+        $oCurrencyService = Factory::service('Currency', \Nails\Currency\Constants::MODULE_SLUG);
+        $this->currency   = $oCurrencyService->getByIsoCode($mObj->currency);
+
+        // --------------------------------------------------------------------------
+
+        //  Totals
+        $this->totals = Factory::resource(
+            'InvoiceTotals',
+            Constants::MODULE_SLUG,
+            (object) [
+                'currency'   => $this->currency,
+                'sub'        => (int) $mObj->sub_total,
+                'tax'        => (int) $mObj->tax_total,
+                'grand'      => (int) $mObj->grand_total,
+                'paid'       => (int) $mObj->paid_total,
+                'processing' => (int) $mObj->processing_total,
+            ]
+        );
+
+        unset($this->sub_total);
+        unset($this->tax_total);
+        unset($this->grand_total);
+        unset($this->paid_total);
+        unset($this->processing_total);
+
+        // --------------------------------------------------------------------------
+
+        //  URLs
+        $this->urls = Factory::resource(
+            'InvoiceUrls',
+            Constants::MODULE_SLUG,
+            (object) [
+                'payment'  => siteUrl('invoice/invoice/' . $this->ref . '/' . $this->token . '/pay'),
+                'download' => siteUrl('invoice/invoice/' . $this->ref . '/' . $this->token . '/download'),
+                'view'     => siteUrl('invoice/invoice/' . $this->ref . '/' . $this->token . '/view'),
+            ]
+        );
+
+        // --------------------------------------------------------------------------
+
+        //  Data blobs
+        $this->callback_data = Factory::resource(
+            'InvoiceDataCallback',
+            Constants::MODULE_SLUG,
+            json_decode($this->callback_data) ?: (object) []
+        );
+
+        $this->payment_data = Factory::resource(
+            'InvoiceDataPayment',
+            Constants::MODULE_SLUG,
+            json_decode($this->payment_data) ?: (object) []
+        );
+    }
 }
