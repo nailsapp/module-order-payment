@@ -9,7 +9,7 @@
 
 namespace Nails\Invoice\Resource;
 
-use Nails\Common\Entity;
+use Nails\Common\Resource\Entity;
 
 class Source extends Entity
 {
