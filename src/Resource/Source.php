@@ -9,17 +9,10 @@
 
 namespace Nails\Invoice\Resource;
 
-use Nails\Common\Resource;
+use Nails\Common\Entity;
 
-class Source extends Resource
+class Source extends Entity
 {
-    /**
-     * The ID of the source
-     *
-     * @var int
-     */
-    public $id;
-
     /**
      * The source's customer ID
      *
@@ -75,32 +68,4 @@ class Source extends Resource
      * @var bool
      */
     public $is_default = false;
-
-    /**
-     * The source's creation date
-     *
-     * @var string
-     */
-    public $created;
-
-    /**
-     * The source's creator's ID
-     *
-     * @var string
-     */
-    public $created_by;
-
-    /**
-     * The source's modification date
-     *
-     * @var string
-     */
-    public $modified;
-
-    /**
-     * The source's modifier's ID
-     *
-     * @var string
-     */
-    public $modified_by;
 }

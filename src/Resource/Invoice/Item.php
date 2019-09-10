@@ -9,9 +9,9 @@
 
 namespace Nails\Invoice\Resource\Invoice;
 
-use Nails\Common\Resource;
+use Nails\Common\Resource\Entity;
 
-class Item extends Resource
+class Item extends Entity
 {
 
 }

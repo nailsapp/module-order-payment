@@ -9,7 +9,7 @@
 
 namespace Nails\Invoice\Resource;
 
-use Nails\Common\Resource;
+use Nails\Common\Resource\Entity;
 use stdClass;
 
 /**
@@ -17,13 +17,8 @@ use stdClass;
  *
  * @package Nails\Invoice\Resource
  */
-class Customer extends Resource
+class Customer extends Entity
 {
-    /**
-     * @var int
-     */
-    public $id;
-
     /**
      * @var string
      */
@@ -68,26 +63,6 @@ class Customer extends Resource
      * @var bool
      */
     public $is_deleted;
-
-    /**
-     * @var Nails\Common\Resource\DateTime
-     */
-    public $created;
-
-    /**
-     * @var int
-     */
-    public $created_by;
-
-    /**
-     * @var Nails\Common\Resource\DateTime
-     */
-    public $modified;
-
-    /**
-     * @var int
-     */
-    public $modified_by;
 
     /**
      * @var stdClass Object

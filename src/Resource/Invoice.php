@@ -9,19 +9,12 @@
 
 namespace Nails\Invoice\Resource;
 
-use Nails\Common\Resource;
+use Nails\Common\Resource\Entity;
 use Nails\Currency\Resource\Currency;
 use stdClass;
 
-class Invoice extends Resource
+class Invoice extends Entity
 {
-    /**
-     * The invoice's ID
-     *
-     * @var int
-     */
-    public $id;
-
     /**
      * The invoice's reference
      *
@@ -112,32 +105,4 @@ class Invoice extends Resource
      * @var string|null
      */
     public $payment_driver;
-
-    /**
-     * The invoice's created date
-     *
-     * @var Resource\DateTime
-     */
-    public $created;
-
-    /**
-     * The invoice's creator
-     *
-     * @var int|Resource|null
-     */
-    public $created_by;
-
-    /**
-     * The invoice's modification date
-     *
-     * @var Resource\DateTime
-     */
-    public $modified;
-
-    /**
-     * The invoice's modifier
-     *
-     * @var int|Resource|null
-     */
-    public $modified_by;
 }
