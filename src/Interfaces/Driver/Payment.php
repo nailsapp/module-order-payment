@@ -137,18 +137,18 @@ interface Payment
     /**
      * Issue a refund for a payment
      *
-     * @param string           $sTxnId       The transaction's ID
-     * @param int              $iAmount      The amount to refund
-     * @param Currency         $oCurrency    The currency in which to refund
-     * @param stdClass         $oPaymentData The payment data object
-     * @param string           $sReason      The refund's reason
-     * @param Resource\Payment $oPayment     The payment object
-     * @param Resource\Invoice $oInvoice     The invoice object
+     * @param string           $sTransactionId The transaction's ID
+     * @param int              $iAmount        The amount to refund
+     * @param Currency         $oCurrency      The currency in which to refund
+     * @param stdClass         $oPaymentData   The payment data object
+     * @param string           $sReason        The refund's reason
+     * @param Resource\Payment $oPayment       The payment object
+     * @param Resource\Invoice $oInvoice       The invoice object
      *
      * @return RefundResponse
      */
     public function refund(
-        string $sTxnId,
+        string $sTransactionId,
         int $iAmount,
         Currency $oCurrency,
         stdClass $oPaymentData,

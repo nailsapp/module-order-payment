@@ -369,13 +369,13 @@ class RequestBase
     /**
      * Set a payment as PROCESSING
      *
-     * @param string $sTxnId The payment's transaction ID
-     * @param int    $iFee   The fee charged by the processor, if known
+     * @param string $sTransactionId The payment's transaction ID
+     * @param int    $iFee           The fee charged by the processor, if known
      *
      * @return $this
      * @throws RequestException
      */
-    protected function setPaymentProcessing($sTxnId = null, $iFee = null)
+    protected function setPaymentProcessing($sTransactionId = null, $iFee = null)
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
@@ -384,7 +384,7 @@ class RequestBase
 
         //  Update the payment
         $aData = [
-            'txn_id' => $sTxnId ? $sTxnId : null,
+            'txn_id' => $sTransactionId ? $sTransactionId : null,
         ];
 
         if (!is_null($iFee)) {
@@ -414,13 +414,13 @@ class RequestBase
     /**
      * Set a payment as COMPLETE, and mark the invoice as paid if so
      *
-     * @param string $sTxnId The payment's transaction ID
-     * @param int    $iFee   The fee charged by the processor, if known
+     * @param string $sTransactionId The payment's transaction ID
+     * @param int    $iFee           The fee charged by the processor, if known
      *
      * @return $this
      * @throws RequestException
      */
-    protected function setPaymentComplete($sTxnId = null, $iFee = null)
+    protected function setPaymentComplete($sTransactionId = null, $iFee = null)
     {
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
@@ -433,7 +433,7 @@ class RequestBase
         }
 
         //  Update the payment
-        $aData = ['txn_id' => $sTxnId ? $sTxnId : null];
+        $aData = ['txn_id' => $sTransactionId ? $sTransactionId : null];
 
         if (!is_null($iFee)) {
             $aData['fee'] = $iFee;
@@ -493,13 +493,13 @@ class RequestBase
     /**
      * Set a refund as COMPLETE
      *
-     * @param string $sTxnId       The refund's transaction ID
-     * @param int    $iFeeRefunded The fee refunded by the processor, if known
+     * @param string $sTransactionId The refund's transaction ID
+     * @param int    $iFeeRefunded   The fee refunded by the processor, if known
      *
      * @return $this
      * @throws RequestException
      */
-    protected function setRefundComplete($sTxnId = null, $iFeeRefunded = null)
+    protected function setRefundComplete($sTransactionId = null, $iFeeRefunded = null)
     {
         //  Ensure we have a payment
         if (empty($this->oRefund)) {
@@ -507,7 +507,7 @@ class RequestBase
         }
 
         //  Update the refund
-        $aData = ['txn_id' => $sTxnId ? $sTxnId : null];
+        $aData = ['txn_id' => $sTransactionId ? $sTransactionId : null];
 
         if (!is_null($iFeeRefunded)) {
             $aData['fee'] = $iFeeRefunded;

@@ -50,7 +50,7 @@ class RefundRequest extends RequestBase
     /**
      * Execute the refund
      *
-     * @param  integer $iAmount The amount to refund
+     * @param integer $iAmount The amount to refund
      *
      * @return \Nails\Invoice\Factory\ChargeResponse
      * @throws RefundRequestException
@@ -141,7 +141,7 @@ class RefundRequest extends RequestBase
 
             //  Driver has confirmed that the refund was accepted
             $this->setRefundComplete(
-                $oRefundResponse->getTxnId(),
+                $oRefundResponse->getTransactionId(),
                 $oRefundResponse->getFee()
             );
 

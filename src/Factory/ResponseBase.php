@@ -69,7 +69,7 @@ class ResponseBase
      *
      * @var string
      */
-    protected $sTxnId = '';
+    protected $sTransactionId = '';
 
     /**
      * The fee associated with the transaction
@@ -379,14 +379,14 @@ class ResponseBase
     /**
      * Set the transaction ID
      *
-     * @param string $sTxnId The transaction ID
+     * @param string $sTransactionId The transaction ID
      *
      * @return $this
      */
-    public function setTxnId($sTxnId): ResponseBase
+    public function setTransactionId($sTransactionId): ResponseBase
     {
         if (!$this->isLocked()) {
-            $this->sTxnId = $sTxnId;
+            $this->sTransactionId = $sTransactionId;
         }
         return $this;
     }
@@ -398,9 +398,9 @@ class ResponseBase
      *
      * @return string
      */
-    public function getTxnId(): string
+    public function getTransactionId(): string
     {
-        return $this->sTxnId;
+        return $this->sTransactionId;
     }
 
     // --------------------------------------------------------------------------

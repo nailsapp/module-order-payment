@@ -71,7 +71,7 @@ class CompleteRequest extends RequestBase
 
             //  Driver has started processing the charge, but it hasn't been confirmed yet
             $this->setPaymentProcessing(
-                $oCompleteResponse->getTxnId(),
+                $oCompleteResponse->getTransactionId(),
                 $oCompleteResponse->getFee()
             );
 
@@ -79,7 +79,7 @@ class CompleteRequest extends RequestBase
 
             //  Driver has confirmed that payment has been taken.
             $this->setPaymentComplete(
-                $oCompleteResponse->getTxnId(),
+                $oCompleteResponse->getTransactionId(),
                 $oCompleteResponse->getFee()
             );
 
