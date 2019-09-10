@@ -12,14 +12,16 @@
 namespace Nails\Invoice\Factory;
 
 use Nails\Common\Resource\Date;
-use Nails\Common\Resource\DateTime;
 use Nails\Common\Traits\ErrorHandling;
 use Nails\Currency\Resource\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
-use Nails\Invoice\Resource\Customer;
+use Nails\Invoice\Interfaces\Driver\Payment;
+use Nails\Invoice\Model;
+use Nails\Invoice\Resource;
+use stdClass;
 
 /**
  * Class Invoice
@@ -51,7 +53,7 @@ class Invoice
      *
      * @var string
      */
-    protected $sState = \Nails\Invoice\Model\Invoice::STATE_OPEN;
+    protected $sState = Model\Invoice::STATE_OPEN;
 
     /**
      * The invoice's dated date
@@ -98,9 +100,23 @@ class Invoice
     /**
      * The invoice's callback data
      *
-     * @var mixed
+     * @var stdClass|null
      */
-    protected $mCallbackData = null;
+    protected $oCallbackData = null;
+
+    /**
+     * The invoice's payment data
+     *
+     * @var stdClass|null
+     */
+    protected $oPaymentData = null;
+
+    /**
+     * Define which driver can be sued to pay this invoice
+     *
+     * @var string|null
+     */
+    protected $sPaymentDriver = null;
 
     /**
      * The invoice's items
@@ -108,6 +124,17 @@ class Invoice
      * @var array
      */
     protected $aItems = [];
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Invoice constructor.
+     */
+    public function __construct()
+    {
+        $this->oCallbackData = (object) [];
+        $this->oPaymentData  = (object) [];
+    }
 
     // --------------------------------------------------------------------------
 
@@ -211,7 +238,7 @@ class Invoice
         $this->ensureNotSaved();
 
         if ($mDate instanceof \DateTime) {
-            $this->sDated = $mDate->format('Y-m-d H:i:s');
+            $this->sDated = $mDate->format('Y-m-d');
         } elseif ($mDate instanceof Date) {
             $this->sDated = (string) $mDate;
         } elseif (is_string($mDate)) {
@@ -259,9 +286,9 @@ class Invoice
     /**
      * Returns the invoice's terms
      *
-     * @return mixed
+     * @return int
      */
-    public function getTerms()
+    public function getTerms(): int
     {
         return $this->iTerms;
     }
@@ -271,7 +298,7 @@ class Invoice
     /**
      * Sets the invoice's Customer ID
      *
-     * @param int|Customer $mCustomer The invoice's Customer ID
+     * @param int|Resource\Customer $mCustomer The invoice's Customer ID
      *
      * @return $this
      * @throws InvoiceException
@@ -408,15 +435,22 @@ class Invoice
     /**
      * Sets the invoice's callback data
      *
-     * @param $mCallbackData The invoice's callback data
+     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
+     * @param mixed|null      $mValue The value to set
      *
      * @return $this
      * @throws InvoiceException
      */
-    public function setCallbackData($mCallbackData): Invoice
+    public function setCallbackData($mKey, $mValue = null): Invoice
     {
         $this->ensureNotSaved();
-        $this->mCallbackData = $mCallbackData;
+
+        if ($mKey instanceof stdClass) {
+            $this->oCallbackData = $mKey;
+        } else {
+            $this->oCallbackData->{$mKey} = $mValue;
+        }
+
         return $this;
     }
 
@@ -425,11 +459,86 @@ class Invoice
     /**
      * Returns the invoice's callback data
      *
-     * @return mixed
+     * @return stdClass|null
      */
-    public function getCallbackData()
+    public function getCallbackData(): ?stdClass
     {
-        return $this->mCallbackData;
+        return $this->oCallbackData;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's payment data
+     *
+     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
+     * @param mixed|null      $mValue The value to set
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setPaymentData($mKey, $mValue = null): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mKey instanceof stdClass) {
+            $this->oPaymentData = $mKey;
+        } else {
+            $this->oPaymentData->{$mKey} = $mValue;
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's payment driver
+     *
+     * @return string|null
+     */
+    public function getPaymentDriver(): ?string
+    {
+        return $this->sPaymentDriver;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's payment driver
+     *
+     * @param string|Payment $mPaymentDriver The invoice's payment driver
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setPaymentDriver($mPaymentDriver): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mPaymentDriver instanceof Payment) {
+            $this->sPaymentDriver = $mPaymentDriver->getSlug();
+        } elseif (is_string($mPaymentDriver)) {
+            $this->sPaymentDriver = $mPaymentDriver;
+        } else {
+            throw new InvoiceException(
+                'Invalid data type (' . gettype($mPaymentDriver) . ') passed to ' . __METHOD__
+            );
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's payment data
+     *
+     * @return stdClass|null
+     */
+    public function getPaymentData(): ?stdClass
+    {
+        return $this->oPaymentData;
     }
 
     // --------------------------------------------------------------------------
@@ -464,48 +573,6 @@ class Invoice
     // --------------------------------------------------------------------------
 
     /**
-     * Throws an exception if the item's ID has been set
-     *
-     * @throws InvoiceException
-     */
-    protected function ensureNotSaved()
-    {
-        if (!empty($this->iId)) {
-            throw new InvoiceException('Invoice has been saved and cannot be modified.');
-        }
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Mimics setters and getters for class properties
-     *
-     * @param string $sMethod    The method being called
-     * @param array  $aArguments Any passed arguments
-     *
-     * @return $this
-     * @throws InvoiceException
-     */
-    public function __call($sMethod, $aArguments)
-    {
-        if (array_key_exists($sMethod, $this->aMethods)) {
-            if (substr($sMethod, 0, 3) === 'set') {
-                if (empty(!$this->iId)) {
-                    throw new InvoiceException('Invoice has been saved and cannot be modified.');
-                }
-                $this->{$this->aMethods[$sMethod]} = reset($aArguments);
-                return $this;
-            } else {
-                return $this->{$this->aMethods[$sMethod]};
-            }
-        } else {
-            throw new InvoiceException('Call to undefined method ' . get_called_class() . '::' . $sMethod . '()');
-        }
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Add an item to the invoice
      *
      * @param Item $oItem the item to add
@@ -515,9 +582,7 @@ class Invoice
      */
     public function addItem(Item $oItem)
     {
-        if (empty(!$this->iId)) {
-            throw new InvoiceException('Invoice has been saved and cannot be modified.');
-        }
+        $this->ensureNotSaved();
         $this->aItems[] = $oItem;
         return $this;
     }
@@ -542,25 +607,43 @@ class Invoice
     // --------------------------------------------------------------------------
 
     /**
-     * Saves a new invoice
+     * Throws an exception if the item's ID has been set
      *
-     * @return \stdClass
      * @throws InvoiceException
      */
-    public function save()
+    protected function ensureNotSaved()
     {
-        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+        if (!empty($this->iId)) {
+            throw new InvoiceException('Invoice has been saved and cannot be modified.');
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Saves a new invoice
+     *
+     * @return Resource\Invoice
+     * @throws InvoiceException
+     */
+    public function save(): Resource\Invoice
+    {
+        /** @var Model\Invoice $oInvoiceModel */
         $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         if (empty($this->iId)) {
+
             $oInvoice = $oInvoiceModel->create($this->toArray(), true);
             if (empty($oInvoice)) {
                 throw new InvoiceException($oInvoiceModel->lastError());
             }
-            $this->iId  = $oInvoice->id;
-            $this->sRef = $oInvoice->ref;
+
+            $this->setRef($oInvoice->ref);
+            $this->setId($oInvoice->id);
+
         } else {
             $oInvoice = $oInvoiceModel->getById($this->iId);
         }
+
         return $oInvoice;
     }
 
@@ -575,7 +658,7 @@ class Invoice
     public function delete()
     {
         if (!empty($this->iId)) {
-            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+            /** @var Model\Invoice $oInvoiceModel */
             $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
             if (!$oInvoiceModel->delete($this->iId)) {
                 throw new InvoiceException('Failed to delete invoice.');
@@ -595,8 +678,10 @@ class Invoice
      */
     public function writeOff()
     {
+        $this->sState = Model\Invoice::STATE_WRITTEN_OFF;
+
         if (!empty($this->iId)) {
-            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+            /** @var Model\Invoice $oInvoiceModel */
             $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
             if (!$oInvoiceModel->setWrittenOff($this->iId)) {
                 throw new InvoiceException('Failed to write off invoice.');
@@ -616,8 +701,10 @@ class Invoice
      */
     public function cancel()
     {
+        $this->sState = Model\Invoice::STATE_CANCELLED;
+
         if (!empty($this->iId)) {
-            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+            /** @var Model\Invoice $oInvoiceModel */
             $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
             if (!$oInvoiceModel->setCancelled($this->iId)) {
                 throw new InvoiceException('Failed to cancel invoice.');
@@ -642,7 +729,7 @@ class Invoice
         if (empty($this->iId)) {
             $oInvoice = $this->save();
         } else {
-            /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+            /** @var Model\Invoice $oInvoiceModel */
             $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
             $oInvoice      = $oInvoiceModel->getById($this->iId);
         }
@@ -666,16 +753,18 @@ class Invoice
     public function toArray()
     {
         return [
-            'ref'             => $this->sRef,
-            'state'           => $this->sState,
-            'dated'           => $this->sDated,
-            'terms'           => (int) $this->iTerms ?: null,
-            'customer_id'     => (int) $this->iCustomerId ?: null,
-            'email'           => $this->sEmail,
-            'currency'        => $this->sCurrency,
-            'additional_text' => $this->sAdditionalText,
-            'callback_data'   => $this->mCallbackData,
-            'items'           => (array) $this->aItems,
+            'ref'             => $this->getRef(),
+            'state'           => $this->getState(),
+            'dated'           => $this->getDated(),
+            'terms'           => $this->getTerms(),
+            'customer_id'     => $this->getCustomerId(),
+            'email'           => $this->getEmail(),
+            'currency'        => $this->getCurrency(),
+            'additional_text' => $this->getAdditionalText(),
+            'callback_data'   => $this->getCallbackData(),
+            'payment_data'    => $this->getPaymentData(),
+            'payment_driver'  => $this->getPaymentDriver(),
+            'items'           => $this->getItems(),
         ];
     }
 }

@@ -146,13 +146,15 @@ abstract class PaymentBase extends Base implements Payment
             $aFields = $this->getPaymentFields();
         }
 
+        $oPaymentData = (object) [];
+
         foreach ($aFields as $aField) {
 
             $sKey   = getFromArray('key', $aField);
             $sValue = getFromArray($sKey, $aData);
 
             $oChargeRequest
-                ->setCustomData($sKey, $sValue);
+                ->setPaymentData($sKey, $sValue);
         }
     }
 }

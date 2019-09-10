@@ -35,7 +35,9 @@ use Nails\Invoice\Resource\Source;
             <?php
             if (empty($aDrivers)) {
                 ?>
-                Unfortunately no payment options are available for this invoice.
+                <p class="text-center">
+                    No payment options are available for this invoice.
+                </p>
                 <?php
             } else {
                 ?>
@@ -47,6 +49,7 @@ use Nails\Invoice\Resource\Source;
                             <tr>
                                 <td>
                                     <?=$oItem->label?>
+                                    <br><small><?=$oItem->body?></small>
                                 </td>
                                 <td align="right">
                                     <?=$oItem->totals->formatted->grand?>
@@ -72,7 +75,6 @@ use Nails\Invoice\Resource\Source;
                     <h5>Choose Payment Method</h5>
                     <ul class="list list--unstyled list--bordered" id="js-invoice-driver-select">
                         <?php
-
 
                         $i = 0;
                         foreach ($aSavedPaymentSources as $oSource) {
@@ -123,16 +125,6 @@ use Nails\Invoice\Resource\Source;
                                     );
 
                                     echo $oDriver->getLabel();
-
-                                    $sLogoUrl = $oDriver->getLogoUrl(400, 20);
-                                    if (!empty($sLogoUrl)) {
-                                        echo img(
-                                            [
-                                                'src'   => $sLogoUrl,
-                                                'class' => 'pull-right',
-                                            ]
-                                        );
-                                    }
 
                                     ?>
                                 </label>

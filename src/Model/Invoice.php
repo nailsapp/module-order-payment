@@ -285,6 +285,8 @@ class Invoice extends Base
                 ) processing_payments',
                 $this->getTableAlias() . '.additional_text',
                 $this->getTableAlias() . '.callback_data',
+                $this->getTableAlias() . '.payment_data',
+                $this->getTableAlias() . '.payment_driver',
                 $this->getTableAlias() . '.created',
                 $this->getTableAlias() . '.created_by',
                 $this->getTableAlias() . '.modified',
@@ -486,6 +488,9 @@ class Invoice extends Base
         //  Callback data is encoded as JSON
         if (array_key_exists('callback_data', $aData)) {
             $aData['callback_data'] = json_encode($aData['callback_data']);
+        }
+        if (array_key_exists('payment_data', $aData)) {
+            $aData['payment_data'] = json_encode($aData['payment_data']);
         }
 
         //  Sanitize each item
@@ -1052,6 +1057,7 @@ class Invoice extends Base
         array $aFloats = []
     ) {
         $aIntegers[] = 'terms';
+        $aIntegers[] = 'customer_id';
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
         //  Sate
@@ -1068,6 +1074,7 @@ class Invoice extends Base
         $oObj->paid  = Factory::resource('DateTime', null, ['raw' => $oObj->paid]);
 
         //  Compute boolean flags
+        /** @var \DateTime $oNow */
         $oNow = Factory::factory('DateTime');
 
         $oObj->is_scheduled = false;
@@ -1097,19 +1104,24 @@ class Invoice extends Base
             ],
             'formatted' => (object) [
                 'sub'        => $this->oCurrency->format(
-                    $oObj->currency->code, $oObj->sub_total / pow(10, $oObj->currency->decimal_precision)
+                    $oObj->currency->code,
+                    $oObj->sub_total / pow(10, $oObj->currency->decimal_precision)
                 ),
                 'tax'        => $this->oCurrency->format(
-                    $oObj->currency->code, $oObj->tax_total / pow(10, $oObj->currency->decimal_precision)
+                    $oObj->currency->code,
+                    $oObj->tax_total / pow(10, $oObj->currency->decimal_precision)
                 ),
                 'grand'      => $this->oCurrency->format(
-                    $oObj->currency->code, $oObj->grand_total / pow(10, $oObj->currency->decimal_precision)
+                    $oObj->currency->code,
+                    $oObj->grand_total / pow(10, $oObj->currency->decimal_precision)
                 ),
                 'paid'       => $this->oCurrency->format(
-                    $oObj->currency->code, $oObj->paid_total / pow(10, $oObj->currency->decimal_precision)
+                    $oObj->currency->code,
+                    $oObj->paid_total / pow(10, $oObj->currency->decimal_precision)
                 ),
                 'processing' => $this->oCurrency->format(
-                    $oObj->currency->code, $oObj->processing_total / pow(10, $oObj->currency->decimal_precision)
+                    $oObj->currency->code,
+                    $oObj->processing_total / pow(10, $oObj->currency->decimal_precision)
                 ),
             ],
         ];
@@ -1127,6 +1139,7 @@ class Invoice extends Base
         $oObj->urls->view     = siteUrl('invoice/invoice/' . $oObj->ref . '/' . $oObj->token . '/view');
 
         //  Callback data
-        $oObj->callback_data = json_decode($oObj->callback_data);
+        $oObj->callback_data = json_decode($oObj->callback_data) ?: (object) [];
+        $oObj->payment_data  = json_decode($oObj->payment_data) ?: (object) [];
     }
 }

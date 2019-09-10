@@ -130,10 +130,14 @@ class Invoice extends Base
         $oInput = Factory::service('Input');
         /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
         $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
+        /** @var Source $oSourceModel */
+        $oSourceModel = Factory::model('Source', Constants::MODULE_SLUG);
+        /** @var Customer $oCustomerModel */
+        $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
+        /** @var PaymentDriver $oPaymentDriverService */
+        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
 
-        $this->data['oInvoice']       = $oInvoice;
-        $this->data['headerOverride'] = 'structure/header/blank';
-        $this->data['footerOverride'] = 'structure/footer/blank';
+        // --------------------------------------------------------------------------
 
         //  Only open invoices can be paid
         if ($oInvoice->state->id !== $oInvoiceModel::STATE_OPEN && !$oInvoice->is_scheduled) {
@@ -146,16 +150,19 @@ class Invoice extends Base
                     /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
                     $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
-                    $this->data['aProcessingPayments'] = [];
+                    $aProcessingPayments = [];
                     foreach ($oInvoice->payments->data as $oPayment) {
                         if ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
-                            $this->data['aProcessingPayments'][] = $oPayment;
+                            $aProcessingPayments[] = $oPayment;
                         }
                     }
 
                     $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/hasProcessing.php');
 
                     Factory::service('View')
+                        ->setData([
+                            'aProcessingPayments' => $aProcessingPayments,
+                        ])
                         ->load([
                             'structure/header',
                             'invoice/pay/hasProcessing',
@@ -183,9 +190,6 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        //  Payment drivers
-        /** @var PaymentDriver $oPaymentDriverService */
-        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
         /** @var PaymentBase[] $aEnabledDrivers */
         $aEnabledDrivers = $oPaymentDriverService->getEnabled();
         /** @var PaymentBase[] $aAvailableDrivers */
@@ -202,14 +206,24 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        if (isLoggedIn()) {
-            /** @var Source $oSourceModel */
-            $oSourceModel = Factory::model('Source', Constants::MODULE_SLUG);
-            /** @var Customer $oCustomerModel */
-            $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
+        //  If the invoice can only be paid using a certain driver then filter
+        if (!empty($oInvoice->payment_driver)) {
+            $aAvailableDrivers = array_filter(
+                $aAvailableDrivers,
+                function (PaymentBase $oDriver) use ($oInvoice) {
+                    return $oDriver->getSlug() === $oInvoice->payment_driver;
+                }
+            );
+            $aAvailableDrivers = array_values($aAvailableDrivers);
+        }
+
+        // --------------------------------------------------------------------------
+
+        $iCustomerId = $oCustomerModel->getCustomerIdforActiveUser();
+        if ($iCustomerId) {
 
             $aSavedPaymentSources = $oSourceModel->getForCustomer(
-                $oCustomerModel->getCustomerIdforActiveUser('customer_id')
+                $iCustomerId
             );
 
         } else {
@@ -234,6 +248,12 @@ class Invoice extends Base
                  */
 
                 $sSelectedDriverSlug = trim($oInput->post('driver'));
+
+                if (empty($sSelectedDriverSlug)) {
+                    throw new ValidationException(
+                        'No payment source selected'
+                    );
+                }
 
                 /**
                  * If the user has chosen a saved payment source then the "driver"
@@ -417,9 +437,12 @@ class Invoice extends Base
         Factory::service('View')
             ->setData([
                 'sFormUrl'             => $sFormUrl,
-                'sUrlCancel'           => $oInput->get('url_cancel') ?: siteUrl(),
+                'oInvoice'             => $oInvoice,
+                'sUrlCancel'           => siteUrl($oInput->get('url_cancel')) ?: siteUrl(),
                 'aDrivers'             => $aAvailableDrivers,
                 'aSavedPaymentSources' => $aSavedPaymentSources,
+                'headerOverride'       => 'structure/header/blank',
+                'footerOverride'       => 'structure/footer/blank',
             ])
             ->load([
                 'structure/header',

@@ -95,9 +95,23 @@ class Invoice extends Resource
     /**
      * Any callback data
      *
-     * @var mixed|null
+     * @var stdClass
      */
     public $callback_data;
+
+    /**
+     * Any payment data
+     *
+     * @var stdClass
+     */
+    public $payment_data;
+
+    /**
+     * The payemnt driver
+     *
+     * @var string|null
+     */
+    public $payment_driver;
 
     /**
      * The invoice's created date

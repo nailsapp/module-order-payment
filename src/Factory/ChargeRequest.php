@@ -35,11 +35,11 @@ class ChargeRequest extends RequestBase
     protected $oCustomField;
 
     /**
-     * The custom data object
+     * The payment data object
      *
      * @var stdClass
      */
-    protected $oCustomData;
+    protected $oPaymentData;
 
     /**
      * The charge description
@@ -91,7 +91,7 @@ class ChargeRequest extends RequestBase
 
         //  Container for custom fields and data
         $this->oCustomField = (object) [];
-        $this->oCustomData  = (object) [];
+        $this->oPaymentData = (object) [];
     }
 
     // --------------------------------------------------------------------------
@@ -298,16 +298,21 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Define a custom field
+     * Set custom field data
      *
-     * @param string $sProperty The property to set
-     * @param mixed  $mValue    The value to set
+     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
+     * @param mixed|null      $mValue The value to set
      *
-     * @return $this
+     * @return ChargeRequest
      */
-    public function setCustomField(string $sProperty, $mValue): ChargeRequest
+    public function setCustomField(string $smey, $mValue = null): ChargeRequest
     {
-        $this->oCustomField->{$sProperty} = $mValue;
+        if ($mKey instanceof stdClass) {
+            $this->oCustomField = $mKey;
+        } else {
+            $this->oCustomField->{$mKey} = $mValue;
+        }
+
         return $this;
     }
 
@@ -318,41 +323,46 @@ class ChargeRequest extends RequestBase
      *
      * @param string $sProperty The property to retrieve
      *
-     * @return mixed
+     * @return stdClass
      */
-    public function getCustomField(string $sProperty)
+    public function getCustomField(string $sProperty): stdClass
     {
-        return property_exists($this->oCustomField, $sProperty) ? $this->oCustomField->{$sProperty} : null;
+        return $this->oCustomField;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Set a custom value
+     * Set payment data
      *
-     * @param string $sProperty The property to set
-     * @param mixed  $mValue    The value to set
+     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
+     * @param mixed|null      $mValue The value to set
      *
-     * @return $this
+     * @return ChargeRequest
      */
-    public function setCustomData(string $sProperty, $mValue): ChargeRequest
+    public function setPaymentData($mKey, $mValue = null): ChargeRequest
     {
-        $this->oCustomData->{$sProperty} = $mValue;
+        if ($mKey instanceof stdClass) {
+            $this->oPaymentData = $mKey;
+        } else {
+            $this->oPaymentData->{$mKey} = $mValue;
+        }
+
         return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Retrieve a custom value
+     * Retrieve a payment data value
      *
-     * @param string $sProperty The property to retrieve
+     * @param string|null $sProperty The property to retrieve
      *
-     * @return mixed
+     * @return stdClass
      */
-    public function getCustomData(string $sProperty)
+    public function getPaymentData(string $sProperty = null): stdClass
     {
-        return property_exists($this->oCustomData, $sProperty) ? $this->oCustomData->{$sProperty} : null;
+        return $this->oPaymentData;
     }
 
     // --------------------------------------------------------------------------
@@ -553,20 +563,28 @@ class ChargeRequest extends RequestBase
 
         // --------------------------------------------------------------------------
 
+        $oPaymentData        = $this->getPaymentData();
+        $oInvoicePaymentData = $this->oInvoice->payment_data;
+        foreach ($oInvoicePaymentData as $sKey => $mValue) {
+            $oPaymentData->{$sKey} = $mValue;
+        }
+
+        // --------------------------------------------------------------------------
+
         //  Create a charge against the invoice if one hasn't been specified
         if (empty($this->oPayment)) {
 
             $iPaymentId = $this->oPaymentModel->create([
-                'driver'      => $this->oDriver->getSlug(),
-                'description' => $this->getDescription(),
-                'invoice_id'  => $this->oInvoice->id,
-                'source_id'   => $this->oSource ? $this->oSource->id : null,
-                'currency'    => $this->getCurrency()->code,
-                'amount'      => $this->getAmount(),
-                'url_success' => $this->getSuccessUrl(),
-                'url_error'   => $this->getErrorUrl(),
-                'url_cancel'  => $this->getCancelUrl(),
-                'custom_data' => $this->oCustomData,
+                'driver'       => $this->oDriver->getSlug(),
+                'description'  => $this->getDescription(),
+                'invoice_id'   => $this->oInvoice->id,
+                'source_id'    => $this->oSource ? $this->oSource->id : null,
+                'currency'     => $this->getCurrency()->code,
+                'amount'       => $this->getAmount(),
+                'url_success'  => $this->getSuccessUrl(),
+                'url_error'    => $this->getErrorUrl(),
+                'url_cancel'   => $this->getCancelUrl(),
+                'custom_data'  => $oPaymentData,
             ]);
 
             if (empty($iPaymentId)) {
@@ -585,12 +603,12 @@ class ChargeRequest extends RequestBase
         }
 
         /**
-         * The "success" URL will always be this, this will perform final; checks and redirect as necessary
+         * The "success" URL will always be this, this will perform final checks and redirect as necessary
          */
         $sSuccessUrl = siteUrl('invoice/payment/' . $this->oPayment->id . '/' . $this->oPayment->token . '/complete');
 
         /**
-         * The Error url is, by default, the checkout page, but can be overridden
+         * The error URL is, by default, the checkout page but can be overridden
          */
         $sErrorUrl = $this->getErrorUrl() ?: siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
 
@@ -599,7 +617,7 @@ class ChargeRequest extends RequestBase
             $this->getAmount(),
             $this->getCurrency(),
             $oDriverData,
-            $this->oCustomData,
+            $this->getPaymentData(),
             $this->getDescription(),
             $this->getPayment(),
             $this->getInvoice(),
