@@ -78,7 +78,7 @@ class Payment extends Entity
      *
      * @var string
      */
-    public $txn_id;
+    public $transaction_id;
 
     /**
      * The payment's failure message

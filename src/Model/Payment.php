@@ -87,7 +87,7 @@ class Payment extends Base
         parent::__construct();
         $this->defaultSortColumn = 'created';
         $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
-        $this->searchableFields  = ['id', 'ref', 'description', 'txn_id'];
+        $this->searchableFields  = ['id', 'ref', 'description', 'transaction_id'];
         $this
             ->addExpandableField([
                 'trigger'   => 'invoice',

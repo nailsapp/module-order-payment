@@ -57,7 +57,7 @@ class Refund extends Entity
      *
      * @var string
      */
-    public $txn_id;
+    public $transaction_id;
 
     /**
      * The refund's fail message

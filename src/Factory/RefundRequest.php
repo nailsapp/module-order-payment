@@ -116,7 +116,7 @@ class RefundRequest extends RequestBase
 
         //  Execute the refund
         $oRefundResponse = $this->oDriver->refund(
-            $this->oPayment->txn_id,
+            $this->oPayment->transaction_id,
             $iAmount,
             $this->oPayment->currency->code,
             $this->oPayment->custom_data,

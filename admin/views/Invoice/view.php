@@ -247,7 +247,7 @@ use Nails\Invoice\Resource\Refund;
                                         <?=$oPayment->driver->getSlug()?>
                                     </small>
                                 </td>
-                                <td><?=$oPayment->txn_id?></td>
+                                <td><?=$oPayment->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td>
                                     <?php
 
@@ -384,7 +384,7 @@ use Nails\Invoice\Resource\Refund;
 
                                     ?>
                                 </td>
-                                <td><?=$oRefund->txn_id?></td>
+                                <td><?=$oRefund->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td><?=$oRefund->amount->formatted?></td>
                                 <td><?=$oRefund->fee->formatted?></td>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->created)?>

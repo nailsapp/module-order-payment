@@ -40,7 +40,7 @@
                                 </small>
                             </td>
                             <td class="txn-ref">
-                                <?=$oPayment->txn_id ?: '<span class="text-muted">&mdash;</span>'?>
+                                <?=$oPayment->transaction_id ?: '<span class="text-muted">&mdash;</span>'?>
                             </td>
                             <?php
                             if ($oPayment->status->id == 'PROCESSING') {

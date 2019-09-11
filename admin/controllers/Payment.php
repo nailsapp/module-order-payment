@@ -115,12 +115,12 @@ class Payment extends BaseAdmin
 
         //  Define the sortable columns
         $sortColumns = [
-            $sTableAlias . '.created'    => 'Received Date',
-            $sTableAlias . '.driver'     => 'Payment Gateway',
-            $sTableAlias . '.invoice_id' => 'Invoice ID',
-            $sTableAlias . '.txn_id'     => 'Transaction ID',
-            $sTableAlias . '.amount'     => 'Amount',
-            $sTableAlias . '.currency'   => 'Currency',
+            $sTableAlias . '.created'        => 'Received Date',
+            $sTableAlias . '.driver'         => 'Payment Gateway',
+            $sTableAlias . '.invoice_id'     => 'Invoice ID',
+            $sTableAlias . '.transaction_id' => 'Transaction ID',
+            $sTableAlias . '.amount'         => 'Amount',
+            $sTableAlias . '.currency'       => 'Currency',
         ];
 
         // --------------------------------------------------------------------------
@@ -213,6 +213,8 @@ class Payment extends BaseAdmin
             $oUri->segment(5),
             ['expand' => $oPaymentModel::EXPAND_ALL]
         );
+
+        dd($this->data['payment']);
 
         if (!$this->data['payment']) {
             show404();

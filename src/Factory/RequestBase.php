@@ -384,7 +384,7 @@ class RequestBase
 
         //  Update the payment
         $aData = [
-            'txn_id' => $sTransactionId ? $sTransactionId : null,
+            'transaction_id' => $sTransactionId ? $sTransactionId : null,
         ];
 
         if (!is_null($iFee)) {
@@ -433,7 +433,7 @@ class RequestBase
         }
 
         //  Update the payment
-        $aData = ['txn_id' => $sTransactionId ? $sTransactionId : null];
+        $aData = ['transaction_id' => $sTransactionId ? $sTransactionId : null];
 
         if (!is_null($iFee)) {
             $aData['fee'] = $iFee;
@@ -507,7 +507,7 @@ class RequestBase
         }
 
         //  Update the refund
-        $aData = ['txn_id' => $sTransactionId ? $sTransactionId : null];
+        $aData = ['transaction_id' => $sTransactionId ? $sTransactionId : null];
 
         if (!is_null($iFeeRefunded)) {
             $aData['fee'] = $iFeeRefunded;
