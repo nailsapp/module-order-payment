@@ -13,9 +13,6 @@
 namespace Nails\Invoice\Model\Invoice;
 
 use Nails\Common\Model\Base;
-use Nails\Common\Service\Database;
-use Nails\Email\Service\Emailer;
-use Nails\Factory;
 use Nails\Invoice\Constants;
 
 /**
@@ -55,32 +52,19 @@ class Email extends Base
     {
         parent::__construct();
         $this->defaultSortColumn = 'created';
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * This method applies the conditionals which are common across the get_*()
-     * methods and the count() method.
-     *
-     * @param array $aData Data passed from the calling method
-     *
-     * @return void
-     **/
-    protected function getCountCommon(array $aData = []): void
-    {
-        if (empty($aData['select'])) {
-            $aData['select'] = [
-                $this->getTableAlias() . '.*',
-                'ea.ref email_ref',
-            ];
-        }
-
-        /** @var Database $oDb */
-        $oDb = Factory::service('Database');
-        $oDb->join(NAILS_DB_PREFIX . 'email_archive ea', $this->getTableAlias() . '.email_id = ea.id', 'LEFT');
-
-        parent::getCountCommon($aData);
+        $this
+            ->addExpandableField([
+                'trigger'   => 'invoice',
+                'model'     => 'Invoice',
+                'provider'  => Constants::MODULE_SLUG,
+                'id_column' => 'inivoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'email',
+                'model'     => 'Email',
+                'provider'  => \Nails\Email\Constants::MODULE_SLUG,
+                'id_column' => 'email_id',
+            ]);
     }
 
     // --------------------------------------------------------------------------
@@ -106,31 +90,8 @@ class Email extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
+        $aIntegers[] = 'invoice_id';
+        $aIntegers[] = 'email_id';
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
-        /** @var Emailer $oEmailer */
-        $oEmailer = factory::service('Emailer', 'nails/module-email');
-        $aTypes   = $oEmailer->getTypes();
-
-        $oEmail = (object) [
-            'id'          => (int) $oObj->email_id ?: null,
-            'ref'         => $oObj->email_ref,
-            'type'        => (object) [
-                'slug'  => $oObj->email_type,
-                'label' => '',
-            ],
-            'preview_url' => $oObj->email_id ? siteUrl('email/view/' . $oObj->email_ref) : null,
-        ];
-
-        if (!empty($aTypes[$oEmail->type->slug])) {
-            $oEmail->type->label = $aTypes[$oEmail->type->slug]->name;
-        } else {
-            $oEmail->type->label = preg_replace('/[-_]/', ' ', $oEmail->type->slug);
-        }
-
-        $oObj->email = $oEmail;
-
-        unset($oObj->email_id);
-        unset($oObj->email_type);
     }
 }

@@ -382,7 +382,14 @@ class Invoice extends BaseAdmin
         $oModel                = $this->oInvoiceModel;
         $this->data['invoice'] = $oModel->getById(
             $iInvoiceId,
-            ['expand' => $oModel::EXPAND_ALL]
+            [
+                'expand' => [
+                    'customer',
+                    'payments',
+                    'refunds',
+                    'items',
+                ],
+            ]
         );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id != 'DRAFT') {
@@ -510,7 +517,18 @@ class Invoice extends BaseAdmin
         $iInvoiceId            = (int) $oUri->segment(5);
         $this->data['invoice'] = $this->oInvoiceModel->getById(
             $iInvoiceId,
-            ['expand' => $oModel::EXPAND_ALL]
+            [
+                'expand' => [
+                    'customer',
+                    [
+                        'emails',
+                        ['expand' => ['email']],
+                    ],
+                    'payments',
+                    'refunds',
+                    'items',
+                ],
+            ]
         );
 
         if (!$this->data['invoice'] || $this->data['invoice']->state->id == 'DRAFT') {

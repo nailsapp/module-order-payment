@@ -437,16 +437,37 @@ use Nails\Invoice\Resource\Refund;
 
                             ?>
                             <tr>
-                                <td><?=$oEmail->email->type->label?></td>
-                                <td><?=$oEmail->recipient?></td>
+                                <td>
+                                    <?php
+                                    if (is_object($oEmail->email_type)) {
+
+                                        echo $oEmail->email_type->name;
+                                        echo '<small>' . $oEmail->email_type->description . '</small>';
+
+                                    } else {
+                                        echo $oEmail->email_type ?: '<span class="text-muted">Unknown</span>';
+                                    }
+                                    ?>
+                                </td>
+                                <?php
+
+                                if (!empty($oEmail->email->user_id)) {
+                                    echo adminHelper('loadUserCell', $oEmail->email->user_id);
+                                } else {
+                                    ?>
+                                    <td><?=$oEmail->recipient?></td>
+                                    <?php
+                                }
+
+                                ?>
                                 <?=adminHelper('loadDateTimeCell', $oEmail->created)?>
                                 <td class="text-center">
                                     <?php
 
-                                    if (!empty($oEmail->email->preview_url)) {
+                                    if (!empty($oEmail->preview_url)) {
 
                                         echo anchor(
-                                            $oEmail->email->preview_url,
+                                            $oEmail->preview_url,
                                             'Preview',
                                             'class="btn btn-xs btn-primary fancybox"'
                                         );
