@@ -446,7 +446,5 @@ class Refund extends Base
         $aIntegers[] = 'fee';
 
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
-        dd($oObj);
     }
 }
