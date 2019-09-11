@@ -204,7 +204,7 @@ class Customer extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Returns the customer Id for the active user.
+     * Returns the customer ID for the active user.
      *
      * This assumes that the user's customer ID is stored in the user_meta_app
      * table. If yoyr application has different logic, you should override this
@@ -215,47 +215,5 @@ class Customer extends Base
     public function getCustomerIdforActiveUser(): ?int
     {
         return (int) activeUser('customer_id') ?: null;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Formats a single object
-     *
-     * The getAll() method iterates over each returned item with this method so as to
-     * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
-     *
-     * @param object $oObj      A reference to the object being formatted.
-     * @param array  $aData     The same data array which is passed to _getCountCommon, for reference if needed
-     * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param array  $aBools    Fields which should be cast as booleans if not null
-     * @param array  $aFloats   Fields which should be cast as floats if not null
-     *
-     * @return void
-     */
-    protected function formatObject(
-        &$oObj,
-        array $aData = [],
-        array $aIntegers = [],
-        array $aBools = [],
-        array $aFloats = []
-    ) {
-        parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
-        $oObj->billing_address = (object) [
-            'line_1'   => $oObj->billing_address_line_1,
-            'line_2'   => $oObj->billing_address_line_2,
-            'town'     => $oObj->billing_address_town,
-            'county'   => $oObj->billing_address_county,
-            'postcode' => $oObj->billing_address_postcode,
-            'country'  => $oObj->billing_address_country,
-        ];
-
-        unset($oObj->billing_address_line_1);
-        unset($oObj->billing_address_line_2);
-        unset($oObj->billing_address_town);
-        unset($oObj->billing_address_county);
-        unset($oObj->billing_address_postcode);
-        unset($oObj->billing_address_country);
     }
 }

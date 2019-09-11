@@ -155,6 +155,13 @@ return [
                 return new \Nails\Invoice\Resource\Customer($mObj);
             }
         },
+        'CustomerAddress'        => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Customer\Address')) {
+                return new \App\Invoice\Resource\Customer\Address($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Customer\Address($mObj);
+            }
+        },
         'Invoice'                => function ($mObj) {
             if (class_exists('\App\Invoice\Resource\Invoice')) {
                 return new \App\Invoice\Resource\Invoice($mObj);
@@ -232,11 +239,53 @@ return [
                 return new \Nails\Invoice\Resource\Payment($mObj);
             }
         },
+        'PaymentAmount'          => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Payment\Amount')) {
+                return new \App\Invoice\Resource\Payment\Amount($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Payment\Amount($mObj);
+            }
+        },
+        'PaymentDataSca'         => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Payment\Data\Sca')) {
+                return new \App\Invoice\Resource\Payment\Data\Sca($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Payment\Data\Sca($mObj);
+            }
+        },
+        'PaymentStatus'          => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Payment\Status')) {
+                return new \App\Invoice\Resource\Payment\Status($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Payment\Status($mObj);
+            }
+        },
+        'PaymentUrls'            => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Payment\Urls')) {
+                return new \App\Invoice\Resource\Payment\Urls($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Payment\Urls($mObj);
+            }
+        },
         'Refund'                 => function ($mObj) {
             if (class_exists('\App\Invoice\Resource\Refund')) {
                 return new \App\Invoice\Resource\Refund($mObj);
             } else {
                 return new \Nails\Invoice\Resource\Refund($mObj);
+            }
+        },
+        'RefundAmount'           => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Refund\Amount')) {
+                return new \App\Invoice\Resource\Refund\Amount($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Refund\Amount($mObj);
+            }
+        },
+        'RefundStatus'           => function ($mObj) {
+            if (class_exists('\App\Invoice\Resource\Refund\Status')) {
+                return new \App\Invoice\Resource\Refund\Status($mObj);
+            } else {
+                return new \Nails\Invoice\Resource\Refund\Status($mObj);
             }
         },
         'Source'                 => function ($mObj) {

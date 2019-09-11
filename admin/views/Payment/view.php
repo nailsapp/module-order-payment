@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var \Nails\Invoice\Resource\Payment $payment
+ */
+?>
 <div class="group-invoice payment view">
     <div class="row">
         <div class="col-md-3">
@@ -9,7 +14,12 @@
                     <tbody>
                         <tr>
                             <td class="header">Gateway</td>
-                            <td><?=$payment->driver->label?></td>
+                            <td>
+                                <?=$payment->driver->getLabel()?>
+                                <small>
+                                    <?=$payment->driver->getSlug()?>
+                                </small>
+                            </td>
                         </tr>
                         <tr>
                             <td class="header">Transaction ID</td>

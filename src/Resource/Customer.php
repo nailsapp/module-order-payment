@@ -10,7 +10,9 @@
 namespace Nails\Invoice\Resource;
 
 use Nails\Common\Resource\Entity;
-use stdClass;
+use Nails\Factory;
+use Nails\Invoice\Constants;
+use Nails\Invoice\Resource\Customer\Address;
 
 /**
  * Class Customer
@@ -65,7 +67,41 @@ class Customer extends Entity
     public $is_deleted;
 
     /**
-     * @var stdClass Object
+     * @var Address Object
      */
     public $billing_address;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Customer constructor.
+     *
+     * @param array $mObj
+     *
+     * @throws \Nails\Common\Exception\FactoryException
+     */
+    public function __construct($mObj = [])
+    {
+        parent::__construct($mObj);
+
+        $this->billing_address = Factory::resource(
+            'CustomerAddress',
+            Constants::MODULE_SLUG,
+            (object) [
+                'line_1'   => $mObj->billing_address_line_1,
+                'line_2'   => $mObj->billing_address_line_2,
+                'town'     => $mObj->billing_address_town,
+                'county'   => $mObj->billing_address_county,
+                'postcode' => $mObj->billing_address_postcode,
+                'country'  => $mObj->billing_address_country,
+            ]
+        );
+
+        unset($this->billing_address_line_1);
+        unset($this->billing_address_line_2);
+        unset($this->billing_address_town);
+        unset($this->billing_address_county);
+        unset($this->billing_address_postcode);
+        unset($this->billing_address_country);
+    }
 }

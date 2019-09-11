@@ -780,12 +780,12 @@ class Invoice extends BaseAdmin
     /**
      * Send an invoice by email
      *
-     * @param \stdClass $oInvoice The Invoice to send
+     * @param \Nails\Invoice\Resource\Invoice $oInvoice The Invoice to send
      *
      * @return bool
      * @throws FactoryException
      */
-    protected function sendInvoice($oInvoice): bool
+    protected function sendInvoice(\Nails\Invoice\Resource\Invoice $oInvoice): bool
     {
         if (empty($oInvoice)) {
             return false;

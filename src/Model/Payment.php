@@ -180,45 +180,32 @@ class Payment extends Base
     {
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
-        /** @var Invoice $oInvoiceModel */
-        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         /** @var Refund $oRefundModel */
         $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
 
-        $oDb->select($this->getTableAlias() . '.*, i.ref invoice_ref, i.state invoice_state');
+        $oDb
+            ->select([
+                $this->getTableAlias() . '.*',
+                '(
+                    SELECT
+                        SUM(amount)
+                    FROM ' . $oRefundModel->getTableName() . ' r
+                    WHERE
+                        r.payment_id = ' . $this->getTableAlias() . '.id
+                    AND
+                    `status` IN ("' . $oRefundModel::STATUS_COMPLETE . '", "' . $oRefundModel::STATUS_PROCESSING . '")
+                ) amount_refunded',
+                '(
+                    SELECT
+                        SUM(fee)
+                    FROM ' . $oRefundModel->getTableName() . ' r
+                    WHERE
+                        r.payment_id = ' . $this->getTableAlias() . '.id
+                    AND
+                    `status` IN ("' . $oRefundModel::STATUS_COMPLETE . '", "' . $oRefundModel::STATUS_PROCESSING . '")
+                ) fee_refunded',
+            ]);
 
-        $oDb->select('
-            (
-                SELECT
-                    SUM(amount)
-                FROM ' . $oRefundModel->getTableName() . ' r
-                WHERE
-                r.payment_id = ' . $this->getTableAlias() . '.id
-                AND
-                (
-                    status = "' . $oRefundModel::STATUS_COMPLETE . '"
-                    OR
-                    status = "' . $oRefundModel::STATUS_PROCESSING . '"
-                )
-            ) amount_refunded
-        ');
-        $oDb->select('
-            (
-                SELECT
-                    SUM(fee)
-                FROM ' . $oRefundModel->getTableName() . ' r
-                WHERE
-                r.payment_id = ' . $this->getTableAlias() . '.id
-                AND
-                (
-                    status = "' . $oRefundModel::STATUS_COMPLETE . '"
-                    OR
-                    status = "' . $oRefundModel::STATUS_PROCESSING . '"
-                )
-            ) fee_refunded
-        ');
-
-        $oDb->join($oInvoiceModel->getTableName() . ' i', $this->getTableAlias() . '.invoice_id = i.id');
         parent::getCountCommon($data);
     }
 
@@ -576,7 +563,7 @@ class Payment extends Base
             $oRefundRequest = Factory::factory('RefundRequest', Constants::MODULE_SLUG);
 
             //  Set the driver to use for the request
-            $oRefundRequest->setDriver($oPayment->driver->slug);
+            $oRefundRequest->setDriver($oPayment->driver);
 
             //  Describe the charge
             $oRefundRequest->setReason($sReason);
@@ -657,96 +644,5 @@ class Payment extends Base
         $aIntegers[] = 'fee_refunded';
 
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
-        //  Status
-        $aStatuses = $this->getStatusesHuman();
-        $sStatus   = $oObj->status;
-
-        $oObj->status        = new \stdClass();
-        $oObj->status->id    = $sStatus;
-        $oObj->status->label = !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus));
-
-        //  Driver
-        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
-        $sDriver               = $oObj->driver;
-        $oDriver               = $oPaymentDriverService->getBySlug($sDriver);
-
-        if (!empty($oDriver)) {
-
-            $oObj->driver        = new \stdClass();
-            $oObj->driver->slug  = $oDriver->slug;
-            $oObj->driver->label = $oDriver->name;
-
-        } else {
-
-            $oObj->driver        = new \stdClass();
-            $oObj->driver->slug  = $oObj->driver;
-            $oObj->driver->label = $oObj->driver;
-        }
-
-        //  Currency
-        $oCurrency      = $this->oCurrency->getByIsoCode($oObj->currency);
-        $oObj->currency = $oCurrency;
-
-        //  Amount
-        $oObj->amount = (object) [
-            'raw'       => $oObj->amount,
-            'formatted' => $this->oCurrency->format(
-                $oCurrency->code, $oObj->amount / pow(10, $oCurrency->decimal_precision)
-            ),
-        ];
-
-        //  Amount refunded
-        $oObj->amount_refunded = (object) [
-            'raw'       => $oObj->amount_refunded,
-            'formatted' => $this->oCurrency->format(
-                $oCurrency->code, $oObj->amount_refunded / pow(10, $oCurrency->decimal_precision)
-            ),
-        ];
-
-        //  Fee
-        $oObj->fee = (object) [
-            'raw'       => $oObj->fee,
-            'formatted' => $this->oCurrency->format(
-                $oCurrency->code, $oObj->fee / pow(10, $oCurrency->decimal_precision)
-            ),
-        ];
-
-        //  Fee refunded
-        $oObj->fee_refunded = (object) [
-            'raw'       => $oObj->fee_refunded,
-            'formatted' => $this->oCurrency->format(
-                $oCurrency->code, $oObj->fee_refunded / pow(10, $oCurrency->decimal_precision)
-            ),
-        ];
-
-        //  Available for refund
-        $iAvailableForRefund        = $oObj->amount->raw - $oObj->amount_refunded->raw;
-        $oObj->available_for_refund = (object) [
-            'raw'       => $iAvailableForRefund,
-            'formatted' => $this->oCurrency->format(
-                $oCurrency->code, $iAvailableForRefund / pow(10, $oCurrency->decimal_precision)
-            ),
-        ];
-
-        //  Can this payment be refunded?
-        $aValidStates        = [
-            self::STATUS_PROCESSING,
-            self::STATUS_COMPLETE,
-            self::STATUS_REFUNDED_PARTIAL,
-        ];
-        $oObj->is_refundable = in_array($oObj->status->id, $aValidStates) && $oObj->available_for_refund->raw > 0;
-
-        //  URLs
-        $oObj->urls             = new \stdClass();
-        $oObj->urls->complete   = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/complete');
-        $oObj->urls->thanks     = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/thanks');
-        $oObj->urls->processing = siteUrl('invoice/payment/' . $oObj->id . '/' . $oObj->token . '/processing');
-        $oObj->urls->success    = !empty($oObj->url_success) ? siteUrl($oObj->url_success) : $oObj->urls->thanks;
-        $oObj->urls->error      = !empty($oObj->url_error) ? siteUrl($oObj->url_error) : null;
-        $oObj->urls->cancel     = !empty($oObj->url_cancel) ? siteUrl($oObj->url_cancel) : null;
-
-        //  Custom data
-        $oObj->custom_data = json_decode($oObj->custom_data);
     }
 }

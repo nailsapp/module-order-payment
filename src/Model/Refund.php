@@ -447,33 +447,6 @@ class Refund extends Base
 
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
 
-        //  Status
-        $aStatuses = $this->getStatusesHuman();
-        $sStatus   = $oObj->status;
-
-        $oObj->status = (object) [
-            'id'    => $sStatus,
-            'label' => !empty($aStatuses[$sStatus]) ? $aStatuses[$sStatus] : ucfirst(strtolower($sStatus)),
-        ];
-
-        //  Currency
-        $oCurrency = $this->oCurrency->getByIsoCode($oObj->currency);
-        unset($oObj->currency);
-
-        //  Amount
-        $oObj->amount = (object) [
-            'raw'       => $oObj->amount,
-            'formatted' => $this->oCurrency->format(
-                $oCurrency->code, $oObj->amount / pow(10, $oCurrency->decimal_precision)
-            ),
-        ];
-
-        //  Fee
-        $oObj->fee = (object) [
-            'raw'       => $oObj->fee,
-            'formatted' => $this->oCurrency->format(
-                $oCurrency->code, $oObj->fee / pow(10, $oCurrency->decimal_precision)
-            ),
-        ];
+        dd($oObj);
     }
 }

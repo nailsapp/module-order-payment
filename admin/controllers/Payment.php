@@ -154,6 +154,9 @@ class Payment extends BaseAdmin
 
         //  Define the $aData variable for the queries
         $aData = [
+            'expand'    => [
+                'invoice',
+            ],
             'sort'      => [
                 [$sSortOn, $sSortOrder],
             ],
@@ -162,9 +165,8 @@ class Payment extends BaseAdmin
         ];
 
         //  Get the items for the page
-        $totalRows                   = $oPaymentModel->countAll($aData);
-        $this->data['payments']      = $oPaymentModel->getAll($iPage, $iPerPage, $aData);
-        $this->data['invoiceStates'] = $oInvoiceModel->getStates();
+        $totalRows              = $oPaymentModel->countAll($aData);
+        $this->data['payments'] = $oPaymentModel->getAll($iPage, $iPerPage, $aData);
 
         //  Set Search and Pagination objects for the view
         $this->data['search']     = Helper::searchObject(true, $sortColumns, $sSortOn, $sSortOrder, $iPerPage, $sKeywords, $aCbFilters);

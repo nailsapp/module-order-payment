@@ -1,3 +1,9 @@
+<?php
+
+use Nails\Invoice\Resource\Invoice\Email;
+use Nails\Invoice\Resource\Refund;
+
+?>
 <div class="group-invoice invoice view">
     <div class="row">
         <div class="col-md-3">
@@ -65,12 +71,12 @@
                     <table>
                         <tbody>
 
-                        <tr>
-                            <td class="header">Sent To</td>
-                            <td>
-                                <?=mailto($invoice->email)?>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="header">Sent To</td>
+                                <td>
+                                    <?=mailto($invoice->email)?>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                     <?php
@@ -208,13 +214,39 @@
                     <tbody>
                         <?php
 
+                        /** @var \Nails\Invoice\Resource\Payment $oPayment */
                         foreach ($invoice->payments->data as $oPayment) {
 
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oPayment->id?></td>
-                                <td class="text-center"><?=$oPayment->status->label?></td>
-                                <td><?=$oPayment->driver->label?></td>
+                                <?php
+
+                                switch ($oPayment->status->id) {
+                                    case 'COMPLETE':
+                                        $sClass = 'success';
+                                        break;
+                                    case 'PENDING':
+                                        $sClass = 'warning';
+                                        break;
+                                    case 'FAILED':
+                                        $sClass = 'danger';
+                                        break;
+                                    default:
+                                        $sClass = '';
+                                        break;
+                                }
+
+                                ?>
+                                <td class="text-center <?=$sClass?>">
+                                    <?=$oPayment->status->label?>
+                                </td>
+                                <td>
+                                    <?=$oPayment->driver->getLabel()?>
+                                    <small>
+                                        <?=$oPayment->driver->getSlug()?>
+                                    </small>
+                                </td>
                                 <td><?=$oPayment->txn_id?></td>
                                 <td>
                                     <?php
@@ -253,12 +285,12 @@
 
                                     if ($oPayment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
 
-                                        $aAttr = array(
+                                        $aAttr = [
                                             'class="btn btn-xs btn-danger js-confirm-refund"',
                                             'data-max="' . $oPayment->available_for_refund->raw . '"',
                                             'data-max-formatted="' . $oPayment->available_for_refund->formatted . '"',
                                             'data-return-to="' . urlencode(current_url()) . '"',
-                                        );
+                                        ];
 
                                         echo anchor(
                                             'admin/invoice/payment/refund/' . $oPayment->id,
@@ -315,19 +347,37 @@
                     <tbody>
                         <?php
 
+                        /** @var Refund $oRefund */
                         foreach ($invoice->refunds->data as $oRefund) {
 
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oRefund->id?></td>
-                                <td class="text-center">
+                                <?php
+
+                                switch ($oRefund->status->id) {
+                                    case 'COMPLETE':
+                                        $sClass = 'success';
+                                        break;
+                                    case 'PENDING':
+                                        $sClass = 'warning';
+                                        break;
+                                    case 'FAILED':
+                                        $sClass = 'danger';
+                                        break;
+                                    default:
+                                        $sClass = '';
+                                        break;
+                                }
+
+                                ?>
+                                <td class="text-center <?=$sClass?>">
                                     <?php
 
                                     echo $oRefund->status->label;
 
                                     if (!empty($oRefund->fail_msg)) {
-
-                                        echo '<small class="text-danger">';
+                                        echo '<small>';
                                         echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
                                         echo '</small>';
                                     }
@@ -335,12 +385,8 @@
                                     ?>
                                 </td>
                                 <td><?=$oRefund->txn_id?></td>
-                                <td>
-                                    <?=$oRefund->amount->formatted?>
-                                </td>
-                                <td>
-                                    <?=$oRefund->fee->formatted?>
-                                </td>
+                                <td><?=$oRefund->amount->formatted?></td>
+                                <td><?=$oRefund->fee->formatted?></td>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->created)?>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->modified)?>
                             </tr>
@@ -358,7 +404,7 @@
 
             ?>
             <div class="panel-body text-muted">
-                No Associated Payments
+                No Associated Refunds
             </div>
             <?php
         }
@@ -386,6 +432,7 @@
                     <tbody>
                         <?php
 
+                        /** @var Email $oEmail */
                         foreach ($invoice->emails->data as $oEmail) {
 
                             ?>

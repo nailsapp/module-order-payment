@@ -27,11 +27,11 @@ class Payment extends Base
     /**
      * Completes a payment
      *
-     * @param \stdClass $oPayment The invoice object
+     * @param \Nails\Invoice\Resource\Payment $oPayment The invoice object
      *
      * @return void
      */
-    protected function complete($oPayment)
+    protected function complete(\Nails\Invoice\Resource\Payment $oPayment)
     {
         /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
         $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
@@ -73,7 +73,7 @@ class Payment extends Base
                 $oCompleteRequest = Factory::factory('CompleteRequest', Constants::MODULE_SLUG);
 
                 //  Set the driver to use for the request
-                $oCompleteRequest->setDriver($oPayment->driver->slug);
+                $oCompleteRequest->setDriver($oPayment->driver);
 
                 //  Set the payment we're completing
                 $oCompleteRequest->setPayment($oPayment->id);
@@ -128,11 +128,11 @@ class Payment extends Base
     /**
      * Shows a thank you page
      *
-     * @param \stdClass $oPayment The invoice object
+     * @param \Nails\Invoice\Resource\Payment $oPayment The invoice object
      *
      * @return void
      */
-    protected function thanks($oPayment)
+    protected function thanks(\Nails\Invoice\Resource\Payment $oPayment)
     {
         if ($oPayment->status->id === 'PROCESSING') {
             redirect($oPayment->urls->processing);
@@ -161,11 +161,11 @@ class Payment extends Base
     /**
      * Shows a thank you page which informs the user that their payment is processing
      *
-     * @param \stdClass $oPayment The invoice object
+     * @param \Nails\Invoice\Resource\Payment $oPayment The invoice object
      *
      * @return void
      */
-    protected function processing($oPayment)
+    protected function processing(\Nails\Invoice\Resource\Payment $oPayment)
     {
         if ($oPayment->status->id === 'COMPLETE') {
             redirect($oPayment->urls->thanks);

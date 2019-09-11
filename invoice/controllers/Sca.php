@@ -33,6 +33,7 @@ class Sca extends Base
         /** @var PaymentDriver $oPaymentDriverService */
         $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
 
+        /** @var \Nails\Invoice\Resource\Payment $oPayment */
         $oPayment = $oPaymentModel->getByToken($oUri->segment(4), ['expand' => ['invoice']]);
         if (empty($oPayment) || md5($oPayment->sca_data) !== $oUri->segment(5)) {
             show404();
@@ -45,7 +46,7 @@ class Sca extends Base
 
         $oScaRequest->setPayment($oPayment->id);
         $oScaRequest->setInvoice($oPayment->invoice->id);
-        $oScaRequest->setDriver($oPayment->driver->slug);
+        $oScaRequest->setDriver($oPayment->driver);
 
         $oScaResponse = $oScaRequest->execute();
 

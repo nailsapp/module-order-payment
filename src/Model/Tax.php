@@ -66,7 +66,7 @@ class Tax extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
+        $aIntegers[] = 'rate';
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-        $oObj->rate_decimal = $oObj->rate / 100;
     }
 }
