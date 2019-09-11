@@ -11,4 +11,13 @@ use Nails\Common\Resource;
  */
 class Sca extends Resource
 {
+    /**
+     * Converts the object to a JSON string
+     *
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return json_encode($this);
+    }
 }
