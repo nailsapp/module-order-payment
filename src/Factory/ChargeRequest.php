@@ -541,7 +541,7 @@ class ChargeRequest extends RequestBase
         } elseif (empty($this->oInvoice)) {
             throw new ChargeRequestException('No invoice selected.');
         } elseif (empty($this->iAmount)) {
-            throw new ChargeRequestException('Amount must be greater than zero.');
+            throw new ChargeRequestException('Amount to charge must be greater than zero.');
         } elseif (empty($this->oCurrency)) {
             throw new ChargeRequestException('No currency selected.');
         }
