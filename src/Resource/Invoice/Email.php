@@ -10,6 +10,7 @@
 namespace Nails\Invoice\Resource\Invoice;
 
 use Nails\Common\Resource\Entity;
+use Nails\Email\Constants;
 use Nails\Email\Service\Emailer;
 use Nails\Factory;
 
@@ -72,7 +73,7 @@ class Email extends Entity
         }
 
         /** @var Emailer $oEmailer */
-        $oEmailer         = Factory::service('Emailer', 'nails/module-email');
+        $oEmailer         = Factory::service('Emailer', Constants::MODULE_SLUG);
         $this->email_type = $oEmailer->getType($this->email_type);
         if (empty($this->email_type)) {
             $this->email_type = $mObj->email_type;

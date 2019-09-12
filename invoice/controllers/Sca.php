@@ -10,6 +10,7 @@
  * @link
  */
 
+use Nails\Auth;
 use Nails\Auth\Service\Session;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
@@ -67,7 +68,7 @@ class Sca extends Base
             $oError = $oScaResponse->getError();
 
             /** @var Session $oSession */
-            $oSession = Factory::service('Session', 'nails/module-auth');
+            $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
             $oSession->setFlashData('error', $oError->user);
 
             if (!empty($oPayment->urls->error)) {

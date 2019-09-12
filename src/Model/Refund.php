@@ -17,12 +17,12 @@ use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Currency;
+use Nails\Email;
 use Nails\Email\Service\Emailer;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
-use Nails\Invoice\Model\Invoice\Email;
 
 /**
  * Class Refund
@@ -367,8 +367,8 @@ class Refund extends Base
             $aEmails = array_filter($aEmails);
 
             /** @var Emailer $oEmailer */
-            $oEmailer = Factory::service('Emailer', 'nails/module-email');
-            /** @var Email $oInvoiceEmailModel */
+            $oEmailer = Factory::service('Emailer', Email\Constants::MODULE_SLUG);
+            /** @var \Nails\Invoice\Model\Invoice\Email $oInvoiceEmailModel */
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {

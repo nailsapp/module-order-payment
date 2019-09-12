@@ -10,6 +10,7 @@
  * @link
  */
 
+use Nails\Auth;
 use Nails\Auth\Service\Session;
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Input;
@@ -116,7 +117,7 @@ class Payment extends Base
 
             } catch (\Exception $e) {
                 /** @var Session $oSession */
-                $oSession = Factory::service('Session', 'nails/module-auth');
+                $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
                 $oSession->setFlashData('error', $e->getMessage());
                 redirect($oPayment->invoice->urls->payment);
             }

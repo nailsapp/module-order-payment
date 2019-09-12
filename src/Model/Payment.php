@@ -18,6 +18,7 @@ use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Common\Service\Database;
 use Nails\Currency;
+use Nails\Email;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
@@ -501,7 +502,7 @@ class Payment extends Base
             $aEmails = array_unique($aEmails);
             $aEmails = array_filter($aEmails);
 
-            $oEmailer           = Factory::service('Emailer', 'nails/module-email');
+            $oEmailer           = Factory::service('Emailer', Email\Constants::MODULE_SLUG);
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {

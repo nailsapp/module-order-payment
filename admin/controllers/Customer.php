@@ -14,6 +14,7 @@ namespace Nails\Admin\Invoice;
 
 use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
+use Nails\Auth;
 use Nails\Auth\Service\Session;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
@@ -177,7 +178,7 @@ class Customer extends BaseAdmin
                 }
 
                 /** @var Session $oSession */
-                $oSession = Factory::service('Session', 'nails/module-auth');
+                $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
                 $oSession->setFlashData('success', 'Item created successfully.');
                 redirect('admin/invoice/customer');
 
@@ -233,7 +234,7 @@ class Customer extends BaseAdmin
                 }
 
                 /** @var Session $oSession */
-                $oSession = Factory::service('Session', 'nails/module-auth');
+                $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
                 $oSession->setFlashData('success', 'Item updated successfully.');
                 redirect('admin/invoice/customer');
 
@@ -375,7 +376,7 @@ class Customer extends BaseAdmin
         }
 
         /** @var Session $oSession */
-        $oSession = Factory::service('Session', 'nails/module-auth');
+        $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
         $oSession->setFlashData($sStatus, $sMessage);
         redirect('admin/invoice/customer/index');
     }
