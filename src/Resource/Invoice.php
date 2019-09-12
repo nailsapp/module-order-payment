@@ -268,4 +268,23 @@ class Invoice extends Entity
             json_decode($this->payment_data) ?: (object) []
         );
     }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Charges this invoice
+     *
+     * @param ChargeRequest $oChargeRequest The ChareRequest object to use
+     * @param string        $sDescription   The description to give the charge
+     *
+     * @return ChargeResponse
+     * @throws InvoiceException
+     */
+    public function charge(ChargeRequest $oChargeRequest, string $sDescription = null)
+    {
+        return $oChargeRequest
+            ->setInvoice($this->id)
+            ->setDescription($sDescription ?: 'Payment for invoice ' . $this->ref)
+            ->execute();
+    }
 }
