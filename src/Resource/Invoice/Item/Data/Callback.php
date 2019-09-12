@@ -1,6 +1,6 @@
 <?php
 
-namespace Nails\Invoice\Resource\Invoice\Data;
+namespace Nails\Invoice\Resource\Invoice\Item\Data;
 
 use Nails\Common\Resource;
 use Nails\Invoice\Resource\ArbitraryData;
@@ -8,7 +8,7 @@ use Nails\Invoice\Resource\ArbitraryData;
 /**
  * Class Callback
  *
- * @package Nails\Invoice\Resource\Invoice\Data
+ * @package Nails\Invoice\Resource\Invoice\Item\Data
  */
 class Callback extends ArbitraryData
 {
