@@ -719,12 +719,13 @@ class Invoice
     /**
      * Charges an invoice
      *
-     * @param ChargeRequest $oChargeRequest
+     * @param ChargeRequest $oChargeRequest The ChareRequest object to use
+     * @param string        $sDescription   The description to give the charge
      *
      * @return ChargeResponse
      * @throws InvoiceException
      */
-    public function charge(ChargeRequest $oChargeRequest)
+    public function charge(ChargeRequest $oChargeRequest, string $sDescription = null)
     {
         if (empty($this->iId)) {
             $oInvoice = $this->save();
@@ -736,11 +737,8 @@ class Invoice
 
         return $oChargeRequest
             ->setInvoice($this->iId)
-            ->setDescription('Payment for invoice ' . $this->sRef)
-            ->execute(
-                $oInvoice->totals->raw->grand,
-                $oInvoice->currency->code
-            );
+            ->setDescription($sDescription ?: 'Payment for invoice ' . $this->sRef)
+            ->execute();
     }
 
     // --------------------------------------------------------------------------
