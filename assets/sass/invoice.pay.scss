@@ -1,5 +1,21 @@
 .nails-invoice {
+    width: 100%;
     max-width: 500px;
+    position: relative;
+
+    @media only screen and (min-width: 500px) {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .logo {
+        margin: 2rem 0;
+        text-align: center;
+
+        img {
+            max-width: 50%;
+        }
+    }
 
     &.pay {
         &.shake {

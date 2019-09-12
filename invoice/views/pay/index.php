@@ -13,7 +13,17 @@ use Nails\Invoice\Resource\Source;
  */
 
 ?>
-<div class="nails-invoice pay u-center-screen" id="js-invoice">
+<div class="nails-invoice pay" id="js-invoice">
+    <?php
+    $sLogo = logoDiscover();
+    if ($sLogo) {
+        echo '<div class="logo">';
+        echo img([
+            'src' => $sLogo,
+        ]);
+        echo '</div>';
+    }
+    ?>
     <div class="panel shakeable">
         <h1 class="panel__header text-center">
             Checkout
