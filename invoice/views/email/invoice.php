@@ -14,44 +14,44 @@
                                                     <tr>
                                                         <td>
                                                             <h1 style="font-size:25px;">
-                                                                Invoice {{payment.ref}}
+                                                                Invoice {{invoice.ref}}
                                                             </h1>
                                                         </td>
                                                     </tr>
                                                     <tr>
                                                         <td>
-                                                            {{payment.invoice.customer.label}}
-                                                            {{#payment.invoice.customer.address.line_1}}
-                                                            <br>{{payment.invoice.customer.address.line_1}}
-                                                            {{/payment.invoice.customer.address.line_1}}
+                                                            {{invoice.customer.label}}
+                                                            {{#invoice.customer.billing_address.line_1}}
+                                                            <br>{{invoice.customer.billing_address.line_1}}
+                                                            {{/invoice.customer.billing_address.line_1}}
 
-                                                            {{#payment.invoice.customer.address.line_2}}
-                                                            <br>{{payment.invoice.customer.address.line_2}}
-                                                            {{/payment.invoice.customer.address.line_2}}
+                                                            {{#invoice.customer.billing_address.line_2}}
+                                                            <br>{{invoice.customer.billing_address.line_2}}
+                                                            {{/invoice.customer.billing_address.line_2}}
 
-                                                            {{#payment.invoice.customer.address.line_town}}
-                                                            <br>{{payment.invoice.customer.address.line_town}}
-                                                            {{/payment.invoice.customer.address.line_town}}
+                                                            {{#invoice.customer.billing_address.town}}
+                                                            <br>{{invoice.customer.billing_address.town}}
+                                                            {{/invoice.customer.billing_address.town}}
 
-                                                            {{#payment.invoice.customer.address.line_county}}
-                                                            <br>{{payment.invoice.customer.address.line_county}}
-                                                            {{/payment.invoice.customer.address.line_county}}
+                                                            {{#invoice.customer.billing_address.county}}
+                                                            <br>{{invoice.customer.billing_address.county}}
+                                                            {{/invoice.customer.billing_address.county}}
 
-                                                            {{#payment.invoice.customer.address.line_postcode}}
-                                                            <br>{{payment.invoice.customer.address.line_postcode}}
-                                                            {{/payment.invoice.customer.address.line_postcode}}
+                                                            {{#invoice.customer.billing_address.postcode}}
+                                                            <br>{{invoice.customer.billing_address.postcode}}
+                                                            {{/invoice.customer.billing_address.postcode}}
 
-                                                            {{#payment.invoice.customer.address.line_country}}
-                                                            <br>{{payment.invoice.customer.address.line_country}}
-                                                            {{/payment.invoice.customer.address.line_country}}
+                                                            {{#invoice.customer.billing_address.country}}
+                                                            <br>{{invoice.customer.billing_address.country}}
+                                                            {{/invoice.customer.billing_address.country}}
 
                                                             <br><br>
 
                                                             <strong style="display: inline-block; width: 40px;">Date:</strong>
-                                                            {{payment.invoice.dated.formatted}}
+                                                            {{invoice.dated}}
                                                             <br>
                                                             <strong style="display: inline-block; width: 40px;">Due:</strong>
-                                                            {{payment.invoice.due.formatted}}
+                                                            {{invoice.due}}
                                                             <br><br>
                                                         </td>
                                                     </tr>
@@ -59,24 +59,24 @@
                                                         <td>
                                                             <table cellpadding="0" cellspacing="0" style="width: 100%;">
                                                                 <tbody>
-                                                                    {{#payment.invoice.items.data}}
+                                                                    {{#invoice.items}}
                                                                     <tr>
                                                                         <td style="border-top: #eee 1px solid; padding:10px;">
                                                                             {{label}}
                                                                             <small style="display: block; margin-top: 0.5em;">{{body}}</small>
                                                                         </td>
                                                                         <td class="alignright" style="border-top: #eee 1px solid; padding:10px; text-align:right;">
-                                                                            {{{totals.formatted.sub}}}
+                                                                            {{{totals.sub}}}
                                                                         </td>
                                                                     </tr>
-                                                                    {{/payment.invoice.items.data}}
+                                                                    {{/invoice.items}}
 
                                                                     <tr>
                                                                         <td class="alignright" width="80%" style="border-top: 2px solid #333; border-bottom: 2px solid #333; padding:10px; text-align:right;">
                                                                             <strong>VAT</strong>
                                                                         </td>
                                                                         <td class="alignright" style="border-top: 2px solid #333; border-bottom: 2px solid #333; padding:10px; text-align:right;">
-                                                                            <strong>{{{payment.invoice.totals.formatted.tax}}}</strong>
+                                                                            <strong>{{{invoice.totals.tax}}}</strong>
                                                                         </td>
                                                                     </tr>
 
@@ -85,7 +85,7 @@
                                                                             <strong>Total</strong>
                                                                         </td>
                                                                         <td class="alignright" style="border-top: 2px solid #333; border-bottom: 2px solid #333; padding:10px; text-align:right;">
-                                                                            <strong>{{{payment.invoice.totals.formatted.grand}}}</strong>
+                                                                            <strong>{{{invoice.totals.grand}}}</strong>
                                                                         </td>
                                                                     </tr>
                                                                 </tbody>

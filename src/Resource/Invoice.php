@@ -10,12 +10,16 @@
 namespace Nails\Invoice\Resource;
 
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Resource\Date;
+use Nails\Common\Resource\DateTime;
 use Nails\Common\Resource\Entity;
+use Nails\Common\Resource\ExpandableField;
 use Nails\Currency\Exception\CurrencyException;
 use Nails\Currency\Resource\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Resource\Invoice\Data;
+use Nails\Invoice\Resource\Invoice\Item;
 use Nails\Invoice\Resource\Invoice\State;
 use Nails\Invoice\Resource\Invoice\Totals;
 use Nails\Invoice\Resource\Invoice\Urls;
@@ -44,6 +48,13 @@ class Invoice extends Entity
     public $customer_id;
 
     /**
+     * The customer (expandable field)
+     *
+     * @var Customer
+     */
+    public $customer;
+
+    /**
      * The invoice's state
      *
      * @var State
@@ -53,7 +64,7 @@ class Invoice extends Entity
     /**
      * The invoice's date
      *
-     * @var Resource\DateTime
+     * @var Date
      */
     public $dated;
 
@@ -67,14 +78,14 @@ class Invoice extends Entity
     /**
      * The invoice's due date
      *
-     * @var Resource\DateTime
+     * @var Date
      */
     public $due;
 
     /**
      * The invoice's paid date
      *
-     * @var Resource\DateTime
+     * @var DateTime
      */
     public $paid;
 
@@ -155,6 +166,13 @@ class Invoice extends Entity
      */
     public $urls;
 
+    /**
+     * The invoice items (expandable field)
+     *
+     * @var ExpandableField
+     */
+    public $items;
+
     // --------------------------------------------------------------------------
 
     /**
@@ -186,9 +204,9 @@ class Invoice extends Entity
 
         // --------------------------------------------------------------------------
 
-        //  Dates
-        $this->dated = Factory::resource('DateTime', null, (object) ['raw' => $mObj->dated . ' 00:00:00']);
-        $this->due   = Factory::resource('DateTime', null, (object) ['raw' => $mObj->due . ' 23:59:59']);
+        //  Dates and DateTimes
+        $this->dated = Factory::resource('Date', null, (object) ['raw' => $mObj->dated]);
+        $this->due   = Factory::resource('Date', null, (object) ['raw' => $mObj->due]);
         $this->paid  = Factory::resource('DateTime', null, (object) ['raw' => $mObj->paid]);
 
         // --------------------------------------------------------------------------
@@ -274,17 +292,16 @@ class Invoice extends Entity
     /**
      * Charges this invoice
      *
-     * @param ChargeRequest $oChargeRequest The ChareRequest object to use
-     * @param string        $sDescription   The description to give the charge
+     * @param ChargeRequest $oChargeRequest
      *
      * @return ChargeResponse
      * @throws InvoiceException
      */
-    public function charge(ChargeRequest $oChargeRequest, string $sDescription = null)
+    public function charge(ChargeRequest $oChargeRequest)
     {
         return $oChargeRequest
             ->setInvoice($this->id)
-            ->setDescription($sDescription ?: 'Payment for invoice ' . $this->ref)
+            ->setDescription('Payment for invoice ' . $this->id)
             ->execute();
     }
 }

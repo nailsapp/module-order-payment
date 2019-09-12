@@ -16,6 +16,7 @@ use Nails\Admin\Helper;
 use Nails\Admin\Nav;
 use Nails\Auth\Service\Session;
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\FormValidation;
 use Nails\Common\Service\Input;
@@ -699,6 +700,51 @@ class Invoice extends BaseAdmin
         $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice');
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Resends an invoice
+     *
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function resend()
+    {
+        if (!userHasPermission('admin:invoice:invoice:browse')) {
+            unauthorised();
+        }
+
+        // --------------------------------------------------------------------------
+
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var Session $oSession */
+        $oSession = Factory::service('Session', 'nails/module-auth');
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+
+        /** @var \Nails\Invoice\Resource\Invoice $oInvoice */
+        $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
+        if (!$oInvoice) {
+            show404();
+        }
+
+        if ($this->oInvoiceModel->send($oInvoice->id)) {
+            $oSession->setFlashData('success', 'Invoice sent successfully.');
+        } else {
+            $oSession->setFlashData('error', 'Failed to resend invoice. ' . $this->oInvoiceModel->lastError());
+        }
+
+        //  @todo (Pablo - 2019-09-12) - Use returnToIndex() when this controller uses the Defaultcontroller
+        $sReferrer = $oInput->server('HTTP_REFERER');
+
+        if (!empty($sReferrer)) {
+            redirect($sReferrer);
+        } else {
+            redirect('admin/invoice/invoice');
+        }
     }
 
     // --------------------------------------------------------------------------

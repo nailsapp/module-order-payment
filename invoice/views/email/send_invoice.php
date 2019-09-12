@@ -1,5 +1,5 @@
 <p>
-    Invoice <strong>{{invoice.ref}}</strong> has been generated for your account and is due {{invoice.due.formatted}}.
+    An invoice has been raised for your account and is due {{invoice.due}}.
 </p>
 <?php
 include __DIR__ . DIRECTORY_SEPARATOR . 'invoice.php';

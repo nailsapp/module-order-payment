@@ -3,21 +3,13 @@
 namespace Nails\Invoice\Resource\Payment\Data;
 
 use Nails\Common\Resource;
+use Nails\Invoice\Resource\ArbitraryData;
 
 /**
  * Class Status
  *
  * @package Nails\Invoice\Resource\Payment\Data
  */
-class Sca extends Resource
+class Sca extends ArbitraryData
 {
-    /**
-     * Converts the object to a JSON string
-     *
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return json_encode($this);
-    }
 }

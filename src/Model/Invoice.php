@@ -785,7 +785,8 @@ class Invoice extends Base
     {
         try {
 
-            $oInvoice = $this->getById($iInvoiceId, ['expand' => ['customer']]);
+            /** @var \Nails\Invoice\Resource\Invoice $oInvoice */
+            $oInvoice = $this->getById($iInvoiceId, ['expand' => ['customer', 'items']]);
 
             if (empty($oInvoice)) {
                 throw new InvoiceException('Invalid Invoice ID');
@@ -822,7 +823,39 @@ class Invoice extends Base
             $oEmail       = new \stdClass();
             $oEmail->type = 'send_invoice';
             $oEmail->data = [
-                'invoice' => $oInvoice,
+                'invoice' => [
+                    'id'       => $oInvoice->id,
+                    'ref'      => $oInvoice->ref,
+                    'due'      => $oInvoice->due->formatted,
+                    'dated'    => $oInvoice->dated->formatted,
+                    'customer' => [
+                        'id'      => $oInvoice->customer->id,
+                        'label'   => $oInvoice->customer->label,
+                        'address' => $oInvoice->customer->billing_address,
+                    ],
+                    'urls'     => [
+                        'view'     => $oInvoice->urls->view,
+                        'payment'  => $oInvoice->urls->payment,
+                        'download' => $oInvoice->urls->download,
+                    ],
+                    'totals'   => [
+                        'sub'        => $oInvoice->totals->formatted->sub,
+                        'tax'        => $oInvoice->totals->formatted->tax,
+                        'grand'      => $oInvoice->totals->formatted->grand,
+                        'paid'       => $oInvoice->totals->formatted->paid,
+                        'processing' => $oInvoice->totals->formatted->processing,
+                    ],
+                    'items'    => array_map(function (\Nails\Invoice\Resource\Invoice\Item $oItem) {
+                        return [
+                            'id'     => $oItem->id,
+                            'label'  => $oItem->label,
+                            'body'   => $oItem->body,
+                            'totals' => [
+                                'sub' => $oItem->totals->formatted->sub,
+                            ],
+                        ];
+                    }, $oInvoice->items->data),
+                ],
             ];
 
             foreach ($aEmails as $sEmail) {
