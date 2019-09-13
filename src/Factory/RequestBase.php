@@ -149,7 +149,6 @@ class RequestBase
     public function setDriver($mDriver)
     {
         if (!($mDriver instanceof Driver\Payment)) {
-
             $aDrivers = $this->oDriverService->getEnabled();
             $oDriver  = null;
 
@@ -166,7 +165,6 @@ class RequestBase
             }
 
             $this->oDriver = $oDriver;
-
         } else {
             $this->oDriver = $mDriver;
         }
@@ -199,7 +197,6 @@ class RequestBase
     public function setInvoice($mInvoice)
     {
         if (!($mInvoice instanceof Resource\Invoice)) {
-
             $oModel = $this->oInvoiceModel;
             /** @var Resource\Invoice $oInvoice */
             $oInvoice = $oModel->getById(
@@ -212,7 +209,6 @@ class RequestBase
             }
 
             $this->oInvoice = $oInvoice;
-
         } else {
             $this->oInvoice = $mInvoice;
         }
@@ -257,7 +253,6 @@ class RequestBase
             }
 
             $this->oPayment = $oPayment;
-
         } else {
             $this->oPayment = $mPayment;
         }
@@ -299,7 +294,6 @@ class RequestBase
             }
 
             $this->oSource = $oSource;
-
         } else {
             $this->oSource = $mSource;
         }
@@ -344,7 +338,6 @@ class RequestBase
             }
 
             $this->oRefund = $oRefund;
-
         } else {
             $this->oRefund = $mRefund;
         }

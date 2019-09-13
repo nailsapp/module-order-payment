@@ -117,7 +117,6 @@ class Source extends Base
 
         $oDb->trans_begin();
         try {
-
             $oDb->set('is_default', false);
             $oDb->where('customer_id', $iCustomerId);
             $oDb->where('id !=', $iSourceId);
@@ -139,7 +138,6 @@ class Source extends Base
             $oDb->trans_commit();
 
             return true;
-
         } catch (\Exception $e) {
             $oDb->trans_rollback();
             return false;

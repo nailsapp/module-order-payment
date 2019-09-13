@@ -254,7 +254,6 @@ class Payment extends Base
         $sRedirect  = urldecode($oInput->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
 
         try {
-
             $oPayment = $oPaymentModel->getById($iPaymentId);
             if (empty($oPaymentModel)) {
                 throw new NailsException('Invalid payment ID.');
@@ -273,7 +272,6 @@ class Payment extends Base
 
             $sStatus  = 'success';
             $sMessage = 'Payment refunded successfully.';
-
         } catch (NailsException $e) {
             $sStatus  = 'error';
             $sMessage = $e->getMessage();

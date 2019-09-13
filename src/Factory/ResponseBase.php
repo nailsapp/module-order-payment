@@ -139,7 +139,6 @@ class ResponseBase
     public function setStatus(string $sStatus): ResponseBase
     {
         if (!$this->isLocked()) {
-
             $aStatuses = $this->getStatuses();
             if (!in_array($sStatus, $aStatuses)) {
                 throw new ResponseException('"' . $sStatus . '" is an invalid response status.', 1);
@@ -203,7 +202,6 @@ class ResponseBase
         $sReasonCode = null,
         string $sUserFeedback = ''
     ): ResponseBase {
-
         $this->setErrorMessage(trim($sReasonMsg));
         $this->setErrorCode(trim($sReasonCode));
         $this->setErrorMessageUser(trim($sUserFeedback));

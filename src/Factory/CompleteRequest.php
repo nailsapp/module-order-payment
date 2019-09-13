@@ -74,7 +74,6 @@ class CompleteRequest extends RequestBase
                 $oCompleteResponse->getTransactionId(),
                 $oCompleteResponse->getFee()
             );
-
         } elseif ($oCompleteResponse->isComplete()) {
 
             //  Driver has confirmed that payment has been taken.
@@ -82,7 +81,6 @@ class CompleteRequest extends RequestBase
                 $oCompleteResponse->getTransactionId(),
                 $oCompleteResponse->getFee()
             );
-
         } elseif ($oCompleteResponse->isFailed()) {
 
             /**

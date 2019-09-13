@@ -55,8 +55,7 @@
                             } else {
                                 $sClass = '';
                                 $sText  = $oPayment->status->label;
-                            }
-                            ?>
+                            } ?>
                             <td class="status <?=$sClass?>">
                                 <?=$sText?>
                             </td>
@@ -64,7 +63,6 @@
                                 <?php
 
                                 if (!empty($oPayment->invoice)) {
-
                                     if ($oPayment->invoice->state->id == 'DRAFT') {
                                         $sUrl = 'admin/invoice/invoice/edit/' . $oPayment->invoice->id;
                                     } else {
@@ -77,29 +75,25 @@
                                     );
                                 } else {
                                     echo '<span class="text-muted">&mdash;</span>';
-                                }
-
-                                ?>
+                                } ?>
                             </td>
                             <td class="amount">
                                 <?php
                                 echo $oPayment->amount->formatted;
-                                if ($oPayment->amount_refunded->raw) {
-                                    echo '<small>';
-                                    echo 'Refunded: ' . $oPayment->amount_refunded->formatted;
-                                    echo '</small>';
-                                }
-                                ?>
+                        if ($oPayment->amount_refunded->raw) {
+                            echo '<small>';
+                            echo 'Refunded: ' . $oPayment->amount_refunded->formatted;
+                            echo '</small>';
+                        } ?>
                             </td>
                             <td class="fee">
                                 <?php
                                 echo $oPayment->fee->formatted;
-                                if ($oPayment->fee_refunded->raw) {
-                                    echo '<small>';
-                                    echo 'Refunded: ' . $oPayment->fee_refunded->formatted;
-                                    echo '</small>';
-                                }
-                                ?>
+                        if ($oPayment->fee_refunded->raw) {
+                            echo '<small>';
+                            echo 'Refunded: ' . $oPayment->fee_refunded->formatted;
+                            echo '</small>';
+                        } ?>
                             </td>
                             <td class="currency">
                                 <?=$oPayment->currency->code?>
@@ -112,14 +106,13 @@
                                     lang('action_view'),
                                     'class="btn btn-xs btn-default"'
                                 );
-                                if (!empty($oPayment->invoice) && userHasPermission('admin:invoice:invoice:manage')) {
-                                    echo anchor(
+                        if (!empty($oPayment->invoice) && userHasPermission('admin:invoice:invoice:manage')) {
+                            echo anchor(
                                         'admin/invoice/invoice/view/' . $oPayment->invoice->id,
                                         'View Invoice',
                                         'class="btn btn-xs btn-default"'
                                     );
-                                }
-                                ?>
+                        } ?>
                             </td>
                         </tr>
                         <?php

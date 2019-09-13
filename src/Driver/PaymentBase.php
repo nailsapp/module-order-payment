@@ -76,16 +76,13 @@ abstract class PaymentBase extends Base implements Payment
         ChargeRequest $oChargeRequest,
         array $aData
     ): void {
-
         $mPaymentFields = $this->getPaymentFields();
 
         if (is_string($mPaymentFields) && $mPaymentFields == static::PAYMENT_FIELDS_CARD) {
-
             $this->setChargeRequestCardDetails(
                 $oChargeRequest,
                 $aData
             );
-
         } elseif (is_array($mPaymentFields)) {
             $this->setChargeRequestFields(
                 $oChargeRequest,
@@ -141,7 +138,6 @@ abstract class PaymentBase extends Base implements Payment
         array $aData,
         array $aFields = null
     ) {
-
         if (is_null($aFields)) {
             $aFields = $this->getPaymentFields();
         }
@@ -149,7 +145,6 @@ abstract class PaymentBase extends Base implements Payment
         $oPaymentData = (object) [];
 
         foreach ($aFields as $aField) {
-
             $sKey   = getFromArray('key', $aField);
             $sValue = getFromArray($sKey, $aData);
 

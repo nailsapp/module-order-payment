@@ -150,7 +150,6 @@ class ChargeRequest extends RequestBase
         //  Validate
         if (preg_match('/[^\d ]/', $sCardNumber)) {
             throw new ChargeRequestException('Invalid card number; can only contain digits and spaces.', 1);
-
         }
         $this->oCard->number = $sCardNumber;
         return $this;
@@ -182,20 +181,16 @@ class ChargeRequest extends RequestBase
     {
         //  Validate
         if (is_numeric($sCardExpMonth)) {
-
             $iMonth = (int) $sCardExpMonth;
             if ($iMonth < 1 || $iMonth > 12) {
-
                 throw new ChargeRequestException(
                     '"' . $sCardExpMonth . '" is an invalid expiry month; must be in the range 1-12.',
                     1
                 );
-
             } else {
                 $this->oCard->exp->month = $iMonth < 10 ? '0' . $iMonth : (string) $iMonth;
                 return $this;
             }
-
         } else {
             throw new ChargeRequestException(
                 '"' . $sCardExpMonth . '" is an invalid expiry month; must be numeric.',
@@ -253,14 +248,12 @@ class ChargeRequest extends RequestBase
 
                 $this->oCard->exp->year = (string) $iYear;
                 return $this;
-
             } else {
                 throw new ChargeRequestException(
                     '"' . $sCardExpYear . '" is an invalid expiry year; must be 2 or 4 digits.',
                     1
                 );
             }
-
         } else {
             throw new ChargeRequestException(
                 '"' . $sCardExpYear . '" is an invalid expiry year; must be numeric.',
@@ -553,7 +546,6 @@ class ChargeRequest extends RequestBase
         if (null !== $iAmount) {
             $this->setAmount($iAmount);
         } elseif (empty($this->iAmount) && !empty($this->oInvoice)) {
-
             $iTotal      = $this->oInvoice->totals->raw->grand;
             $iPaid       = $this->oInvoice->totals->raw->paid;
             $iProcessing = $this->oInvoice->totals->raw->processing;
@@ -610,7 +602,6 @@ class ChargeRequest extends RequestBase
 
         //  Create a charge against the invoice if one hasn't been specified
         if (empty($this->oPayment)) {
-
             $iPaymentId = $this->oPaymentModel->create([
                 'driver'           => $this->oDriver->getSlug(),
                 'description'      => $this->getDescription(),
@@ -703,7 +694,6 @@ class ChargeRequest extends RequestBase
                 $oChargeResponse->setIsRedirect(true);
                 $oChargeResponse->setRedirectUrl($sRedirectUrl);
             }
-
         } elseif ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
 
             /**
@@ -715,11 +705,8 @@ class ChargeRequest extends RequestBase
             $aPostData    = $oChargeResponse->getRedirectPostData();
 
             if (empty($aPostData)) {
-
                 redirect($sRedirectUrl);
-
             } else {
-
                 $oView = Factory::service('View');
                 echo $oView->load('structure/header/blank', getControllerData(), true);
                 echo $oView->load(
@@ -733,7 +720,6 @@ class ChargeRequest extends RequestBase
                 echo $oView->load('structure/footer/blank', getControllerData(), true);
                 exit();
             }
-
         } elseif ($oChargeResponse->isProcessing()) {
 
             //  Driver has started processing the charge, but it hasn't been confirmed yet
@@ -741,7 +727,6 @@ class ChargeRequest extends RequestBase
                 $oChargeResponse->getTransactionId(),
                 $oChargeResponse->getFee()
             );
-
         } elseif ($oChargeResponse->isComplete()) {
 
             //  Driver has confirmed that payment has been taken.
@@ -749,7 +734,6 @@ class ChargeRequest extends RequestBase
                 $oChargeResponse->getTransactionId(),
                 $oChargeResponse->getFee()
             );
-
         } elseif ($oChargeResponse->isFailed()) {
 
             //  Driver reported a failure

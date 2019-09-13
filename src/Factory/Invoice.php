@@ -631,7 +631,6 @@ class Invoice
         /** @var Model\Invoice $oInvoiceModel */
         $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         if (empty($this->iId)) {
-
             $oInvoice = $oInvoiceModel->create($this->toArray(), true);
             if (empty($oInvoice)) {
                 throw new InvoiceException($oInvoiceModel->lastError());
@@ -639,7 +638,6 @@ class Invoice
 
             $this->setRef($oInvoice->ref);
             $this->setId($oInvoice->id);
-
         } else {
             $oInvoice = $oInvoiceModel->getById($this->iId);
         }

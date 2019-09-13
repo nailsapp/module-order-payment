@@ -167,9 +167,7 @@ class Customer extends Base
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
         if ($oInput->post()) {
-
             try {
-
                 $this->formValidation();
                 /** @var \Nails\Invoice\Model\Customer $oCustomerModel */
                 $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
@@ -181,7 +179,6 @@ class Customer extends Base
                 $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
                 $oSession->setFlashData('success', 'Item created successfully.');
                 redirect('admin/invoice/customer');
-
             } catch (\Exception $e) {
                 $this->data['error'] = $e->getMessage();
             }
@@ -224,9 +221,7 @@ class Customer extends Base
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
         if ($oInput->post()) {
-
             try {
-
                 $this->formValidation();
 
                 if (!$oCustomerModel->update($itemId, $this->prepPostData())) {
@@ -237,7 +232,6 @@ class Customer extends Base
                 $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
                 $oSession->setFlashData('success', 'Item updated successfully.');
                 redirect('admin/invoice/customer');
-
             } catch (\Exception $e) {
                 $this->data['error'] = $e->getMessage();
             }
@@ -357,19 +351,13 @@ class Customer extends Base
         }
 
         if ($oCustomer->invoices->count) {
-
             $sStatus  = 'error';
             $sMessage = 'Cannot delete a customer who has invoices.';
-
         } else {
-
             if ($oCustomerModel->delete($oCustomer->id)) {
-
                 $sStatus  = 'success';
                 $sMessage = 'Invoice deleted successfully!';
-
             } else {
-
                 $sStatus  = 'error';
                 $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
             }

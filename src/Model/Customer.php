@@ -84,7 +84,6 @@ class Customer extends Base
     {
         //  If there's a search term, then we better get %LIKING%
         if (!empty($aData['keywords'])) {
-
             if (empty($aData['or_like'])) {
                 $aData['or_like'] = [];
             }
@@ -123,7 +122,6 @@ class Customer extends Base
     public function create(array $aData = [], $bReturnObject = false)
     {
         try {
-
             if (empty($aData['organisation']) && empty($aData['first_name']) && empty($aData['last_name'])) {
                 throw new InvoiceException('"organisation", "first_name" or "last_name" must be supplied.', 1);
             }
@@ -132,7 +130,6 @@ class Customer extends Base
             $aData['label'] = $this->compileLabel($aData);
 
             return parent::create($aData, $bReturnObject);
-
         } catch (\Exception $e) {
             $this->setError($e->getMessage());
             return false;
@@ -152,7 +149,6 @@ class Customer extends Base
     public function update($iCustomerId, array $aData = []): bool
     {
         try {
-
             $sKeyExistsLabel = array_key_exists('label', $aData);
             $sKeyExistsOrg   = array_key_exists('organisation', $aData);
             $sKeyExistsFirst = array_key_exists('first_name', $aData);
@@ -170,7 +166,6 @@ class Customer extends Base
             }
 
             return parent::update($iCustomerId, $aData);
-
         } catch (\Exception $e) {
             $this->setError($e->getMessage());
             return false;

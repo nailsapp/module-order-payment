@@ -122,9 +122,7 @@ class Settings extends Base
             $oFormValidation->set_message('valid_email', lang('fv_valid_email'));
 
             if ($oFormValidation->run()) {
-
                 try {
-
                     $aSettings = [
                         'business_name'           => trim(strip_tags($oInput->post('business_name'))),
                         'business_address'        => trim(strip_tags($oInput->post('business_address'))),
@@ -150,12 +148,10 @@ class Settings extends Base
 
                     $oDb->trans_commit();
                     $this->data['success'] = 'Invoice &amp; Payment settings were saved.';
-
                 } catch (\Exception $e) {
                     $oDb->trans_rollback();
                     $this->data['error'] = 'There was a problem saving settings. ' . $e->getMessage();
                 }
-
             } else {
                 $this->data['error'] = lang('fv_there_were_errors');
             }

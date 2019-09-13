@@ -241,7 +241,6 @@ class Invoice extends Base
         }
 
         if (empty($aData['select'])) {
-
             $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
             $sPaymentClass = get_class($oPaymentModel);
 
@@ -316,7 +315,6 @@ class Invoice extends Base
         $oDb = Factory::service('Database');
 
         try {
-
             if (empty($aData['customer_id']) && empty($aData['email'])) {
                 throw new InvoiceException('Either "customer_id" or "email" field must be supplied.');
             }
@@ -351,7 +349,6 @@ class Invoice extends Base
             );
 
             return $bReturnObject ? $oInvoice : $oInvoice->id;
-
         } catch (\Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
@@ -377,7 +374,6 @@ class Invoice extends Base
         $oDb = Factory::service('Database');
 
         try {
-
             $sKeyExistsCustomerId = array_key_exists('customer_id', $aData);
             $sKeyExistsEmail      = array_key_exists('email', $aData);
 
@@ -428,7 +424,6 @@ class Invoice extends Base
             );
 
             return $bResult;
-
         } catch (\Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
@@ -469,7 +464,6 @@ class Invoice extends Base
 
         //  Calculate the due date
         if (!array_key_exists('due', $aData) && !empty($aData['dated'])) {
-
             if (array_key_exists('terms', $aData)) {
                 $iTerms = (int) $aData['terms'];
             } else {
@@ -496,11 +490,9 @@ class Invoice extends Base
 
         //  Sanitize each item
         if (array_key_exists('items', $aData)) {
-
             $iCounter = 0;
             $aTaxIds  = [];
             foreach ($aData['items'] as &$aItem) {
-
                 if ($aItem instanceof Item) {
                     $aItem = $aItem->toArray();
                 }
@@ -589,12 +581,10 @@ class Invoice extends Base
 
         //  Missing items
         if (array_key_exists('items', $aData) && $aData['state'] !== self::STATE_DRAFT && empty($aData['items'])) {
-
             throw new InvoiceException(
                 'At least one line item must be provided if saving a non-draft invoice.',
                 1
             );
-
         } elseif (array_key_exists('items', $aData)) {
 
             //  Check each item
@@ -674,7 +664,6 @@ class Invoice extends Base
 
         //  Update/insert all known items
         foreach ($aItems as $aItem) {
-
             $aData = [
                 'label'         => getFromArray('label', $aItem, null),
                 'body'          => getFromArray('body', $aItem, null),
@@ -703,7 +692,6 @@ class Invoice extends Base
                 } else {
                     $aTouchedIds[] = $aItem['id'];
                 }
-
             } else {
 
                 //  Insert
@@ -720,7 +708,6 @@ class Invoice extends Base
 
         //  Delete those we no longer require
         if (!empty($aTouchedIds)) {
-
             $oDb = Factory::service('Database');
             $oDb->where_not_in('id', $aTouchedIds);
             $oDb->where('invoice_id', $iInvoiceId);
@@ -762,11 +749,9 @@ class Invoice extends Base
         $oNow = Factory::factory('DateTime');
 
         do {
-
             $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
             $bRefExists = (bool) $oDb->count_all_results($this->getTableName());
-
         } while ($bRefExists);
 
         return $sRef;
@@ -801,19 +786,12 @@ class Invoice extends Base
 
                 //  @todo (Pablo - 2019-08-02) - validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
-
             } elseif (!empty($oInvoice->customer->billing_email)) {
-
                 $aEmails = explode(',', $oInvoice->customer->billing_email);
-
             } elseif (!empty($oInvoice->customer->email)) {
-
                 $aEmails = [$oInvoice->customer->email];
-
             } elseif (!empty($oInvoice->email)) {
-
                 $aEmails = [$oInvoice->email];
-
             } else {
                 throw new InvoiceException('No email address to send the invoice to.');
             }
@@ -860,13 +838,11 @@ class Invoice extends Base
             ];
 
             foreach ($aEmails as $sEmail) {
-
                 $oEmail->to_email = $sEmail;
 
                 $oResult = $oEmailer->send($oEmail);
 
                 if (!empty($oResult)) {
-
                     $oInvoiceEmailModel->create(
                         [
                             'invoice_id' => $oInvoice->id,
@@ -875,12 +851,10 @@ class Invoice extends Base
                             'recipient'  => $oEmail->to_email,
                         ]
                     );
-
                 } else {
                     throw new InvoiceException($oEmailer->lastError());
                 }
             }
-
         } catch (\Exception $e) {
             $this->setError($e->getMessage());
             return false;
@@ -905,7 +879,6 @@ class Invoice extends Base
         $oInvoice = $this->getById($iInvoiceId);
 
         if (!empty($oInvoice)) {
-
             $iPaid = $oInvoice->totals->raw->paid;
             if ($bIncludeProcessing) {
                 $iPaid += $oInvoice->totals->raw->processing;
@@ -1085,7 +1058,6 @@ class Invoice extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
-
         $aIntegers[] = 'terms';
         $aIntegers[] = 'customer_id';
         $aIntegers[] = 'sub_total';

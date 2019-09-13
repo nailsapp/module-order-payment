@@ -226,7 +226,6 @@ class Payment extends Base
         $oDb = Factory::service('Database');
 
         try {
-
             $oDb->trans_begin();
 
             if (empty($aData['ref'])) {
@@ -252,7 +251,6 @@ class Payment extends Base
             );
 
             return $mPayment;
-
         } catch (\Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
@@ -276,7 +274,6 @@ class Payment extends Base
         $oDb = Factory::service('Database');
 
         try {
-
             $oDb->trans_begin();
 
             unset($aData['ref']);
@@ -299,7 +296,6 @@ class Payment extends Base
             );
 
             return $bResult;
-
         } catch (\Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
@@ -323,11 +319,9 @@ class Payment extends Base
         $oNow = Factory::factory('DateTime');
 
         do {
-
             $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
             $bRefExists = (bool) $oDb->count_all_results($this->getTableName());
-
         } while ($bRefExists);
 
         return $sRef;
@@ -448,7 +442,6 @@ class Payment extends Base
     public function sendReceipt($iPaymentId, $sEmailOverride = null): bool
     {
         try {
-
             $oPayment = $this->getById(
                 $iPaymentId,
                 [
@@ -506,12 +499,10 @@ class Payment extends Base
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
-
                 $oEmail->to_email = $sEmail;
                 $oResult          = $oEmailer->send($oEmail);
 
                 if (!empty($oResult)) {
-
                     $oInvoiceEmailModel->create(
                         [
                             'invoice_id' => $oPayment->invoice->id,
@@ -520,12 +511,10 @@ class Payment extends Base
                             'recipient'  => $oEmail->to_email,
                         ]
                     );
-
                 } else {
                     throw new PaymentException($oEmailer->lastError());
                 }
             }
-
         } catch (\Exception $e) {
             $this->setError($e->getMessage());
             return false;
@@ -587,7 +576,6 @@ class Payment extends Base
             }
 
             return true;
-
         } catch (PaymentException $e) {
             $this->setError($e->getMessage());
             return false;
@@ -637,7 +625,6 @@ class Payment extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
-
         $aIntegers[] = 'invoice_id';
         $aIntegers[] = 'amount';
         $aIntegers[] = 'amount_refunded';

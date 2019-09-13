@@ -274,7 +274,6 @@ class Invoice extends Base
             if ($this->validatePost()) {
                 $oInvoice = $this->oInvoiceModel->create($this->getObjectFromPost(), true);
                 if (!empty($oInvoice)) {
-
                     $this->sendInvoice($oInvoice);
 
                     /** @var Session $oSession */
@@ -282,11 +281,9 @@ class Invoice extends Base
                     $oSession->setFlashData('success', 'Invoice created successfully.');
 
                     redirect('admin/invoice/invoice');
-
                 } else {
                     $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->lastError();
                 }
-
             } else {
                 $this->data['error'] = lang('fv_there_were_errors');
             }
@@ -306,11 +303,9 @@ class Invoice extends Base
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
         if ($oInput->post()) {
-
             $aItems = $oInput->post('items') ?: [];
             //  Tidy up post data as expected by JS
             foreach ($aItems as &$aItem) {
-
                 $aItem['label'] = html_entity_decode($aItem['label'], ENT_QUOTES, 'UTF-8');
                 $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
 
@@ -326,7 +321,6 @@ class Invoice extends Base
                 $aItem['unit']     = new \stdClass();
                 $aItem['unit']->id = $sUnit;
             }
-
         } else {
             $aItems = [];
         }
@@ -408,7 +402,6 @@ class Invoice extends Base
         if ($oInput->post()) {
             if ($this->validatePost()) {
                 if ($oModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
-
                     $oInvoice = $oModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
@@ -422,7 +415,6 @@ class Invoice extends Base
                     } else {
                         redirect('admin/invoice/invoice');
                     }
-
                 } else {
                     $this->data['error'] = 'Failed to update invoice. ' . $oModel->lastError();
                 }
@@ -444,11 +436,9 @@ class Invoice extends Base
 
         //  Invoice Items
         if ($oInput->post()) {
-
             $aItems = $oInput->post('items') ?: [];
             //  Tidy up post data as expected by JS
             foreach ($aItems as &$aItem) {
-
                 $aItem['label'] = html_entity_decode($aItem['label'], ENT_QUOTES, 'UTF-8');
                 $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
 
@@ -464,7 +454,6 @@ class Invoice extends Base
                 $aItem['unit']     = new \stdClass();
                 $aItem['unit']->id = $sUnit;
             }
-
         } else {
             $aItems = $this->data['invoice']->items->data;
         }

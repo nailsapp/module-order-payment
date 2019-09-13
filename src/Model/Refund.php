@@ -150,7 +150,6 @@ class Refund extends Base
         $oDb = Factory::service('Database');
 
         try {
-
             $oDb->trans_begin();
 
             if (empty($aData['ref'])) {
@@ -170,7 +169,6 @@ class Refund extends Base
             );
 
             return $mRefund;
-
         } catch (\Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
@@ -193,7 +191,6 @@ class Refund extends Base
         $oDb = Factory::service('Database');
 
         try {
-
             $oDb->trans_begin();
 
             unset($aData['ref']);
@@ -211,7 +208,6 @@ class Refund extends Base
             );
 
             return $bResult;
-
         } catch (\Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
@@ -234,11 +230,9 @@ class Refund extends Base
         $oNow = Factory::factory('DateTime');
 
         do {
-
             $sRef = $oNow->format('Ym') . '-' . strtoupper(random_string('alnum'));
             $oDb->where('ref', $sRef);
             $bRefExists = (bool) $oDb->count_all_results($this->getTableName());
-
         } while ($bRefExists);
 
         return $sRef;
@@ -321,7 +315,6 @@ class Refund extends Base
     public function sendReceipt($iRefundId, $sEmailOverride = null)
     {
         try {
-
             $oRefund = $this->getById(
                 $iRefundId,
                 [
@@ -372,7 +365,6 @@ class Refund extends Base
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
-
                 $oEmail->to_email = $sEmail;
                 $oResult          = $oEmailer->send($oEmail);
 
@@ -389,7 +381,6 @@ class Refund extends Base
                     throw new PaymentException($oEmailer->lastError(), 1);
                 }
             }
-
         } catch (\Exception $e) {
             $this->setError($e->getMessage());
             return false;
@@ -440,7 +431,6 @@ class Refund extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
-
         $aIntegers[] = 'payment_id';
         $aIntegers[] = 'amount';
         $aIntegers[] = 'fee';

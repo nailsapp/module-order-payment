@@ -142,7 +142,6 @@ class Invoice extends Base
 
         //  Only open invoices can be paid
         if ($oInvoice->state->id !== $oInvoiceModel::STATE_OPEN && !$oInvoice->is_scheduled) {
-
             if (in_array($oInvoice->state->id, [$oInvoiceModel::STATE_PAID, $oInvoiceModel::STATE_PAID_PROCESSING])) {
 
                 //  If there are payments against this invoice which are processing, then deny payment
@@ -170,9 +169,7 @@ class Invoice extends Base
                             'structure/footer',
                         ]);
                     return;
-
                 } else {
-
                     $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
 
                     Factory::service('View')
@@ -183,7 +180,6 @@ class Invoice extends Base
                         ]);
                     return;
                 }
-
             } else {
                 show404();
             }
@@ -197,7 +193,6 @@ class Invoice extends Base
         $aAvailableDrivers = [];
 
         foreach ($aEnabledDrivers as $oDriver) {
-
             $oDriverInstance = $oPaymentDriverService->getInstance($oDriver->slug);
 
             if ($oDriverInstance->isAvailable($oInvoice) && $oDriverInstance->supportsCurrency($oInvoice->currency)) {
@@ -222,11 +217,9 @@ class Invoice extends Base
 
         $iCustomerId = $oCustomerModel->getCustomerIdforActiveUser();
         if ($iCustomerId) {
-
             $aSavedPaymentSources = $oSourceModel->getForCustomer(
                 $iCustomerId
             );
-
         } else {
             $aSavedPaymentSources = [];
         }
@@ -240,7 +233,6 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         if (!empty($aAvailableDrivers) && $oInput->post()) {
-
             try {
 
                 /**
@@ -261,7 +253,6 @@ class Invoice extends Base
                  * will be a numeric ID, validate this belongs to the user.
                  */
                 if (!empty($aSavedPaymentSources) && is_numeric($sSelectedDriverSlug)) {
-
                     if (!array_key_exists($sSelectedDriverSlug, $aSavedPaymentSources)) {
                         throw new ValidationException('Invalid payment source ID.');
                     }
@@ -364,14 +355,12 @@ class Invoice extends Base
                      * Payment was successful (but potentially unconfirmed).
                      */
                     redirect($oChargeResponse->getSuccessUrl());
-
                 } elseif ($oChargeResponse->isFailed()) {
 
                     /**
                      * Payment failed, throw an error which will be caught and displayed to the user
                      */
                     throw new InvoiceException('Payment failed: ' . $oChargeResponse->getErrorMessageUser());
-
                 } else {
 
                     /**
@@ -379,9 +368,7 @@ class Invoice extends Base
                      */
                     throw new InvoiceException('Payment failed.');
                 }
-
             } catch (\Exception $e) {
-
                 $sErrorUrl = $oChargeResponse->getErrorUrl();
                 if (!empty($sErrorUrl)) {
 
@@ -390,7 +377,6 @@ class Invoice extends Base
                     $oSession->setFlashData('error', $e->getMessage());
 
                     redirect($oChargeResponse->getErrorUrl());
-
                 } else {
                     $this->data['error'] = $e->getMessage();
                 }
@@ -402,7 +388,6 @@ class Invoice extends Base
         $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/index.php');
 
         if (!empty($aAvailableDrivers)) {
-
             $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', Constants::MODULE_SLUG);
             $oAsset->load('invoice.pay.min.js', Constants::MODULE_SLUG);
 

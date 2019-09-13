@@ -37,7 +37,6 @@ use Nails\Invoice\Resource\Refund;
                 <?php
 
                 if (!empty($invoice->customer)) {
-
                     ?>
                     <table>
                         <tbody>
@@ -56,17 +55,13 @@ use Nails\Invoice\Resource\Refund;
                                         echo mailto($invoice->customer->billing_email);
                                     } else {
                                         echo mailto($invoice->customer->email);
-                                    }
-
-                                    ?>
+                                    } ?>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                     <?php
-
                 } elseif (!empty($invoice->email)) {
-
                     ?>
                     <table>
                         <tbody>
@@ -80,9 +75,7 @@ use Nails\Invoice\Resource\Refund;
                         </tbody>
                     </table>
                     <?php
-
                 } else {
-
                     ?>
                     <div class="panel-body text-muted">
                         Unknown
@@ -111,7 +104,6 @@ use Nails\Invoice\Resource\Refund;
         <?php
 
         if ($invoice->items->count > 0) {
-
             ?>
             <div class="table-responsive">
                 <table>
@@ -129,7 +121,6 @@ use Nails\Invoice\Resource\Refund;
                         <?php
 
                         foreach ($invoice->items->data as $oItem) {
-
                             ?>
                             <tr>
                                 <td>
@@ -149,9 +140,7 @@ use Nails\Invoice\Resource\Refund;
                                 <td class="text-center"><?=$oItem->totals->formatted->grand?></td>
                             </tr>
                             <?php
-                        }
-
-                        ?>
+                        } ?>
                     </tbody>
                     <tfoot class="invoice-total" data-bind="visible: items().length">
                         <tr class="total-row">
@@ -176,9 +165,7 @@ use Nails\Invoice\Resource\Refund;
                 </table>
             </div>
             <?php
-
         } else {
-
             ?>
             <div class="panel-body">
                 No line items recorded on this invoice.
@@ -195,7 +182,6 @@ use Nails\Invoice\Resource\Refund;
         <?php
 
         if (userHasPermission('admin:invoice:payment:view') && $invoice->payments->count > 0) {
-
             ?>
             <div class="table-responsive">
                 <table>
@@ -216,7 +202,6 @@ use Nails\Invoice\Resource\Refund;
 
                         /** @var \Nails\Invoice\Resource\Payment $oPayment */
                         foreach ($invoice->payments->data as $oPayment) {
-
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oPayment->id?></td>
@@ -235,9 +220,7 @@ use Nails\Invoice\Resource\Refund;
                                     default:
                                         $sClass = '';
                                         break;
-                                }
-
-                                ?>
+                                } ?>
                                 <td class="text-center <?=$sClass?>">
                                     <?=$oPayment->status->label?>
                                 </td>
@@ -252,25 +235,21 @@ use Nails\Invoice\Resource\Refund;
                                     <?php
 
                                     echo $oPayment->amount->formatted;
-                                    if ($oPayment->amount_refunded->raw) {
-                                        echo '<small>';
-                                        echo 'Refunded: ' . $oPayment->amount_refunded->formatted;
-                                        echo '</small>';
-                                    }
-
-                                    ?>
+                            if ($oPayment->amount_refunded->raw) {
+                                echo '<small>';
+                                echo 'Refunded: ' . $oPayment->amount_refunded->formatted;
+                                echo '</small>';
+                            } ?>
                                 </td>
                                 <td>
                                     <?php
 
                                     echo $oPayment->fee->formatted;
-                                    if ($oPayment->fee_refunded->raw) {
-                                        echo '<small>';
-                                        echo 'Refunded: ' . $oPayment->fee_refunded->formatted;
-                                        echo '</small>';
-                                    }
-
-                                    ?>
+                            if ($oPayment->fee_refunded->raw) {
+                                echo '<small>';
+                                echo 'Refunded: ' . $oPayment->fee_refunded->formatted;
+                                echo '</small>';
+                            } ?>
                                 </td>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->modified)?>
@@ -283,37 +262,29 @@ use Nails\Invoice\Resource\Refund;
                                         'class="btn btn-xs btn-default"'
                                     );
 
-                                    if ($oPayment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
-
-                                        $aAttr = [
+                            if ($oPayment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
+                                $aAttr = [
                                             'class="btn btn-xs btn-danger js-confirm-refund"',
                                             'data-max="' . $oPayment->available_for_refund->raw . '"',
                                             'data-max-formatted="' . $oPayment->available_for_refund->formatted . '"',
                                             'data-return-to="' . urlencode(current_url()) . '"',
                                         ];
 
-                                        echo anchor(
+                                echo anchor(
                                             'admin/invoice/payment/refund/' . $oPayment->id,
                                             'Refund',
                                             implode(' ', $aAttr)
                                         );
-                                    }
-
-                                    ?>
+                            } ?>
                                 </td>
                             </tr>
                             <?php
-
-                        }
-
-                        ?>
+                        } ?>
                     </tbody>
                 </table>
             </div>
             <?php
-
         } else {
-
             ?>
             <div class="panel-body text-muted">
                 No Associated Payments
@@ -330,7 +301,6 @@ use Nails\Invoice\Resource\Refund;
         <?php
 
         if (userHasPermission('admin:invoice:payment:view') && $invoice->refunds->count > 0) {
-
             ?>
             <div class="table-responsive">
                 <table>
@@ -349,7 +319,6 @@ use Nails\Invoice\Resource\Refund;
 
                         /** @var Refund $oRefund */
                         foreach ($invoice->refunds->data as $oRefund) {
-
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oRefund->id?></td>
@@ -368,21 +337,17 @@ use Nails\Invoice\Resource\Refund;
                                     default:
                                         $sClass = '';
                                         break;
-                                }
-
-                                ?>
+                                } ?>
                                 <td class="text-center <?=$sClass?>">
                                     <?php
 
                                     echo $oRefund->status->label;
 
-                                    if (!empty($oRefund->fail_msg)) {
-                                        echo '<small>';
-                                        echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
-                                        echo '</small>';
-                                    }
-
-                                    ?>
+                            if (!empty($oRefund->fail_msg)) {
+                                echo '<small>';
+                                echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
+                                echo '</small>';
+                            } ?>
                                 </td>
                                 <td><?=$oRefund->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td><?=$oRefund->amount->formatted?></td>
@@ -391,17 +356,12 @@ use Nails\Invoice\Resource\Refund;
                                 <?=adminHelper('loadDateTimeCell', $oRefund->modified)?>
                             </tr>
                             <?php
-
-                        }
-
-                        ?>
+                        } ?>
                     </tbody>
                 </table>
             </div>
             <?php
-
         } else {
-
             ?>
             <div class="panel-body text-muted">
                 No Associated Refunds
@@ -418,7 +378,6 @@ use Nails\Invoice\Resource\Refund;
         <?php
 
         if ($invoice->emails->count > 0) {
-
             ?>
             <div class="table-responsive">
                 <table>
@@ -434,20 +393,16 @@ use Nails\Invoice\Resource\Refund;
 
                         /** @var Email $oEmail */
                         foreach ($invoice->emails->data as $oEmail) {
-
                             ?>
                             <tr>
                                 <td>
                                     <?php
                                     if (is_object($oEmail->email_type)) {
-
                                         echo $oEmail->email_type->name;
                                         echo '<small>' . $oEmail->email_type->description . '</small>';
-
                                     } else {
                                         echo $oEmail->email_type ?: '<span class="text-muted">Unknown</span>';
-                                    }
-                                    ?>
+                                    } ?>
                                 </td>
                                 <?php
 
@@ -457,41 +412,29 @@ use Nails\Invoice\Resource\Refund;
                                     ?>
                                     <td><?=$oEmail->recipient?></td>
                                     <?php
-                                }
-
-                                ?>
+                                } ?>
                                 <?=adminHelper('loadDateTimeCell', $oEmail->created)?>
                                 <td class="text-center">
                                     <?php
 
                                     if (!empty($oEmail->preview_url)) {
-
                                         echo anchor(
                                             $oEmail->preview_url,
                                             'Preview',
                                             'class="btn btn-xs btn-primary fancybox"'
                                         );
-
                                     } else {
-
                                         echo '<span class="text-muted">Not Available</span>';
-                                    }
-
-                                    ?>
+                                    } ?>
                                 </td>
                             </tr>
                             <?php
-
-                        }
-
-                        ?>
+                        } ?>
                     </tbody>
                 </table>
             </div>
             <?php
-
         } else {
-
             ?>
             <div class="panel-body text-muted">
                 No Associated Emails

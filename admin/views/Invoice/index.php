@@ -38,9 +38,7 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                 <?php
 
                 if ($invoices) {
-
                     foreach ($invoices as $oInvoice) {
-
                         ?>
                         <tr>
                             <td class="ref">
@@ -49,37 +47,27 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                             <?php
 
                             if ($oInvoice->is_overdue) {
-
                                 $sClass = 'danger';
                                 $sText  = 'Overdue';
                                 $sText  .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
-
                             } elseif ($oInvoice->is_scheduled) {
-
                                 $sClass = 'warning';
                                 $sText  = 'Scheduled';
                                 $sText  .= '<small>Sending: ' . toUserDate($oInvoice->dated->raw) . '</small>';
-
                             } elseif ($oInvoice->state->id == $oInvoiceModel::STATE_OPEN) {
-
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
                                 $sText  .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
-
                             } elseif ($oInvoice->state->id == $oInvoiceModel::STATE_PAID || $oInvoice->state->id == $oInvoiceModel::STATE_PAID_PROCESSING) {
-
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
                                 if ($oInvoice->paid->raw) {
                                     $sText .= '<small>Paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
                                 }
-
                             } else {
                                 $sClass = '';
                                 $sText  = $oInvoice->state->label;
-                            }
-
-                            ?>
+                            } ?>
                             <td class="state <?=$sClass?>">
                                 <?=$sText?>
                             </td>
@@ -87,7 +75,6 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                                 <?php
 
                                 if (!empty($oInvoice->customer)) {
-
                                     echo anchor(
                                         'admin/invoice/customer/edit/' . $oInvoice->customer->id,
                                         $oInvoice->customer->label ?: $oInvoice->customer->first_name . ' ' . $oInvoice->customer->last_name
@@ -105,16 +92,11 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                                         echo mailto($oInvoice->customer->email);
                                     }
                                     echo '</small>';
-
                                 } elseif (!empty($oInvoice->email)) {
-
                                     echo mailto($oInvoice->email);
-
                                 } else {
                                     echo '<span class="text-muted">Unknown</span>';
-                                }
-
-                                ?>
+                                } ?>
                             </td>
                             <td class="currency">
                                 <?=$oInvoice->currency->code?>
@@ -134,21 +116,17 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                                 <?php
 
                                 if (userHasPermission('admin:invoice:invoice:edit')) {
-
                                     if ($oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
-
                                         echo anchor(
                                             'admin/invoice/invoice/edit/' . $oInvoice->id,
                                             lang('action_edit'),
                                             'class="btn btn-xs btn-primary"'
                                         );
-
                                     } elseif (in_array($oInvoice->state->id, [
                                         'WRITTEN_OFF',
                                         'PAID',
                                         'PAID_PROCESING',
                                     ])) {
-
                                         echo anchor(
                                             'admin/invoice/invoice/view/' . $oInvoice->id,
                                             lang('action_view'),
@@ -160,9 +138,7 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                                             lang('action_download'),
                                             'class="btn btn-xs btn-primary" target="_blank"'
                                         );
-
                                     } else {
-
                                         echo anchor(
                                             'admin/invoice/invoice/view/' . $oInvoice->id,
                                             lang('action_view'),
@@ -205,26 +181,23 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                                     }
                                 }
 
-                                if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
-                                    echo anchor(
+                        if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
+                            echo anchor(
                                         'admin/invoice/invoice/delete/' . $oInvoice->id,
                                         lang('action_delete'),
                                         'class="btn btn-xs btn-danger confirm" data-body="You cannot undo this action"'
                                     );
-                                }
+                        }
 
-                                echo anchor(
+                        echo anchor(
                                     'admin/invoice/invoice/resend/' . $oInvoice->id,
                                     'Re-send',
                                     'class="btn btn-xs btn-default"'
-                                );
-
-                                ?>
+                                ); ?>
                             </td>
                         <tr>
                         <?php
                     }
-
                 } else {
                     ?>
                     <tr>

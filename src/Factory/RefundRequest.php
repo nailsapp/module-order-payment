@@ -103,7 +103,6 @@ class RefundRequest extends RequestBase
 
         //  Create a refund against the payment if one hasn't been specified
         if (empty($this->oRefund)) {
-
             $iRefundId = $this->oRefundModel->create([
                 'reason'     => $this->getReason(),
                 'payment_id' => $this->oPayment->id,
@@ -149,7 +148,6 @@ class RefundRequest extends RequestBase
                 $oRefundResponse->getTransactionId(),
                 $oRefundResponse->getFee()
             );
-
         } elseif ($oRefundResponse->isFailed()) {
 
             //  Update the payment

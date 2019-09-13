@@ -52,19 +52,14 @@ class Sca extends Base
         $oScaResponse = $oScaRequest->execute();
 
         if ($oScaResponse->isComplete()) {
-
             if (!empty($oPayment->urls->success)) {
                 redirect($oPayment->urls->success);
             } else {
                 redirect($oPayment->urls->thanks);
             }
-
         } elseif ($oScaResponse->isRedirect()) {
-
             redirect($oScaResponse->getRedirectUrl());
-
         } elseif ($oScaResponse->isFailed()) {
-
             $oError = $oScaResponse->getError();
 
             /** @var Session $oSession */
@@ -74,7 +69,6 @@ class Sca extends Base
             if (!empty($oPayment->urls->error)) {
                 redirect($oPayment->urls->error);
             } else {
-
                 $sUrl    = $oPayment->invoice->urls->payment;
                 $aParams = array_filter([
                     'url_success' => $oPayment->urls->success,
@@ -87,7 +81,6 @@ class Sca extends Base
 
                 redirect($sUrl);
             }
-
         } else {
             throw new InvoiceException('Unhandled SCA status');
         }

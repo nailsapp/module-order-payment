@@ -66,8 +66,7 @@ use Nails\Invoice\Resource\Source;
                                 </td>
                             </tr>
                             <?php
-                        }
-                        ?>
+                        } ?>
                     </tbody>
                     <tfoot>
                         <tr>
@@ -87,8 +86,8 @@ use Nails\Invoice\Resource\Source;
                         <?php
 
                         $i = 0;
-                        foreach ($aSavedPaymentSources as $oSource) {
-                            ?>
+                foreach ($aSavedPaymentSources as $oSource) {
+                    ?>
                             <li>
                                 <label class="form__group form__group--radio js-invoice-driver-select">
                                     <?php
@@ -96,33 +95,29 @@ use Nails\Invoice\Resource\Source;
                                         'data-has-fields="false"',
                                         'data-is-redirect="false"',
                                     ];
-                                    echo form_radio(
+                    echo form_radio(
                                         'driver',
                                         $oSource->id,
                                         set_radio('driver', $oSource->id, $i === 0),
                                         implode(' ', $aData)
                                     );
-                                    echo $oSource->label;
-                                    ?>
+                    echo $oSource->label; ?>
                                 </label>
                             </li>
                             <?php
                             $i++;
-                        }
+                }
 
-                        foreach ($aDrivers as $oDriver) {
+                foreach ($aDrivers as $oDriver) {
+                    $sHasFields  = json_encode(!empty($oDriver->getPaymentFields()));
+                    $sIsCard     = json_encode($oDriver->getPaymentFields() === PaymentBase::PAYMENT_FIELDS_CARD);
+                    $sIsRedirect = json_encode($oDriver->isRedirect());
 
-                            $sHasFields  = json_encode(!empty($oDriver->getPaymentFields()));
-                            $sIsCard     = json_encode($oDriver->getPaymentFields() === PaymentBase::PAYMENT_FIELDS_CARD);
-                            $sIsRedirect = json_encode($oDriver->isRedirect());
-
-                            $aData = [
+                    $aData = [
                                 'data-driver="' . $oDriver->getSlug() . '"',
                                 'data-has-fields="' . $sHasFields . '"',
                                 'data-is-redirect="' . $sIsRedirect . '"',
-                            ];
-
-                            ?>
+                            ]; ?>
                             <li>
                                 <label class="form__group form__group--radio js-invoice-driver-select">
                                     <?php
@@ -134,30 +129,22 @@ use Nails\Invoice\Resource\Source;
                                         implode(' ', $aData)
                                     );
 
-                                    echo $oDriver->getLabel();
-
-                                    ?>
+                    echo $oDriver->getLabel(); ?>
                                 </label>
                             </li>
                             <?php
-                        }
-
-                        ?>
+                } ?>
                     </ul>
                 </div>
                 <div id="js-invoice-main-form-payment-fields">
                     <?php
                     foreach ($aDrivers as $oDriver) {
-
                         $mFields    = $oDriver->getPaymentFields();
-                        $sDriverKey = md5($oDriver->getSlug());
-
-                        ?>
+                        $sDriverKey = md5($oDriver->getSlug()); ?>
                         <div class="hidden js-invoice-panel-payment-details" data-driver="<?=$oDriver->getSlug()?>">
                             <?php
 
                             if (!empty($mFields) && $mFields === PaymentBase::PAYMENT_FIELDS_CARD) {
-
                                 ?>
                                 <h5>
                                     Payment Details
@@ -174,9 +161,7 @@ use Nails\Invoice\Resource\Source;
                                     'placeholder="' . $sFieldPlaceholder . '"',
                                     'autocomplete="on"',
                                     'data-is-required="true"',
-                                ]);
-
-                                ?>
+                                ]); ?>
                                 <div class="form__group <?=form_error($sFieldKey) ? 'has-error' : ''?>">
                                     <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
                                     <?=form_text($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
@@ -195,9 +180,7 @@ use Nails\Invoice\Resource\Source;
                                     'autocomplete="on"',
                                     'data-is-required="true"',
                                     'data-cc-num="true"',
-                                ]);
-
-                                ?>
+                                ]); ?>
                                 <div class="form__group <?=form_error($sFieldKey) ? 'has-error' : ''?>">
                                     <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
                                     <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
@@ -207,19 +190,17 @@ use Nails\Invoice\Resource\Source;
                                     <?php
 
                                     $sFieldKey         = $sDriverKey . '[card][expire]';
-                                    $sFieldLabel       = 'Expiry';
-                                    $sFieldPlaceholder = '•• / ••';
-                                    $sFieldDefault     = '';
-                                    $sFieldAttr        = implode(' ', [
+                                $sFieldLabel       = 'Expiry';
+                                $sFieldPlaceholder = '•• / ••';
+                                $sFieldDefault     = '';
+                                $sFieldAttr        = implode(' ', [
                                         'class="js-invoice-cc-exp"',
                                         'id="input-' . $sFieldKey . '"',
                                         'placeholder="' . $sFieldPlaceholder . '"',
                                         'autocomplete="on"',
                                         'data-is-required="true"',
                                         'data-cc-exp="true"',
-                                    ]);
-
-                                    ?>
+                                    ]); ?>
                                     <div class="form__group form__group--half <?=form_error($sFieldKey) ? 'has-error' : ''?>">
                                         <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
                                         <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
@@ -228,19 +209,17 @@ use Nails\Invoice\Resource\Source;
                                     <?php
 
                                     $sFieldKey         = $sDriverKey . '[card][cvc]';
-                                    $sFieldLabel       = 'CVC';
-                                    $sFieldPlaceholder = '•••';
-                                    $sFieldDefault     = '';
-                                    $sFieldAttr        = implode(' ', [
+                                $sFieldLabel       = 'CVC';
+                                $sFieldPlaceholder = '•••';
+                                $sFieldDefault     = '';
+                                $sFieldAttr        = implode(' ', [
                                         'class="js-invoice-cc-cvc"',
                                         'id="input-' . $sFieldKey . '"',
                                         'placeholder="' . $sFieldPlaceholder . '"',
                                         'autocomplete="on"',
                                         'data-is-required="true"',
                                         'data-cc-cvc="true"',
-                                    ]);
-
-                                    ?>
+                                    ]); ?>
                                     <div class="form__group form__group--half <?=form_error($sFieldKey) ? 'has-error' : ''?>">
                                         <label for="input-<?=$sFieldKey?>"><?=$sFieldLabel?></label>
                                         <?=form_tel($sFieldKey, set_value($sFieldKey, $sFieldDefault), $sFieldAttr)?>
@@ -248,9 +227,7 @@ use Nails\Invoice\Resource\Source;
                                     </div>
                                 </div>
                                 <?php
-
                             } elseif (!empty($mFields)) {
-
                                 ?>
                                 <h5>
                                     Payment Details
@@ -258,7 +235,6 @@ use Nails\Invoice\Resource\Source;
                                 <?php
 
                                 foreach ($mFields as $aField) {
-
                                     $sKey         = $sDriverKey . '[' . $aField['key'] . ']';
                                     $sDefault     = !empty($aField['default']) ? $aField['default'] : '';
                                     $sLabel       = !empty($aField['label']) ? $aField['label'] : '';
@@ -273,9 +249,7 @@ use Nails\Invoice\Resource\Source;
                                         'id="' . $sId . '"',
                                         'placeholder="' . $sPlaceholder . '" ',
                                         'data-is-required="' . $sRequired . '"',
-                                    ];
-
-                                    ?>
+                                    ]; ?>
                                     <div class="form__group <?=form_error($sKey) ? 'has-error' : ''?>">
                                         <label for="<?=$sId?>"><?=$sLabel?></label>
                                         <?php
@@ -309,18 +283,15 @@ use Nails\Invoice\Resource\Source;
                                                     implode(' ', $aAttr)
                                                 );
                                                 break;
-                                        }
-                                        ?>
+                                        } ?>
                                         <?=form_error($sKey, '<p class="form__error">', '</p>')?>
                                     </div>
                                     <?php
                                 }
-                            }
-                            ?>
+                            } ?>
                         </div>
                         <?php
-                    }
-                    ?>
+                    } ?>
                 </div>
                 <hr>
                 <p>

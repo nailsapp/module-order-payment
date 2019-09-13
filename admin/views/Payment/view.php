@@ -109,13 +109,10 @@
                 <?php
 
                 if (!empty((array) $payment->custom_data)) {
-
                     ?>
                     <pre style="padding: 1em;"><?=json_encode($payment->custom_data, JSON_PRETTY_PRINT)?></pre>
                     <?php
-
                 } else {
-
                     ?>
                     <div class="panel-body text-muted">
                         No Custom Data
@@ -134,7 +131,6 @@
         <?php
 
         if ($payment->refunds->count > 0) {
-
             ?>
             <div class="table-responsive">
                 <table>
@@ -153,7 +149,6 @@
                         <?php
 
                         foreach ($payment->refunds->data as $oRefund) {
-
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oRefund->id?></td>
@@ -162,14 +157,11 @@
 
                                     echo $oRefund->status->label;
 
-                                    if (!empty($oRefund->fail_msg)) {
-
-                                        echo '<small class="text-danger">';
-                                        echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
-                                        echo '</small>';
-                                    }
-
-                                    ?>
+                            if (!empty($oRefund->fail_msg)) {
+                                echo '<small class="text-danger">';
+                                echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
+                                echo '</small>';
+                            } ?>
                                 </td>
                                 <td><?=$oRefund->transaction_id?></td>
                                 <td>
@@ -182,17 +174,12 @@
                                 <?=adminHelper('loadDateTimeCell', $oRefund->modified)?>
                             </tr>
                             <?php
-
-                        }
-
-                        ?>
+                        } ?>
                     </tbody>
                 </table>
             </div>
             <?php
-
         } else {
-
             ?>
             <div class="panel-body text-muted">
                 No Associated Refunds

@@ -46,7 +46,6 @@ class Payment extends Base
 
             //  Payments which FAILED should be ignored
             show404();
-
         } elseif ($oPayment->status->id === $oPaymentModel::STATUS_COMPLETE) {
 
             //  Payment is already complete
@@ -55,7 +54,6 @@ class Payment extends Base
             } else {
                 redirect($oPayment->urls->thanks);
             }
-
         } elseif ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
 
             //  Payment is already complete and is being processed
@@ -64,9 +62,7 @@ class Payment extends Base
             } else {
                 redirect($oPayment->urls->processing);
             }
-
         } else {
-
             try {
 
                 //  Set up CompleteRequest object
@@ -99,7 +95,6 @@ class Payment extends Base
                     } else {
                         redirect($oPayment->urls->processing);
                     }
-
                 } elseif ($oCompleteResponse->isComplete()) {
 
                     //  Payment has completed fully
@@ -108,13 +103,11 @@ class Payment extends Base
                     } else {
                         redirect($oPayment->urls->thanks);
                     }
-
                 } elseif ($oCompleteResponse->isFailed()) {
                     throw new NailsException('Payment failed: ' . $oCompleteResponse->getErrorMessageUser());
                 } else {
                     throw new NailsException('Payment failed.');
                 }
-
             } catch (\Exception $e) {
                 /** @var Session $oSession */
                 $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
