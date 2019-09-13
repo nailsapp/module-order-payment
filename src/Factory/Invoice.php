@@ -11,6 +11,8 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Resource\Date;
 use Nails\Common\Traits\ErrorHandling;
 use Nails\Currency\Resource\Currency;
@@ -672,7 +674,9 @@ class Invoice
      * Saves a new invoice
      *
      * @return Resource\Invoice
+     * @throws FactoryException
      * @throws InvoiceException
+     * @throws ModelException
      */
     public function save(): Resource\Invoice
     {
@@ -693,6 +697,27 @@ class Invoice
         }
 
         return $oInvoice;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns an invoice resource
+     *
+     * @return Resource\Invoice
+     * @throws InvoiceException
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function get(): Resource\Invoice
+    {
+        if (empty($this->iId)) {
+            return $this->save();
+        }
+
+        /** @var Model\Invoice $oInvoiceModel */
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
+        return $oInvoiceModel->getById($this->iId);
     }
 
     // --------------------------------------------------------------------------
