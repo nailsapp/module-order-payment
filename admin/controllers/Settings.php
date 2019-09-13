@@ -12,6 +12,7 @@
 
 namespace Nails\Admin\Invoice;
 
+use Nails\Admin\Controller\Base;
 use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
 use Nails\Common\Exception\FactoryException;
@@ -22,7 +23,6 @@ use Nails\Common\Service\FormValidation;
 use Nails\Common\Service\Input;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Controller\BaseAdmin;
 use Nails\Invoice\Service\Invoice\Skin;
 use Nails\Invoice\Service\PaymentDriver;
 
@@ -31,7 +31,7 @@ use Nails\Invoice\Service\PaymentDriver;
  *
  * @package Nails\Admin\Invoice
  */
-class Settings extends BaseAdmin
+class Settings extends Base
 {
     /**
      * Announces this controller's navGroups

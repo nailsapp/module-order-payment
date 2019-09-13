@@ -12,6 +12,7 @@
 
 namespace Nails\Admin\Invoice;
 
+use Nails\Admin\Controller\Base;
 use Nails\Admin\Helper;
 use Nails\Admin\Nav;
 use Nails\Auth;
@@ -25,7 +26,6 @@ use Nails\Common\Service\Uri;
 use Nails\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Controller\BaseAdmin;
 use Nails\Invoice\Model;
 use Nails\Invoice\Model\Invoice\Item;
 use Nails\Invoice\Model\Tax;
@@ -35,7 +35,7 @@ use Nails\Invoice\Model\Tax;
  *
  * @package Nails\Admin\Invoice
  */
-class Invoice extends BaseAdmin
+class Invoice extends Base
 {
     /**
      * The Invoice model

@@ -12,6 +12,7 @@
 
 namespace Nails\Admin\Invoice;
 
+use Nails\Admin\Controller\Base;
 use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
 use Nails\Auth;
@@ -24,14 +25,13 @@ use Nails\Common\Service\Input;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Controller\BaseAdmin;
 
 /**
  * Class Customer
  *
  * @package Nails\Admin\Invoice
  */
-class Customer extends BaseAdmin
+class Customer extends Base
 {
     /**
      * Announces this controller's navGroups
