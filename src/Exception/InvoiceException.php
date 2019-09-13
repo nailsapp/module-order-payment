@@ -14,6 +14,11 @@ namespace Nails\Invoice\Exception;
 
 use Nails\Common\Exception\NailsException;
 
+/**
+ * Class InvoiceException
+ *
+ * @package Nails\Invoice\Exception
+ */
 class InvoiceException extends NailsException
 {
 }

@@ -14,6 +14,11 @@ namespace Nails\Invoice;
 use Nails\Common\Events\Base;
 use Nails\Invoice\Resource\Invoice;
 
+/**
+ * Class Events
+ *
+ * @package Nails\Invoice
+ */
 class Events extends Base
 {
     /**

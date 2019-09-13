@@ -14,6 +14,11 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Exception\RefundRequestException;
 
+/**
+ * Class RefundRequest
+ *
+ * @package Nails\Invoice\Factory
+ */
 class RefundRequest extends RequestBase
 {
     protected $sReason;

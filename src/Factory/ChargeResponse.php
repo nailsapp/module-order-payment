@@ -14,6 +14,11 @@ namespace Nails\Invoice\Factory;
 
 use Stripe\Charge;
 
+/**
+ * Class ChargeResponse
+ *
+ * @package Nails\Invoice\Factory
+ */
 class ChargeResponse extends ResponseBase
 {
     /**

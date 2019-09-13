@@ -14,6 +14,11 @@ namespace Nails\Invoice;
 
 use Nails\Common\Interfaces\RouteGenerator;
 
+/**
+ * Class Routes
+ *
+ * @package Nails\Invoice
+ */
 class Routes implements RouteGenerator
 {
     /**

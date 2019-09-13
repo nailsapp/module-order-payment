@@ -14,6 +14,11 @@ namespace Nails\Invoice\Exception;
 
 use Nails\Common\Exception\NailsException;
 
+/**
+ * Class DriverException
+ *
+ * @package Nails\Invoice\Exception
+ */
 class DriverException extends NailsException
 {
 }
