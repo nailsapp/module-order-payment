@@ -449,6 +449,7 @@ class Payment extends Base
     {
         try {
 
+            /** @var \Nails\Invoice\Resource\Payment $oPayment */
             $oPayment = $this->getById(
                 $iPaymentId,
                 [
@@ -483,7 +484,39 @@ class Payment extends Base
             }
 
             $oEmail->data = [
-                'payment' => $oPayment,
+                'payment' => (object) [
+                    'ref'    => $oPayment->ref,
+                    'amount' => $oPayment->amount->formatted,
+                ],
+                'invoice' => [
+                    'id'       => $oPayment->invoice->id,
+                    'ref'      => $oPayment->invoice->ref,
+                    'due'      => $oPayment->invoice->due->formatted,
+                    'dated'    => $oPayment->invoice->dated->formatted,
+                    'customer' => (object) [
+                        'id'              => $oPayment->invoice->customer->id,
+                        'label'           => $oPayment->invoice->customer->label,
+                        'billing_address' => $oPayment->invoice->customer->billing_address,
+                    ],
+                    'urls'     => (object) [
+                        'download' => $oPayment->invoice->urls->download,
+                    ],
+                    'totals'   => [
+                        'sub'   => $oPayment->invoice->totals->formatted->sub,
+                        'tax'   => $oPayment->invoice->totals->formatted->tax,
+                        'grand' => $oPayment->invoice->totals->formatted->grand,
+                    ],
+                    'items'    => array_map(function (\Nails\Invoice\Resource\Invoice\Item $oItem) {
+                        return [
+                            'id'     => $oItem->id,
+                            'label'  => $oItem->label,
+                            'body'   => $oItem->body,
+                            'totals' => [
+                                'sub' => $oItem->totals->formatted->sub,
+                            ],
+                        ];
+                    }, $oPayment->invoice->items->data),
+                ],
             ];
 
             if (!empty($sEmailOverride)) {

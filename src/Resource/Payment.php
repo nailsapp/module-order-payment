@@ -30,7 +30,7 @@ use Nails\Invoice\Service\PaymentDriver;
 class Payment extends Entity
 {
     /**
-     * Tjhe payment's reference
+     * The payment's reference
      *
      * @var string
      */
@@ -58,11 +58,25 @@ class Payment extends Entity
     public $invoice_id;
 
     /**
+     * The invoice (expandable field)
+     *
+     * @var Invoice
+     */
+    public $invoice;
+
+    /**
      * The payment's source ID
      *
      * @var int
      */
     public $source_id;
+
+    /**
+     * The payment source used (expandable field)
+     *
+     * @var Source
+     */
+    public $source;
 
     /**
      * The payment's description

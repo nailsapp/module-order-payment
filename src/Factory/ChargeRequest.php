@@ -615,7 +615,7 @@ class ChargeRequest extends RequestBase
                 'driver'           => $this->oDriver->getSlug(),
                 'description'      => $this->getDescription(),
                 'invoice_id'       => $this->oInvoice->id,
-                'source_id'        => $this->oSource ? $this->oSource->id : null,
+                'source_id'        => !empty($this->oSource) ? $this->oSource->id : null,
                 'currency'         => $this->getCurrency()->code,
                 'amount'           => $this->getAmount(),
                 'url_success'      => $this->getSuccessUrl(),

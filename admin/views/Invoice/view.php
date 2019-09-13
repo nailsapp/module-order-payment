@@ -1,7 +1,12 @@
 <?php
 
+use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Resource\Invoice\Email;
 use Nails\Invoice\Resource\Refund;
+
+/** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+$oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
 ?>
 <div class="group-invoice invoice view">
@@ -207,6 +212,7 @@ use Nails\Invoice\Resource\Refund;
                             <th>Reference</th>
                             <th>Amount</th>
                             <th>Fee</th>
+                            <th>Source</th>
                             <th>Created</th>
                             <th>Modified</th>
                             <th class="actions">Actions</th>
@@ -223,23 +229,39 @@ use Nails\Invoice\Resource\Refund;
                                 <?php
 
                                 switch ($oPayment->status->id) {
-                                    case 'COMPLETE':
+                                    case $oPaymentModel::STATUS_COMPLETE:
+                                    case $oPaymentModel::STATUS_PROCESSING:
                                         $sClass = 'success';
+                                        $sText  = '';
                                         break;
-                                    case 'PENDING':
+                                    case $oPaymentModel::STATUS_PENDING:
+                                    case $oPaymentModel::STATUS_REFUNDED:
+                                    case $oPaymentModel::STATUS_REFUNDED_PARTIAL:
                                         $sClass = 'warning';
+                                        $sText  = '';
                                         break;
-                                    case 'FAILED':
+                                    case $oPaymentModel::STATUS_FAILED:
                                         $sClass = 'danger';
+                                        $sText  = $oPayment->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
                                         break;
                                     default:
                                         $sClass = '';
+                                        $sText  = '';
                                         break;
                                 }
 
                                 ?>
                                 <td class="text-center <?=$sClass?>">
-                                    <?=$oPayment->status->label?>
+                                    <?php
+                                    echo $oPayment->status->label;
+                                    if (!empty($sText)) {
+                                        ?>
+                                        <small>
+                                            <?=$sText?>
+                                        </small>
+                                        <?php
+                                    }
+                                    ?>
                                 </td>
                                 <td>
                                     <?=$oPayment->driver->getLabel()?>
@@ -270,6 +292,20 @@ use Nails\Invoice\Resource\Refund;
                                         echo '</small>';
                                     }
 
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    if (!empty($oPayment->source)) {
+                                        echo $oPayment->source->label;
+                                        echo '<small>';
+                                        echo 'Driver: ' . $oPayment->source->driver;
+                                        echo $oPayment->source->brand ? '<br>Brand: ' . $oPayment->source->brand : '';
+                                        echo $oPayment->source->last_four ? '<br>Ending: ' . $oPayment->source->last_four : '';
+                                        echo '</small>';
+                                    } else {
+                                        echo '<span class="text-muted">&mdash;</span>';
+                                    }
                                     ?>
                                 </td>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
@@ -356,32 +392,36 @@ use Nails\Invoice\Resource\Refund;
                                 <?php
 
                                 switch ($oRefund->status->id) {
-                                    case 'COMPLETE':
+                                    case $oRefundModel::STATUS_COMPLETE:
+                                    case $oRefundModel::STATUS_PROCESSING:
                                         $sClass = 'success';
+                                        $sText  = '';
                                         break;
-                                    case 'PENDING':
+                                    case $oRefundModel::STATUS_PENDING:
                                         $sClass = 'warning';
+                                        $sText  = '';
                                         break;
-                                    case 'FAILED':
+                                    case $oRefundModel::STATUS_FAILED:
                                         $sClass = 'danger';
+                                        $sText  = $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
                                         break;
                                     default:
                                         $sClass = '';
+                                        $sText  = '';
                                         break;
                                 }
 
                                 ?>
                                 <td class="text-center <?=$sClass?>">
                                     <?php
-
                                     echo $oRefund->status->label;
-
-                                    if (!empty($oRefund->fail_msg)) {
-                                        echo '<small>';
-                                        echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
-                                        echo '</small>';
+                                    if (!empty($sText)) {
+                                        ?>
+                                        <small>
+                                            <?=$sText?>
+                                        </small>
+                                        <?php
                                     }
-
                                     ?>
                                 </td>
                                 <td><?=$oRefund->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>

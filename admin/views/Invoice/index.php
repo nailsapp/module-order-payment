@@ -74,6 +74,11 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                                     $sText .= '<small>Paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
                                 }
 
+                            } elseif ($oInvoice->state->id == $oInvoiceModel::STATE_CANCELLED || $oInvoice->state->id == $oInvoiceModel::STATE_WRITTEN_OFF) {
+
+                                $sClass = 'danger';
+                                $sText  = $oInvoice->state->label;
+
                             } else {
                                 $sClass = '';
                                 $sText  = $oInvoice->state->label;
@@ -196,11 +201,13 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                                                 'Make Draft',
                                                 'class="btn btn-xs btn-warning"'
                                             );
-                                            echo anchor(
-                                                'admin/invoice/invoice/write_off/' . $oInvoice->id,
-                                                'Write Off',
-                                                'class="btn btn-xs btn-danger confirm" data-body="Write invoice ' . $oInvoice->ref . ' off?"'
-                                            );
+                                            if (in_array($oInvoice->state->id, [$oInvoiceModel::STATE_OPEN])) {
+                                                echo anchor(
+                                                    'admin/invoice/invoice/write_off/' . $oInvoice->id,
+                                                    'Write Off',
+                                                    'class="btn btn-xs btn-danger confirm" data-body="Write invoice ' . $oInvoice->ref . ' off?"'
+                                                );
+                                            }
                                         }
                                     }
                                 }

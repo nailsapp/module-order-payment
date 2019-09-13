@@ -840,11 +840,9 @@ class Invoice extends Base
                         'download' => $oInvoice->urls->download,
                     ],
                     'totals'   => [
-                        'sub'        => $oInvoice->totals->formatted->sub,
-                        'tax'        => $oInvoice->totals->formatted->tax,
-                        'grand'      => $oInvoice->totals->formatted->grand,
-                        'paid'       => $oInvoice->totals->formatted->paid,
-                        'processing' => $oInvoice->totals->formatted->processing,
+                        'sub'   => $oInvoice->totals->formatted->sub,
+                        'tax'   => $oInvoice->totals->formatted->tax,
+                        'grand' => $oInvoice->totals->formatted->grand,
                     ],
                     'items'    => array_map(function (\Nails\Invoice\Resource\Invoice\Item $oItem) {
                         return [

@@ -387,7 +387,7 @@ class Invoice extends Base
             [
                 'expand' => [
                     'customer',
-                    'payments',
+                    ['payments', ['expand' => ['source']]],
                     'refunds',
                     'items',
                 ],
@@ -526,7 +526,7 @@ class Invoice extends Base
                         'emails',
                         ['expand' => ['email']],
                     ],
-                    'payments',
+                    ['payments', ['expand' => ['source']]],
                     'refunds',
                     'items',
                 ],
