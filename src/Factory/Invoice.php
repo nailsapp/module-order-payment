@@ -802,7 +802,7 @@ class Invoice
             'ref'             => $this->getRef(),
             'state'           => $this->getState(),
             'dated'           => $this->getDated(),
-            'paid_date'       => $this->getPaidDate(),
+            'paid'            => $this->getPaidDate(),
             'terms'           => $this->getTerms(),
             'customer_id'     => $this->getCustomerId(),
             'email'           => $this->getEmail(),
