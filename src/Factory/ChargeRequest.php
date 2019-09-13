@@ -589,13 +589,17 @@ class ChargeRequest extends RequestBase
 
         $aDriverCurrencies = $this->oDriver->getSupportedCurrencies();
         if (!empty($aDriverCurrencies) && !in_array($this->oCurrency->code, $aDriverCurrencies)) {
-            throw new ChargeRequestException('Selected currency is not supported by payment driver.');
+            throw new ChargeRequestException(
+                'Selected currency is not supported by payment driver.'
+            );
         }
 
         // --------------------------------------------------------------------------
 
         if (!empty($this->oSource) && $this->oSource->driver !== $this->oDriver->getSlug()) {
-            throw new ChargeRequestException('Selected payment source is incompatible with the selected driver.');
+            throw new ChargeRequestException(
+                'Selected payment source is incompatible with the selected driver.'
+            );
         }
 
         // --------------------------------------------------------------------------
@@ -604,7 +608,9 @@ class ChargeRequest extends RequestBase
         $oExpires = new \DateTime($this->oSource->expiry->raw);
 
         if (!empty($this->oSource) && $oExpires < $oNow) {
-            throw new ChargeRequestException('Selected payment source has expired.');
+            throw new ChargeRequestException\PaymentSourceExpiredException(
+                'Selected payment source has expired.'
+            );
         }
 
         // --------------------------------------------------------------------------
