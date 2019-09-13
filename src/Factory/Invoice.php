@@ -84,6 +84,13 @@ class Invoice
     protected $sEmail = '';
 
     /**
+     * The date the invoice was paid
+     *
+     * @var string
+     */
+    protected $sPaidDate;
+
+    /**
      * The invoice's currency
      *
      * @var string
