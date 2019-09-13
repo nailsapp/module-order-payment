@@ -20,6 +20,11 @@ use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Resource\Invoice\Data\Payment;
 use stdClass;
 
+/**
+ * Class ChargeRequest
+ *
+ * @package Nails\Invoice\Factory
+ */
 class ChargeRequest extends RequestBase
 {
     /**

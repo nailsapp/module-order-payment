@@ -105,7 +105,7 @@ abstract class PaymentBase extends Base implements Payment
      *
      * @throws ChargeRequestException
      */
-    protected function setChargeRequestCardDetails(ChargeRequest $oChargeRequest, array $aData)
+    protected function setChargeRequestCardDetails(ChargeRequest $oChargeRequest, array $aData): void
     {
         $aCard = getFromArray('card', $aData, []);
 

@@ -4,6 +4,7 @@ namespace Nails\Invoice\Interfaces\Driver;
 
 use Nails\Currency\Resource\Currency;
 use Nails\Invoice\Exception\DriverException;
+use Nails\Invoice\Factory\ChargeRequest;
 use Nails\Invoice\Factory\ChargeResponse;
 use Nails\Invoice\Factory\CompleteResponse;
 use Nails\Invoice\Factory\RefundResponse;
@@ -18,6 +19,30 @@ use stdClass;
  */
 interface Payment
 {
+    /**
+     * Determines whether the driver supports the specified currency
+     *
+     * @param Currency|string $mCurrency The currency
+     *
+     * @return bool
+     */
+    public function supportsCurrency($mCurrency): bool;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Prepares a ChargeRequest object
+     *
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object to prepare
+     * @param array         $aData          Any data which was requested by getPaymentFields()
+     */
+    public function prepareChargeRequest(
+        ChargeRequest $oChargeRequest,
+        array $aData
+    ): void;
+
+    // --------------------------------------------------------------------------
+
     /**
      * Returns whether the driver is available to be used against the selected invoice
      *
