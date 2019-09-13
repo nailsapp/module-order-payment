@@ -63,6 +63,13 @@ class Invoice
     protected $sDated = '';
 
     /**
+     * The date the invoice was paid
+     *
+     * @var string
+     */
+    protected $sPaidDate;
+
+    /**
      * The invoice's terms
      *
      * @var int
@@ -82,13 +89,6 @@ class Invoice
      * @var string
      */
     protected $sEmail = '';
-
-    /**
-     * The date the invoice was paid
-     *
-     * @var string
-     */
-    protected $sPaidDate;
 
     /**
      * The invoice's currency
@@ -269,6 +269,47 @@ class Invoice
     public function getDated()
     {
         return $this->sDated;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's paid date
+     *
+     * @param \DateTime|Date|string $mDate The invoice's paid date
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setPaidDate($mDate): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mDate instanceof \DateTime) {
+            $this->sPaidDate = $mDate->format('Y-m-d');
+        } elseif ($mDate instanceof Date) {
+            $this->sPaidDate = (string) $mDate;
+        } elseif (is_string($mDate)) {
+            $this->sPaidDate = $mDate;
+        } else {
+            throw new InvoiceException(
+                'Invalid data type (' . gettype($mDate) . ') passed to ' . __METHOD__
+            );
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's paid date
+     *
+     * @return string
+     */
+    public function getPaidDate()
+    {
+        return $this->sPaidDate;
     }
 
     // --------------------------------------------------------------------------
@@ -761,6 +802,7 @@ class Invoice
             'ref'             => $this->getRef(),
             'state'           => $this->getState(),
             'dated'           => $this->getDated(),
+            'paid_date'       => $this->getPaidDate(),
             'terms'           => $this->getTerms(),
             'customer_id'     => $this->getCustomerId(),
             'email'           => $this->getEmail(),
