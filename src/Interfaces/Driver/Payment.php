@@ -95,16 +95,17 @@ interface Payment
     /**
      * Initiate a payment
      *
-     * @param int                           $iAmount      The payment amount
-     * @param Currency                      $oCurrency    The payment currency
-     * @param stdClass                      $oData        An array of driver data
-     * @param Resource\Invoice\Data\Payment $oPaymentData The payment data object
-     * @param string                        $sDescription The charge description
-     * @param Resource\Payment              $oPayment     The payment object
-     * @param Resource\Invoice              $oInvoice     The invoice object
-     * @param string                        $sSuccessUrl  The URL to go to after successful payment
-     * @param string                        $sErrorUrl    The URL to go to after failed payment
-     * @param Resource\Source|null          $oSource      The saved payment source to use
+     * @param int                           $iAmount          The payment amount
+     * @param Currency                      $oCurrency        The payment currency
+     * @param stdClass                      $oData            An array of driver data
+     * @param Resource\Invoice\Data\Payment $oPaymentData     The payment data object
+     * @param string                        $sDescription     The charge description
+     * @param Resource\Payment              $oPayment         The payment object
+     * @param Resource\Invoice              $oInvoice         The invoice object
+     * @param string                        $sSuccessUrl      The URL to go to after successful payment
+     * @param string                        $sErrorUrl        The URL to go to after failed payment
+     * @param bool                          $bCustomerPresent Whether the customer is present
+     * @param Resource\Source|null          $oSource          The saved payment source to use
      *
      * @return ChargeResponse
      */
@@ -118,6 +119,7 @@ interface Payment
         Resource\Invoice $oInvoice,
         string $sSuccessUrl,
         string $sErrorUrl,
+        bool $bCustomerPresent,
         Resource\Source $oSource = null
     ): ChargeResponse;
 

@@ -63,6 +63,13 @@ class ChargeRequest extends RequestBase
     protected $bAutoRedirect = true;
 
     /**
+     * Whether the customer is present during the transaction
+     *
+     * @var bool
+     */
+    protected $bCustomerPresent = true;
+
+    /**
      * The amount to charge
      *
      * @var int
@@ -426,6 +433,33 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Set whether the customer is present during the transaction
+     *
+     * @param bool $bCustomerPresent Whether the customer is present during the transaction
+     *
+     * @return $this
+     */
+    public function setCustomerPresent(bool $bCustomerPresent): ChargeRequest
+    {
+        $this->bCustomerPresent = (bool) $bCustomerPresent;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the customer is present during the transaction
+     *
+     * @return bool
+     */
+    public function isCustomerPresent(): bool
+    {
+        return $this->bCustomerPresent;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set the amount to charge
      *
      * @param int $iAmount The amount to charge
@@ -578,16 +612,17 @@ class ChargeRequest extends RequestBase
         if (empty($this->oPayment)) {
 
             $iPaymentId = $this->oPaymentModel->create([
-                'driver'      => $this->oDriver->getSlug(),
-                'description' => $this->getDescription(),
-                'invoice_id'  => $this->oInvoice->id,
-                'source_id'   => $this->oSource ? $this->oSource->id : null,
-                'currency'    => $this->getCurrency()->code,
-                'amount'      => $this->getAmount(),
-                'url_success' => $this->getSuccessUrl(),
-                'url_error'   => $this->getErrorUrl(),
-                'url_cancel'  => $this->getCancelUrl(),
-                'custom_data' => $oPaymentData,
+                'driver'           => $this->oDriver->getSlug(),
+                'description'      => $this->getDescription(),
+                'invoice_id'       => $this->oInvoice->id,
+                'source_id'        => $this->oSource ? $this->oSource->id : null,
+                'currency'         => $this->getCurrency()->code,
+                'amount'           => $this->getAmount(),
+                'url_success'      => $this->getSuccessUrl(),
+                'url_error'        => $this->getErrorUrl(),
+                'url_cancel'       => $this->getCancelUrl(),
+                'custom_data'      => $oPaymentData,
+                'customer_present' => $this->isCustomerPresent(),
             ]);
 
             if (empty($iPaymentId)) {
@@ -626,6 +661,7 @@ class ChargeRequest extends RequestBase
             $this->getInvoice(),
             $sSuccessUrl,
             $sErrorUrl,
+            $this->isCustomerPresent(),
             $this->getSource()
         );
 

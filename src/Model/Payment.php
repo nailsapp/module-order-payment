@@ -644,6 +644,8 @@ class Payment extends Base
         $aIntegers[] = 'fee';
         $aIntegers[] = 'fee_refunded';
 
+        $aBools[] = 'customer_present';
+
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
     }
 }

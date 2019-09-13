@@ -22,6 +22,11 @@ use Nails\Invoice\Resource\Payment\Status;
 use Nails\Invoice\Resource\Payment\Urls;
 use Nails\Invoice\Service\PaymentDriver;
 
+/**
+ * Class Payment
+ *
+ * @package Nails\Invoice\Resource
+ */
 class Payment extends Entity
 {
     /**
@@ -142,6 +147,13 @@ class Payment extends Entity
      * @var bool
      */
     public $is_refundable;
+
+    /**
+     * Whether the customer was present
+     *
+     * @var bool
+     */
+    public $customer_present;
 
     /**
      * The payment's custom data

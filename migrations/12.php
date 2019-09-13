@@ -59,7 +59,8 @@ class Migration12 extends Base
         $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD FOREIGN KEY (`source_id`) REFERENCES `{{NAILS_DB_PREFIX}}invoice_source` (`id`) ON DELETE SET NULL;');
         $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` ADD `payment_data` TEXT NULL AFTER `callback_data`;');
         $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` ADD `payment_driver` VARCHAR(150) NULL DEFAULT NULL AFTER `payment_data`;');
-        $this->query('ALTER TABLE `nails_invoice_payment` CHANGE `txn_id` `transaction_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;');
-        $this->query('ALTER TABLE `nails_invoice_refund` CHANGE `txn_id` `transaction_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;');
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` CHANGE `txn_id` `transaction_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;');
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_refund` CHANGE `txn_id` `transaction_id` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;');
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `customer_present` TINYINT(1) UNSIGNED NULL DEFAULT NULL AFTER `url_cancel`;');
     }
 }
