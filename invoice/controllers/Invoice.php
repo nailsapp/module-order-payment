@@ -162,6 +162,7 @@ class Invoice extends Base
 
                     Factory::service('View')
                         ->setData([
+                            'oInvoice'            => $oInvoice,
                             'aProcessingPayments' => $aProcessingPayments,
                         ])
                         ->load([
@@ -176,6 +177,9 @@ class Invoice extends Base
                     $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
 
                     Factory::service('View')
+                        ->setData([
+                            'oInvoice' => $oInvoice,
+                        ])
                         ->load([
                             'structure/header',
                             'invoice/pay/paid',
