@@ -203,7 +203,70 @@ class InvoicePay {
                     deferred.reject(error.message);
                 }
             });
+
+
+        //  Hide overflowing line items
+        this.tidyLineItems();
     }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * If there are an excessive amount of line items then hide the remaining ones and show a toggle button
+     */
+    tidyLineItems() {
+        let lineItems = $('#js-invoice-main-form-line-items > tbody:first-child > tr');
+        if (lineItems.length > 3) {
+
+            let excessItems = lineItems.filter(':gt(2)');
+
+            excessItems.hide();
+
+            let tbody = $('<tbody>');
+            let tr = $('<tr>');
+            let td = $('<td>').attr('colspan', 2);
+            let buttonShow = $('<button>')
+                .addClass('btn btn--block')
+                .html('Show ' + excessItems.length + ' more items');
+            let buttonHide = $('<button>')
+                .addClass('btn btn--block')
+                .html('Show fewer items')
+                .hide();
+
+            tbody.append(tr.append(td.append(buttonShow).append(buttonHide)))
+
+            $('#js-invoice-main-form-line-items > tbody:first-child').after(tbody);
+
+            buttonShow
+                .on('click', (e) => {
+                    this.toggleItems(excessItems, buttonShow, buttonHide)
+                    return false;
+                });
+            buttonHide
+                .on('click', (e) => {
+                    this.toggleItems(excessItems, buttonShow, buttonHide)
+                    return false;
+                })
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Toggle the line itmes and buttons on and off
+     * @param excessItems
+     * @param buttonShow
+     * @param buttonHide
+     * @returns {boolean}
+     */
+    toggleItems(excessItems, buttonShow, buttonHide) {
+        excessItems.toggle();
+        buttonShow.toggle();
+        buttonHide.toggle();
+        return false;
+    }
+
+
 }
 
 export default InvoicePay;
