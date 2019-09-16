@@ -14,6 +14,11 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Exception\RefundRequestException;
 
+/**
+ * Class RefundRequest
+ *
+ * @package Nails\Invoice\Factory
+ */
 class RefundRequest extends RequestBase
 {
     protected $sReason;
@@ -50,7 +55,7 @@ class RefundRequest extends RequestBase
     /**
      * Execute the refund
      *
-     * @param  integer $iAmount The amount to refund
+     * @param integer $iAmount The amount to refund
      *
      * @return \Nails\Invoice\Factory\ChargeResponse
      * @throws RefundRequestException
@@ -116,7 +121,7 @@ class RefundRequest extends RequestBase
 
         //  Execute the refund
         $oRefundResponse = $this->oDriver->refund(
-            $this->oPayment->txn_id,
+            $this->oPayment->transaction_id,
             $iAmount,
             $this->oPayment->currency->code,
             $this->oPayment->custom_data,
@@ -141,7 +146,7 @@ class RefundRequest extends RequestBase
 
             //  Driver has confirmed that the refund was accepted
             $this->setRefundComplete(
-                $oRefundResponse->getTxnId(),
+                $oRefundResponse->getTransactionId(),
                 $oRefundResponse->getFee()
             );
 

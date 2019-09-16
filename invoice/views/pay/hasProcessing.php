@@ -1,4 +1,14 @@
 <div class="nails-invoice pending u-center-screen" id="js-invoice">
+    <?php
+    $sLogo = logoDiscover();
+    if ($sLogo) {
+        echo '<div class="logo">';
+        echo img([
+            'src' => $sLogo,
+        ]);
+        echo '</div>';
+    }
+    ?>
     <div class="panel">
         <h1 class="panel__header text-center">
             Invoice <?=$oInvoice->ref?>

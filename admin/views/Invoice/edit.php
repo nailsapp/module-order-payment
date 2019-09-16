@@ -1,3 +1,8 @@
+<?php
+
+use Nails\Invoice\Constants;
+
+?>
 <div class="group-invoice invoice edit">
     <?=form_open($customer_id ? 'admin/invoice/invoice/create?customer_id=' . $customer_id : null)?>
     <fieldset>
@@ -80,7 +85,7 @@
         $aField = array(
             'key'         => 'terms',
             'label'       => 'Payment Terms',
-            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', 'nails/module-invoice') ?: '',
+            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', Constants::MODULE_SLUG) ?: '',
             'info'        => '<span data-bind="html: termsText()"></span>',
             'id'          => 'invoice-terms',
             'placeholder' => 'Leave blank to set the invoice to be due on receipt',
@@ -96,7 +101,7 @@
             'key'         => 'additional_text',
             'label'       => 'Additional Text',
             'placeholder' => 'Any additional text you\'d like to show on the invoice',
-            'default'     => !empty($invoice->additional_text) ? $invoice->additional_text : appSetting('default_additional_text', 'nails/module-invoice')
+            'default'     => !empty($invoice->additional_text) ? $invoice->additional_text : appSetting('default_additional_text', Constants::MODULE_SLUG)
         );
         echo form_field_textarea($aField);
 

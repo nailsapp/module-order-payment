@@ -1,3 +1,10 @@
+<?php
+
+/**
+ * @var \Nails\Invoice\Resource\Payment[] $payments
+ */
+
+?>
 <div class="group-invoice payment browse">
     <p>
         Browse payments received by the site.
@@ -27,10 +34,13 @@
                         ?>
                         <tr>
                             <td class="driver">
-                                <?=$oPayment->driver->label?>
+                                <?=$oPayment->driver->getLabel()?>
+                                <small>
+                                    <?=$oPayment->driver->getSlug()?>
+                                </small>
                             </td>
                             <td class="txn-ref">
-                                <?=$oPayment->txn_id?>
+                                <?=$oPayment->transaction_id ?: '<span class="text-muted">&mdash;</span>'?>
                             </td>
                             <?php
                             if ($oPayment->status->id == 'PROCESSING') {
@@ -53,16 +63,22 @@
                             <td class="invoice">
                                 <?php
 
-                                if ($oPayment->invoice_state == 'DRAFT') {
-                                    $sUrl = 'admin/invoice/invoice/edit/' . $oPayment->invoice_id;
+                                if (!empty($oPayment->invoice)) {
+
+                                    if ($oPayment->invoice->state->id == 'DRAFT') {
+                                        $sUrl = 'admin/invoice/invoice/edit/' . $oPayment->invoice->id;
+                                    } else {
+                                        $sUrl = 'admin/invoice/invoice/view/' . $oPayment->invoice->id;
+                                    }
+
+                                    echo anchor(
+                                        $sUrl,
+                                        $oPayment->invoice->ref . ' &mdash; ' . $oPayment->invoice->state->label
+                                    );
                                 } else {
-                                    $sUrl = 'admin/invoice/invoice/view/' . $oPayment->invoice_id;
+                                    echo '<span class="text-muted">&mdash;</span>';
                                 }
 
-                                echo anchor(
-                                    $sUrl,
-                                    $oPayment->invoice_ref . ' &mdash; ' . $invoiceStates[$oPayment->invoice_state]
-                                );
                                 ?>
                             </td>
                             <td class="amount">
@@ -96,9 +112,9 @@
                                     lang('action_view'),
                                     'class="btn btn-xs btn-default"'
                                 );
-                                if (userHasPermission('admin:invoice:invoice:manage')) {
+                                if (!empty($oPayment->invoice) && userHasPermission('admin:invoice:invoice:manage')) {
                                     echo anchor(
-                                        'admin/invoice/invoice/view/' . $oPayment->invoice_id,
+                                        'admin/invoice/invoice/view/' . $oPayment->invoice->id,
                                         'View Invoice',
                                         'class="btn btn-xs btn-default"'
                                     );

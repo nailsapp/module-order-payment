@@ -12,20 +12,36 @@
 
 namespace Nails\Admin\Invoice;
 
-use Nails\Factory;
+use Nails\Admin\Controller\Base;
+use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
-use Nails\Invoice\Controller\BaseAdmin;
+use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\NailsException;
+use Nails\Common\Service\AppSetting;
+use Nails\Common\Service\Database;
+use Nails\Common\Service\FormValidation;
+use Nails\Common\Service\Input;
+use Nails\Factory;
+use Nails\Invoice\Constants;
+use Nails\Invoice\Service\Invoice\Skin;
+use Nails\Invoice\Service\PaymentDriver;
 
-class Settings extends BaseAdmin
+/**
+ * Class Settings
+ *
+ * @package Nails\Admin\Invoice
+ */
+class Settings extends Base
 {
     /**
      * Announces this controller's navGroups
      *
-     * @return stdClass
+     * @return array|Nav
+     * @throws FactoryException
      */
     public static function announce()
     {
+        /** @var Nav $oNavGroup */
         $oNavGroup = Factory::factory('Nav', 'nails/module-admin');
         $oNavGroup->setLabel('Settings');
         $oNavGroup->setIcon('fa-wrench');
@@ -68,11 +84,16 @@ class Settings extends BaseAdmin
             unauthorised();
         }
 
-        $oInput                = Factory::service('Input');
-        $oDb                   = Factory::service('Database');
-        $oAppSettingService    = Factory::service('AppSetting');
-        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
-        $oInvoiceSkinService   = Factory::service('InvoiceSkin', 'nails/module-invoice');
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+        /** @var Database $oDb */
+        $oDb = Factory::service('Database');
+        /** @var AppSetting $oAppSettingService */
+        $oAppSettingService = Factory::service('AppSetting');
+        /** @var PaymentDriver $oPaymentDriverService */
+        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+        /** @var Skin $oInvoiceSkinService */
+        $oInvoiceSkinService = Factory::service('InvoiceSkin', Constants::MODULE_SLUG);
 
         //  Process POST
         if ($oInput->post()) {
@@ -82,6 +103,7 @@ class Settings extends BaseAdmin
             $sKeyInvoiceSkin   = $oInvoiceSkinService->getSettingKey();
 
             //  Validation
+            /** @var FormValidation $oFormValidation */
             $oFormValidation = Factory::service('FormValidation');
 
             $oFormValidation->set_rules('business_name', '', '');
@@ -118,7 +140,7 @@ class Settings extends BaseAdmin
                     $oDb->trans_begin();
 
                     //  Normal settings
-                    if (!$oAppSettingService->set($aSettings, 'nails/module-invoice')) {
+                    if (!$oAppSettingService->set($aSettings, Constants::MODULE_SLUG)) {
                         throw new NailsException($oAppSettingService->lastError(), 1);
                     }
 
@@ -142,7 +164,7 @@ class Settings extends BaseAdmin
         // --------------------------------------------------------------------------
 
         //  Get data
-        $this->data['settings'] = appSetting(null, 'nails/module-invoice', true);
+        $this->data['settings'] = appSetting(null, Constants::MODULE_SLUG, true);
 
         Helper::loadView('index');
     }

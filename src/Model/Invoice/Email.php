@@ -13,41 +13,58 @@
 namespace Nails\Invoice\Model\Invoice;
 
 use Nails\Common\Model\Base;
-use Nails\Factory;
+use Nails\Invoice\Constants;
 
+/**
+ * Class Email
+ *
+ * @package Nails\Invoice\Model\Invoice
+ */
 class Email extends Base
 {
-    public function __construct()
-    {
-        parent::__construct();
-        $this->table             = NAILS_DB_PREFIX . 'invoice_email';
-        $this->defaultSortColumn = 'created';
-    }
+    /**
+     * The table this model represents
+     *
+     * @var string
+     */
+    const TABLE = NAILS_DB_PREFIX . 'invoice_email';
+
+    /**
+     * The name of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_NAME = 'InvoiceEmail';
+
+    /**
+     * The provider of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
     // --------------------------------------------------------------------------
 
     /**
-     * This method applies the conditionals which are common across the get_*()
-     * methods and the count() method.
-     *
-     * @param array $aData Data passed from the calling method
-     *
-     * @return void
-     **/
-    protected function getCountCommon(array $aData = []): void
+     * Email constructor.
+     */
+    public function __construct()
     {
-        if (empty($aData['select'])) {
-            $aData['select'] = [
-                $this->getTableAlias() . '.*',
-                'ea.ref email_ref',
-            ];
-        }
-
-        //  Common joins
-        $oDb = Factory::service('Database');
-        $oDb->join(NAILS_DB_PREFIX . 'email_archive ea', $this->getTableAlias() . '.email_id = ea.id', 'LEFT');
-
-        parent::getCountCommon($aData);
+        parent::__construct();
+        $this->defaultSortColumn = 'created';
+        $this
+            ->addExpandableField([
+                'trigger'   => 'invoice',
+                'model'     => 'Invoice',
+                'provider'  => Constants::MODULE_SLUG,
+                'id_column' => 'inivoice_id',
+            ])
+            ->addExpandableField([
+                'trigger'   => 'email',
+                'model'     => 'Email',
+                'provider'  => \Nails\Email\Constants::MODULE_SLUG,
+                'id_column' => 'email_id',
+            ]);
     }
 
     // --------------------------------------------------------------------------
@@ -58,11 +75,11 @@ class Email extends Base
      * The getAll() method iterates over each returned item with this method so as to
      * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
      *
-     * @param  object $oObj      A reference to the object being formatted.
-     * @param  array  $aData     The same data array which is passed to _getcount_common, for reference if needed
-     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param  array  $aBools    Fields which should be cast as booleans if not null
-     * @param  array  $aFloats   Fields which should be cast as floats if not null
+     * @param object $oObj      A reference to the object being formatted.
+     * @param array  $aData     The same data array which is passed to _getcount_common, for reference if needed
+     * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
+     * @param array  $aBools    Fields which should be cast as booleans if not null
+     * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @return void
      */
@@ -73,30 +90,8 @@ class Email extends Base
         array $aBools = [],
         array $aFloats = []
     ) {
+        $aIntegers[] = 'invoice_id';
+        $aIntegers[] = 'email_id';
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
-        $oEmailer = factory::service('Emailer', 'nails/module-email');
-        $aTypes   = $oEmailer->getTypes();
-
-        $oEmail = (object) [
-            'id'          => (int) $oObj->email_id ?: null,
-            'ref'         => $oObj->email_ref,
-            'type'        => (object) [
-                'slug'  => $oObj->email_type,
-                'label' => '',
-            ],
-            'preview_url' => $oObj->email_id ? siteUrl('email/view/' . $oObj->email_ref) : null,
-        ];
-
-        if (!empty($aTypes[$oEmail->type->slug])) {
-            $oEmail->type->label = $aTypes[$oEmail->type->slug]->name;
-        } else {
-            $oEmail->type->label = preg_replace('/[-_]/', ' ', $oEmail->type->slug);
-        }
-
-        $oObj->email = $oEmail;
-
-        unset($oObj->email_id);
-        unset($oObj->email_type);
     }
 }

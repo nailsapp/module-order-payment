@@ -15,7 +15,13 @@ namespace Nails\Invoice\Api\Controller;
 use Nails\Api\Controller\Base;
 use Nails\Api\Exception\ApiException;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 
+/**
+ * Class Invoice
+ *
+ * @package Nails\Invoice\Api\Controller
+ */
 class Invoice extends Base
 {
     /**
@@ -29,7 +35,7 @@ class Invoice extends Base
 
         $oInput        = Factory::service('Input');
         $sKeywords     = $oInput->get('keywords');
-        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
 
         if (strlen($sKeywords) >= 3) {
             throw new ApiException('Search term must be 3 characters or longer.', 400);
@@ -43,7 +49,7 @@ class Invoice extends Base
         }
 
         return Factory::factory('ApiResponse', 'nails/module-api')
-                      ->setData($aOut);
+            ->setData($aOut);
     }
 
     // --------------------------------------------------------------------------
@@ -51,7 +57,7 @@ class Invoice extends Base
     /**
      * Returns an invoice by its ID
      *
-     * @param  string $iId The invoice's ID
+     * @param string $iId The invoice's ID
      *
      * @return array
      */
@@ -64,7 +70,7 @@ class Invoice extends Base
             throw new ApiException('Invalid Invoice ID', 404);
         }
 
-        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
         $oInvoice      = $oInvoiceModel->getById($iId, ['expand' => ['customer']]);
 
         if (empty($oInvoice)) {
@@ -72,7 +78,7 @@ class Invoice extends Base
         }
 
         return Factory::factory('ApiResponse', 'nails/module-api')
-                      ->setData($this->formatInvoice($oInvoice));
+            ->setData($this->formatInvoice($oInvoice));
     }
 
     // --------------------------------------------------------------------------

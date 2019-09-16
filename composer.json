@@ -27,6 +27,7 @@
     "require": {
         "ext-json": "*",
         "nails/common": "dev-develop",
+        "nails/module-admin": "dev-develop",
         "nails/module-auth": "dev-develop",
         "nails/module-currency": "dev-develop",
         "nails/module-pdf": "dev-develop",
@@ -49,6 +50,9 @@
                 "nails/module-admin": {
                     "autoload": {
                         "assets": {
+                            "css": [
+                                "admin.min.css"
+                            ],
                             "js": [
                                 "admin.invoicesearch.min.js",
                                 "admin.customersearch.min.js"

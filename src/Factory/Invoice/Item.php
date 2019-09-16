@@ -13,58 +13,35 @@ namespace Nails\Invoice\Factory\Invoice;
 
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Model\Invoice;
+use Nails\Invoice\Resource\Tax;
 
 /**
  * Class Item
  *
  * @package Nails\Invoice\Factory\Invoice
- *
- * @method setId($mValue)
- * @method getId()
- * @method setLabel($mValue)
- * @method getLabel()
- * @method setBody($mValue)
- * @method getBody()
- * @method setUnit($mValue)
- * @method getUnit()
- * @method setTaxId($mValue)
- * @method getTaxId()
- * @method setQuantity($mValue)
- * @method getQuantity()
- * @method setUnitCost($mValue)
- * @method getUnitCost()
- * @method setCallbackData($mValue)
- * @method getCallbackData()
  */
 class Item
 {
     /**
-     * Stores an array of the getter/setters for the other properties
-     *
-     * @var array
-     */
-    protected $aMethods = [];
-
-    /**
      * The item's id
      *
-     * @var integer
+     * @var int|null
      */
-    protected $iId;
+    protected $iId = null;
 
     /**
      * The item's label
      *
      * @var string
      */
-    protected $sLabel;
+    protected $sLabel = '';
 
     /**
      * The item's body
      *
      * @var string
      */
-    protected $sBody;
+    protected $sBody = '';
 
     /**
      * The item's unit
@@ -76,9 +53,9 @@ class Item
     /**
      * The item's tax ID
      *
-     * @var integer
+     * @var int|null
      */
-    protected $iTaxId;
+    protected $iTaxId = null;
 
     /**
      * The item's quantity
@@ -90,58 +67,235 @@ class Item
     /**
      * The item's unit cost
      *
-     * @var integer
+     * @var int
      */
     protected $iUnitCost = 0;
 
     /**
      * The item's callback data
      *
-     * @var mixed
+     * @var mixed|null
      */
-    protected $mCallbackData;
+    protected $mCallbackData = null;
 
     // --------------------------------------------------------------------------
 
     /**
-     * Item constructor.
+     * Set the item's ID
+     *
+     * @param int $iId The Id to set
+     *
+     * @return Item
      */
-    public function __construct()
+    public function setId(int $iId): Item
     {
-        $aVars = get_object_vars($this);
-        unset($aVars['aMethods']);
-        $aVars = array_keys($aVars);
-
-        foreach ($aVars as $sVar) {
-            $sNormalised                          = substr($sVar, 1);
-            $this->aMethods['set' . $sNormalised] = $sVar;
-            $this->aMethods['get' . $sNormalised] = $sVar;
-        }
+        $this->iId = $iId;
+        return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Mimics setters and getters for class properties
+     * Get the item's ID
      *
-     * @param string $sMethod    The method being called
-     * @param array  $aArguments Any passed arguments
-     *
-     * @return $this
-     * @throws InvoiceException
+     * @return int|null
      */
-    public function __call($sMethod, $aArguments)
+    public function getId(): ?int
     {
-        if (array_key_exists($sMethod, $this->aMethods)) {
-            if (substr($sMethod, 0, 3) === 'set') {
-                $this->{$this->aMethods[$sMethod]} = reset($aArguments);
-                return $this;
-            } else {
-                return $this->{$this->aMethods[$sMethod]};
-            }
+        return $this->iId;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the item's label
+     *
+     * @param string $sLabel The item's label
+     *
+     * @return Item
+     */
+    public function setLabel(string $sLabel): Item
+    {
+        $this->sLabel = $sLabel;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the item's label
+     *
+     * @return string
+     */
+    public function getLabel(): string
+    {
+        return $this->sLabel;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the item's body
+     *
+     * @param string $sBody The item's body
+     *
+     * @return Item
+     */
+    public function setBody(string $sBody): Item
+    {
+        $this->sBody = $sBody;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the item's body
+     *
+     * @return string
+     */
+    public function getBody(): string
+    {
+        return $this->sBody;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the item's unit
+     *
+     * @param string $sUnit The item's unit
+     *
+     * @return Item
+     */
+    public function setUnit(string $sUnit): Item
+    {
+        $this->sUnit = $sUnit;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the item's unit
+     *
+     * @return string
+     */
+    public function getUnit(): string
+    {
+        return $this->sUnit;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the item's tax ID
+     *
+     * @param int|Tax $iTaxId The item's tax ID, or a tax resource
+     *
+     * @return Item
+     */
+    public function setTaxId($iTaxId): Item
+    {
+        if ($iTaxId instanceof Tax) {
+            $this->iTaxId = $iTaxId->id;
         } else {
-            throw new InvoiceException('Call to undefined method ' . get_called_class() . '::' . $sMethod . '()');
+            $this->iTaxId = $iTaxId;
         }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the item's tax ID
+     *
+     * @return int|null
+     */
+    public function getTaxId(): ?int
+    {
+        return $this->iTaxId;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the item's quantity
+     *
+     * @param int $iQuantity The item's quantity
+     *
+     * @return Item
+     */
+    public function setQuantity(int $iQuantity): Item
+    {
+        $this->iQuantity = $iQuantity;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the item's quantity
+     *
+     * @return int
+     */
+    public function getQuantity(): int
+    {
+        return $this->iQuantity;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the item's unit cost
+     *
+     * @param int $iUnitCost The item's unit cost
+     *
+     * @return Item
+     */
+    public function setUnitCost(int $iUnitCost): Item
+    {
+        $this->iUnitCost = $iUnitCost;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the item's unit cost
+     *
+     * @return int
+     */
+    public function getUnitCost(): int
+    {
+        return $this->iUnitCost;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the item's callback data
+     *
+     * @param $mValue The item's callback data
+     *
+     * @return Item
+     */
+    public function setCallbackData($mValue): Item
+    {
+        $this->mCallbackData = $mValue;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the item's callback data
+     *
+     * @return mixed
+     */
+    public function getCallbackData()
+    {
+        return $this->mCallbackData;
     }
 
     // --------------------------------------------------------------------------
@@ -151,16 +305,16 @@ class Item
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
-            'id'            => (int) $this->iId ?: null,
+            'id'            => $this->iId,
             'label'         => $this->sLabel,
             'body'          => $this->sBody,
             'unit'          => $this->iUnit,
-            'tax_id'        => (int) $this->iTaxId ?: null,
-            'quantity'      => (int) $this->iQuantity ?: 0,
-            'unit_cost'     => (int) $this->iUnitCost ?: 0,
+            'tax_id'        => $this->iTaxId,
+            'quantity'      => $this->iQuantity,
+            'unit_cost'     => $this->iUnitCost,
             'callback_data' => $this->mCallbackData,
         ];
     }

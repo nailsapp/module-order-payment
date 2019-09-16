@@ -12,17 +12,76 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Currency;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\ChargeRequestException;
+use Nails\Invoice\Resource\Invoice\Data\Payment;
+use stdClass;
 
+/**
+ * Class ChargeRequest
+ *
+ * @package Nails\Invoice\Factory
+ */
 class ChargeRequest extends RequestBase
 {
+    /**
+     * The Card object
+     *
+     * @var stdClass
+     */
     protected $oCard;
+
+    /**
+     * The custom fields object
+     *
+     * @var stdClass
+     */
     protected $oCustomField;
-    protected $oCustomData;
-    protected $sDescription;
-    protected $bAutoRedirect;
-    protected $sContinueUrl;
+
+    /**
+     * The payment data object
+     *
+     * @var Payment
+     */
+    protected $oPaymentData;
+
+    /**
+     * The charge description
+     *
+     * @var string
+     */
+    protected $sDescription = '';
+
+    /**
+     * Whether to honour automatic redirects or not
+     *
+     * @var bool
+     */
+    protected $bAutoRedirect = true;
+
+    /**
+     * Whether the customer is present during the transaction
+     *
+     * @var bool
+     */
+    protected $bCustomerPresent = true;
+
+    /**
+     * The amount to charge
+     *
+     * @var int
+     */
+    protected $iAmount = 0;
+
+    /**
+     * The currency in which to charge
+     *
+     * @var Currency\Resource\Currency|null
+     */
+    protected $oCurrency = null;
 
     // --------------------------------------------------------------------------
 
@@ -35,21 +94,18 @@ class ChargeRequest extends RequestBase
 
         //  Card details
         $this->oCard = (object) [
-            'name'   => null,
-            'number' => null,
+            'name'   => '',
+            'number' => '',
             'exp'    => (object) [
-                'month' => null,
-                'year'  => null,
+                'month' => '',
+                'year'  => '',
             ],
-            'cvc'    => null,
+            'cvc'    => '',
         ];
 
         //  Container for custom fields and data
         $this->oCustomField = (object) [];
-        $this->oCustomData  = (object) [];
-
-        //  Auto redirect by default
-        $this->bAutoRedirect = true;
+        $this->oPaymentData = (object) [];
     }
 
     // --------------------------------------------------------------------------
@@ -61,7 +117,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setCardName($sCardName)
+    public function setCardName(string $sCardName): ChargeRequest
     {
         $this->oCard->name = $sCardName;
         return $this;
@@ -71,9 +127,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the cardholder's Name
+     *
      * @return string
      */
-    public function getCardName()
+    public function getCardName(): string
     {
         return $this->oCard->name;
     }
@@ -88,7 +145,7 @@ class ChargeRequest extends RequestBase
      * @throws ChargeRequestException
      * @return $this
      */
-    public function setCardNumber($sCardNumber)
+    public function setCardNumber(string $sCardNumber): ChargeRequest
     {
         //  Validate
         if (preg_match('/[^\d ]/', $sCardNumber)) {
@@ -103,9 +160,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's number
+     *
      * @return string
      */
-    public function getCardNumber()
+    public function getCardNumber(): string
     {
         return $this->oCard->number;
     }
@@ -120,7 +178,7 @@ class ChargeRequest extends RequestBase
      * @throws ChargeRequestException
      * @return $this
      */
-    public function setCardExpMonth($sCardExpMonth)
+    public function setCardExpMonth(string $sCardExpMonth): ChargeRequest
     {
         //  Validate
         if (is_numeric($sCardExpMonth)) {
@@ -150,9 +208,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's expiry month
+     *
      * @return string
      */
-    public function getCardExpMonth()
+    public function getCardExpMonth(): string
     {
         return $this->oCard->exp->month;
     }
@@ -167,7 +226,7 @@ class ChargeRequest extends RequestBase
      * @throws ChargeRequestException
      * @return $this
      */
-    public function setCardExpYear($sCardExpYear)
+    public function setCardExpYear(string $sCardExpYear): ChargeRequest
     {
         //  Validate
         if (is_numeric($sCardExpYear)) {
@@ -214,9 +273,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's expiry year
+     *
      * @return string
      */
-    public function getCardExpYear()
+    public function getCardExpYear(): string
     {
         return $this->oCard->exp->year;
     }
@@ -230,7 +290,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setCardCvc($sCardCvc)
+    public function setCardCvc(string $sCardCvc): ChargeRequest
     {
         //  Validate
         $this->oCard->cvc = $sCardCvc;
@@ -241,9 +301,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the card's CVC number
+     *
      * @return string
      */
-    public function getCardCvc()
+    public function getCardCvc(): string
     {
         return $this->oCard->cvc;
     }
@@ -251,61 +312,67 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Define a custom field
+     * Set custom field data
      *
-     * @param string $sProperty The property to set
-     * @param mixed  $mValue    The value to set
+     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
+     * @param mixed|null      $mValue The value to set
      *
-     * @return $this
+     * @return ChargeRequest
      */
-    public function setCustomField($sProperty, $mValue)
+    public function setCustomField(string $smey, $mValue = null): ChargeRequest
     {
-        $this->oCustomField->{$sProperty} = $mValue;
+        if ($mKey instanceof stdClass) {
+            $this->oCustomField = $mKey;
+        } else {
+            $this->oCustomField->{$mKey} = $mValue;
+        }
+
         return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Retrieve a custom field
+     * Retrieve custom field object
      *
-     * @param  string $sProperty The property to retrieve
-     *
-     * @return mixed
+     * @return stdClass
      */
-    public function getCustomField($sProperty)
+    public function getCustomField(): stdClass
     {
-        return property_exists($this->oCustomField, $sProperty) ? $this->oCustomField->{$sProperty} : null;
+        return $this->oCustomField;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Set a custom value
+     * Set payment data
      *
-     * @param string $sProperty The property to set
-     * @param mixed  $mValue    The value to set
+     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
+     * @param mixed|null      $mValue The value to set
      *
-     * @return $this
+     * @return ChargeRequest
      */
-    public function setCustomData($sProperty, $mValue)
+    public function setPaymentData($mKey, $mValue = null): ChargeRequest
     {
-        $this->oCustomData->{$sProperty} = $mValue;
+        if ($mKey instanceof stdClass) {
+            $this->oPaymentData = $mKey;
+        } else {
+            $this->oPaymentData->{$mKey} = $mValue;
+        }
+
         return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Retrieve a custom value
+     * Retrieve payment data object
      *
-     * @param  string $sProperty The property to retrieve
-     *
-     * @return mixed
+     * @return Payment
      */
-    public function getCustomData($sProperty)
+    public function getPaymentData(): Payment
     {
-        return property_exists($this->oCustomData, $sProperty) ? $this->oCustomData->{$sProperty} : null;
+        return Factory::resource('InvoiceDataPayment', Constants::MODULE_SLUG, $this->oPaymentData);
     }
 
     // --------------------------------------------------------------------------
@@ -317,7 +384,7 @@ class ChargeRequest extends RequestBase
      *
      * @return $this
      */
-    public function setDescription($sDescription)
+    public function setDescription(string $sDescription): ChargeRequest
     {
         $this->sDescription = $sDescription;
         return $this;
@@ -327,9 +394,10 @@ class ChargeRequest extends RequestBase
 
     /**
      * Get the description
+     *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->sDescription;
     }
@@ -339,11 +407,11 @@ class ChargeRequest extends RequestBase
     /**
      * Set whether the charge should automatically redirect
      *
-     * @param boolean $bAutoRedirect Whether to auto redirect or not
+     * @param bool $bAutoRedirect Whether to auto redirect or not
      *
      * @return $this
      */
-    public function setAutoRedirect($bAutoRedirect)
+    public function setAutoRedirect(bool $bAutoRedirect): ChargeRequest
     {
         $this->bAutoRedirect = (bool) $bAutoRedirect;
         return $this;
@@ -354,9 +422,10 @@ class ChargeRequest extends RequestBase
     /**
      * Whether the charge request will automatically redirect in the case of a
      * driver requesting a redirect flow.
-     * @return boolean
+     *
+     * @return bool
      */
-    public function isAutoRedirect()
+    public function isAutoRedirect(): bool
     {
         return $this->bAutoRedirect;
     }
@@ -364,81 +433,219 @@ class ChargeRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Set the URL to go to when a payment is completed
+     * Set whether the customer is present during the transaction
      *
-     * @param string $sContinueUrl the URL to go to when payment is completed
+     * @param bool $bCustomerPresent Whether the customer is present during the transaction
      *
      * @return $this
      */
-    public function setContinueUrl($sContinueUrl)
+    public function setCustomerPresent(bool $bCustomerPresent): ChargeRequest
     {
-        $this->sContinueUrl = $sContinueUrl;
+        $this->bCustomerPresent = (bool) $bCustomerPresent;
         return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Get the URL to go to when a payment is completed
-     * @return string
+     * Whether the customer is present during the transaction
+     *
+     * @return bool
      */
-    public function getContinueUrl()
+    public function isCustomerPresent(): bool
     {
-        return $this->sContinueUrl;
+        return $this->bCustomerPresent;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * execute the charge
+     * Set the amount to charge
      *
-     * @param  integer $iAmount   The amount to charge the card
-     * @param  string  $sCurrency The currency in which to charge
+     * @param int $iAmount The amount to charge
      *
+     * @return $this
      * @throws ChargeRequestException
-     * @return \Nails\Invoice\Factory\ChargeResponse
      */
-    public function execute($iAmount, $sCurrency)
+    public function setAmount(int $iAmount): ChargeRequest
     {
-        //  Ensure we have a driver
+        if ($iAmount <= 0) {
+            throw new ChargeRequestException('Amount must be positive');
+        }
+        $this->iAmount = $iAmount;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the amount to charge
+     *
+     * @return int
+     */
+    public function getAmount(): int
+    {
+        return $this->iAmount;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the charge currency
+     *
+     * @param Currency\Resource\Currency|string $mCurrency The currency in which to charge
+     *
+     * @return $this
+     * @throws ChargeRequestException
+     * @throws Currency\Exception\CurrencyException
+     * @throws FactoryException
+     */
+    public function setCurrency($mCurrency): ChargeRequest
+    {
+        /** @var Currency\Service\Currency $oCurrencyService */
+        $oCurrencyService = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
+
+        if (is_string($mCurrency)) {
+            $mCurrency = $oCurrencyService->getByIsoCode($mCurrency);
+        }
+
+        if (!($mCurrency instanceof Currency\Resource\Currency)) {
+            throw new ChargeRequestException('Invalid currency.');
+        }
+
+        if (!$oCurrencyService->isSupported($mCurrency)) {
+            throw new ChargeRequestException('"' . $mCurrency->code . '"" is not a supported currency.');
+        }
+
+        $this->oCurrency = $mCurrency;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the charge currency
+     *
+     * @return Currency\Resource\Currency|null
+     */
+    public function getCurrency(): ?Currency\Resource\Currency
+    {
+        return $this->oCurrency;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Execute the charge
+     *
+     * @param int|null             $iAmount   The amount to charge the card
+     * @param Currency|string|null $mCurrency The currency in which to charge
+     *
+     * @return ChargeResponse
+     * @throws ChargeRequestException
+     */
+    public function execute(int $iAmount = null, $mCurrency = null): ChargeResponse
+    {
+        /**
+         * If a specific amount has been passed, use it
+         * If the charge amount is empty and an invoice has been applied, assume the outstanding total
+         */
+        if (null !== $iAmount) {
+            $this->setAmount($iAmount);
+        } elseif (empty($this->iAmount) && !empty($this->oInvoice)) {
+
+            $iTotal      = $this->oInvoice->totals->raw->grand;
+            $iPaid       = $this->oInvoice->totals->raw->paid;
+            $iProcessing = $this->oInvoice->totals->raw->processing;
+
+            $this->setAmount(
+                $iTotal - $iPaid - $iProcessing
+            );
+        }
+
+        /**
+         * If a specific currency has been passed, use it
+         * If the charge currency is empty and an invoice has been passed, assume the invoice's currency
+         */
+        if (null !== $mCurrency) {
+            $this->setCurrency($mCurrency);
+        } elseif (empty($this->oCurrency) && !empty($this->oInvoice)) {
+            $this->setCurrency($this->oInvoice->currency);
+        }
+
+        // --------------------------------------------------------------------------
+
         if (empty($this->oDriver)) {
-            throw new ChargeRequestException('No driver selected.', 1);
-        }
-
-        //  Ensure we have an invoice
-        if (empty($this->oInvoice)) {
-            throw new ChargeRequestException('No invoice selected.', 1);
-        }
-
-        // --------------------------------------------------------------------------
-
-        if (!is_int($iAmount) || $iAmount <= 0) {
-            throw new ChargeRequestException('Amount must be a positive integer.', 1);
+            throw new ChargeRequestException('No driver selected.');
+        } elseif (empty($this->oInvoice)) {
+            throw new ChargeRequestException('No invoice selected.');
+        } elseif (empty($this->iAmount)) {
+            throw new ChargeRequestException('Amount to charge must be greater than zero.');
+        } elseif (empty($this->oCurrency)) {
+            throw new ChargeRequestException('No currency selected.');
         }
 
         // --------------------------------------------------------------------------
 
-        //  @todo: validate currency
+        $aDriverCurrencies = $this->oDriver->getSupportedCurrencies();
+        if (!empty($aDriverCurrencies) && !in_array($this->oCurrency->code, $aDriverCurrencies)) {
+            throw new ChargeRequestException(
+                'Selected currency is not supported by payment driver.'
+            );
+        }
+
+        // --------------------------------------------------------------------------
+
+        if (!empty($this->oSource)) {
+
+            if ($this->oSource->driver !== $this->oDriver->getSlug()) {
+                throw new ChargeRequestException(
+                    'Selected payment source is incompatible with the selected driver.'
+                );
+            }
+
+            if (!empty($this->oSource->expiry->raw)) {
+
+                $oNow     = Factory::factory('DateTime');
+                $oExpires = new \DateTime($this->oSource->expiry->raw);
+
+                if ($oExpires < $oNow) {
+                    throw new ChargeRequestException\PaymentSourceExpiredException(
+                        'Selected payment source has expired.'
+                    );
+                }
+            }
+        }
+
+        // --------------------------------------------------------------------------
+
+        $oPaymentData        = $this->getPaymentData();
+        $oInvoicePaymentData = $this->oInvoice->payment_data;
+        foreach ($oInvoicePaymentData as $sKey => $mValue) {
+            $oPaymentData->{$sKey} = $mValue;
+        }
 
         // --------------------------------------------------------------------------
 
         //  Create a charge against the invoice if one hasn't been specified
         if (empty($this->oPayment)) {
 
-            $iPaymentId = $this->oPaymentModel->create(
-                [
-                    'driver'       => $this->oDriver->getSlug(),
-                    'description'  => $this->getDescription(),
-                    'invoice_id'   => $this->oInvoice->id,
-                    'currency'     => $sCurrency,
-                    'amount'       => $iAmount,
-                    'url_continue' => $this->getContinueUrl(),
-                    'custom_data'  => $this->oCustomData,
-                ]
-            );
+            $iPaymentId = $this->oPaymentModel->create([
+                'driver'           => $this->oDriver->getSlug(),
+                'description'      => $this->getDescription(),
+                'invoice_id'       => $this->oInvoice->id,
+                'source_id'        => !empty($this->oSource) ? $this->oSource->id : null,
+                'currency'         => $this->getCurrency()->code,
+                'amount'           => $this->getAmount(),
+                'url_success'      => $this->getSuccessUrl(),
+                'url_error'        => $this->getErrorUrl(),
+                'url_cancel'       => $this->getCancelUrl(),
+                'custom_data'      => $oPaymentData,
+                'customer_present' => $this->isCustomerPresent(),
+            ]);
 
             if (empty($iPaymentId)) {
-                throw new ChargeRequestException('Failed to create new payment.', 1);
+                throw new ChargeRequestException('Failed to create new payment.');
             }
 
             $this->setPayment($iPaymentId);
@@ -452,38 +659,71 @@ class ChargeRequest extends RequestBase
             $oDriverData = $this->oCustomField;
         }
 
-        //  Return URL for drivers which implement a redirect flow
+        /**
+         * The "success" URL will always be this, this will perform final checks and redirect as necessary
+         */
         $sSuccessUrl = siteUrl('invoice/payment/' . $this->oPayment->id . '/' . $this->oPayment->token . '/complete');
-        $sFailUrl    = siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
+
+        /**
+         * The error URL is, by default, the checkout page but can be overridden
+         */
+        $sErrorUrl = $this->getErrorUrl() ?: siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
 
         //  Execute the charge
         $oChargeResponse = $this->oDriver->charge(
-            $iAmount,
-            $sCurrency,
+            $this->getAmount(),
+            $this->getCurrency(),
             $oDriverData,
-            $this->oCustomData,
+            $this->getPaymentData(),
             $this->getDescription(),
-            $this->oPayment,
-            $this->oInvoice,
+            $this->getPayment(),
+            $this->getInvoice(),
             $sSuccessUrl,
-            $sFailUrl,
-            $this->getContinueUrl()
+            $sErrorUrl,
+            $this->isCustomerPresent(),
+            $this->getSource()
         );
+
+        //  Set the success and fail URLs
+        $oChargeResponse
+            ->setSuccessUrl($sSuccessUrl)
+            ->setErrorUrl($sErrorUrl);
 
         //  Validate driver response
         if (empty($oChargeResponse)) {
-            throw new ChargeRequestException('Response from driver was empty.', 1);
+            throw new ChargeRequestException('Response from driver was empty.');
         }
 
         if (!($oChargeResponse instanceof ChargeResponse)) {
             throw new ChargeRequestException(
-                'Response from driver must be an instance of \Nails\Invoice\Factory\ChargeResponse.',
-                1
+                'Response from driver must be an instance of \Nails\Invoice\Factory\ChargeResponse.'
             );
         }
 
         //  Handle the response
-        if ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
+        if ($oChargeResponse->isSca()) {
+
+            /**
+             * Payment requires SCA, redirect to handle this
+             */
+
+            $sScaData = json_encode($oChargeResponse->getScaData());
+            $this->oPaymentModel->update(
+                $this->oPayment->id,
+                ['sca_data' => $sScaData]
+            );
+
+            $sRedirectUrl = siteUrl('invoice/payment/sca/' . $this->oPayment->token . '/' . md5($sScaData));
+            if ($this->isAutoRedirect()) {
+                redirect($sRedirectUrl);
+            } else {
+                $oChargeResponse->setScaUrl($sRedirectUrl);
+                //  Set the redirect values too, in case dev has not considered SCA
+                $oChargeResponse->setIsRedirect(true);
+                $oChargeResponse->setRedirectUrl($sRedirectUrl);
+            }
+
+        } elseif ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
 
             /**
              * Driver uses a redirect flow, determine whether we can use a basic header redirect,
@@ -499,9 +739,9 @@ class ChargeRequest extends RequestBase
 
             } else {
 
-                $oCi = get_instance();
-                echo $oCi->load->view('structure/header/blank', getControllerData(), true);
-                echo $oCi->load->view(
+                $oView = Factory::service('View');
+                echo $oView->load('structure/header/blank', getControllerData(), true);
+                echo $oView->load(
                     'invoice/pay/post',
                     [
                         'redirectUrl' => $sRedirectUrl,
@@ -509,7 +749,7 @@ class ChargeRequest extends RequestBase
                     ],
                     true
                 );
-                echo $oCi->load->view('structure/footer/blank', getControllerData(), true);
+                echo $oView->load('structure/footer/blank', getControllerData(), true);
                 exit();
             }
 
@@ -517,7 +757,7 @@ class ChargeRequest extends RequestBase
 
             //  Driver has started processing the charge, but it hasn't been confirmed yet
             $this->setPaymentProcessing(
-                $oChargeResponse->getTxnId(),
+                $oChargeResponse->getTransactionId(),
                 $oChargeResponse->getFee()
             );
 
@@ -525,32 +765,18 @@ class ChargeRequest extends RequestBase
 
             //  Driver has confirmed that payment has been taken.
             $this->setPaymentComplete(
-                $oChargeResponse->getTxnId(),
+                $oChargeResponse->getTransactionId(),
                 $oChargeResponse->getFee()
             );
 
         } elseif ($oChargeResponse->isFailed()) {
 
-            //  Update the payment
-            $sPaymentClass = get_class($this->oPaymentModel);
-            $bResult       = $this->oPaymentModel->update(
-                $this->oPayment->id,
-                [
-                    'status'    => $sPaymentClass::STATUS_FAILED,
-                    'fail_msg'  => $oChargeResponse->getError()->msg,
-                    'fail_code' => $oChargeResponse->getError()->code,
-                ]
+            //  Driver reported a failure
+            $this->setPaymentFailed(
+                $oChargeResponse->getError()->msg,
+                $oChargeResponse->getError()->code
             );
-
-            if (empty($bResult)) {
-                throw new ChargeRequestException('Failed to update existing payment.', 1);
-            }
         }
-
-        //  Set the success and fail URLs
-        $oChargeResponse->setSuccessUrl($sSuccessUrl);
-        $oChargeResponse->setFailUrl($sFailUrl);
-        $oChargeResponse->setContinueUrl($this->getContinueUrl());
 
         //  Lock the response so it cannot be altered
         $oChargeResponse->lock();

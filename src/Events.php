@@ -12,55 +12,61 @@
 namespace Nails\Invoice;
 
 use Nails\Common\Events\Base;
+use Nails\Invoice\Resource\Invoice;
 
+/**
+ * Class Events
+ *
+ * @package Nails\Invoice
+ */
 class Events extends Base
 {
     /**
      * Fired when an invoice is created
      *
-     * @param \stdClass $oInvoice The newly created invoice
+     * @param Invoice $oInvoice The newly created invoice
      */
     const INVOICE_CREATED = 'INVOICE:CREATED';
 
     /**
      * Fired when an invoice is updated
      *
-     * @param \stdClass $oInvoice The invoice which was updated
+     * @param Invoice $oInvoice The invoice which was updated
      */
     const INVOICE_UPDATED = 'INVOICE:UPDATED';
 
     /**
      * Fired when an invoice is marked as fully paid
      *
-     * @param \stdClass $oInvoice The invoice which was marked as fully paid
+     * @param Invoice $oInvoice The invoice which was marked as fully paid
      */
     const INVOICE_PAID = 'INVOICE:PAID';
 
     /**
      * Fired when an invoice is marked as partially paid
      *
-     * @param \stdClass $oInvoice The invoice which was marked as partially paid
+     * @param Invoice $oInvoice The invoice which was marked as partially paid
      */
     const INVOICE_PAID_PARTIAL = 'INVOICE:PAID:PARTIAL';
 
     /**
      * Fired when an invoice is marked as paid but with payments processing
      *
-     * @param \stdClass $oInvoice The invoice which was marked as paid, but with payments processing
+     * @param Invoice $oInvoice The invoice which was marked as paid, but with payments processing
      */
     const INVOICE_PAID_PROCESSING = 'INVOICE:PAID:PROCESSING';
 
     /**
      * Fired when an invoice is marked as written off
      *
-     * @param \stdClass $oInvoice The invoice which was written off
+     * @param Invoice $oInvoice The invoice which was written off
      */
     const INVOICE_WRITTEN_OFF = 'INVOICE:WRITTEN_OFF';
 
     /**
      * Fired when an invoice is marked as cancelled
      *
-     * @param \stdClass $oInvoice The invoice which was cancelled
+     * @param Invoice $oInvoice The invoice which was cancelled
      */
     const INVOICE_CANCELLED = 'INVOICE:CANCELLED';
 

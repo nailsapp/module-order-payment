@@ -12,6 +12,11 @@
 
 namespace Nails\Invoice\Factory;
 
+/**
+ * Class RefundResponse
+ *
+ * @package Nails\Invoice\Factory
+ */
 class RefundResponse extends ResponseBase
 {
 }

@@ -1,3 +1,14 @@
+<?php
+
+use Nails\Factory;
+use Nails\Invoice\Constants;
+use Nails\Invoice\Resource\Invoice\Email;
+use Nails\Invoice\Resource\Refund;
+
+/** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+$oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
+
+?>
 <div class="group-invoice invoice view">
     <div class="row">
         <div class="col-md-3">
@@ -65,12 +76,12 @@
                     <table>
                         <tbody>
 
-                        <tr>
-                            <td class="header">Sent To</td>
-                            <td>
-                                <?=mailto($invoice->email)?>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="header">Sent To</td>
+                                <td>
+                                    <?=mailto($invoice->email)?>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                     <?php
@@ -201,6 +212,7 @@
                             <th>Reference</th>
                             <th>Amount</th>
                             <th>Fee</th>
+                            <th>Source</th>
                             <th>Created</th>
                             <th>Modified</th>
                             <th class="actions">Actions</th>
@@ -208,14 +220,56 @@
                     <tbody>
                         <?php
 
+                        /** @var \Nails\Invoice\Resource\Payment $oPayment */
                         foreach ($invoice->payments->data as $oPayment) {
 
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oPayment->id?></td>
-                                <td class="text-center"><?=$oPayment->status->label?></td>
-                                <td><?=$oPayment->driver->label?></td>
-                                <td><?=$oPayment->txn_id?></td>
+                                <?php
+
+                                switch ($oPayment->status->id) {
+                                    case $oPaymentModel::STATUS_COMPLETE:
+                                    case $oPaymentModel::STATUS_PROCESSING:
+                                        $sClass = 'success';
+                                        $sText  = '';
+                                        break;
+                                    case $oPaymentModel::STATUS_PENDING:
+                                    case $oPaymentModel::STATUS_REFUNDED:
+                                    case $oPaymentModel::STATUS_REFUNDED_PARTIAL:
+                                        $sClass = 'warning';
+                                        $sText  = '';
+                                        break;
+                                    case $oPaymentModel::STATUS_FAILED:
+                                        $sClass = 'danger';
+                                        $sText  = $oPayment->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
+                                        break;
+                                    default:
+                                        $sClass = '';
+                                        $sText  = '';
+                                        break;
+                                }
+
+                                ?>
+                                <td class="text-center <?=$sClass?>">
+                                    <?php
+                                    echo $oPayment->status->label;
+                                    if (!empty($sText)) {
+                                        ?>
+                                        <small>
+                                            <?=$sText?>
+                                        </small>
+                                        <?php
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    <?=$oPayment->driver->getLabel()?>
+                                    <small>
+                                        <?=$oPayment->driver->getSlug()?>
+                                    </small>
+                                </td>
+                                <td><?=$oPayment->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td>
                                     <?php
 
@@ -240,6 +294,20 @@
 
                                     ?>
                                 </td>
+                                <td>
+                                    <?php
+                                    if (!empty($oPayment->source)) {
+                                        echo $oPayment->source->label;
+                                        echo '<small>';
+                                        echo 'Driver: ' . $oPayment->source->driver;
+                                        echo $oPayment->source->brand ? '<br>Brand: ' . $oPayment->source->brand : '';
+                                        echo $oPayment->source->last_four ? '<br>Ending: ' . $oPayment->source->last_four : '';
+                                        echo '</small>';
+                                    } else {
+                                        echo '<span class="text-muted">&mdash;</span>';
+                                    }
+                                    ?>
+                                </td>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->created)?>
                                 <?=adminHelper('loadDateTimeCell', $oPayment->modified)?>
                                 <td class="actions">
@@ -253,12 +321,12 @@
 
                                     if ($oPayment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
 
-                                        $aAttr = array(
+                                        $aAttr = [
                                             'class="btn btn-xs btn-danger js-confirm-refund"',
                                             'data-max="' . $oPayment->available_for_refund->raw . '"',
                                             'data-max-formatted="' . $oPayment->available_for_refund->formatted . '"',
                                             'data-return-to="' . urlencode(current_url()) . '"',
-                                        );
+                                        ];
 
                                         echo anchor(
                                             'admin/invoice/payment/refund/' . $oPayment->id,
@@ -315,32 +383,50 @@
                     <tbody>
                         <?php
 
+                        /** @var Refund $oRefund */
                         foreach ($invoice->refunds->data as $oRefund) {
 
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oRefund->id?></td>
-                                <td class="text-center">
+                                <?php
+
+                                switch ($oRefund->status->id) {
+                                    case $oRefundModel::STATUS_COMPLETE:
+                                    case $oRefundModel::STATUS_PROCESSING:
+                                        $sClass = 'success';
+                                        $sText  = '';
+                                        break;
+                                    case $oRefundModel::STATUS_PENDING:
+                                        $sClass = 'warning';
+                                        $sText  = '';
+                                        break;
+                                    case $oRefundModel::STATUS_FAILED:
+                                        $sClass = 'danger';
+                                        $sText  = $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
+                                        break;
+                                    default:
+                                        $sClass = '';
+                                        $sText  = '';
+                                        break;
+                                }
+
+                                ?>
+                                <td class="text-center <?=$sClass?>">
                                     <?php
-
                                     echo $oRefund->status->label;
-
-                                    if (!empty($oRefund->fail_msg)) {
-
-                                        echo '<small class="text-danger">';
-                                        echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
-                                        echo '</small>';
+                                    if (!empty($sText)) {
+                                        ?>
+                                        <small>
+                                            <?=$sText?>
+                                        </small>
+                                        <?php
                                     }
-
                                     ?>
                                 </td>
-                                <td><?=$oRefund->txn_id?></td>
-                                <td>
-                                    <?=$oRefund->amount->formatted?>
-                                </td>
-                                <td>
-                                    <?=$oRefund->fee->formatted?>
-                                </td>
+                                <td><?=$oRefund->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
+                                <td><?=$oRefund->amount->formatted?></td>
+                                <td><?=$oRefund->fee->formatted?></td>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->created)?>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->modified)?>
                             </tr>
@@ -358,7 +444,7 @@
 
             ?>
             <div class="panel-body text-muted">
-                No Associated Payments
+                No Associated Refunds
             </div>
             <?php
         }
@@ -386,20 +472,42 @@
                     <tbody>
                         <?php
 
+                        /** @var Email $oEmail */
                         foreach ($invoice->emails->data as $oEmail) {
 
                             ?>
                             <tr>
-                                <td><?=$oEmail->email->type->label?></td>
-                                <td><?=$oEmail->recipient?></td>
+                                <td>
+                                    <?php
+                                    if (is_object($oEmail->email_type)) {
+
+                                        echo $oEmail->email_type->name;
+                                        echo '<small>' . $oEmail->email_type->description . '</small>';
+
+                                    } else {
+                                        echo $oEmail->email_type ?: '<span class="text-muted">Unknown</span>';
+                                    }
+                                    ?>
+                                </td>
+                                <?php
+
+                                if (!empty($oEmail->email->user_id)) {
+                                    echo adminHelper('loadUserCell', $oEmail->email->user_id);
+                                } else {
+                                    ?>
+                                    <td><?=$oEmail->recipient?></td>
+                                    <?php
+                                }
+
+                                ?>
                                 <?=adminHelper('loadDateTimeCell', $oEmail->created)?>
                                 <td class="text-center">
                                     <?php
 
-                                    if (!empty($oEmail->email->preview_url)) {
+                                    if (!empty($oEmail->preview_url)) {
 
                                         echo anchor(
-                                            $oEmail->email->preview_url,
+                                            $oEmail->preview_url,
                                             'Preview',
                                             'class="btn btn-xs btn-primary fancybox"'
                                         );

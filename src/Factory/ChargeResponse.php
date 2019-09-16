@@ -12,36 +12,108 @@
 
 namespace Nails\Invoice\Factory;
 
+use Stripe\Charge;
+
+/**
+ * Class ChargeResponse
+ *
+ * @package Nails\Invoice\Factory
+ */
 class ChargeResponse extends ResponseBase
 {
-    //  Redirect variables
-    protected $bIsRedirect;
-    protected $sRedirectUrl;
-    protected $aRedirectPostData;
+    /**
+     * whether the response requires SCA
+     *
+     * @var bool
+     */
+    protected $bIsSca = false;
 
-    //  Urls
-    protected $sSuccessUrl;
-    protected $sFailUrl;
-    protected $sContinueUrl;
+    /**
+     * Any data to save for an SCA flow
+     *
+     * @var array
+     */
+    protected $aScaData = null;
+
+    /**
+     * Whether the response requires a redirect
+     *
+     * @var bool
+     */
+    protected $bIsRedirect = false;
+
+    /**
+     * Any redirect POST Data
+     *
+     * @var array
+     */
+    protected $aRedirectPostData = null;
+
+    /**
+     * The URL for redirect flow
+     *
+     * @var string
+     */
+    protected $sRedirectUrl = '';
+
+    /**
+     * The URL for SCA flow
+     *s
+     *
+     * @var string
+     */
+    protected $sScaUrl = '';
 
     // --------------------------------------------------------------------------
 
     /**
-     * Construct the model
+     * Whether the response is a SCA redirect
+     *
+     * @return bool
      */
-    public function __construct()
+    public function isSca(): bool
     {
-        parent::__construct();
-        $this->bIsRedirect = false;
+        return $this->bIsSca;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set whether the response is a SCA redirect
+     *
+     * @param array $aData Any data to save for the SCA flow
+     *
+     * @return $this
+     */
+    public function setIsSca(array $aData): ChargeResponse
+    {
+        if (!$this->bIsLocked) {
+            $this->bIsSca   = true;
+            $this->aScaData = $aData;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns SCA data
+     *
+     * @return array
+     */
+    public function getScaData(): ?array
+    {
+        return $this->aScaData;
     }
 
     // --------------------------------------------------------------------------
 
     /**
      * Whether the response is a redirect
-     * @return boolean
+     *
+     * @return bool
      */
-    public function isRedirect()
+    public function isRedirect(): bool
     {
         return $this->bIsRedirect;
     }
@@ -51,11 +123,11 @@ class ChargeResponse extends ResponseBase
     /**
      * Set whether the response is a redirect
      *
-     * @param boolean $bIsRedirect Whether the response is a redirect
+     * @param bool $bIsRedirect Whether the response is a redirect
      *
      * @return $this
      */
-    protected function setIsRedirect($bIsRedirect)
+    public function setIsRedirect(bool $bIsRedirect): ChargeResponse
     {
         if (!$this->bIsLocked) {
             $this->bIsRedirect = (bool) $bIsRedirect;
@@ -72,7 +144,7 @@ class ChargeResponse extends ResponseBase
      *
      * @return $this
      */
-    public function setRedirectUrl($sRedirectUrl)
+    public function setRedirectUrl(string $sRedirectUrl): ChargeResponse
     {
         if (!$this->bIsLocked) {
             $this->sRedirectUrl = $sRedirectUrl;
@@ -85,9 +157,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * The URL to redirect to
+     *
      * @return string
      */
-    public function getRedirectUrl()
+    public function getRedirectUrl(): string
     {
         return $this->sRedirectUrl;
     }
@@ -95,16 +168,16 @@ class ChargeResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * Set the sSuccessUrl value
+     * Set the scaUrl value
      *
-     * @param string $sSuccessUrl The URL to go to on successful payment
+     * @param string $sScaUrl The Sca URL
      *
      * @return $this
      */
-    public function setSuccessUrl($sSuccessUrl)
+    public function setScaUrl(string $sScaUrl): ChargeResponse
     {
         if (!$this->bIsLocked) {
-            $this->sSuccessUrl = $sSuccessUrl;
+            $this->sScaUrl = $sScaUrl;
         }
         return $this;
     }
@@ -112,68 +185,13 @@ class ChargeResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * The URL to redirect to on successful payment
+     * The URL to redirect to when satisfying an SCA response
+     *
      * @return string
      */
-    public function getSuccessUrl()
+    public function getScaUrl(): string
     {
-        return $this->sSuccessUrl;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * The URL to redirect to on failed payment
-     * @return string
-     */
-    public function getFailUrl()
-    {
-        return $this->sFailUrl;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the sFailUrl value
-     *
-     * @param string $sFailUrl The URL to go to on failed payment
-     *
-     * @return $this
-     */
-    public function setFailUrl($sFailUrl)
-    {
-        if (!$this->bIsLocked) {
-            $this->sFailUrl = $sFailUrl;
-        }
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the URL to go to when a payment is completed
-     *
-     * @param string $sContinueUrl the URL to go to when payment is completed
-     *
-     * @return $this
-     */
-    public function setContinueUrl($sContinueUrl)
-    {
-        if (!$this->bIsLocked) {
-            $this->sContinueUrl = $sContinueUrl;
-        }
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Get the URL to go to when a payment is completed
-     * @return string
-     */
-    public function getContinueUrl()
-    {
-        return $this->sContinueUrl;
+        return $this->sScaUrl;
     }
 
     // --------------------------------------------------------------------------
@@ -185,7 +203,7 @@ class ChargeResponse extends ResponseBase
      *
      * @return $this
      */
-    public function setRedirectPostData($aRedirectPostData)
+    public function setRedirectPostData(array $aRedirectPostData): ChargeResponse
     {
         if (!$this->bIsLocked) {
             $this->aRedirectPostData = $aRedirectPostData;
@@ -198,9 +216,10 @@ class ChargeResponse extends ResponseBase
 
     /**
      * Any data which should be POST'ed to the endpoint
+     *
      * @return string
      */
-    public function getRedirectPostData()
+    public function getRedirectPostData(): ?array
     {
         return $this->aRedirectPostData;
     }

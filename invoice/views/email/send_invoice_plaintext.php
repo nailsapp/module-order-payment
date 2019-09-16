@@ -1,4 +1,9 @@
-Invoice {{invoice.ref}} has been generated for your account and is due {{invoice.due.formatted}}.
+Invoice {{invoice.ref}} has been generated for your account and is due {{invoice.due}}.
+
+
+To view this invoice online, please use the following link:
+
+{{invoice.urls.view}}
 
 
 To pay this invoice online, please use the following link:

@@ -14,45 +14,20 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Exception\CompleteRequestException;
 
+/**
+ * Class CompleteRequest
+ *
+ * @package Nails\Invoice\Factory
+ */
 class CompleteRequest extends RequestBase
 {
-    protected $sContinueUrl;
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the URL to go to when a payment is completed
-     *
-     * @param string $sContinueUrl the URL to go to when payment is completed
-     *
-     * @return $this
-     */
-    public function setContinueUrl($sContinueUrl)
-    {
-        $this->sContinueUrl = $sContinueUrl;
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Get the URL to go to when a payment is completed
-     * @return string
-     */
-    public function getContinueUrl()
-    {
-        return $this->sContinueUrl;
-    }
-
-    // --------------------------------------------------------------------------
-
     /**
      * Complete the payment
      *
-     * @param  array $aGetVars  Any $_GET variables passed from the redirect flow
-     * @param  array $aPostVars Any $_POST variables passed from the redirect flow
+     * @param array $aGetVars  Any $_GET variables passed from the redirect flow
+     * @param array $aPostVars Any $_POST variables passed from the redirect flow
      *
-     * @return \Nails\Invoice\Factory\CompleteResponse
+     * @return CompleteResponse
      * @throws CompleteRequestException
      */
     public function execute($aGetVars, $aPostVars)
@@ -96,7 +71,7 @@ class CompleteRequest extends RequestBase
 
             //  Driver has started processing the charge, but it hasn't been confirmed yet
             $this->setPaymentProcessing(
-                $oCompleteResponse->getTxnId(),
+                $oCompleteResponse->getTransactionId(),
                 $oCompleteResponse->getFee()
             );
 
@@ -104,7 +79,7 @@ class CompleteRequest extends RequestBase
 
             //  Driver has confirmed that payment has been taken.
             $this->setPaymentComplete(
-                $oCompleteResponse->getTxnId(),
+                $oCompleteResponse->getTransactionId(),
                 $oCompleteResponse->getFee()
             );
 

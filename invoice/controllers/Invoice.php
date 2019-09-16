@@ -10,11 +10,31 @@
  * @link
  */
 
+use Nails\Auth;
+use Nails\Auth\Service\Session;
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Exception\NailsException;
+use Nails\Common\Exception\ValidationException;
+use Nails\Common\Service\Asset;
+use Nails\Common\Service\Input;
+use Nails\Common\Service\Uri;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Controller\Base;
-use Nails\Invoice\Exception\DriverException;
+use Nails\Invoice\Driver\PaymentBase;
+use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Factory\ChargeRequest;
+use Nails\Invoice\Model\Customer;
+use Nails\Invoice\Model\Source;
+use Nails\Invoice\Resource;
+use Nails\Invoice\Service\Invoice\Skin;
+use Nails\Invoice\Service\PaymentDriver;
+use Nails\Pdf\Service\Pdf;
 
+/**
+ * Class Invoice
+ */
 class Invoice extends Base
 {
     /**
@@ -29,28 +49,33 @@ class Invoice extends Base
     /**
      * Download a single invoice
      *
-     * @param  \stdClass $oInvoice The invoice object
+     * @param Resource\Invoice $oInvoice The invoice object
      *
-     * @return void
+     * @throws FactoryException
+     * @throws NailsException
      */
-    protected function download($oInvoice)
+    protected function download(Resource\Invoice $oInvoice): void
     {
         //  Business details
         $this->data['business'] = (object) [
-            'name'       => appSetting('business_name', 'nails/module-invoice'),
-            'address'    => appSetting('business_address', 'nails/module-invoice'),
-            'telephone'  => appSetting('business_telephone', 'nails/module-invoice'),
-            'email'      => appSetting('business_email', 'nails/module-invoice'),
-            'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
+            'name'       => appSetting('business_name', Constants::MODULE_SLUG),
+            'address'    => appSetting('business_address', Constants::MODULE_SLUG),
+            'telephone'  => appSetting('business_telephone', Constants::MODULE_SLUG),
+            'email'      => appSetting('business_email', Constants::MODULE_SLUG),
+            'vat_number' => appSetting('business_vat_number', Constants::MODULE_SLUG),
         ];
 
-        $oInvoiceSkinService   = Factory::service('InvoiceSkin', 'nails/module-invoice');
+        /** @var Skin $oInvoiceSkinService */
+        $oInvoiceSkinService = Factory::service('InvoiceSkin', Constants::MODULE_SLUG);
+
         $sEnabledSkin          = $oInvoiceSkinService->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
         $this->data['isPdf']   = true;
         $sHtml                 = $oInvoiceSkinService->view($sEnabledSkin, 'render', $this->data, true);
 
+        /** @var Pdf $oPdf */
         $oPdf = Factory::service('Pdf', 'nails/module-pdf');
+
         $oPdf->setPaperSize('A4', 'portrait');
         $oPdf->load_html($sHtml);
 
@@ -62,22 +87,25 @@ class Invoice extends Base
     /**
      * View a single invoice
      *
-     * @param  \stdClass $oInvoice The invoice object
+     * @param Resource\Invoice $oInvoice The invoice object
      *
-     * @return void
+     * @throws FactoryException
+     * @throws NailsException
      */
-    protected function view($oInvoice)
+    protected function view(Resource\Invoice $oInvoice): void
     {
         //  Business details
         $this->data['business'] = (object) [
-            'name'       => appSetting('business_name', 'nails/module-invoice'),
-            'address'    => appSetting('business_address', 'nails/module-invoice'),
-            'telephone'  => appSetting('business_telephone', 'nails/module-invoice'),
-            'email'      => appSetting('business_email', 'nails/module-invoice'),
-            'vat_number' => appSetting('business_vat_number', 'nails/module-invoice'),
+            'name'       => appSetting('business_name', Constants::MODULE_SLUG),
+            'address'    => appSetting('business_address', Constants::MODULE_SLUG),
+            'telephone'  => appSetting('business_telephone', Constants::MODULE_SLUG),
+            'email'      => appSetting('business_email', Constants::MODULE_SLUG),
+            'vat_number' => appSetting('business_vat_number', Constants::MODULE_SLUG),
         ];
 
-        $oInvoiceSkinService   = Factory::service('InvoiceSkin', 'nails/module-invoice');
+        /** @var Skin $oInvoiceSkinService */
+        $oInvoiceSkinService = Factory::service('InvoiceSkin', Constants::MODULE_SLUG);
+
         $sEnabledSkin          = $oInvoiceSkinService->getEnabledSlug() ?: self::DEFAULT_INVOICE_SKIN;
         $this->data['invoice'] = $oInvoice;
         $this->data['isPdf']   = false;
@@ -90,240 +118,340 @@ class Invoice extends Base
     /**
      * Pay a single invoice
      *
-     * @param  \stdClass $oInvoice The invoice object
+     * @param Resource\Invoice $oInvoice The invoice object
      *
-     * @return void
-     * @throws NailsException
+     * @throws FactoryException
+     * @throws ModelException
      */
-    protected function pay($oInvoice)
+    protected function pay(Resource\Invoice $oInvoice): void
     {
+        /** @var Asset $oAsset */
         $oAsset = Factory::service('Asset');
+        /** @var Input $oInput */
         $oInput = Factory::service('Input');
+        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
+        /** @var Source $oSourceModel */
+        $oSourceModel = Factory::model('Source', Constants::MODULE_SLUG);
+        /** @var Customer $oCustomerModel */
+        $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
+        /** @var PaymentDriver $oPaymentDriverService */
+        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
 
-        $this->data['oInvoice']       = $oInvoice;
-        $this->data['headerOverride'] = 'structure/header/blank';
-        $this->data['footerOverride'] = 'structure/footer/blank';
+        // --------------------------------------------------------------------------
 
-        //  Only open invoice can be paid
-        if ($oInvoice->state->id !== 'OPEN' && !$oInvoice->is_scheduled) {
+        //  Only open invoices can be paid
+        if ($oInvoice->state->id !== $oInvoiceModel::STATE_OPEN && !$oInvoice->is_scheduled) {
 
-            if ($oInvoice->state->id === 'PAID') {
+            if (in_array($oInvoice->state->id, [$oInvoiceModel::STATE_PAID, $oInvoiceModel::STATE_PAID_PROCESSING])) {
 
-                $oView = Factory::service('View');
-                $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
-                $oView->load('structure/header', $this->data);
-                $oView->load('invoice/pay/paid', $this->data);
-                $oView->load('structure/footer', $this->data);
-                return;
+                //  If there are payments against this invoice which are processing, then deny payment
+                if ($oInvoice->has_processing_payments) {
+
+                    /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+                    $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
+
+                    $aProcessingPayments = [];
+                    foreach ($oInvoice->payments->data as $oPayment) {
+                        if ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
+                            $aProcessingPayments[] = $oPayment;
+                        }
+                    }
+
+                    $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/hasProcessing.php');
+
+                    Factory::service('View')
+                        ->setData([
+                            'oInvoice'            => $oInvoice,
+                            'aProcessingPayments' => $aProcessingPayments,
+                        ])
+                        ->load([
+                            'structure/header/blank',
+                            'invoice/pay/hasProcessing',
+                            'structure/footer/blank',
+                        ]);
+                    return;
+
+                } else {
+
+                    $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/paid.php');
+
+                    Factory::service('View')
+                        ->setData([
+                            'oInvoice' => $oInvoice,
+                        ])
+                        ->load([
+                            'structure/header/blank',
+                            'invoice/pay/paid',
+                            'structure/footer/blank',
+                        ]);
+                    return;
+                }
 
             } else {
-
                 show404();
             }
         }
 
-        //  If a user ID is specified, then the user must be logged in as that user
-        if (!empty($oInvoice->user->id) && $oInvoice->user->id != activeUser('id')) {
-            unauthorised();
-        }
-
-        $this->data['sUrlCancel'] = $oInput->get('cancel') ?: siteUrl();
-
         // --------------------------------------------------------------------------
 
-        //  If there are payments against this invoice which are processing, then deny payment
-        if ($oInvoice->has_processing_payments) {
+        /** @var PaymentBase[] $aEnabledDrivers */
+        $aEnabledDrivers = $oPaymentDriverService->getEnabled();
+        /** @var PaymentBase[] $aAvailableDrivers */
+        $aAvailableDrivers = [];
 
-            $oPaymentModel = Factory::model('Payment', 'nails/module-invoice');
-
-            $this->data['aProcessingPayments'] = [];
-            foreach ($oInvoice->payments->data as $oPayment) {
-                if ($oPayment->status->id === $oPaymentModel::STATUS_PROCESSING) {
-                    $this->data['aProcessingPayments'][] = $oPayment;
-                }
-            }
-
-            $oView = Factory::service('View');
-            $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/hasProcessing.php');
-            $oView->load('structure/header', $this->data);
-            $oView->load('invoice/pay/hasProcessing', $this->data);
-            $oView->load('structure/footer', $this->data);
-            return;
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Payment drivers
-        $oPaymentDriverService = Factory::service('PaymentDriver', 'nails/module-invoice');
-        $aDrivers              = $oPaymentDriverService->getEnabled();
-        foreach ($aDrivers as $oDriver) {
+        foreach ($aEnabledDrivers as $oDriver) {
 
             $oDriverInstance = $oPaymentDriverService->getInstance($oDriver->slug);
 
-            if ($oDriverInstance->isAvailable($oInvoice)) {
-                $this->data['aDrivers'][] = $oDriverInstance;
+            if ($oDriverInstance->isAvailable($oInvoice) && $oDriverInstance->supportsCurrency($oInvoice->currency)) {
+                $aAvailableDrivers[] = $oDriverInstance;
             }
-        }
-
-        if (empty($this->data['aDrivers'])) {
-            throw new DriverException('No enabled payment drivers', 1);
         }
 
         // --------------------------------------------------------------------------
 
-        if ($oInput->post()) {
-
-            /**
-             * Validation works by looking at which driver has been chosen and then
-             * validating the respective fields accordingly. If the driver's fields
-             * is simply CARD then we validate the cc[] field.
-             */
-
-            $oFormValidation = Factory::service('FormValidation');
-
-            $aRules = [
-                'driver'   => ['trim', 'required'],
-                'cc[name]' => ['trim'],
-                'cc[num]'  => ['trim'],
-                'cc[exp]'  => ['trim'],
-                'cc[cvc]'  => ['trim'],
-            ];
-
-            $sSelectedDriver = $oInput->post('driver');
-            $oSelectedDriver = null;
-
-            foreach ($this->data['aDrivers'] as $oDriver) {
-
-                $sSlug   = $oDriver->getSlug();
-                $aFields = $oDriver->getPaymentFields();
-
-                if ($sSelectedDriver == $sSlug) {
-
-                    $oSelectedDriver = $oDriver;
-
-                    if ($aFields === $oSelectedDriver::PAYMENT_FIELDS_CARD) {
-
-                        $aRules['cc[name]'][] = 'required';
-                        $aRules['cc[num]'][]  = 'required';
-                        $aRules['cc[exp]'][]  = 'required';
-                        $aRules['cc[cvc]'][]  = 'required';
-
-                    } elseif (!empty($aFields)) {
-                        foreach ($aFields as $aField) {
-                            $aRules[$sSlug . '[' . $aField['key'] . ']'] = [''];
-                        }
-                    }
-
-                    break;
+        //  If the invoice can only be paid using a certain driver then filter
+        if (!empty($oInvoice->payment_driver)) {
+            $aAvailableDrivers = array_filter(
+                $aAvailableDrivers,
+                function (PaymentBase $oDriver) use ($oInvoice) {
+                    return $oDriver->getSlug() === $oInvoice->payment_driver;
                 }
-            }
+            );
+            $aAvailableDrivers = array_values($aAvailableDrivers);
+        }
 
-            foreach ($aRules as $sKey => $sRules) {
-                $oFormValidation->set_rules($sKey, '', implode('|', array_unique($sRules)));
-            }
+        // --------------------------------------------------------------------------
 
-            if ($oFormValidation->run()) {
+        $iCustomerId = $oCustomerModel->getCustomerIdforActiveUser();
+        if ($iCustomerId) {
 
-                try {
+            $aSavedPaymentSources = $oSourceModel->getForCustomer(
+                $iCustomerId
+            );
 
-                    //  Set up ChargeRequest object
-                    $oChargeRequest = Factory::factory('ChargeRequest', 'nails/module-invoice');
+        } else {
+            $aSavedPaymentSources = [];
+        }
 
-                    //  Set the driver to use for the request
-                    $oChargeRequest->setDriver($sSelectedDriver);
+        // Index the saved payment sources by ID for easy access
+        $aSavedPaymentSources = array_combine(
+            arrayExtractProperty($aSavedPaymentSources, 'id'),
+            $aSavedPaymentSources
+        );
 
-                    //  Describe the charge
-                    $oChargeRequest->setDescription('Payment for invoice #' . $oInvoice->ref);
+        // --------------------------------------------------------------------------
 
-                    //  Set the invoice we're charging against
-                    $oChargeRequest->setInvoice($oInvoice->id);
+        if (!empty($aAvailableDrivers) && $oInput->post()) {
 
-                    //  If the driver expects card data then set it, if it expects custom data then set that
-                    $mPaymentFields = $oSelectedDriver->getPaymentFields();
+            try {
 
-                    if (!empty($mPaymentFields) && $mPaymentFields == $oSelectedDriver::PAYMENT_FIELDS_CARD) {
+                /**
+                 * Determine what our payment driver will be, and if a saved source
+                 * is being used.
+                 */
 
-                        $sName = !empty($_POST['cc']['name']) ? $_POST['cc']['name'] : '';
-                        $sNum  = !empty($_POST['cc']['num']) ? $_POST['cc']['num'] : '';
-                        $sExp  = !empty($_POST['cc']['exp']) ? $_POST['cc']['exp'] : '';
-                        $sCvc  = !empty($_POST['cc']['cvc']) ? $_POST['cc']['cvc'] : '';
+                $sSelectedDriverSlug = trim($oInput->post('driver'));
 
-                        $aExp   = explode('/', $sExp);
-                        $aExp   = array_map('trim', $aExp);
-                        $sMonth = !empty($aExp[0]) ? $aExp[0] : null;
-                        $sYear  = !empty($aExp[1]) ? $aExp[1] : null;
-
-                        $oChargeRequest->setCardName($sName);
-                        $oChargeRequest->setCardNumber($sNum);
-                        $oChargeRequest->setCardExpMonth($sMonth);
-                        $oChargeRequest->setCardExpYear($sYear);
-                        $oChargeRequest->setCardCvc($sCvc);
-
-                    } elseif (!empty($mPaymentFields)) {
-                        foreach ($mPaymentFields as $aField) {
-                            if (!empty($_POST[$sSelectedDriver][$aField['key']])) {
-                                $sValue = $_POST[$sSelectedDriver][$aField['key']];
-                            } else {
-                                $sValue = null;
-                            }
-                            $oChargeRequest->setCustomField($aField['key'], $sValue);
-                        }
-                    }
-
-                    //  Attempt payment
-                    $oChargeResponse = $oChargeRequest->execute(
-                        $oInvoice->totals->raw->grand,
-                        $oInvoice->currency->code
+                if (empty($sSelectedDriverSlug)) {
+                    throw new ValidationException(
+                        'No payment source selected'
                     );
+                }
 
-                    //  Handle response
-                    if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete()) {
+                /**
+                 * If the user has chosen a saved payment source then the "driver"
+                 * will be a numeric ID, validate this belongs to the user.
+                 */
+                if (!empty($aSavedPaymentSources) && is_numeric($sSelectedDriverSlug)) {
 
-                        /**
-                         * Payment was successful (but potentially unconfirmed). Send the user off to
-                         * complete the request.
-                         */
-
-                        redirect($oChargeResponse->getSuccessUrl());
-
-                    } elseif ($oChargeResponse->isFailed()) {
-
-                        /**
-                         * Payment failed, throw an error which will be caught and displayed to the user
-                         */
-
-                        throw new NailsException(
-                            'Payment failed: ' . $oChargeResponse->getError()->user,
-                            1
-                        );
-
-                    } else {
-
-                        /**
-                         * Something which we've not accounted for went wrong.
-                         */
-
-                        throw new NailsException('Payment failed.', 1);
+                    if (!array_key_exists($sSelectedDriverSlug, $aSavedPaymentSources)) {
+                        throw new ValidationException('Invalid payment source ID.');
                     }
 
-                } catch (\Exception $e) {
+                    /** @var Resource\Source $oSavedPaymentSource */
+                    $oSavedPaymentSource = getFromArray($sSelectedDriverSlug, $aSavedPaymentSources);
+                    $sSelectedDriverSlug = $oSavedPaymentSource->driver;
+                }
+
+                /**
+                 * Fetch the driver instance, if none found then we cannot continue.
+                 */
+
+                $sSelectedDriver = md5($sSelectedDriverSlug);
+                $oSelectedDriver = null;
+
+                foreach ($aAvailableDrivers as $oDriver) {
+                    if ($sSelectedDriver === md5($oDriver->getSlug())) {
+                        $oSelectedDriver = $oDriver;
+                        break;
+                    }
+                }
+
+                if (empty($oSelectedDriver)) {
+                    throw new ValidationException('No payment driver selected.');
+                }
+
+                // --------------------------------------------------------------------------
+
+                //  @todo (Pablo - 2019-09-06) - Do we need to validate any user entered data (e.g. driver fields)
+
+                // --------------------------------------------------------------------------
+
+                /**
+                 * Set up the charge request, and handle the charger esponse
+                 */
+
+                /** @var ChargeRequest $oChargeRequest */
+                $oChargeRequest = Factory::factory('ChargeRequest', Constants::MODULE_SLUG);
+                $oChargeRequest
+                    ->setDriver($oSelectedDriver)
+                    ->setDescription('Payment for invoice #' . $oInvoice->ref)
+                    ->setInvoice($oInvoice);
+
+                if (!empty($oSavedPaymentSource)) {
+                    $oChargeRequest
+                        ->setSource($oSavedPaymentSource);
+                }
+
+                /** @var Input $oInput */
+                $oInput = Factory::service('Input');
+
+                /**
+                 * Set the success, error, and cancel URLs. If explicitly defined, use them,
+                 * if not default to coming back to this page.
+                 */
+
+                if ($oInput->get('url_success')) {
+                    $oChargeRequest->setSuccessUrl(
+                        $oInput->get('url_success')
+                    );
+                } else {
+                    $oChargeRequest->setSuccessUrl(
+                        $oInput->server('REQUEST_URI')
+                    );
+                }
+
+                if ($oInput->get('url_error')) {
+                    $oChargeRequest->setErrorUrl(
+                        $oInput->get('url_error')
+                    );
+                } else {
+                    $oChargeRequest->setErrorUrl(
+                        $oInput->server('REQUEST_URI')
+                    );
+                }
+
+                if ($oInput->get('url_cancel')) {
+                    $oChargeRequest->setCancelUrl(
+                        $oInput->get('url_cancel')
+                    );
+                }
+
+                //  Let the driver prepare the charge request to its liking
+                $oSelectedDriver->prepareChargeRequest(
+                    $oChargeRequest,
+                    $oInput->post($sSelectedDriver) ?: []
+                );
+
+                //  Attempt payment
+                $oChargeResponse = $oChargeRequest->execute(
+                    $oInvoice->totals->raw->grand,
+                    $oInvoice->currency->code
+                );
+
+                //  Handle response
+                if ($oChargeResponse->isProcessing() || $oChargeResponse->isComplete()) {
+
+                    /**
+                     * Payment was successful (but potentially unconfirmed).
+                     */
+                    redirect($oChargeResponse->getSuccessUrl());
+
+                } elseif ($oChargeResponse->isFailed()) {
+
+                    /**
+                     * Payment failed, throw an error which will be caught and displayed to the user
+                     */
+                    throw new InvoiceException('Payment failed: ' . $oChargeResponse->getErrorMessageUser());
+
+                } else {
+
+                    /**
+                     * Something which we've not accounted for went wrong.
+                     */
+                    throw new InvoiceException('Payment failed.');
+                }
+
+            } catch (\Exception $e) {
+
+                $sErrorUrl = $oChargeResponse->getErrorUrl();
+                if (!empty($sErrorUrl)) {
+
+                    /** @var Session $oSession */
+                    $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+                    $oSession->setFlashData('error', $e->getMessage());
+
+                    redirect($oChargeResponse->getErrorUrl());
+
+                } else {
                     $this->data['error'] = $e->getMessage();
                 }
-
-            } else {
-                $this->data['error'] = lang('fv_there_were_errors');
             }
         }
 
         // --------------------------------------------------------------------------
 
-        $oView = Factory::service('View');
         $this->loadStyles(NAILS_APP_PATH . 'application/modules/invoice/views/pay/index.php');
-        $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', 'nails/module-invoice');
-        $oAsset->load('invoice.pay.min.js', 'nails/module-invoice');
-        $oView->load('structure/header', $this->data);
-        $oView->load('invoice/pay/index', $this->data);
-        $oView->load('structure/footer', $this->data);
+
+        if (!empty($aAvailableDrivers)) {
+
+            $oAsset->load('../../node_modules/jquery.payment/lib/jquery.payment.min.js', Constants::MODULE_SLUG);
+            $oAsset->load('invoice.pay.min.js', Constants::MODULE_SLUG);
+
+            //  Let the drivers load assets
+            foreach ($aAvailableDrivers as $oDriver) {
+                foreach ($oDriver->getCheckoutAssets() as $sCheckoutAsset) {
+                    if (is_string($sCheckoutAsset)) {
+                        $oAsset->load($sCheckoutAsset, $oDriver->getSlug());
+                    } elseif (is_array($sCheckoutAsset)) {
+                        $oAsset->load(
+                            getFromArray(0, $sCheckoutAsset),
+                            getFromArray(1, $sCheckoutAsset),
+                            getFromArray(2, $sCheckoutAsset)
+                        );
+                    }
+                }
+            }
+        }
+
+        // --------------------------------------------------------------------------
+
+        $sFormUrl = current_url();
+        if ($oInput->get()) {
+            $sFormUrl .= '?' . http_build_query($oInput->get());
+        }
+
+        // --------------------------------------------------------------------------
+
+        $this->data['page']->title = 'Pay Invoice ' . $oInvoice->ref;
+
+        // --------------------------------------------------------------------------
+
+        Factory::service('View')
+            ->setData([
+                'sFormUrl'             => $sFormUrl,
+                'oInvoice'             => $oInvoice,
+                'sUrlCancel'           => siteUrl($oInput->get('url_cancel')) ?: siteUrl(),
+                'aDrivers'             => $aAvailableDrivers,
+                'aSavedPaymentSources' => $aSavedPaymentSources,
+            ])
+            ->load([
+                'structure/header/blank',
+                'invoice/pay/index',
+                'structure/footer/blank',
+            ]);
     }
 
     // --------------------------------------------------------------------------
@@ -331,16 +459,21 @@ class Invoice extends Base
     /**
      * Remap requests for valid payments to the appropriate controller method
      *
-     * @return void
+     * @throws FactoryException
+     * @throws ModelException
      */
-    public function _remap()
+    public function _remap(): void
     {
-        $oUri          = Factory::service('Uri');
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
+
         $sInvoiceRef   = $oUri->rsegment(2);
         $sInvoiceToken = $oUri->rsegment(3);
         $sMethod       = $oUri->rsegment(4);
-        $oInvoiceModel = Factory::model('Invoice', 'nails/module-invoice');
-        $oInvoice      = $oInvoiceModel->getByRef(
+
+        $oInvoice = $oInvoiceModel->getByRef(
             $sInvoiceRef,
             ['expand' => ['customer', 'items', 'payments', 'refunds']]
         );

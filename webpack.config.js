@@ -1,7 +1,6 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 
-
 module.exports = {
     entry: {
         'admin': './assets/js/admin.js',

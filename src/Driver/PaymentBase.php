@@ -13,12 +13,22 @@
 namespace Nails\Invoice\Driver;
 
 use Nails\Common\Driver\Base;
+use Nails\Currency\Resource\Currency;
+use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\DriverException;
+use Nails\Invoice\Factory\ChargeRequest;
+use Nails\Invoice\Interfaces\Driver\Payment;
 
-class PaymentBase extends Base
+/**
+ * Class PaymentBase
+ *
+ * @package Nails\Invoice\Driver
+ */
+abstract class PaymentBase extends Base implements Payment
 {
     /**
      * Shortcut for requiring basic card details
+     *
      * @var string
      */
     const PAYMENT_FIELDS_CARD = 'CARD';
@@ -26,115 +36,125 @@ class PaymentBase extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Returns whether the driver is available to be used against the selected invoice
+     * Determines whether the driver supports the specified currency
      *
-     * @param \stdClass $oInvoice The invoice being charged
+     * @param Currency|string $mCurrency The currency
      *
+     * @return bool
      * @throws DriverException
-     * @return boolean
      */
-    public function isAvailable($oInvoice)
+    public function supportsCurrency($mCurrency): bool
     {
-        throw new DriverException('Driver must implement the isAvailable() method', 1);
+        $aSupported = $this->getSupportedCurrencies();
+        if (is_null($aSupported)) {
+            throw new DriverException('Currency support not configured for driver "' . $this->getSlug() . '"');
+        } elseif (empty($aSupported)) {
+            //  If not defined assume support for all currencies
+            return true;
+        } elseif ($mCurrency instanceof Currency) {
+            return in_array($mCurrency->code, $aSupported);
+        } elseif (is_string($mCurrency)) {
+            return in_array($mCurrency, $aSupported);
+        }
+
+        throw new DriverException(
+            'Argument must be an instant of ' . Currency::class . ' or a string'
+        );
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Returns whether the driver uses a redirect payment flow or not.
+     * Prepares a ChargeRequest object
      *
-     * @throws DriverException
-     * @return boolean
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object to prepare
+     * @param array         $aData          Any data which was requested by getPaymentFields()
+     *
+     * @throws ChargeRequestException
      */
-    public function isRedirect()
-    {
-        throw new DriverException('Driver must implement the isRedirect() method', 1);
+    public function prepareChargeRequest(
+        ChargeRequest $oChargeRequest,
+        array $aData
+    ): void {
+
+        $mPaymentFields = $this->getPaymentFields();
+
+        if (is_string($mPaymentFields) && $mPaymentFields == static::PAYMENT_FIELDS_CARD) {
+
+            $this->setChargeRequestCardDetails(
+                $oChargeRequest,
+                $aData
+            );
+
+        } elseif (is_array($mPaymentFields)) {
+            $this->setChargeRequestFields(
+                $oChargeRequest,
+                $aData,
+                $mPaymentFields
+            );
+        }
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Returns the payment fields the driver requires, use static::PAYMENT_FIELDS_CARD
-     * for basic credit card details.
+     * Sets the card details of a ChargeRequest
      *
-     * @throws DriverException
-     * @return mixed
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object
+     * @param array         $aData
+     *
+     * @throws ChargeRequestException
      */
-    public function getPaymentFields()
+    protected function setChargeRequestCardDetails(ChargeRequest $oChargeRequest, array $aData): void
     {
-        throw new DriverException('Driver must implement the getPaymentFields() method', 1);
+        $aCard = getFromArray('card', $aData, []);
+
+        $sName = getFromArray('name', $aCard);
+        $sNum  = getFromArray('number', $aCard);
+        $sExp  = getFromArray('expire', $aCard);
+        $sCvc  = getFromArray('cvc', $aCard);
+
+        $aExp   = explode('/', $sExp);
+        $aExp   = array_map('trim', $aExp);
+        $sMonth = !empty($aExp[0]) ? $aExp[0] : null;
+        $sYear  = !empty($aExp[1]) ? $aExp[1] : null;
+
+        $oChargeRequest
+            ->setCardName($sName)
+            ->setCardNumber($sNum)
+            ->setCardExpMonth($sMonth)
+            ->setCardExpYear($sYear)
+            ->setCardCvc($sCvc);
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Initiate a payment
+     * Sets the values of the payment fields
      *
-     * @param  integer   $iAmount      The payment amount
-     * @param  string    $sCurrency    The payment currency
-     * @param  \stdClass $oData        An array of driver data
-     * @param  \stdClass $oCustomData  The custom data object
-     * @param  string    $sDescription The charge description
-     * @param  \stdClass $oPayment     The payment object
-     * @param  \stdClass $oInvoice     The invoice object
-     * @param  string    $sSuccessUrl  The URL to go to after successful payment
-     * @param  string    $sFailUrl     The URL to go to after failed payment
-     * @param  string    $sContinueUrl The URL to go to after payment is completed
-     *
-     * @throws DriverException
-     * @return \Nails\Invoice\Factory\ChargeResponse
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object
+     * @param array         $aData          The data sent to the driver
+     * @param array|null    $aFields        The payment fields
      */
-    public function charge(
-        $iAmount,
-        $sCurrency,
-        $oData,
-        $oCustomData,
-        $sDescription,
-        $oPayment,
-        $oInvoice,
-        $sSuccessUrl,
-        $sFailUrl,
-        $sContinueUrl
+    protected function setChargeRequestFields(
+        ChargeRequest $oChargeRequest,
+        array $aData,
+        array $aFields = null
     ) {
-        throw new DriverException('Driver must implement the charge() method', 1);
-    }
 
-// --------------------------------------------------------------------------
+        if (is_null($aFields)) {
+            $aFields = $this->getPaymentFields();
+        }
 
-    /**
-     * Complete the payment
-     *
-     * @param  \stdClass $oPayment  The Payment object
-     * @param  \stdClass $oInvoice  The Invoice object
-     * @param  array     $aGetVars  Any $_GET variables passed from the redirect flow
-     * @param  array     $aPostVars Any $_POST variables passed from the redirect flow
-     *
-     * @throws DriverException
-     * @return \Nails\Invoice\Factory\CompleteResponse
-     */
-    public function complete($oPayment, $oInvoice, $aGetVars, $aPostVars)
-    {
-        throw new DriverException('Driver must implement the complete() method', 1);
-    }
+        $oPaymentData = (object) [];
 
-// --------------------------------------------------------------------------
+        foreach ($aFields as $aField) {
 
-    /**
-     * Issue a refund for a payment
-     *
-     * @param  string    $sTxnId      The transaction's ID
-     * @param  integer   $iAmount     The amount to refund
-     * @param  string    $sCurrency   The currency in which to refund
-     * @param  \stdClass $oCustomData The custom data object
-     * @param  string    $sReason     The refund's reason
-     * @param  \stdClass $oPayment    The payment object
-     * @param  \stdClass $oInvoice    The invoice object
-     *
-     * @throws DriverException
-     * @return \Nails\Invoice\Factory\RefundResponse
-     */
-    public function refund($sTxnId, $iAmount, $sCurrency, $oCustomData, $sReason, $oPayment, $oInvoice)
-    {
-        throw new DriverException('Driver must implement the refund() method', 1);
+            $sKey   = getFromArray('key', $aField);
+            $sValue = getFromArray($sKey, $aData);
+
+            $oChargeRequest
+                ->setPaymentData($sKey, $sValue);
+        }
     }
 }

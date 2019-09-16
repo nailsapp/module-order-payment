@@ -1,3 +1,17 @@
+<?php
+
+use Nails\Factory;
+use Nails\Invoice\Constants;
+
+/**
+ * @var stdClass                          $search
+ * @var stdClass                          $pagination
+ * @var \Nails\Invoice\Resource\Invoice[] $invoices
+ */
+/** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
+$oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
+
+?>
 <div class="group-invoice invoice browse">
     <p>
         Browse invoices which have been raised.
@@ -46,19 +60,24 @@
                                 $sText  = 'Scheduled';
                                 $sText  .= '<small>Sending: ' . toUserDate($oInvoice->dated->raw) . '</small>';
 
-                            } elseif ($oInvoice->state->id == 'OPEN') {
+                            } elseif ($oInvoice->state->id == $oInvoiceModel::STATE_OPEN) {
 
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
                                 $sText  .= '<small>Due: ' . toUserDate($oInvoice->due->raw) . '</small>';
 
-                            } elseif ($oInvoice->state->id == 'PAID') {
+                            } elseif ($oInvoice->state->id == $oInvoiceModel::STATE_PAID || $oInvoice->state->id == $oInvoiceModel::STATE_PAID_PROCESSING) {
 
                                 $sClass = 'success';
                                 $sText  = $oInvoice->state->label;
                                 if ($oInvoice->paid->raw) {
                                     $sText .= '<small>Paid: ' . toUserDateTime($oInvoice->paid->raw) . '</small>';
                                 }
+
+                            } elseif ($oInvoice->state->id == $oInvoiceModel::STATE_CANCELLED || $oInvoice->state->id == $oInvoiceModel::STATE_WRITTEN_OFF) {
+
+                                $sClass = 'danger';
+                                $sText  = $oInvoice->state->label;
 
                             } else {
                                 $sClass = '';
@@ -121,7 +140,7 @@
 
                                 if (userHasPermission('admin:invoice:invoice:edit')) {
 
-                                    if ($oInvoice->state->id == 'DRAFT') {
+                                    if ($oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
 
                                         echo anchor(
                                             'admin/invoice/invoice/edit/' . $oInvoice->id,
@@ -129,7 +148,11 @@
                                             'class="btn btn-xs btn-primary"'
                                         );
 
-                                    } elseif (in_array($oInvoice->state->id, ['WRITTEN_OFF', 'PAID', 'PAID_PROCESING'])) {
+                                    } elseif (in_array($oInvoice->state->id, [
+                                        'WRITTEN_OFF',
+                                        'PAID',
+                                        'PAID_PROCESING',
+                                    ])) {
 
                                         echo anchor(
                                             'admin/invoice/invoice/view/' . $oInvoice->id,
@@ -157,7 +180,7 @@
                                             'class="btn btn-xs btn-primary" target="_blank"'
                                         );
 
-                                        if ($oInvoice->state->id == 'OPEN' || $oInvoice->state->id == 'PARTIALLY_PAID') {
+                                        if ($oInvoice->state->id == $oInvoiceModel::STATE_OPEN || $oInvoice->state->id == $oInvoiceModel::STATE_PAID_PARTIAL) {
                                             echo anchor(
                                                 $oInvoice->urls->payment,
                                                 'Pay',
@@ -178,22 +201,30 @@
                                                 'Make Draft',
                                                 'class="btn btn-xs btn-warning"'
                                             );
-                                            echo anchor(
-                                                'admin/invoice/invoice/write_off/' . $oInvoice->id,
-                                                'Write Off',
-                                                'class="btn btn-xs btn-danger confirm" data-body="Write invoice ' . $oInvoice->ref . ' off?"'
-                                            );
+                                            if (in_array($oInvoice->state->id, [$oInvoiceModel::STATE_OPEN])) {
+                                                echo anchor(
+                                                    'admin/invoice/invoice/write_off/' . $oInvoice->id,
+                                                    'Write Off',
+                                                    'class="btn btn-xs btn-danger confirm" data-body="Write invoice ' . $oInvoice->ref . ' off?"'
+                                                );
+                                            }
                                         }
                                     }
                                 }
 
-                                if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == 'DRAFT') {
+                                if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
                                     echo anchor(
                                         'admin/invoice/invoice/delete/' . $oInvoice->id,
                                         lang('action_delete'),
                                         'class="btn btn-xs btn-danger confirm" data-body="You cannot undo this action"'
                                     );
                                 }
+
+                                echo anchor(
+                                    'admin/invoice/invoice/resend/' . $oInvoice->id,
+                                    'Re-send',
+                                    'class="btn btn-xs btn-default"'
+                                );
 
                                 ?>
                             </td>

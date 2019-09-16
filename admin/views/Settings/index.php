@@ -3,7 +3,7 @@
 //  Get any additional libraries we'll need
 $oInput = \Nails\Factory::service('Input');
 
-?>
+use Nails\Invoice\Constants; ?>
 <div class="group-invoice settings">
     <?php
 
@@ -20,15 +20,6 @@ $oInput = \Nails\Factory::service('Input');
             ?>
             <li class="tab">
                 <a href="#" data-tab="tab-misc">Miscellaneous</a>
-            </li>
-            <?php
-        }
-
-        if (userHasPermission('admin:invoice:settings:currency')) {
-
-            ?>
-            <li class="tab">
-                <a href="#" data-tab="tab-currency">Currency</a>
             </li>
             <?php
         }
@@ -153,17 +144,6 @@ $oInput = \Nails\Factory::service('Input');
             <?php
         }
 
-        if (userHasPermission('admin:invoice:settings:currency')) {
-
-            ?>
-            <div class="tab-page tab-currency">
-                <p class="alert alert-warning">
-                    <strong>@todo:</strong> Currency settings
-                </p>
-            </div>
-            <?php
-        }
-
         if (userHasPermission('admin:invoice:settings:drivers')) {
 
             ?>
@@ -171,7 +151,7 @@ $oInput = \Nails\Factory::service('Input');
                 <?=adminHelper(
                     'loadSettingsDriverTable',
                     'PaymentDriver',
-                    'nails/module-invoice'
+                    Constants::MODULE_SLUG
                 )?>
             </div>
             <?php
@@ -184,7 +164,7 @@ $oInput = \Nails\Factory::service('Input');
                 <?=adminHelper(
                     'loadSettingsDriverTable',
                     'InvoiceSkin',
-                    'nails/module-invoice'
+                    Constants::MODULE_SLUG
                 )?>
             </div>
             <?php

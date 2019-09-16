@@ -12,33 +12,62 @@
 
 namespace Nails\Invoice\Model;
 
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\InvoiceException;
 
+/**
+ * Class Customer
+ *
+ * @package Nails\Invoice\Model
+ */
 class Customer extends Base
 {
     /**
+     * The table this model represents
+     *
+     * @var string
+     */
+    const TABLE = NAILS_DB_PREFIX . 'invoice_customer';
+
+    /**
+     * The name of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_NAME = 'Customer';
+
+    /**
+     * The provider of the resource to use (as passed to \Nails\Factory::resource())
+     *
+     * @var string
+     */
+    const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Customer constructor.
      *
-     * @throws \Nails\Common\Exception\ModelException
+     * @throws ModelException
      */
     public function __construct()
     {
         parent::__construct();
-        $this->table              = NAILS_DB_PREFIX . 'invoice_customer';
         $this->defaultSortColumn  = 'first_name';
         $this->destructiveDelete  = false;
         $this->searchableFields[] = 'email';
         $this->searchableFields[] = 'billing_email';
-
-        $this->addExpandableField([
-            'trigger'   => 'invoices',
-            'type'      => self::EXPANDABLE_TYPE_MANY,
-            'property'  => 'invoices',
-            'model'     => 'Invoice',
-            'provider'  => 'nails/module-invoice',
-            'id_column' => 'customer_id',
-        ]);
+        $this
+            ->addExpandableField([
+                'trigger'   => 'invoices',
+                'type'      => self::EXPANDABLE_TYPE_MANY,
+                'property'  => 'invoices',
+                'model'     => 'Invoice',
+                'provider'  => Constants::MODULE_SLUG,
+                'id_column' => 'customer_id',
+            ]);
     }
 
     // --------------------------------------------------------------------------
@@ -86,8 +115,8 @@ class Customer extends Base
     /**
      * Create a new customer
      *
-     * @param  array   $aData         The data to create the customer with
-     * @param  boolean $bReturnObject Whether to return the complete customer object
+     * @param array   $aData         The data to create the customer with
+     * @param boolean $bReturnObject Whether to return the complete customer object
      *
      * @return mixed
      */
@@ -115,8 +144,8 @@ class Customer extends Base
     /**
      * Update an existing customer
      *
-     * @param  integer $iCustomerId The ID of the customer to update
-     * @param  array   $aData       The data to update the customer with
+     * @param integer $iCustomerId The ID of the customer to update
+     * @param array   $aData       The data to update the customer with
      *
      * @return mixed
      */
@@ -153,7 +182,7 @@ class Customer extends Base
     /**
      * Compile the customer label
      *
-     * @param  array $aData The data passed to create() or update()
+     * @param array $aData The data passed to create() or update()
      *
      * @return string
      */
@@ -175,42 +204,16 @@ class Customer extends Base
     // --------------------------------------------------------------------------
 
     /**
-     * Formats a single object
+     * Returns the customer ID for the active user.
      *
-     * The getAll() method iterates over each returned item with this method so as to
-     * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
+     * This assumes that the user's customer ID is stored in the user_meta_app
+     * table. If yoyr application has different logic, you should override this
+     * method and implement the appropriate behaviour.
      *
-     * @param  object $oObj      A reference to the object being formatted.
-     * @param  array  $aData     The same data array which is passed to _getCountCommon, for reference if needed
-     * @param  array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param  array  $aBools    Fields which should be cast as booleans if not null
-     * @param  array  $aFloats   Fields which should be cast as floats if not null
-     *
-     * @return void
+     * @return int|null
      */
-    protected function formatObject(
-        &$oObj,
-        array $aData = [],
-        array $aIntegers = [],
-        array $aBools = [],
-        array $aFloats = []
-    ) {
-        parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-
-        $oObj->billing_address = (object) [
-            'line_1'   => $oObj->billing_address_line_1,
-            'line_2'   => $oObj->billing_address_line_2,
-            'town'     => $oObj->billing_address_town,
-            'county'   => $oObj->billing_address_county,
-            'postcode' => $oObj->billing_address_postcode,
-            'country'  => $oObj->billing_address_country,
-        ];
-
-        unset($oObj->billing_address_line_1);
-        unset($oObj->billing_address_line_2);
-        unset($oObj->billing_address_town);
-        unset($oObj->billing_address_county);
-        unset($oObj->billing_address_postcode);
-        unset($oObj->billing_address_country);
+    public function getCustomerIdforActiveUser(): ?int
+    {
+        return (int) activeUser('customer_id') ?: null;
     }
 }

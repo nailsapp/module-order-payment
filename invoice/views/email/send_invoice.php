@@ -1,11 +1,16 @@
 <p>
-    Invoice <strong>{{invoice.ref}}</strong> has been generated for your account and is due {{invoice.due.formatted}}.
+    An invoice has been raised for your account and is due {{invoice.due}}.
 </p>
+<?php
+include __DIR__ . DIRECTORY_SEPARATOR . 'invoice.php';
+?>
 <p>
-    <a href="{{invoice.urls.payment}}" class="btn btn-primary">
+    <a href="{{invoice.urls.payment}}" class="btn btn-block btn-primary">
         Pay Online Now
     </a>
-    <a href="{{invoice.urls.download}}" class="btn btn-default">
+</p>
+<p>
+    <a href="{{invoice.urls.download}}" class="btn btn-block btn-default">
         Download Invoice
     </a>
 </p>

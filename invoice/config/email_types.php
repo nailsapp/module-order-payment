@@ -29,7 +29,7 @@ $config['email_types'] = [
         'template_header'  => '',
         'template_body'    => 'invoice/email/payment_complete_receipt',
         'template_footer'  => '',
-        'default_subject'  => 'Thank you for your payment - Invoice {{payment.invoice.ref}}',
+        'default_subject'  => 'Thank you for your payment - Invoice {{invoice.ref}}',
     ],
     (object) [
         'slug'             => 'payment_processing_receipt',
@@ -39,7 +39,7 @@ $config['email_types'] = [
         'template_header'  => '',
         'template_body'    => 'invoice/email/payment_processing_receipt',
         'template_footer'  => '',
-        'default_subject'  => 'We are processing your payment - Invoice {{payment.invoice.ref}}',
+        'default_subject'  => 'We are processing your payment - Invoice {{invoice.ref}}',
     ],
     (object) [
         'slug'             => 'refund_complete_receipt',

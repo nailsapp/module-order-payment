@@ -14,6 +14,11 @@ namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Exception\ResponseException;
 
+/**
+ * Class ResponseBase
+ *
+ * @package Nails\Invoice\Factory
+ */
 class ResponseBase
 {
     //  Statuses; these are in line with the Payment statuses
@@ -24,38 +29,77 @@ class ResponseBase
 
     // --------------------------------------------------------------------------
 
-    //  Locked
-    protected $bIsLocked;
-
-    //  Status
-    protected $sStatus;
-
-    //  Errors
-    protected $sErrorMsg;
-    protected $sErrorCode;
-    protected $sErrorUser;
-
-    //  Transaction Variables
-    protected $sTxnId;
-    protected $iFee;
-
-    // --------------------------------------------------------------------------
+    /**
+     * Whether the response is locked
+     *
+     * @var bool
+     */
+    protected $bIsLocked = false;
 
     /**
-     * ResponseBase constructor.
+     * The response's status
+     *
+     * @var string
      */
-    public function __construct()
-    {
-        $this->sStatus = self::STATUS_PENDING;
-    }
+    protected $sStatus = self::STATUS_PENDING;
+
+    /**
+     * The error message
+     *
+     * @var string
+     */
+    protected $sErrorMessage = '';
+
+    /**
+     * The user-friendly error message
+     *
+     * @var string
+     */
+    protected $sErrorUser = '';
+
+    /**
+     * The error code
+     *
+     * @var string
+     */
+    protected $sErrorCode = '';
+
+    /**
+     * The transaction ID
+     *
+     * @var string
+     */
+    protected $sTransactionId = '';
+
+    /**
+     * The fee associated with the transaction
+     *
+     * @var int
+     */
+    protected $iFee = 0;
+
+    /**
+     * The URL to redirect to when successfull
+     *
+     * @var string
+     */
+    protected $sSuccessUrl = '';
+
+    /**
+     * The URL to redirect to in event of an error
+     *
+     * @var string
+     */
+    protected $sErrorUrl = '';
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns all the statuses as an array
+     *
      * @return array
      */
-    public function getStatuses()
+    public function getStatuses(): array
     {
         return [
             self::STATUS_PENDING,
@@ -69,9 +113,10 @@ class ResponseBase
 
     /**
      * Returns an array of statuses with human friendly labels
+     *
      * @return array
      */
-    public function getStatusesHuman()
+    public function getStatusesHuman(): array
     {
         return [
             self::STATUS_PENDING    => 'Pending',
@@ -88,12 +133,12 @@ class ResponseBase
      *
      * @param string $sStatus The status to set
      *
+     * @return $this
      * @throws ResponseException
-     * @return string
      */
-    public function setStatus($sStatus)
+    public function setStatus(string $sStatus): ResponseBase
     {
-        if (!$this->bIsLocked) {
+        if (!$this->isLocked()) {
 
             $aStatuses = $this->getStatuses();
             if (!in_array($sStatus, $aStatuses)) {
@@ -110,9 +155,10 @@ class ResponseBase
 
     /**
      * Set the status as PENDING
-     * @return string
+     *
+     * @return $this
      */
-    public function setStatusPending()
+    public function setStatusPending(): ResponseBase
     {
         return $this->setStatus(self::STATUS_PENDING);
     }
@@ -121,9 +167,10 @@ class ResponseBase
 
     /**
      * Set the status as PROCESSING
-     * @return string
+     *
+     * @return $this
      */
-    public function setStatusProcessing()
+    public function setStatusProcessing(): ResponseBase
     {
         return $this->setStatus(self::STATUS_PROCESSING);
     }
@@ -132,9 +179,10 @@ class ResponseBase
 
     /**
      * Set the status as COMPLETE
-     * @return string
+     *
+     * @return $this
      */
-    public function setStatusComplete()
+    public function setStatusComplete(): ResponseBase
     {
         return $this->setStatus(self::STATUS_COMPLETE);
     }
@@ -144,17 +192,21 @@ class ResponseBase
     /**
      * Set the status as FAILED
      *
-     * @param string $sReasonMsg    The exception message, logged against the payment and not shown to the customer
-     * @param string $sReasonCode   The exception code, logged against the payment and not shown to the customer
-     * @param string $sUserFeedback The message to show to the user explaining the error
+     * @param string|null $sReasonMsg    The exception message, logged against the payment and not shown to the customer
+     * @param string|null $sReasonCode   The exception code, logged against the payment and not shown to the customer
+     * @param string      $sUserFeedback The message to show to the user explaining the error
      *
-     * @return string
+     * @return $this
      */
-    public function setStatusFailed($sReasonMsg, $sReasonCode, $sUserFeedback = '')
-    {
-        $this->sErrorMsg  = trim($sReasonMsg);
-        $this->sErrorCode = trim($sReasonCode);
-        $this->sErrorUser = trim($sUserFeedback);
+    public function setStatusFailed(
+        $sReasonMsg = null,
+        $sReasonCode = null,
+        string $sUserFeedback = ''
+    ): ResponseBase {
+
+        $this->setErrorMessage(trim($sReasonMsg));
+        $this->setErrorCode(trim($sReasonCode));
+        $this->setErrorMessageUser(trim($sUserFeedback));
 
         return $this->setStatus(self::STATUS_FAILED);
     }
@@ -163,9 +215,10 @@ class ResponseBase
 
     /**
      * Returns the current status of the response
+     *
      * @return string
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->sStatus;
     }
@@ -174,9 +227,10 @@ class ResponseBase
 
     /**
      * Returns if the request is pending
-     * @return boolean
+     *
+     * @return bool
      */
-    public function isPending()
+    public function isPending(): bool
     {
         return $this->getStatus() == self::STATUS_PENDING;
     }
@@ -185,9 +239,10 @@ class ResponseBase
 
     /**
      * Returns if the request was successful, but is still in a processing state
-     * @return boolean
+     *
+     * @return bool
      */
-    public function isProcessing()
+    public function isProcessing(): bool
     {
         return $this->getStatus() == self::STATUS_PROCESSING;
     }
@@ -196,9 +251,10 @@ class ResponseBase
 
     /**
      * Returns if the request was successful and completed fully
-     * @return boolean
+     *
+     * @return bool
      */
-    public function isComplete()
+    public function isComplete(): bool
     {
         return $this->getStatus() == self::STATUS_COMPLETE;
     }
@@ -207,9 +263,10 @@ class ResponseBase
 
     /**
      * Returns if the request failed
-     * @return boolean
+     *
+     * @return bool
      */
-    public function isFailed()
+    public function isFailed(): bool
     {
         return $this->getStatus() == self::STATUS_FAILED;
     }
@@ -217,17 +274,104 @@ class ResponseBase
     // --------------------------------------------------------------------------
 
     /**
+     * Sets the error message
+     *
+     * @param bool $bValue The value to set
+     *
+     * @return $this
+     */
+    public function setErrorMessage(string $sValue): ResponseBase
+    {
+        if (!$this->isLocked()) {
+            $this->sErrorMessage = $sValue;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns any error message
+     *
+     * @return string
+     */
+    public function getErrorMessage(): string
+    {
+        return $this->sErrorMessage;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the user-friendly error message
+     *
+     * @param bool $bValue The value to set
+     *
+     * @return $this
+     */
+    public function setErrorMessageUser(string $sValue): ResponseBase
+    {
+        if (!$this->isLocked()) {
+            $this->sErrorMessageUser = $sValue;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns any user-friendly error message
+     *
+     * @return string
+     */
+    public function getErrorMessageUser(): string
+    {
+        return $this->sErrorMessageUser;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the error code
+     *
+     * @param bool $bValue The value to set
+     *
+     * @return $this
+     */
+    public function setErrorCode(string $sValue): ResponseBase
+    {
+        if (!$this->isLocked()) {
+            $this->sErrorCode = $sValue;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns any error code
+     *
+     * @return string
+     */
+    public function getErrorCode(): string
+    {
+        return $this->sErrorCode;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Return the error messages
+     *
      * @return \stdClass
      */
-    public function getError()
+    public function getError(): \stdClass
     {
-        $oOut       = new \stdClass();
-        $oOut->msg  = $this->sErrorMsg;
-        $oOut->code = $this->sErrorCode;
-        $oOut->user = $this->sErrorUser;
-
-        return $oOut;
+        return (object) [
+            'msg'  => $this->getErrorMessage(),
+            'code' => $this->getErrorCode(),
+            'user' => $this->getErrorMessageUser(),
+        ];
     }
 
     // --------------------------------------------------------------------------
@@ -235,14 +379,14 @@ class ResponseBase
     /**
      * Set the transaction ID
      *
-     * @param string $sTxnId The transaction ID
+     * @param string $sTransactionId The transaction ID
      *
      * @return $this
      */
-    public function setTxnId($sTxnId)
+    public function setTransactionId($sTransactionId): ResponseBase
     {
-        if (!$this->bIsLocked) {
-            $this->sTxnId = $sTxnId;
+        if (!$this->isLocked()) {
+            $this->sTransactionId = $sTransactionId;
         }
         return $this;
     }
@@ -251,11 +395,12 @@ class ResponseBase
 
     /**
      * The transaction ID
+     *
      * @return string
      */
-    public function getTxnId()
+    public function getTransactionId(): string
     {
-        return $this->sTxnId;
+        return $this->sTransactionId;
     }
 
     // --------------------------------------------------------------------------
@@ -263,13 +408,13 @@ class ResponseBase
     /**
      * Set the fee charged by the payment processor
      *
-     * @param integer $iFee The fee charged by the payment processor
+     * @param int $iFee The fee charged by the payment processor
      *
      * @return $this
      */
-    public function setFee($iFee)
+    public function setFee($iFee): ResponseBase
     {
-        if (!$this->bIsLocked) {
+        if (!$this->isLocked()) {
             $this->iFee = (int) $iFee;
         }
         return $this;
@@ -279,9 +424,10 @@ class ResponseBase
 
     /**
      * The fee charged by the payment processor
-     * @return integer
+     *
+     * @return int
      */
-    public function getFee()
+    public function getFee(): int
     {
         return $this->iFee;
     }
@@ -290,9 +436,10 @@ class ResponseBase
 
     /**
      * Prevent the object from being altered
+     *
      * @return $this
      */
-    public function lock()
+    public function lock(): ResponseBase
     {
         $this->bIsLocked = true;
         return $this;
@@ -302,10 +449,69 @@ class ResponseBase
 
     /**
      * Whether the response is locked
-     * @return boolean
+     *
+     * @return bool
      */
-    public function isLocked()
+    public function isLocked(): bool
     {
         return $this->bIsLocked;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set success URL
+     *
+     * @param string $sSuccessUrl The success URL
+     *
+     * @return $this
+     */
+    public function setSuccessUrl(string $sSuccessUrl): ResponseBase
+    {
+        if (!$this->isLocked()) {
+            $this->sSuccessUrl = $sSuccessUrl;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get success URL
+     *
+     * @return string
+     */
+    public function getSuccessUrl(): string
+    {
+        return $this->sSuccessUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the error URL
+     *
+     * @param string $sErrorUrl The the error URL
+     *
+     * @return $this
+     */
+    public function setErrorUrl(string $sErrorUrl): ResponseBase
+    {
+        if (!$this->isLocked()) {
+            $this->sErrorUrl = $sErrorUrl;
+        }
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the error URL
+     *
+     * @return string
+     */
+    public function getErrorUrl(): string
+    {
+        return $this->sErrorUrl;
     }
 }
