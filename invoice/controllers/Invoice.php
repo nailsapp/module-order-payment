@@ -166,9 +166,9 @@ class Invoice extends Base
                             'aProcessingPayments' => $aProcessingPayments,
                         ])
                         ->load([
-                            'structure/header',
+                            'structure/header/blank',
                             'invoice/pay/hasProcessing',
-                            'structure/footer',
+                            'structure/footer/blank',
                         ]);
                     return;
 
@@ -181,9 +181,9 @@ class Invoice extends Base
                             'oInvoice' => $oInvoice,
                         ])
                         ->load([
-                            'structure/header',
+                            'structure/header/blank',
                             'invoice/pay/paid',
-                            'structure/footer',
+                            'structure/footer/blank',
                         ]);
                     return;
                 }
@@ -446,13 +446,11 @@ class Invoice extends Base
                 'sUrlCancel'           => siteUrl($oInput->get('url_cancel')) ?: siteUrl(),
                 'aDrivers'             => $aAvailableDrivers,
                 'aSavedPaymentSources' => $aSavedPaymentSources,
-                'headerOverride'       => 'structure/header/blank',
-                'footerOverride'       => 'structure/footer/blank',
             ])
             ->load([
-                'structure/header',
+                'structure/header/blank',
                 'invoice/pay/index',
-                'structure/footer',
+                'structure/footer/blank',
             ]);
     }
 
