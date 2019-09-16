@@ -4,6 +4,7 @@ class InvoicePay {
         //  Create validator handler
         this.$form = $('#js-invoice-main-form');
         this.$btn = $('#js-invoice-pay-now');
+        this.$btnCancel = $('#js-invoice-cancel');
         this.$form.data('validators', []);
         this.$form.data('validated', false);
 
@@ -89,6 +90,8 @@ class InvoicePay {
                     this.$btn
                         .addClass('btn--working')
                         .prop('disabled', true);
+                    this.$btnCancel
+                        .prop('disabled', true);
                 }
 
                 // --------------------------------------------------------------------------
@@ -121,6 +124,8 @@ class InvoicePay {
 
                         this.$btn
                             .removeClass('btn--working')
+                            .prop('disabled', false);
+                        this.$btnCancel
                             .prop('disabled', false);
                     });
 

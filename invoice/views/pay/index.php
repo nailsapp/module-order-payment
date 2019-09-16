@@ -329,7 +329,7 @@ use Nails\Invoice\Resource\Source;
                     </button>
                 </p>
                 <p class="text-center">
-                    <a href="<?=$sUrlCancel?>" class="btn btn--link">
+                    <a href="<?=$sUrlCancel?>" class="btn btn--link"  id="js-invoice-cancel">
                         Cancel payment
                     </a>
                 </p>
