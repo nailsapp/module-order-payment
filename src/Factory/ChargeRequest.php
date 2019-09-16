@@ -596,21 +596,25 @@ class ChargeRequest extends RequestBase
 
         // --------------------------------------------------------------------------
 
-        if (!empty($this->oSource) && $this->oSource->driver !== $this->oDriver->getSlug()) {
-            throw new ChargeRequestException(
-                'Selected payment source is incompatible with the selected driver.'
-            );
-        }
+        if (!empty($this->oSource)) {
 
-        // --------------------------------------------------------------------------
+            if ($this->oSource->driver !== $this->oDriver->getSlug()) {
+                throw new ChargeRequestException(
+                    'Selected payment source is incompatible with the selected driver.'
+                );
+            }
 
-        $oNow     = Factory::factory('DateTime');
-        $oExpires = new \DateTime($this->oSource->expiry->raw);
+            if (!empty($this->oSource->expiry->raw)) {
 
-        if (!empty($this->oSource) && $oExpires < $oNow) {
-            throw new ChargeRequestException\PaymentSourceExpiredException(
-                'Selected payment source has expired.'
-            );
+                $oNow     = Factory::factory('DateTime');
+                $oExpires = new \DateTime($this->oSource->expiry->raw);
+
+                if ($oExpires < $oNow) {
+                    throw new ChargeRequestException\PaymentSourceExpiredException(
+                        'Selected payment source has expired.'
+                    );
+                }
+            }
         }
 
         // --------------------------------------------------------------------------
