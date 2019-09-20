@@ -11,6 +11,7 @@ namespace Nails\Invoice\Model;
 
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Exception\ValidationException;
 use Nails\Common\Model\Base;
 use Nails\Common\Service\Database;
 use Nails\Factory;
@@ -100,18 +101,53 @@ class Source extends Base
     }
 
     // --------------------------------------------------------------------------
+    
+
+    /**
+     * Gets the default payment source for a customer
+     *
+     * @param Resource\Customer|int $mCustomer The customer object or ID
+     *
+     * @return Resource\Source|null
+     * @throws FactoryException
+     * @throws ValidationException
+     */
+    public function getDefault($mCustomer): ?Resource\Source
+    {
+        $iCustomerId = $this->getCustomerId($mCustomer, __METHOD__);
+        $aSources    = $this->getAll([
+            'where'    => [
+                ['customer_id', $iCustomerId],
+                ['is_default', true],
+            ],
+        ]);
+        
+        return !empty($aSources) ? reset($aSources) : null;
+    }
+    
+    // --------------------------------------------------------------------------
 
     /**
      * Sets the default payment source for a customer
      *
-     * @param int $iCustomerId The customer ID
-     * @param int $iSourceId   The source ID
+     * @param Resource\Customer|int $mCustomer The customer object or ID
+     * @param Resource\Customer|int $mSource   The source object or ID
      *
      * @return bool
      * @throws FactoryException
+     * @throws ValidationException
      */
-    public function setDefault(int $iCustomerId, int $iSourceId): bool
+    public function setDefault($mCustomer, $mSource): bool
     {
+        $iCustomerId = $this->getCustomerId($mCustomer, __METHOD__);
+        $iSourceId   = $this->getSourceId($mSource, __METHOD__);
+        
+        if (empty($iCustomerId)) {
+            throw new ValidationException('Could not ascertain customer ID.');
+        } elseif (empty($iSourceId)) {
+            throw new ValidationException('Could not ascertain source ID.');
+        }
+        
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
 
@@ -151,14 +187,17 @@ class Source extends Base
     /**
      * Returns payment sources for a particular customer
      *
-     * @param int|null $iCustomerId    The customer ID
-     * @param bool     $bRemoveExpired Whether to remove expired payment sources
+     * @param Resource\Customer|int $mCustomer      The customer object or ID
+     * @param bool                  $bRemoveExpired Whether to remove expired payment sources
      *
-     * @return Source[]
+     * @return Resource\Source[]
      * @throws ModelException
+     * @throws ValidationException
      */
-    public function getForCustomer(int $iCustomerId = null, bool $bRemoveExpired = true)
+    public function getForCustomer($mCustomer, bool $bRemoveExpired = true): array
     {
+        $iCustomerId = $this->getCustomerId($mCustomer, __METHOD__);
+
         if (empty($iCustomerId)) {
             return [];
         }
@@ -192,5 +231,55 @@ class Source extends Base
     ) {
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
         $oObj->expiry = Factory::resource('Date', null, ['raw' => $oObj->expiry]);
+    }
+    
+    // --------------------------------------------------------------------------
+    
+    /**
+     * Returns the customer ID
+     * 
+     * @param Resource\Customer|int $mCustomer The customer object or ID
+     *
+     * @return int|null
+     * @throws ValidationException
+     */
+    protected function getCustomerId($mCustomer, $sMethod): ?int
+    {
+        if ($mCustomer instanceof Resource\Customer) {
+            return $mCustomer->id;
+        } elseif (is_int($mCustomer)) {
+            return $mCustomer;
+        } else {
+            throw new ValidationException(
+                'Invalid type "' . gettype($mCustomer) . '" for customer passed to ' . $sMethod
+            );
+        }
+        
+        return null;
+    }
+    
+    // --------------------------------------------------------------------------
+    
+    /**
+     * Returns the source ID
+     * 
+     * @param Resource\Source|int $mSource The source object or ID
+     *
+     * @return int|null
+     * @throws ValidationException
+     */
+    protected function getSourceId($mSource, $sMethod): ?int
+    {
+        if ($mSource instanceof Resource\Source) {
+            return $mSource->id;
+        } elseif (is_int($mSource)) {
+            return $mSource;
+        } else {
+            throw new ValidationException(
+                'Invalid type "' . gettype($mSource) . '" for source passed to ' . $sMethod
+            );
+        }
+        
+        return null;
     }
 }
