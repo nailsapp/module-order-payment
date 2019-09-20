@@ -131,7 +131,7 @@ class Source extends Base
      * Sets the default payment source for a customer
      *
      * @param Resource\Customer|int $mCustomer The customer object or ID
-     * @param Resource\Customer|int $mSource   The source object or ID
+     * @param Resource\Source|int $mSource   The source object or ID
      *
      * @return bool
      * @throws FactoryException
@@ -254,8 +254,6 @@ class Source extends Base
                 'Invalid type "' . gettype($mCustomer) . '" for customer passed to ' . $sMethod
             );
         }
-        
-        return null;
     }
     
     // --------------------------------------------------------------------------
@@ -265,10 +263,10 @@ class Source extends Base
      * 
      * @param Resource\Source|int $mSource The source object or ID
      *
-     * @return int|null
+     * @return int
      * @throws ValidationException
      */
-    protected function getSourceId($mSource, $sMethod): ?int
+    protected function getSourceId($mSource, $sMethod): int
     {
         if ($mSource instanceof Resource\Source) {
             return $mSource->id;
@@ -279,7 +277,5 @@ class Source extends Base
                 'Invalid type "' . gettype($mSource) . '" for source passed to ' . $sMethod
             );
         }
-        
-        return null;
     }
 }
