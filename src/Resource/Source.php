@@ -9,8 +9,15 @@
 
 namespace Nails\Invoice\Resource;
 
+use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Entity;
+use Nails\Factory;
 
+/**
+ * Class Source
+ *
+ * @package Nails\Invoice\Resource
+ */
 class Source extends Entity
 {
     /**
@@ -68,4 +75,30 @@ class Source extends Entity
      * @var bool
      */
     public $is_default = false;
+
+    /**
+     * Whether the source has expired or not
+     *
+     * @var bool
+     */
+    public $is_expired = false;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Source constructor.
+     *
+     * @param array $mObj The data to populate the resource with
+     *
+     * @throws FactoryException
+     */
+    public function __construct($mObj = [])
+    {
+        parent::__construct($mObj);
+
+        $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
+        $oNow             = Factory::factory('DateTime');
+        $oExpires         = new \DateTime($this->expiry);
+        $this->is_expired = $oExpires < $oNow;
+    }
 }
