@@ -55,8 +55,8 @@ class Source extends Base
     /**
      * Creates a new payment source. Delegates to the payment driver.
      *
-     * @param array $aData         the data array
-     * @param bool  $bReturnObject Whether top return the new object or not
+     * @param array $aData         The data array
+     * @param bool  $bReturnObject Whether to return the new object or not
      *
      * @return mixed
      * @throws DriverException
@@ -78,6 +78,20 @@ class Source extends Base
 
         if (empty($oDriver)) {
             throw new DriverException('"' . $aData['driver'] . '" is not a valid payment driver.');
+        }
+
+        //  If an expiry date is passed, ensure it is valid
+        if (array_key_exists('expiry', $aData)) {
+            try {
+                $oExpiry = new \DateTime($aData['expiry']);
+            } catch (\Exception $e) {
+                throw new DriverException('"' . $aData['expiry'] . '" is not a valid expiry date.', null, $e);
+            }
+
+            $oNow = Factory::factory('DateTime');
+            if ($oExpiry < $oNow) {
+                throw new DriverException('"expiry" must be a future date.');
+            }
         }
 
         /** @var Resource\Source $oResource */
