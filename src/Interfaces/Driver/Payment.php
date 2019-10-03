@@ -198,4 +198,12 @@ interface Payment
         Resource\Source &$oResource,
         array $aData
     ): void;
+    
+    /**
+     * It creates a customer in the driver
+     *
+     * @param array the driver specific customer data
+     * @param mixed the driver specific customer returned data
+     */
+    public function createCustomer(array $data);
 }
