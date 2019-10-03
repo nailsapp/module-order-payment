@@ -111,7 +111,10 @@ class Source extends Base
             $oResource->label = 'Payment Source';
         }
 
-        return parent::create((array) $oResource, $bReturnObject);
+        $aResource = (array) $oResource;
+        unset($aResource['is_expired']);
+
+        return parent::create($aResource, $bReturnObject);
     }
 
     // --------------------------------------------------------------------------
