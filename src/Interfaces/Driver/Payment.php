@@ -198,12 +198,44 @@ interface Payment
         Resource\Source &$oResource,
         array $aData
     ): void;
-    
+
+    // --------------------------------------------------------------------------
+
     /**
-     * It creates a customer in the driver
+     * Convinience method for creating a new customer on the gateway
      *
-     * @param array the driver specific customer data
-     * @param mixed the driver specific customer returned data
+     * @param array $aData The driver specific customer data
      */
-    public function createCustomer(array $data);
+    public function createCustomer(array $aData = []);
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Convinience method for retrieving an existing customer from the gateway
+     *
+     * @param mixed $mCustomerId The gateway's customer ID
+     * @param array $aData       Any driver specific data
+     *
+     * @return mixed
+     */
+    public function getCustomer($mCustomerId, array $aData = []);
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Convinience method for updating an existing customer on the gateway
+     *
+     * @param mixed $mCustomerId The gateway's customer ID
+     * @param array $aData       The driver specific customer data
+     */
+    public function updateCustomer($mCustomerId, array $aData = []);
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Convinience method for deleting an existing customer on the gateway
+     *
+     * @param mixed $mCustomerId The gateway's customer ID
+     */
+    public function deleteCustomer($mCustomerId);
 }
