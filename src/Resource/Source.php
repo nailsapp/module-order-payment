@@ -49,6 +49,13 @@ class Source extends Entity
     public $label;
 
     /**
+     * The source's name (e.g. the cardholder)
+     *
+     * @var string
+     */
+    public $name;
+
+    /**
      * The source's brand
      *
      * @var string
