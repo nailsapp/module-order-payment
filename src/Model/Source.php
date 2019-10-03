@@ -118,7 +118,41 @@ class Source extends Base
     }
 
     // --------------------------------------------------------------------------
-    
+
+    /**
+     * Updates an existing payment source
+     *
+     * @param int   $iId   The ID of the object to update
+     * @param array $aData The data to update the object with
+     *
+     * @return bool
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function update($iId, array $aData = []): bool
+    {
+        //  @todo (Pablo - 2019-10-03) - Support passing updates to the driver
+        return parent::update($iId, $aData);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Deletes an existing payment source
+     *
+     * @param int $iId The ID of the object to deleted
+     *
+     * @return bool
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function delete($iId): bool
+    {
+        //  @todo (Pablo - 2019-10-03) - Support passing deletions to the driver
+        return parent::delete($iId);
+    }
+
+    // --------------------------------------------------------------------------
 
     /**
      * Gets the default payment source for a customer
@@ -133,22 +167,22 @@ class Source extends Base
     {
         $iCustomerId = $this->getCustomerId($mCustomer, __METHOD__);
         $aSources    = $this->getAll([
-            'where'    => [
+            'where' => [
                 ['customer_id', $iCustomerId],
                 ['is_default', true],
             ],
         ]);
-        
+
         return !empty($aSources) ? reset($aSources) : null;
     }
-    
+
     // --------------------------------------------------------------------------
 
     /**
      * Sets the default payment source for a customer
      *
      * @param Resource\Customer|int $mCustomer The customer object or ID
-     * @param Resource\Source|int $mSource   The source object or ID
+     * @param Resource\Source|int   $mSource   The source object or ID
      *
      * @return bool
      * @throws FactoryException
@@ -158,13 +192,13 @@ class Source extends Base
     {
         $iCustomerId = $this->getCustomerId($mCustomer, __METHOD__);
         $iSourceId   = $this->getSourceId($mSource, __METHOD__);
-        
+
         if (empty($iCustomerId)) {
             throw new ValidationException('Could not ascertain customer ID.');
         } elseif (empty($iSourceId)) {
             throw new ValidationException('Could not ascertain source ID.');
         }
-        
+
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
 
@@ -249,12 +283,12 @@ class Source extends Base
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
         $oObj->expiry = Factory::resource('Date', null, ['raw' => $oObj->expiry]);
     }
-    
+
     // --------------------------------------------------------------------------
-    
+
     /**
      * Returns the customer ID
-     * 
+     *
      * @param Resource\Customer|int $mCustomer The customer object or ID
      *
      * @return int|null
@@ -272,12 +306,12 @@ class Source extends Base
             );
         }
     }
-    
+
     // --------------------------------------------------------------------------
-    
+
     /**
      * Returns the source ID
-     * 
+     *
      * @param Resource\Source|int $mSource The source object or ID
      *
      * @return int
