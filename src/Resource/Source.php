@@ -37,7 +37,7 @@ class Source extends Entity
     /**
      * Any data required by the driver
      *
-     * @var string
+     * @var \stdClass
      */
     public $data;
 
@@ -102,6 +102,8 @@ class Source extends Entity
     public function __construct($mObj = [])
     {
         parent::__construct($mObj);
+
+        $this->data = json_decode($this->data) ?? (object) [];
 
         $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
         $oNow             = Factory::factory('DateTime');

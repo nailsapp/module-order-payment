@@ -111,6 +111,9 @@ class Source extends Base
             $oResource->label = 'Payment Source';
         }
 
+        //  Ensure data is encoded to a string
+        $oResource->data = json_encode($oResource->data);
+
         $aResource = (array) $oResource;
         unset($aResource['is_expired']);
 
