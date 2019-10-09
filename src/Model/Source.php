@@ -286,7 +286,6 @@ class Source extends Base
         $aIntegers[] = 'customer_id';
         $aBools[]    = 'is_default';
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-        $oObj->expiry = Factory::resource('Date', null, ['raw' => $oObj->expiry]);
     }
 
     // --------------------------------------------------------------------------
