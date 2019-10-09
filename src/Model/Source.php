@@ -82,16 +82,7 @@ class Source extends Base
 
         //  If an expiry date is passed, ensure it is valid
         if (array_key_exists('expiry', $aData)) {
-            try {
-                $oExpiry = new \DateTime($aData['expiry']);
-            } catch (\Exception $e) {
-                throw new DriverException('"' . $aData['expiry'] . '" is not a valid expiry date.', null, $e);
-            }
-
-            $oNow = Factory::factory('DateTime');
-            if ($oExpiry < $oNow) {
-                throw new DriverException('"expiry" must be a future date.');
-            }
+            $this->validateExpiry($aData['expiry']);
         }
 
         /** @var Resource\Source $oResource */
@@ -134,8 +125,45 @@ class Source extends Base
      */
     public function update($iId, array $aData = []): bool
     {
-        //  @todo (Pablo - 2019-10-03) - Support passing updates to the driver
-        return parent::update($iId, $aData);
+        $aRestrictedProperties = ['id', 'driver', 'data'];
+        foreach ($aRestrictedProperties as $sProperty) {
+            if (array_key_exists($sProperty, $aData)) {
+                throw new ValidationException('Cannot update restricted property "' . $sProperty . '"');
+            }
+        }
+
+        if (array_key_exists('expiry', $aData)) {
+            $this->validateExpiry($aData['expiry']);
+        }
+
+        /** @var Resource\Source $oResource */
+        $oResource = $this->getById($iId);
+        if (empty($oResource)) {
+            throw new ValidationException('Invalid source ID');
+        }
+
+        //  Update values on the resource
+        foreach ($aData as $sKey => $mValue) {
+            if (property_exists($oResource, $sKey)) {
+                $oResource->{$sKey} = $mValue;
+            }
+        }
+
+        //  Give the driver the chance to update the remote source
+        /** @var PaymentDriver $oPaymentDriverService */
+        $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+        /** @var PaymentBase $oDriver */
+        $oDriver = $oPaymentDriverService->getInstance($oResource->driver);
+
+        $oDriver->updateSource($oResource);
+
+        //  Ensure data is encoded to a string
+        $oResource->data = json_encode($oResource->data);
+
+        $aResource = (array) $oResource;
+        unset($aResource['is_expired']);
+
+        return parent::update($iId, $aResource);
     }
 
     // --------------------------------------------------------------------------
@@ -151,8 +179,38 @@ class Source extends Base
      */
     public function delete($iId): bool
     {
-        //  @todo (Pablo - 2019-10-03) - Support passing deletions to the driver
-        return parent::delete($iId);
+        /** @var Database $oDb */
+        $oDb = Factory::service('Database');
+        $oDb->trans_begin();
+
+        try {
+
+            /** @var Resource\Source $oResource */
+            $oSource = $this->getById($iId);
+            if (empty($oSource)) {
+                throw new ValidationException('Invalid source ID');
+            }
+
+            if (!parent::delete($oSource->id)) {
+                throw new ModelException('Failed to delete source. ' . $this->lastError());
+            }
+
+            //  Give the driver the chance to delete the remote source
+            /** @var PaymentDriver $oPaymentDriverService */
+            $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+            /** @var PaymentBase $oDriver */
+            $oDriver = $oPaymentDriverService->getInstance($oSource->driver);
+
+            $oDriver->deleteSource($oSource);
+
+            $oDb->trans_commit();
+            return true;
+
+        } catch (\Exception $e) {
+            $oDb->trans_rollback();
+            $this->setError($e->getMessage());
+            return false;
+        }
     }
 
     // --------------------------------------------------------------------------
@@ -331,6 +389,30 @@ class Source extends Base
             throw new ValidationException(
                 'Invalid type "' . gettype($mSource) . '" for source passed to ' . $sMethod
             );
+        }
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Validates an expiry string
+     *
+     * @param string $sExpiry The string to validate
+     *
+     * @throws DriverException
+     * @throws FactoryException
+     */
+    protected function validateExpiry(string $sExpiry): void
+    {
+        try {
+            $oExpiry = new \DateTime($sExpiry);
+        } catch (\Exception $e) {
+            throw new DriverException('"' . $sExpiry . '" is not a valid expiry date.', null, $e);
+        }
+
+        $oNow = Factory::factory('DateTime');
+        if ($oExpiry < $oNow) {
+            throw new DriverException('Expiry must be a future date.');
         }
     }
 }

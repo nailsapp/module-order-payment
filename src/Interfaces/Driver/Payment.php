@@ -187,7 +187,7 @@ interface Payment
     // --------------------------------------------------------------------------
 
     /**
-     * Creates a new payment source, returns a semi-populated source resource
+     * Creates a new payment source on the gateway, semi-populates the source resource with data
      *
      * @param Resource\Source $oResource The Resouce object to update
      * @param array           $aData     Data passed from the caller
@@ -197,6 +197,28 @@ interface Payment
     public function createSource(
         Resource\Source &$oResource,
         array $aData
+    ): void;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Updates a payment source on the gateway
+     *
+     * @param Resource\Source $oResource The Resource being updated
+     */
+    public function updateSource(
+        Resource\Source $oResource
+    ): void;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Deletes a payment source from the gateway
+     *
+     * @param Resource\Source $oResource The Resource being deleted
+     */
+    public function deleteSource(
+        Resource\Source $oResource
     ): void;
 
     // --------------------------------------------------------------------------
