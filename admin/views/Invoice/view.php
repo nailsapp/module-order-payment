@@ -7,6 +7,8 @@ use Nails\Invoice\Resource\Refund;
 
 /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
 $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
+/** @var \Nails\Invoice\Model\Refund $oRefundModel */
+$oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
 
 ?>
 <div class="group-invoice invoice view">
