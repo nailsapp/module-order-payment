@@ -416,7 +416,7 @@ class Invoice
     /**
      * Sets the invoice's currency
      *
-     * @param $mCurrency The invoice's currency
+     * @param Currency|string $mCurrency The invoice's currency
      *
      * @return $this
      * @throws InvoiceException
