@@ -14,7 +14,7 @@ namespace Nails\Admin\Invoice;
 
 use Nails\Admin\Controller\Base;
 use Nails\Admin\Helper;
-use Nails\Admin\Nav;
+use Nails\Admin\Factory\Nav;
 use Nails\Auth;
 use Nails\Auth\Service\Session;
 use Nails\Common\Exception\FactoryException;
