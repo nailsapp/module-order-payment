@@ -495,7 +495,7 @@ class Invoice
     {
         $this->ensureNotSaved();
 
-        if ($mKey instanceof stdClass) {
+        if (is_object($mKey)) {
             $this->oCallbackData = $mKey;
         } else {
             $this->oCallbackData->{$mKey} = $mValue;
@@ -511,7 +511,7 @@ class Invoice
      *
      * @return stdClass|null
      */
-    public function getCallbackData(): ?stdClass
+    public function getCallbackData(): ?object
     {
         return $this->oCallbackData;
     }
