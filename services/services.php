@@ -76,70 +76,84 @@ return [
         },
     ],
     'factories' => [
-        'ChargeRequest'    => function () {
+        'ChargeRequest'       => function () {
             if (class_exists('\App\Invoice\Factory\ChargeRequest')) {
                 return new \App\Invoice\Factory\ChargeRequest();
             } else {
                 return new \Nails\Invoice\Factory\ChargeRequest();
             }
         },
-        'ChargeResponse'   => function () {
+        'ChargeResponse'      => function () {
             if (class_exists('\App\Invoice\Factory\ChargeResponse')) {
                 return new \App\Invoice\Factory\ChargeResponse();
             } else {
                 return new \Nails\Invoice\Factory\ChargeResponse();
             }
         },
-        'CompleteRequest'  => function () {
+        'CompleteRequest'     => function () {
             if (class_exists('\App\Invoice\Factory\CompleteRequest')) {
                 return new \App\Invoice\Factory\CompleteRequest();
             } else {
                 return new \Nails\Invoice\Factory\CompleteRequest();
             }
         },
-        'CompleteResponse' => function () {
+        'CompleteResponse'    => function () {
             if (class_exists('\App\Invoice\Factory\CompleteResponse')) {
                 return new \App\Invoice\Factory\CompleteResponse();
             } else {
                 return new \Nails\Invoice\Factory\CompleteResponse();
             }
         },
-        'Invoice'          => function () {
+        'Invoice'             => function () {
             if (class_exists('\App\Invoice\Factory\Invoice')) {
                 return new \App\Invoice\Factory\Invoice();
             } else {
                 return new \Nails\Invoice\Factory\Invoice();
             }
         },
-        'InvoiceItem'      => function () {
+        'InvoiceCallbackData' => function () {
+            if (class_exists('\App\Invoice\Factory\Invoice\CallbackData')) {
+                return new \App\Invoice\Factory\Invoice\CallbackData();
+            } else {
+                return new \Nails\Invoice\Factory\Invoice\CallbackData();
+            }
+        },
+        'InvoiceItem'         => function () {
             if (class_exists('\App\Invoice\Factory\Invoice\Item')) {
                 return new \App\Invoice\Factory\Invoice\Item();
             } else {
                 return new \Nails\Invoice\Factory\Invoice\Item();
             }
         },
-        'RefundRequest'    => function () {
+        'InvoicePaymentData'  => function () {
+            if (class_exists('\App\Invoice\Factory\Invoice\PaymentData')) {
+                return new \App\Invoice\Factory\Invoice\PaymentData();
+            } else {
+                return new \Nails\Invoice\Factory\Invoice\PaymentData();
+            }
+        },
+        'RefundRequest'       => function () {
             if (class_exists('\App\Invoice\Factory\RefundRequest')) {
                 return new \App\Invoice\Factory\RefundRequest();
             } else {
                 return new \Nails\Invoice\Factory\RefundRequest();
             }
         },
-        'RefundResponse'   => function () {
+        'RefundResponse'      => function () {
             if (class_exists('\App\Invoice\Factory\RefundResponse')) {
                 return new \App\Invoice\Factory\RefundResponse();
             } else {
                 return new \Nails\Invoice\Factory\RefundResponse();
             }
         },
-        'ScaRequest'       => function () {
+        'ScaRequest'          => function () {
             if (class_exists('\App\Invoice\Factory\ScaRequest')) {
                 return new \App\Invoice\Factory\ScaRequest();
             } else {
                 return new \Nails\Invoice\Factory\ScaRequest();
             }
         },
-        'ScaResponse'      => function () {
+        'ScaResponse'         => function () {
             if (class_exists('\App\Invoice\Factory\ScaResponse')) {
                 return new \App\Invoice\Factory\ScaResponse();
             } else {

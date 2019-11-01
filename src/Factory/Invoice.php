@@ -19,11 +19,12 @@ use Nails\Currency\Resource\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Factory\Invoice\CallbackData;
 use Nails\Invoice\Factory\Invoice\Item;
+use Nails\Invoice\Factory\Invoice\PaymentData;
 use Nails\Invoice\Interfaces\Driver\Payment;
 use Nails\Invoice\Model;
 use Nails\Invoice\Resource;
-use stdClass;
 
 /**
  * Class Invoice
@@ -109,14 +110,14 @@ class Invoice
     /**
      * The invoice's callback data
      *
-     * @var stdClass|null
+     * @var CallbackData|null
      */
     protected $oCallbackData = null;
 
     /**
      * The invoice's payment data
      *
-     * @var stdClass|null
+     * @var PaymentData|null
      */
     protected $oPaymentData = null;
 
@@ -141,8 +142,8 @@ class Invoice
      */
     public function __construct()
     {
-        $this->oCallbackData = (object) [];
-        $this->oPaymentData  = (object) [];
+        $this->oCallbackData = Factory::factory('InvoiceCallbackData', Constants::MODULE_SLUG);
+        $this->oPaymentData  = Factory::factory('InvoicePaymentData', Constants::MODULE_SLUG);
     }
 
     // --------------------------------------------------------------------------
@@ -485,8 +486,8 @@ class Invoice
     /**
      * Sets the invoice's callback data
      *
-     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
-     * @param mixed|null      $mValue The value to set
+     * @param string|CallbackData $mKey   The key to set, if CallbackData is provided, the entire object is replaced
+     * @param mixed|null          $mValue The value to set
      *
      * @return $this
      * @throws InvoiceException
@@ -495,7 +496,7 @@ class Invoice
     {
         $this->ensureNotSaved();
 
-        if (is_object($mKey)) {
+        if ($mKey instanceof CallbackData) {
             $this->oCallbackData = $mKey;
         } else {
             $this->oCallbackData->{$mKey} = $mValue;
@@ -509,9 +510,9 @@ class Invoice
     /**
      * Returns the invoice's callback data
      *
-     * @return stdClass|null
+     * @return CallbackData|null
      */
-    public function getCallbackData(): ?object
+    public function getCallbackData(): ?CallbackData
     {
         return $this->oCallbackData;
     }
@@ -521,7 +522,7 @@ class Invoice
     /**
      * Sets the invoice's payment data
      *
-     * @param string|stdClass $mKey   The key to set, if a stdClass is provided, the entire object is replaced
+     * @param string|PaymentData $mKey   The key to set, if PaymentData is provided, the entire object is replaced
      * @param mixed|null      $mValue The value to set
      *
      * @return $this
@@ -531,7 +532,7 @@ class Invoice
     {
         $this->ensureNotSaved();
 
-        if ($mKey instanceof stdClass) {
+        if ($mKey instanceof PaymentData) {
             $this->oPaymentData = $mKey;
         } else {
             $this->oPaymentData->{$mKey} = $mValue;
@@ -584,9 +585,9 @@ class Invoice
     /**
      * Returns the invoice's payment data
      *
-     * @return stdClass|null
+     * @return PaymentData|null
      */
-    public function getPaymentData(): ?stdClass
+    public function getPaymentData(): ?PaymentData
     {
         return $this->oPaymentData;
     }
