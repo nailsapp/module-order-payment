@@ -12,8 +12,6 @@
 
 namespace Nails\Invoice\Factory;
 
-use Stripe\Charge;
-
 /**
  * Class ChargeResponse
  *
@@ -217,7 +215,7 @@ class ChargeResponse extends ResponseBase
     /**
      * Any data which should be POST'ed to the endpoint
      *
-     * @return string
+     * @return array|null
      */
     public function getRedirectPostData(): ?array
     {

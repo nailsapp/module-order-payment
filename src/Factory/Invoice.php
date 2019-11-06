@@ -11,6 +11,7 @@
 
 namespace Nails\Invoice\Factory;
 
+use DateTime;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Resource\Date;
@@ -18,7 +19,9 @@ use Nails\Common\Traits\ErrorHandling;
 use Nails\Currency\Resource\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
+use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Exception\RequestException;
 use Nails\Invoice\Factory\Invoice\CallbackData;
 use Nails\Invoice\Factory\Invoice\Item;
 use Nails\Invoice\Factory\Invoice\PaymentData;
@@ -139,6 +142,8 @@ class Invoice
 
     /**
      * Invoice constructor.
+     *
+     * @throws FactoryException
      */
     public function __construct()
     {
@@ -238,7 +243,7 @@ class Invoice
     /**
      * Sets the invoice's dated date
      *
-     * @param \DateTime|Date|string $mDate The invoice's dated date
+     * @param DateTime|Date|string $mDate The invoice's dated date
      *
      * @return $this
      * @throws InvoiceException
@@ -247,7 +252,7 @@ class Invoice
     {
         $this->ensureNotSaved();
 
-        if ($mDate instanceof \DateTime) {
+        if ($mDate instanceof DateTime) {
             $this->sDated = $mDate->format('Y-m-d');
         } elseif ($mDate instanceof Date) {
             $this->sDated = (string) $mDate;
@@ -279,7 +284,7 @@ class Invoice
     /**
      * Sets the invoice's paid date
      *
-     * @param \DateTime|Date|string $mDate The invoice's paid date
+     * @param DateTime|Date|string $mDate The invoice's paid date
      *
      * @return $this
      * @throws InvoiceException
@@ -288,7 +293,7 @@ class Invoice
     {
         $this->ensureNotSaved();
 
-        if ($mDate instanceof \DateTime) {
+        if ($mDate instanceof DateTime) {
             $this->sPaidDate = $mDate->format('Y-m-d');
         } elseif ($mDate instanceof Date) {
             $this->sPaidDate = (string) $mDate;
@@ -525,7 +530,7 @@ class Invoice
      * Sets the invoice's payment data
      *
      * @param string|PaymentData $mKey   The key to set, if PaymentData is provided, the entire object is replaced
-     * @param mixed|null      $mValue The value to set
+     * @param mixed|null         $mValue The value to set
      *
      * @return $this
      * @throws InvoiceException
@@ -599,7 +604,7 @@ class Invoice
     /**
      * Sets the invoice's items
      *
-     * @param $aItems The invoice's items
+     * @param array $aItems The invoice's items
      *
      * @return $this
      * @throws InvoiceException
@@ -648,6 +653,7 @@ class Invoice
      * @param array $aItems The array of items to add
      *
      * @return $this
+     * @throws InvoiceException
      */
     public function addItems(array $aItems)
     {
@@ -729,7 +735,9 @@ class Invoice
      * Deletes an invoice
      *
      * @return $this
+     * @throws FactoryException
      * @throws InvoiceException
+     * @throws ModelException
      */
     public function delete()
     {
@@ -750,7 +758,9 @@ class Invoice
      * Writes an invoice off
      *
      * @return $this
+     * @throws FactoryException
      * @throws InvoiceException
+     * @throws ModelException
      */
     public function writeOff()
     {
@@ -773,7 +783,9 @@ class Invoice
      * Cancels an invoice
      *
      * @return $this
+     * @throws FactoryException
      * @throws InvoiceException
+     * @throws ModelException
      */
     public function cancel()
     {
@@ -795,11 +807,15 @@ class Invoice
     /**
      * Charges an invoice
      *
-     * @param ChargeRequest $oChargeRequest The ChareRequest object to use
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object to use
      * @param string        $sDescription   The description to give the charge
      *
      * @return ChargeResponse
+     * @throws FactoryException
      * @throws InvoiceException
+     * @throws ModelException
+     * @throws ChargeRequestException
+     * @throws RequestException
      */
     public function charge(ChargeRequest $oChargeRequest, string $sDescription = null)
     {
@@ -812,7 +828,7 @@ class Invoice
         }
 
         return $oChargeRequest
-            ->setInvoice($this->iId)
+            ->setInvoice($oInvoice)
             ->setDescription($sDescription ?: 'Payment for invoice ' . $this->sRef)
             ->execute();
     }

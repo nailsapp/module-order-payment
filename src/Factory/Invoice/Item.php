@@ -49,7 +49,7 @@ class Item
      *
      * @var string
      */
-    protected $iUnit = Invoice\Item::UNIT_NONE;
+    protected $sUnit = Invoice\Item::UNIT_NONE;
 
     /**
      * The item's tax ID
@@ -281,12 +281,9 @@ class Item
      * @param mixed|null          $mValue The value to set
      *
      * @return $this
-     * @throws InvoiceException
      */
     public function setCallbackData($mKey, $mValue = null): Item
     {
-        $this->ensureNotSaved();
-
         if ($mKey instanceof CallbackData) {
             $this->oCallbackData = $mKey;
         } elseif ($mKey instanceof \stdClass) {
@@ -323,7 +320,7 @@ class Item
             'id'            => $this->iId,
             'label'         => $this->sLabel,
             'body'          => $this->sBody,
-            'unit'          => $this->iUnit,
+            'unit'          => $this->sUnit,
             'tax_id'        => $this->iTaxId,
             'quantity'      => $this->iQuantity,
             'unit_cost'     => $this->iUnitCost,

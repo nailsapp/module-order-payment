@@ -55,7 +55,7 @@ class ResponseBase
      *
      * @var string
      */
-    protected $sErrorUser = '';
+    protected $sErrorMessageUser = '';
 
     /**
      * The error code
@@ -79,7 +79,7 @@ class ResponseBase
     protected $iFee = 0;
 
     /**
-     * The URL to redirect to when successfull
+     * The URL to redirect to when successful
      *
      * @var string
      */
@@ -157,6 +157,7 @@ class ResponseBase
      * Set the status as PENDING
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setStatusPending(): ResponseBase
     {
@@ -169,6 +170,7 @@ class ResponseBase
      * Set the status as PROCESSING
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setStatusProcessing(): ResponseBase
     {
@@ -181,6 +183,7 @@ class ResponseBase
      * Set the status as COMPLETE
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setStatusComplete(): ResponseBase
     {
@@ -197,6 +200,7 @@ class ResponseBase
      * @param string      $sUserFeedback The message to show to the user explaining the error
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setStatusFailed(
         $sReasonMsg = null,
@@ -276,7 +280,7 @@ class ResponseBase
     /**
      * Sets the error message
      *
-     * @param bool $bValue The value to set
+     * @param string $sValue
      *
      * @return $this
      */
@@ -305,7 +309,7 @@ class ResponseBase
     /**
      * Sets the user-friendly error message
      *
-     * @param bool $bValue The value to set
+     * @param string $sValue
      *
      * @return $this
      */
@@ -334,7 +338,7 @@ class ResponseBase
     /**
      * Sets the error code
      *
-     * @param bool $bValue The value to set
+     * @param string $sValue
      *
      * @return $this
      */

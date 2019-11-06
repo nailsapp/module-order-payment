@@ -13,8 +13,11 @@
 namespace Nails\Invoice\Factory;
 
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Factory;
 use Nails\Invoice\Constants;
+use Nails\Invoice\Exception\ChargeRequestException;
+use Nails\Invoice\Exception\RequestException;
 
 /**
  * Class ScaRequest
@@ -28,6 +31,9 @@ class ScaRequest extends RequestBase
      *
      * @return ScaResponse
      * @throws FactoryException
+     * @throws ModelException
+     * @throws ChargeRequestException
+     * @throws RequestException
      */
     public function execute(): ScaResponse
     {

@@ -179,7 +179,7 @@ class RequestBase
     /**
      * Returns the payment driver
      *
-     * @return Payment|null
+     * @return Driver\Payment|null
      */
     public function getDriver(): ?Driver\Payment
     {
@@ -195,6 +195,7 @@ class RequestBase
      *
      * @return $this
      * @throws RequestException
+     * @throws ModelException
      */
     public function setInvoice($mInvoice)
     {
@@ -241,6 +242,7 @@ class RequestBase
      *
      * @return $this
      * @throws RequestException
+     * @throws ModelException
      */
     public function setPayment($mPayment)
     {
@@ -286,6 +288,7 @@ class RequestBase
      *
      * @return $this
      * @throws RequestException
+     * @throws ModelException
      */
     public function setSource($mSource)
     {
@@ -331,6 +334,7 @@ class RequestBase
      *
      * @return $this
      * @throws RequestException
+     * @throws ModelException
      */
     public function setRefund($mRefund)
     {
@@ -373,6 +377,8 @@ class RequestBase
      * @param int    $iFee           The fee charged by the processor, if known
      *
      * @return $this
+     * @throws FactoryException
+     * @throws ModelException
      * @throws RequestException
      */
     protected function setPaymentProcessing($sTransactionId = null, $iFee = null)
@@ -418,6 +424,8 @@ class RequestBase
      * @param int    $iFee           The fee charged by the processor, if known
      *
      * @return $this
+     * @throws FactoryException
+     * @throws ModelException
      * @throws RequestException
      */
     protected function setPaymentComplete($sTransactionId = null, $iFee = null)
@@ -497,6 +505,8 @@ class RequestBase
      * @param int    $iFeeRefunded   The fee refunded by the processor, if known
      *
      * @return $this
+     * @throws FactoryException
+     * @throws ModelException
      * @throws RequestException
      */
     protected function setRefundComplete($sTransactionId = null, $iFeeRefunded = null)

@@ -12,7 +12,10 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Invoice\Exception\CompleteRequestException;
+use Nails\Invoice\Exception\RequestException;
 
 /**
  * Class CompleteRequest
@@ -29,6 +32,9 @@ class CompleteRequest extends RequestBase
      *
      * @return CompleteResponse
      * @throws CompleteRequestException
+     * @throws FactoryException
+     * @throws ModelException
+     * @throws RequestException
      */
     public function execute($aGetVars, $aPostVars)
     {

@@ -50,7 +50,7 @@ class ScaResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * Sets whether the resposne is pending
+     * Sets whether the response is pending
      *
      * @param bool $bValue The value to set
      *
@@ -79,7 +79,7 @@ class ScaResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * Sets whether the resposne is complete
+     * Sets whether the response is complete
      *
      * @param bool $bValue The value to set
      *
@@ -109,7 +109,7 @@ class ScaResponse extends ResponseBase
     // --------------------------------------------------------------------------
 
     /**
-     * Sets whether the resposne is a redirect
+     * Sets whether the response is a redirect
      *
      * @param bool $bValue The value to set
      *
@@ -141,7 +141,7 @@ class ScaResponse extends ResponseBase
     /**
      * Sets the redirect URL
      *
-     * @param bool $bValue The value to set
+     * @param string $sValue The value to set
      *
      * @return $this
      */

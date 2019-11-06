@@ -13,10 +13,12 @@
 namespace Nails\Invoice\Factory;
 
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\ChargeRequestException;
+use Nails\Invoice\Exception\RequestException;
 use Nails\Invoice\Resource\Invoice\Data\Payment;
 use stdClass;
 
@@ -87,6 +89,8 @@ class ChargeRequest extends RequestBase
 
     /**
      * ChargeRequest constructor.
+     *
+     * @throws FactoryException
      */
     public function __construct()
     {
@@ -224,6 +228,7 @@ class ChargeRequest extends RequestBase
      * @param string $sCardExpYear The card's expiry year
      *
      * @throws ChargeRequestException
+     * @throws FactoryException
      * @return $this
      */
     public function setCardExpYear(string $sCardExpYear): ChargeRequest
@@ -319,7 +324,7 @@ class ChargeRequest extends RequestBase
      *
      * @return ChargeRequest
      */
-    public function setCustomField(string $smey, $mValue = null): ChargeRequest
+    public function setCustomField(string $mKey, $mValue = null): ChargeRequest
     {
         if ($mKey instanceof stdClass) {
             $this->oCustomField = $mKey;
@@ -369,6 +374,7 @@ class ChargeRequest extends RequestBase
      * Retrieve payment data object
      *
      * @return Payment
+     * @throws FactoryException
      */
     public function getPaymentData(): Payment
     {
@@ -538,11 +544,16 @@ class ChargeRequest extends RequestBase
     /**
      * Execute the charge
      *
-     * @param int|null             $iAmount   The amount to charge the card
-     * @param Currency|string|null $mCurrency The currency in which to charge
+     * @param int|null                               $iAmount   The amount to charge the card
+     * @param Currency\Resource\Currency|string|null $mCurrency The currency in which to charge
      *
      * @return ChargeResponse
      * @throws ChargeRequestException
+     * @throws ChargeRequestException\PaymentSourceExpiredException
+     * @throws Currency\Exception\CurrencyException
+     * @throws FactoryException
+     * @throws ModelException
+     * @throws RequestException
      */
     public function execute(int $iAmount = null, $mCurrency = null): ChargeResponse
     {
