@@ -11,20 +11,13 @@
 
 namespace Nails\Invoice\Factory\Invoice;
 
+use Nails\Common\Resource;
+
 /**
  * Class PaymentData
  *
  * @package Nails\Invoice\Factory\Invoice
  */
-class PaymentData implements \JsonSerializable
+class PaymentData extends Resource
 {
-    /**
-     * Returns public properties for serialisation
-     *
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        return get_object_vars($this);
-    }
 }

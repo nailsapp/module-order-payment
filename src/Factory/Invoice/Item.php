@@ -12,6 +12,7 @@
 namespace Nails\Invoice\Factory\Invoice;
 
 use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Factory\Invoice\Item\CallbackData;
 use Nails\Invoice\Model\Invoice;
 use Nails\Invoice\Resource\Tax;
 
@@ -74,9 +75,9 @@ class Item
     /**
      * The item's callback data
      *
-     * @var mixed|null
+     * @var CallbackData|null
      */
-    protected $mCallbackData = null;
+    protected $oCallbackData = null;
 
     // --------------------------------------------------------------------------
 
@@ -274,15 +275,26 @@ class Item
     // --------------------------------------------------------------------------
 
     /**
-     * Set the item's callback data
+     * Sets the item's callback data
      *
-     * @param $mValue The item's callback data
+     * @param string|CallbackData $mKey   The key to set, if CallbackData is provided, the entire object is replaced
+     * @param mixed|null          $mValue The value to set
      *
-     * @return Item
+     * @return $this
+     * @throws InvoiceException
      */
-    public function setCallbackData($mValue): Item
+    public function setCallbackData($mKey, $mValue = null): Item
     {
-        $this->mCallbackData = $mValue;
+        $this->ensureNotSaved();
+
+        if ($mKey instanceof CallbackData) {
+            $this->oCallbackData = $mKey;
+        } elseif ($mKey instanceof \stdClass) {
+            $this->oCallbackData = new CallbackData($mKey);
+        } else {
+            $this->oCallbackData->{$mKey} = $mValue;
+        }
+
         return $this;
     }
 
@@ -291,11 +303,11 @@ class Item
     /**
      * Get the item's callback data
      *
-     * @return mixed
+     * @return CallbackData|null
      */
-    public function getCallbackData()
+    public function getCallbackData(): ?CallbackData
     {
-        return $this->mCallbackData;
+        return $this->oCallbackData;
     }
 
     // --------------------------------------------------------------------------
@@ -315,7 +327,7 @@ class Item
             'tax_id'        => $this->iTaxId,
             'quantity'      => $this->iQuantity,
             'unit_cost'     => $this->iUnitCost,
-            'callback_data' => $this->mCallbackData,
+            'callback_data' => $this->oCallbackData,
         ];
     }
 }

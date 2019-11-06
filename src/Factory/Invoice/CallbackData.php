@@ -11,20 +11,13 @@
 
 namespace Nails\Invoice\Factory\Invoice;
 
+use Nails\Common\Resource;
+
 /**
  * Class CallbackData
  *
  * @package Nails\Invoice\Factory\Invoice
  */
-class CallbackData implements \JsonSerializable
+class CallbackData extends Resource
 {
-    /**
-     * Returns public properties for serialisation
-     *
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        return get_object_vars($this);
-    }
 }
