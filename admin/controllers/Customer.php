@@ -157,6 +157,7 @@ class Customer extends Base
      * Create a new customer
      *
      * @return void
+     * @throws FactoryException
      */
     public function create()
     {
@@ -197,6 +198,8 @@ class Customer extends Base
      * Edit an existing customer
      *
      * @return void
+     * @throws FactoryException
+     * @throws ModelException
      */
     public function edit()
     {
@@ -255,6 +258,8 @@ class Customer extends Base
      * Runs form validation
      *
      * @return void
+     * @throws FactoryException
+     * @throws NailsException
      */
     protected function formValidation()
     {
@@ -305,6 +310,7 @@ class Customer extends Base
      * Gets the object data from the $_POST array
      *
      * @return array
+     * @throws FactoryException
      */
     protected function prepPostData()
     {
@@ -335,6 +341,8 @@ class Customer extends Base
      * Delete a customer
      *
      * @return void
+     * @throws FactoryException
+     * @throws ModelException
      */
     public function delete()
     {
@@ -366,12 +374,12 @@ class Customer extends Base
             if ($oCustomerModel->delete($oCustomer->id)) {
 
                 $sStatus  = 'success';
-                $sMessage = 'Invoice deleted successfully!';
+                $sMessage = 'Customer deleted successfully!';
 
             } else {
 
                 $sStatus  = 'error';
-                $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
+                $sMessage = 'Customer failed to delete. ' . $oCustomerModel->lastError();
             }
         }
 

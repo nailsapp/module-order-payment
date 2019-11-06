@@ -16,6 +16,7 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Resource\Date;
 use Nails\Common\Traits\ErrorHandling;
+use Nails\Currency\Exception\CurrencyException;
 use Nails\Currency\Resource\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -363,7 +364,7 @@ class Invoice
     {
         $this->ensureNotSaved();
 
-        if ($mCustomer instanceof Customer) {
+        if ($mCustomer instanceof Resource\Customer) {
             $this->iCustomerId = $mCustomer->id;
         } elseif (is_int($mCustomer)) {
             $this->iCustomerId = $mCustomer;
@@ -726,7 +727,10 @@ class Invoice
 
         /** @var Model\Invoice $oInvoiceModel */
         $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
-        return $oInvoiceModel->getById($this->iId);
+        /** @var Resource\Invoice $oInvoice */
+        $oInvoice = $oInvoiceModel->getById($this->iId);
+
+        return $oInvoice;
     }
 
     // --------------------------------------------------------------------------
@@ -816,6 +820,7 @@ class Invoice
      * @throws ModelException
      * @throws ChargeRequestException
      * @throws RequestException
+     * @throws CurrencyException
      */
     public function charge(ChargeRequest $oChargeRequest, string $sDescription = null)
     {

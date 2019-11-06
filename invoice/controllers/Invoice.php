@@ -122,6 +122,7 @@ class Invoice extends Base
      *
      * @throws FactoryException
      * @throws ModelException
+     * @throws ValidationException
      */
     protected function pay(Resource\Invoice $oInvoice): void
     {
@@ -386,14 +387,14 @@ class Invoice extends Base
 
             } catch (\Exception $e) {
 
-                $sErrorUrl = $oChargeResponse->getErrorUrl();
+                $sErrorUrl = !empty($oChargeResponse) ? $oChargeResponse->getErrorUrl() : null;
                 if (!empty($sErrorUrl)) {
 
                     /** @var Session $oSession */
                     $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
                     $oSession->setFlashData('error', $e->getMessage());
 
-                    redirect($oChargeResponse->getErrorUrl());
+                    redirect($sErrorUrl);
 
                 } else {
                     $this->data['error'] = $e->getMessage();

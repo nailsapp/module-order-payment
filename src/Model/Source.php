@@ -120,8 +120,10 @@ class Source extends Base
      * @param array $aData The data to update the object with
      *
      * @return bool
+     * @throws DriverException
      * @throws FactoryException
      * @throws ModelException
+     * @throws ValidationException
      */
     public function update($iId, array $aData = []): bool
     {
@@ -175,7 +177,6 @@ class Source extends Base
      *
      * @return bool
      * @throws FactoryException
-     * @throws ModelException
      */
     public function delete($iId): bool
     {
@@ -185,7 +186,7 @@ class Source extends Base
 
         try {
 
-            /** @var Resource\Source $oResource */
+            /** @var Resource\Source $oSource */
             $oSource = $this->getById($iId);
             if (empty($oSource)) {
                 throw new ValidationException('Invalid source ID');
@@ -221,8 +222,8 @@ class Source extends Base
      * @param Resource\Customer|int $mCustomer The customer object or ID
      *
      * @return Resource\Source|null
-     * @throws FactoryException
      * @throws ValidationException
+     * @throws ModelException
      */
     public function getDefault($mCustomer): ?Resource\Source
     {
@@ -305,6 +306,7 @@ class Source extends Base
      * @return Resource\Source[]
      * @throws ModelException
      * @throws ValidationException
+     * @throws FactoryException
      */
     public function getForCustomer($mCustomer, bool $bRemoveExpired = true): array
     {
@@ -375,6 +377,7 @@ class Source extends Base
      * Returns the source ID
      *
      * @param Resource\Source|int $mSource The source object or ID
+     * @param string              $sMethod The called method
      *
      * @return int
      * @throws ValidationException

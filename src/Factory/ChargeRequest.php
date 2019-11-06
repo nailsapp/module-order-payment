@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Factory;
 
+use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Currency;
@@ -378,7 +379,9 @@ class ChargeRequest extends RequestBase
      */
     public function getPaymentData(): Payment
     {
-        return Factory::resource('InvoiceDataPayment', Constants::MODULE_SLUG, $this->oPaymentData);
+        /** @var Payment $oData */
+        $oData = Factory::resource('InvoiceDataPayment', Constants::MODULE_SLUG, $this->oPaymentData);
+        return $oData;
     }
 
     // --------------------------------------------------------------------------
@@ -554,6 +557,7 @@ class ChargeRequest extends RequestBase
      * @throws FactoryException
      * @throws ModelException
      * @throws RequestException
+     * @throws Exception
      */
     public function execute(int $iAmount = null, $mCurrency = null): ChargeResponse
     {

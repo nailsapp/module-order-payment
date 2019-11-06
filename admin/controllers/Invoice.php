@@ -17,6 +17,7 @@ use Nails\Admin\Helper;
 use Nails\Admin\Factory\Nav;
 use Nails\Auth;
 use Nails\Auth\Service\Session;
+use Nails\Common\Exception\AssetException;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Service\Asset;
@@ -122,6 +123,7 @@ class Invoice extends Base
      * Browse invoices
      *
      * @throws FactoryException
+     * @throws ModelException
      */
     public function index()
     {
@@ -252,6 +254,8 @@ class Invoice extends Base
      * Create a new invoice
      *
      * @throws FactoryException
+     * @throws ModelException
+     * @throws AssetException
      */
     public function create()
     {
@@ -365,7 +369,9 @@ class Invoice extends Base
     /**
      * Edit an invoice
      *
+     * @throws AssetException
      * @throws FactoryException
+     * @throws ModelException
      */
     public function edit()
     {
@@ -409,6 +415,7 @@ class Invoice extends Base
             if ($this->validatePost()) {
                 if ($oModel->update($this->data['invoice']->id, $this->getObjectFromPost())) {
 
+                    /** @var \Nails\Invoice\Resource\Invoice $oInvoice */
                     $oInvoice = $oModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
@@ -506,6 +513,7 @@ class Invoice extends Base
      * View an invoice
      *
      * @throws FactoryException
+     * @throws ModelException
      */
     public function view()
     {
@@ -580,6 +588,7 @@ class Invoice extends Base
      * Make an invoice a draft
      *
      * @throws FactoryException
+     * @throws ModelException
      */
     public function make_draft()
     {
@@ -625,6 +634,7 @@ class Invoice extends Base
      * Write an invoice off
      *
      * @throws FactoryException
+     * @throws ModelException
      */
     public function write_off()
     {
@@ -670,6 +680,7 @@ class Invoice extends Base
      * Delete an invoice
      *
      * @throws FactoryException
+     * @throws ModelException
      */
     public function delete()
     {

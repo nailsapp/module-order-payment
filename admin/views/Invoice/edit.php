@@ -112,7 +112,7 @@ use Nails\Invoice\Constants;
         <p>
             Enter discounts using a negative unit cost.
         </p>
-        <div clas="table-responsive">
+        <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
