@@ -215,8 +215,6 @@ class Payment extends Base
             ['expand' => $oPaymentModel::EXPAND_ALL]
         );
 
-        dd($this->data['payment']);
-
         if (!$this->data['payment']) {
             show404();
         }

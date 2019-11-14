@@ -13,8 +13,8 @@
 namespace Nails\Admin\Invoice;
 
 use Nails\Admin\Controller\Base;
-use Nails\Admin\Helper;
 use Nails\Admin\Factory\Nav;
+use Nails\Admin\Helper;
 use Nails\Auth;
 use Nails\Auth\Service\Session;
 use Nails\Common\Exception\AssetException;
@@ -424,7 +424,6 @@ class Invoice extends Base
                     $oSession->setFlashData('success', 'Invoice was saved successfully.');
 
                     if ($oInvoice->state->id === $oModel::STATE_DRAFT) {
-                        dd($oInvoice);
                         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
                     } else {
                         redirect('admin/invoice/invoice');
