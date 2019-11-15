@@ -13,6 +13,7 @@
 namespace Nails\Invoice\Model;
 
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Factory\Model\Field;
 use Nails\Common\Model\Base;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\InvoiceException;
@@ -68,6 +69,42 @@ class Customer extends Base
                 'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'customer_id',
             ]);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Describe the model's fields
+     *
+     * @param null $sTable
+     *
+     * @return Field[]
+     */
+    public function describeFields($sTable = null)
+    {
+        $aFields = parent::describeFields($sTable);
+
+        $aFieldsets = [
+            'Address' => [
+                'billing_address_line_1',
+                'billing_address_line_2',
+                'billing_address_town',
+                'billing_address_county',
+                'billing_address_postcode',
+                'billing_address_country',
+            ],
+        ];
+
+        foreach ($aFieldsets as $sFieldset => $aItems) {
+            foreach ($aItems as $sField) {
+                $aFields[$sField]->fieldset = $sFieldset;
+            }
+        }
+
+        $aFields['email']->validation[]         = 'valid_email';
+        $aFields['billing_email']->validation[] = 'valid_email';
+
+        return $aFields;
     }
 
     // --------------------------------------------------------------------------
