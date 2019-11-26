@@ -25,6 +25,9 @@ class Customer extends DefaultController
 {
     const CONFIG_MODEL_NAME     = 'Customer';
     const CONFIG_MODEL_PROVIDER = Constants::MODULE_SLUG;
+    const CONFIG_SIDEBAR_GROUP  = 'Invoices &amp; Payments';
+    const CONFIG_SIDEBAR_ICON   = 'fa-credit-card';
+    const CONFIG_PERMISSION     = 'invoice:customer';
     const CONFIG_INDEX_DATA     = [
         'expand' => ['invoices'],
     ];
@@ -44,19 +47,24 @@ class Customer extends DefaultController
         };
 
         //  Additional buttons
-        $this->aConfig['INDEX_ROW_BUTTONS'][] = [
-            'url'   => siteUrl('admin/invoice/invoice/create?customer_id={{id}}'),
-            'label' => 'New Invoice',
-            'class' => 'btn-success',
-        ];
-        $this->aConfig['INDEX_ROW_BUTTONS'][] = [
-            'url'     => siteUrl('admin/invoice/invoice?customer_id={{id}}'),
-            'label'   => 'View Invoices',
-            'class'   => 'btn-warning',
-            'enabled' => function (Resource\Customer $oCustomer) {
-                return $oCustomer->invoices->count > 0;
-            },
-        ];
+        if (userHasPermission('admin:invoice:invoice:create')) {
+            $this->aConfig['INDEX_ROW_BUTTONS'][] = [
+                'url'   => siteUrl('admin/invoice/invoice/create?customer_id={{id}}'),
+                'label' => 'New Invoice',
+                'class' => 'btn-success',
+            ];
+        }
+
+        if (userHasPermission('admin:invoice:invoice:manage')) {
+            $this->aConfig['INDEX_ROW_BUTTONS'][] = [
+                'url'     => siteUrl('admin/invoice/invoice?customer_id={{id}}'),
+                'label'   => 'View Invoices',
+                'class'   => 'btn-warning',
+                'enabled' => function (Resource\Customer $oCustomer) {
+                    return $oCustomer->invoices->count > 0;
+                },
+            ];
+        }
 
         //  Update cells
         $this->aConfig['INDEX_FIELDS']['Label'] = function (Resource\Customer $oCustomer) {
