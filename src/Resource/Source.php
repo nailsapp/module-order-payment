@@ -9,7 +9,6 @@
 
 namespace Nails\Invoice\Resource;
 
-use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Entity;
 use Nails\Factory;
 
@@ -37,7 +36,7 @@ class Source extends Entity
     /**
      * Any data required by the driver
      *
-     * @var \stdClass
+     * @var string
      */
     public $data;
 
@@ -47,13 +46,6 @@ class Source extends Entity
      * @var string
      */
     public $label;
-
-    /**
-     * The source's name (e.g. the cardholder)
-     *
-     * @var string
-     */
-    public $name;
 
     /**
      * The source's brand
@@ -83,31 +75,17 @@ class Source extends Entity
      */
     public $is_default = false;
 
-    /**
-     * Whether the source has expired or not
-     *
-     * @var bool
-     */
-    public $is_expired = false;
-
     // --------------------------------------------------------------------------
 
     /**
      * Source constructor.
      *
-     * @param array $mObj The data to populate the resource with
-     *
-     * @throws FactoryException
+     * @param self|\stdClass|array $mObj The data to populate the resource with
      */
     public function __construct($mObj = [])
     {
         parent::__construct($mObj);
-
-        $this->data = json_decode($this->data) ?? (object) [];
-
-        $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
-        $oNow             = Factory::factory('DateTime');
-        $oExpires         = new \DateTime($this->expiry);
-        $this->is_expired = $oExpires < $oNow;
+        $this->expiry = Factory::resource('Date', null, ['raw' => $this->expiry]);
+        $this->data   = json_decode($this->data);
     }
 }
