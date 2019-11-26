@@ -9,6 +9,7 @@
 
 namespace Nails\Invoice\Resource;
 
+use DateTime;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Entity;
 use Nails\Factory;
@@ -103,11 +104,11 @@ class Source extends Entity
     {
         parent::__construct($mObj);
 
-        $this->data = json_decode($this->data) ?? (object) [];
+        $oNow     = Factory::factory('DateTime');
+        $oExpires = new DateTime($this->expiry);
 
-        $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
-        $oNow             = Factory::factory('DateTime');
-        $oExpires         = new \DateTime($this->expiry);
         $this->is_expired = $oExpires < $oNow;
+        $this->data       = json_decode($this->data) ?? (object) [];
+        $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
     }
 }
