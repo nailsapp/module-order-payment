@@ -4,9 +4,7 @@ const path = require('path');
 module.exports = {
     entry: {
         'admin': './assets/js/admin.js',
-        'admin.customersearch': './assets/js/admin.customersearch.js',
         'admin.invoice.view': './assets/js/admin.invoice.view.js',
-        'admin.invoicesearch': './assets/js/admin.invoicesearch.js',
         'invoice.pay': './assets/js/invoice.pay.js',
         'invoice.edit': './assets/js/invoice.edit.js'
     },

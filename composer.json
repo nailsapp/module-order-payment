@@ -52,10 +52,6 @@
                         "assets": {
                             "css": [
                                 "admin.min.css"
-                            ],
-                            "js": [
-                                "admin.invoicesearch.min.js",
-                                "admin.customersearch.min.js"
                             ]
                         }
                     }

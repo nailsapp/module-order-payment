@@ -12,9 +12,8 @@
 
 namespace Nails\Invoice\Api\Controller;
 
-use Nails\Api\Controller\Base;
+use Nails\Api\Controller\CrudController;
 use Nails\Api\Exception\ApiException;
-use Nails\Factory;
 use Nails\Invoice\Constants;
 
 /**
@@ -22,78 +21,78 @@ use Nails\Invoice\Constants;
  *
  * @package Nails\Invoice\Api\Controller
  */
-class Customer extends Base
+class Customer extends CrudController
 {
+    const CONFIG_MODEL_NAME     = 'Customer';
+    const CONFIG_MODEL_PROVIDER = Constants::MODULE_SLUG;
+
+    // --------------------------------------------------------------------------
+
     /**
-     * Search for a customer
+     * @param string $sAction
+     * @param null   $oItem
+     *
+     * @throws ApiException
      */
-    public function getSearch()
+    protected function userCan($sAction, $oItem = null)
     {
-        if (!userHasPermission('admin:invoice:customer:manage')) {
-            throw new ApiException('You are not authorised to search customers.', 401);
+        switch ($sAction) {
+            case static::ACTION_CREATE:
+                if (!userHasPermission('admin:invoice:customer:create')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
+
+            case static::ACTION_READ;
+                if (!userHasPermission('admin:invoice:customer:browse')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
+
+            case static::ACTION_UPDATE;
+                if (!userHasPermission('admin:invoice:customer:edit')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
+
+            case static::ACTION_DELETE;
+                if (!userHasPermission('admin:invoice:customer:delete')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
         }
-
-        $oInput         = Factory::service('Input');
-        $sKeywords      = $oInput->get('keywords');
-        $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
-
-        if (strlen($sKeywords) < 3) {
-            throw new ApiException('Search term must be 3 characters or longer.', 400);
-        }
-
-        $oResult = $oCustomerModel->search($sKeywords);
-        $aOut    = [];
-
-        foreach ($oResult->data as $oCustomer) {
-            $aOut[] = $this->formatCustomer($oCustomer);
-        }
-
-        return Factory::factory('ApiResponse', 'nails/module-api')
-            ->setData($aOut);
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Returns a customer by their ID
+     * @param \stdClass $oObj
      *
-     * @param string $iId The customer's ID
-     *
-     * @return array
+     * @return object|\stdClass
      */
-    public function getId($iId = null)
+    protected function formatObject($oObj)
     {
-        $oInput = Factory::service('Input');
-        $iId    = (int) $iId ?: (int) $oInput->get('id');
-
-        if (empty($iId)) {
-            throw new ApiException('Invalid Customer ID', 404);
-        }
-
-        $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
-        $oCustomer      = $oCustomerModel->getById($iId);
-
-        if (empty($oCustomer)) {
-            throw new ApiException('Invalid Customer ID', 404);
-        }
-
-        return Factory::factory('ApiResponse', 'nails/module-api')
-            ->setData($this->formatCustomer($oCustomer));
-    }
-
-    // --------------------------------------------------------------------------
-
-    public function formatCustomer($oCustomer)
-    {
-        $sLabel = $oCustomer->label;
-        $sEmail = $oCustomer->billing_email ?: $oCustomer->email;
+        $sLabel = $oObj->label;
+        $sEmail = $oObj->billing_email ?: $oObj->email;
         if (!empty($sEmail)) {
             $sLabel .= ' (' . $sEmail . ')';
         }
 
-        return [
-            'id'    => $oCustomer->id,
-            'label' => $sLabel . ' - ID ' . $oCustomer->id,
+        return (object) [
+            'id'    => $oObj->id,
+            'label' => $sLabel . ' - ID ' . $oObj->id,
         ];
     }
 }

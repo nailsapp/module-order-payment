@@ -12,9 +12,8 @@
 
 namespace Nails\Invoice\Api\Controller;
 
-use Nails\Api\Controller\Base;
+use Nails\Api\Controller\CrudController;
 use Nails\Api\Exception\ApiException;
-use Nails\Factory;
 use Nails\Invoice\Constants;
 
 /**
@@ -22,84 +21,88 @@ use Nails\Invoice\Constants;
  *
  * @package Nails\Invoice\Api\Controller
  */
-class Invoice extends Base
+class Invoice extends CrudController
 {
+    const CONFIG_MODEL_NAME     = 'Invoice';
+    const CONFIG_MODEL_PROVIDER = Constants::MODULE_SLUG;
+    const CONFIG_LOOKUP_DATA    = ['expand' => ['customer']];
+
+    // --------------------------------------------------------------------------
+
     /**
-     * Search for an invoice
+     * @param string $sAction
+     * @param null   $oItem
+     *
+     * @throws ApiException
      */
-    public function getSearch()
+    protected function userCan($sAction, $oItem = null)
     {
-        if (!userHasPermission('admin:invoice:invoice:manage')) {
-            throw new ApiException('You are not authorised to search invoices.', 401);
+        switch ($sAction) {
+            case static::ACTION_CREATE:
+                if (!userHasPermission('admin:invoice:customer:create')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
+
+            case static::ACTION_READ;
+                if (!userHasPermission('admin:invoice:customer:browse')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
+
+            case static::ACTION_UPDATE;
+                if (!userHasPermission('admin:invoice:customer:edit')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
+
+            case static::ACTION_DELETE;
+                if (!userHasPermission('admin:invoice:customer:delete')) {
+                    throw new ApiException(
+                        'You are not authorised to access this resource.',
+                        401
+                    );
+                }
+                break;
         }
-
-        $oInput        = Factory::service('Input');
-        $sKeywords     = $oInput->get('keywords');
-        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
-
-        if (strlen($sKeywords) >= 3) {
-            throw new ApiException('Search term must be 3 characters or longer.', 400);
-        }
-
-        $oResult = $oInvoiceModel->search($sKeywords, null, null, ['expand' => ['customer']]);
-        $aOut    = [];
-
-        foreach ($oResult->data as $oInvoice) {
-            $aOut[] = $this->formatInvoice($oInvoice);
-        }
-
-        return Factory::factory('ApiResponse', 'nails/module-api')
-            ->setData($aOut);
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Returns an invoice by its ID
+     * @param \stdClass $oObj
      *
-     * @param string $iId The invoice's ID
-     *
-     * @return array
+     * @return object|\stdClass
      */
-    public function getId($iId = null)
-    {
-        $oInput = Factory::service('Input');
-        $iId    = (int) $iId ?: (int) $oInput->get('id');
-
-        if (empty($iId)) {
-            throw new ApiException('Invalid Invoice ID', 404);
-        }
-
-        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
-        $oInvoice      = $oInvoiceModel->getById($iId, ['expand' => ['customer']]);
-
-        if (empty($oInvoice)) {
-            throw new ApiException('Invalid Invoice ID', 404);
-        }
-
-        return Factory::factory('ApiResponse', 'nails/module-api')
-            ->setData($this->formatInvoice($oInvoice));
-    }
-
-    // --------------------------------------------------------------------------
-
-    public function formatInvoice($oInvoice)
+    public function formatObject($oObj)
     {
         return [
-            'id'       => $oInvoice->id,
-            'ref'      => $oInvoice->ref,
-            'terms'    => $oInvoice->terms,
-            'dated'    => $oInvoice->dated->raw,
-            'due'      => $oInvoice->due->raw,
-            'paid'     => $oInvoice->paid->raw,
-            'state'    => $oInvoice->state,
-            'currency' => $oInvoice->currency->code,
-            'totals'   => $oInvoice->totals,
-            'urls'     => $oInvoice->urls,
-            'customer' => empty($oInvoice->customer) ? null : [
-                'id'    => $oInvoice->customer->id,
-                'label' => $oInvoice->customer->label,
-            ],
+            'id'       => $oObj->id,
+            'ref'      => $oObj->ref,
+            'terms'    => $oObj->terms,
+            'dated'    => $oObj->dated->raw,
+            'due'      => $oObj->due->raw,
+            'paid'     => $oObj->paid->raw,
+            'state'    => $oObj->state,
+            'currency' => $oObj->currency->code,
+            'totals'   => $oObj->totals,
+            'urls'     => $oObj->urls,
+            'customer' => empty($oObj->customer)
+                ? null
+                : [
+                    'id'    => $oObj->customer->id,
+                    'label' => $oObj->customer->label,
+                    'email' => $oObj->customer->billing_email ?: $oObj->customer->email,
+                ],
         ];
     }
 }
