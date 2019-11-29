@@ -244,7 +244,7 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                                         break;
                                     case $oPaymentModel::STATUS_FAILED:
                                         $sClass = 'danger';
-                                        $sText  = $oPayment->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
+                                        $sText  = $oPayment->fail_msg . ' (Code: ' . $oPayment->fail_code . ')';
                                         break;
                                     default:
                                         $sClass = '';
