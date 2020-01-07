@@ -104,11 +104,16 @@ class Source extends Entity
     {
         parent::__construct($mObj);
 
-        $oNow     = Factory::factory('DateTime');
-        $oExpires = new DateTime($this->expiry);
+        if ($this->expiry) {
 
-        $this->is_expired = $oExpires < $oNow;
-        $this->data       = json_decode($this->data) ?? (object) [];
-        $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
+            /** @var DateTime $oNow */
+            $oNow     = Factory::factory('DateTime');
+            $oExpires = new DateTime($this->expiry);
+
+            $this->is_expired = $oExpires < $oNow;
+            $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
+        }
+
+        $this->data = json_decode($this->data) ?? (object) [];
     }
 }
