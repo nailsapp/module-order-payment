@@ -249,7 +249,7 @@ class Customer extends Base
      *
      * @return int|null
      */
-    public function getCustomerIdforActiveUser(): ?int
+    public function getCustomerIdForActiveUser(): ?int
     {
         return (int) activeUser('customer_id') ?: null;
     }
