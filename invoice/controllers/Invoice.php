@@ -225,7 +225,7 @@ class Invoice extends Base
 
         // --------------------------------------------------------------------------
 
-        $iCustomerId = $oCustomerModel->getCustomerIdforActiveUser();
+        $iCustomerId = $oCustomerModel->getCustomerIdForActiveUser();
         if ($iCustomerId) {
 
             $aSavedPaymentSources = $oSourceModel->getForCustomer(
