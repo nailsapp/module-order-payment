@@ -442,7 +442,6 @@ class Invoice
             );
         }
 
-        $this->sCurrency = $mCurrency;
         return $this;
     }
 
