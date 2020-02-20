@@ -18,6 +18,7 @@ use Nails\Currency\Exception\CurrencyException;
 use Nails\Currency\Resource\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
+use Nails\Invoice\Factory\ChargeRequest;
 use Nails\Invoice\Resource\Invoice\Data;
 use Nails\Invoice\Resource\Invoice\Item;
 use Nails\Invoice\Resource\Invoice\State;
@@ -300,7 +301,7 @@ class Invoice extends Entity
     public function charge(ChargeRequest $oChargeRequest)
     {
         return $oChargeRequest
-            ->setInvoice($this->id)
+            ->setInvoice($this)
             ->setDescription('Payment for invoice ' . $this->id)
             ->execute();
     }
