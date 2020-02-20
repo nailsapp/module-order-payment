@@ -11,6 +11,7 @@ namespace Nails\Invoice\Resource;
 
 use DateTime;
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Resource\Date;
 use Nails\Common\Resource\Entity;
 use Nails\Factory;
 
@@ -73,7 +74,7 @@ class Source extends Entity
     /**
      * The source's expiry date
      *
-     * @var Resource\Date
+     * @var Date
      */
     public $expiry;
 
@@ -105,15 +106,30 @@ class Source extends Entity
         parent::__construct($mObj);
 
         if ($this->expiry) {
-
-            /** @var DateTime $oNow */
-            $oNow     = Factory::factory('DateTime');
-            $oExpires = new DateTime($this->expiry);
-
-            $this->is_expired = $oExpires < $oNow;
-            $this->expiry     = Factory::resource('Date', null, ['raw' => $this->expiry]);
+            $this->expiry = Factory::resource('Date', null, ['raw' => $this->expiry]);
         }
 
-        $this->data = json_decode($this->data) ?? (object) [];
+        $this->is_expired = $this->isExpired();
+        $this->data       = json_decode($this->data) ?? (object) [];
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Determines whether source has expired
+     *
+     * @param DateTime $oWhen
+     *
+     * @return bool
+     */
+    public function isExpired(DateTime $oWhen = null): bool
+    {
+        if (!$this->expiry) {
+            return false;
+        }
+
+        /** @var DateTime $oWhen */
+        $oWhen = $oWhen ?? Factory::factory('DateTime');
+        return $this->expiry->getDateTimeObject() < $oWhen;
     }
 }
