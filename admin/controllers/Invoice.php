@@ -15,14 +15,13 @@ namespace Nails\Admin\Invoice;
 use Nails\Admin\Controller\Base;
 use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
-use Nails\Auth;
-use Nails\Auth\Service\Session;
 use Nails\Common\Exception\AssetException;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\FormValidation;
 use Nails\Common\Service\Input;
+use Nails\Common\Service\Session;
 use Nails\Common\Service\Uri;
 use Nails\Currency;
 use Nails\Factory;
@@ -282,7 +281,7 @@ class Invoice extends Base
                     $this->sendInvoice($oInvoice);
 
                     /** @var Session $oSession */
-                    $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+                    $oSession = Factory::service('Session');
                     $oSession->setFlashData('success', 'Invoice created successfully.');
 
                     redirect('admin/invoice/invoice');
@@ -420,7 +419,7 @@ class Invoice extends Base
                     $this->sendInvoice($oInvoice);
 
                     /** @var Session $oSession */
-                    $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+                    $oSession = Factory::service('Session');
                     $oSession->setFlashData('success', 'Invoice was saved successfully.');
 
                     if ($oInvoice->state->id === $oModel::STATE_DRAFT) {
@@ -621,7 +620,7 @@ class Invoice extends Base
         }
 
         /** @var Session $oSession */
-        $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+        $oSession = Factory::service('Session');
         $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
@@ -667,7 +666,7 @@ class Invoice extends Base
         }
 
         /** @var Session $oSession */
-        $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+        $oSession = Factory::service('Session');
         $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice');
@@ -707,7 +706,7 @@ class Invoice extends Base
         }
 
         /** @var Session $oSession */
-        $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+        $oSession = Factory::service('Session');
         $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice');
@@ -732,7 +731,7 @@ class Invoice extends Base
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
         /** @var Session $oSession */
-        $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+        $oSession = Factory::service('Session');
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
 
@@ -871,7 +870,7 @@ class Invoice extends Base
         if ($oInvoice->state->id === $sInvoiceClass::STATE_OPEN) {
             if (!$this->oInvoiceModel->send($oInvoice->id)) {
                 /** @var Session $oSession */
-                $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+                $oSession = Factory::service('Session');
                 $oSession->setFlashData(
                     'warning',
                     'Failed to email invoice to customer. ' . $this->oInvoiceModel->lastError()

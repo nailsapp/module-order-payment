@@ -15,11 +15,10 @@ namespace Nails\Admin\Invoice;
 use Nails\Admin\Controller\Base;
 use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
-use Nails\Auth;
-use Nails\Auth\Service\Session;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Input;
+use Nails\Common\Service\Session;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -278,7 +277,7 @@ class Payment extends Base
         }
 
         /** @var Session $oSession */
-        $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+        $oSession = Factory::service('Session');
         $oSession->setFlashData($sStatus, $sMessage);
         redirect($sRedirect);
     }

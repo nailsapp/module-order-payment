@@ -10,14 +10,13 @@
  * @link
  */
 
-use Nails\Auth;
-use Nails\Auth\Service\Session;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Exception\ValidationException;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\Input;
+use Nails\Common\Service\Session;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -391,7 +390,7 @@ class Invoice extends Base
                 if (!empty($sErrorUrl)) {
 
                     /** @var Session $oSession */
-                    $oSession = Factory::service('Session', Auth\Constants::MODULE_SLUG);
+                    $oSession = Factory::service('Session');
                     $oSession->setFlashData('error', $e->getMessage());
 
                     redirect($sErrorUrl);
