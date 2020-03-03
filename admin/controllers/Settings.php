@@ -164,7 +164,7 @@ class Settings extends Base
         // --------------------------------------------------------------------------
 
         //  Get data
-        $this->data['settings'] = appSetting(null, Constants::MODULE_SLUG, true);
+        $this->data['settings'] = appSetting(null, Constants::MODULE_SLUG, null, true);
 
         Helper::loadView('index');
     }
