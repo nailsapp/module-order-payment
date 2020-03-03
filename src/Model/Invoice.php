@@ -16,6 +16,7 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
+use Nails\Config;
 use Nails\Currency;
 use Nails\Email;
 use Nails\Factory;
@@ -263,7 +264,7 @@ class Invoice extends Base
                 '(
                     SELECT
                         SUM(amount)
-                        FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
+                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->getTableAlias() . '.id
                         AND status = \'' . $sPaymentClass::STATUS_COMPLETE . '\'
@@ -271,7 +272,7 @@ class Invoice extends Base
                 '(
                     SELECT
                         SUM(amount)
-                        FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
+                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->getTableAlias() . '.id
                         AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
@@ -279,7 +280,7 @@ class Invoice extends Base
                 '(
                     SELECT
                         COUNT(id)
-                        FROM `' . NAILS_DB_PREFIX . 'invoice_payment`
+                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->getTableAlias() . '.id
                         AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
