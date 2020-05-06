@@ -108,7 +108,16 @@ class Source extends Base
         $aResource = (array) $oResource;
         unset($aResource['is_expired']);
 
-        return parent::create($aResource, $bReturnObject);
+        /** @var Resource\Source $oSource */
+        $oSource = parent::create($aResource, $bReturnObject);
+
+        //  Set as default payment source if no existing default for customer
+        $oDefault = $this->getDefault($oSource->customer_id);
+        if (empty($oDefault)) {
+            $this->setDefault($oSource->customer_id, $oSource);
+        }
+
+        return $oSource;
     }
 
     // --------------------------------------------------------------------------
