@@ -112,9 +112,9 @@ class Source extends Base
         $oSource = parent::create($aResource, $bReturnObject);
 
         //  Set as default payment source if no existing default for customer
-        $oDefault = $this->getDefault($oSource->customer_id);
+        $oDefault = $this->getDefault($oResource->customer_id);
         if (empty($oDefault)) {
-            $this->setDefault($oSource->customer_id, $oSource);
+            $this->setDefault($oResource->customer_id, $oSource);
         }
 
         return $oSource;
