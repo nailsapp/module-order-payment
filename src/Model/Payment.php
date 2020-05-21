@@ -582,7 +582,7 @@ class Payment extends Base
      * @throws RefundRequestException
      * @throws RequestException
      */
-    public function refund(int $iPaymentId, int $iAmount = null, string $sReason = null): bool
+    public function refund(int $iPaymentId, int $iAmount = null, string $sReason = ''): bool
     {
         try {
 

@@ -242,12 +242,12 @@ class Payment extends Base
         $oUri = Factory::service('Uri');
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
-        /** @var \Nails\Invoice\Model\Paymentt $oPaymentModel */
+        /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
         $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
         $iPaymentId = $oUri->segment(5);
         $sAmount    = preg_replace('/[^0-9\.]/', '', $oInput->post('amount')) ?: null;
-        $sReason    = $oInput->post('reason') ?: null;
+        $sReason    = $oInput->post('reason') ?: '';
         $sRedirect  = urldecode($oInput->post('return_to')) ?: 'invoice/payment/view/' . $iPaymentId;
 
         try {
