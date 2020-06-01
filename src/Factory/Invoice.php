@@ -506,6 +506,9 @@ class Invoice
         } elseif ($mKey instanceof \stdClass) {
             $this->oCallbackData = new CallbackData($mKey);
         } else {
+            if ($this->oCallbackData === null) {
+                $this->oCallbackData = new \stdClass();
+            }
             $this->oCallbackData->{$mKey} = $mValue;
         }
 
