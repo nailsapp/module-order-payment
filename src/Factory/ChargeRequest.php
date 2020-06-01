@@ -699,8 +699,9 @@ class ChargeRequest extends RequestBase
             $this->getSource()
         );
 
-        //  Set the success and fail URLs
+        //  Set the payment reference and the success/fail URLs
         $oChargeResponse
+            ->setPayment($this->getPayment())
             ->setSuccessUrl($sSuccessUrl)
             ->setErrorUrl($sErrorUrl);
 

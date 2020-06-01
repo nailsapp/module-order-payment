@@ -12,6 +12,8 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Invoice\Resource\Payment;
+
 /**
  * Class ChargeResponse
  *
@@ -20,7 +22,14 @@ namespace Nails\Invoice\Factory;
 class ChargeResponse extends ResponseBase
 {
     /**
-     * whether the response requires SCA
+     * The associated payment
+     *
+     * @var Payment|null
+     */
+    protected $oPayment;
+
+    /**
+     * Whether the response requires SCA
      *
      * @var bool
      */
@@ -61,6 +70,31 @@ class ChargeResponse extends ResponseBase
      * @var string
      */
     protected $sScaUrl = '';
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the payment object
+     *
+     * @param Payment|null $oPayment
+     */
+    public function setPayment(?Payment $oPayment): self
+    {
+        $this->oPayment = $oPayment;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Get the payment object
+     *
+     * @return Payment|null
+     */
+    public function getPayment(): ?Payment
+    {
+        return $this->oPayment;
+    }
 
     // --------------------------------------------------------------------------
 
