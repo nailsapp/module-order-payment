@@ -295,7 +295,6 @@ class Payment extends Entity
         // --------------------------------------------------------------------------
 
         //  URLs
-        //  @todo (Pablo - 2019-09-11) - merge the thanks URL with the success URL - they do the same thing
         $this->urls = Factory::resource(
             'PaymentUrls',
             Constants::MODULE_SLUG,
@@ -303,7 +302,7 @@ class Payment extends Entity
                 'complete'   => siteUrl('invoice/payment/' . $this->id . '/' . $this->token . '/complete'),
                 'thanks'     => siteUrl('invoice/payment/' . $this->id . '/' . $this->token . '/thanks'),
                 'processing' => siteUrl('invoice/payment/' . $this->id . '/' . $this->token . '/processing'),
-                'success'    => !empty($mObj->url_success) ? siteUrl($mObj->url_success) : siteUrl('invoice/payment/' . $this->id . '/' . $this->token . '/thanks'),
+                'success'    => !empty($mObj->url_success) ? siteUrl($mObj->url_success) : null,
                 'error'      => !empty($mObj->url_error) ? siteUrl($mObj->url_error) : null,
                 'cancel'     => !empty($mObj->url_cancel) ? siteUrl($mObj->url_cancel) : null,
             ]
