@@ -8,15 +8,6 @@
         transform: translateX(-50%);
     }
 
-    .logo {
-        margin: 2rem 0;
-        text-align: center;
-
-        img {
-            max-width: 50%;
-        }
-    }
-
     &.pay {
         &.shake {
             perspective: 800px;
