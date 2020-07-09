@@ -182,12 +182,13 @@ class Source extends Base
     /**
      * Deletes an existing payment source
      *
-     * @param int $iId The ID of the object to deleted
+     * @param int  $iId           The ID of the object to deleted
+     * @param bool $bDeleteRemote Whetehr to delete the remote source as well
      *
      * @return bool
      * @throws FactoryException
      */
-    public function delete($iId): bool
+    public function delete($iId, bool $bDeleteRemote = true): bool
     {
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
@@ -206,12 +207,15 @@ class Source extends Base
             }
 
             //  Give the driver the chance to delete the remote source
-            /** @var PaymentDriver $oPaymentDriverService */
-            $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
-            /** @var PaymentBase $oDriver */
-            $oDriver = $oPaymentDriverService->getInstance($oSource->driver);
+            if ($bDeleteRemote) {
 
-            $oDriver->deleteSource($oSource);
+                /** @var PaymentDriver $oPaymentDriverService */
+                $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+                /** @var PaymentBase $oDriver */
+                $oDriver = $oPaymentDriverService->getInstance($oSource->driver);
+
+                $oDriver->deleteSource($oSource);
+            }
 
             $oDb->trans_commit();
             return true;
