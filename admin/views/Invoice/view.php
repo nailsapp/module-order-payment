@@ -5,15 +5,27 @@ use Nails\Invoice\Constants;
 use Nails\Invoice\Resource\Invoice\Email;
 use Nails\Invoice\Resource\Refund;
 
+/**
+ * @var \Nails\Invoice\Resource\Invoice $invoice
+ */
+
 /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
 $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 /** @var \Nails\Invoice\Model\Refund $oRefundModel */
 $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
 
+$bHasAddress = $invoice->billingAddress() || $invoice->deliveryAddress();
+$iColWidth   = [
+    'dates'    => 3,
+    'customer' => $bHasAddress ? 3 : 4,
+    'address'  => 3,
+    'notes'    => $bHasAddress ? 3 : 5,
+]
+
 ?>
 <div class="group-invoice invoice view">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-<?=$iColWidth['dates']?>">
             <div class="panel panel-default match-height">
                 <div class="panel-heading">
                     <strong>Dates</strong>
@@ -36,7 +48,7 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                 </table>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-<?=$iColWidth['customer']?>">
             <div class="panel panel-default match-height">
                 <div class="panel-heading">
                     <strong>Customer</strong>
@@ -100,7 +112,51 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                 ?>
             </div>
         </div>
-        <div class="col-md-5">
+        <?php
+
+        if ($bHasAddress) {
+            ?>
+            <div class="col-md-<?=$iColWidth['address']?>">
+                <div class="panel panel-default match-height">
+                    <div class="panel-heading">
+                        <strong>Addresses</strong>
+                    </div>
+                    <table>
+                        <tbody>
+                            <?php
+
+                            if ($invoice->billingAddress()) {
+                                ?>
+                                <tr>
+                                    <td class="header">Billing Address</td>
+                                    <td>
+                                        <?=implode('<br>', array_filter($invoice->billingAddress()->formatted()->asArray()))?>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+
+                            if ($invoice->deliveryAddress()) {
+                                ?>
+                                <tr>
+                                    <td class="header">Delivery Address</td>
+                                    <td>
+                                        <?=implode('<br>', array_filter($invoice->deliveryAddress()->formatted()->asArray()))?>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php
+        }
+
+        ?>
+        <div class="col-md-<?=$iColWidth['notes']?>">
             <div class="panel panel-default match-height">
                 <div class="panel-heading">
                     <strong>Notes</strong>

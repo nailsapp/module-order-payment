@@ -9,7 +9,9 @@
 
 namespace Nails\Invoice\Resource;
 
+use Nails\Address\Resource\Address;
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Resource\Date;
 use Nails\Common\Resource\DateTime;
 use Nails\Common\Resource\Entity;
@@ -131,6 +133,34 @@ class Invoice extends Entity
      * @var string|null
      */
     public $payment_driver;
+
+    /**
+     * The ID of the billing address associated with the invoice
+     *
+     * @var int|null
+     */
+    public $billing_address_id;
+
+    /**
+     * The billing address associated with the invoice
+     *
+     * @var Address|null
+     */
+    public $billing_address;
+
+    /**
+     * The ID of the delivery address associated with the invoice
+     *
+     * @var int|null
+     */
+    public $delivery_address_id;
+
+    /**
+     * The delivery address associated with the invoice
+     *
+     * @var Address|null
+     */
+    public $delivery_address;
 
     /**
      * Whether the invoice is scheduled
@@ -304,5 +334,63 @@ class Invoice extends Entity
             ->setInvoice($this)
             ->setDescription('Payment for invoice ' . $this->id)
             ->execute();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's customer object
+     *
+     * @return Customer
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function customer(): Customer
+    {
+        if (empty($this->customer) && !empty($this->customer_id)) {
+            /** @var \Nails\Invoice\Model\Customer $oModel */
+            $oModel         = Factory::model('Customer', Constants::MODULE_SLUG);
+            $this->customer = $oModel->getById($this->customer_id);
+        }
+
+        return $this->customer;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's billing address
+     *
+     * @return Address|null
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function billingAddress(): ?Address
+    {
+        if (empty($this->billing_address) && !empty($this->billing_address_id)) {
+            $oModel                = Factory::model('Address', \Nails\Address\Constants::MODULE_SLUG);
+            $this->billing_address = $oModel->getById($this->billing_address_id);
+        }
+
+        return $this->billing_address;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's delivery address
+     *
+     * @return Address|null
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function deliveryAddress(): ?Address
+    {
+        if (empty($this->delivery_address) && !empty($this->delivery_address_id)) {
+            $oModel                 = Factory::model('Address', \Nails\Address\Constants::MODULE_SLUG);
+            $this->delivery_address = $oModel->getById($this->delivery_address_id);
+        }
+
+        return $this->delivery_address;
     }
 }

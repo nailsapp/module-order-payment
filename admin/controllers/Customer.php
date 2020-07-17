@@ -38,6 +38,10 @@ class Customer extends DefaultController
     {
         parent::__construct();
 
+        //  Ignore label
+        $this->aConfig['CREATE_IGNORE_FIELDS'][] = 'label';
+        $this->aConfig['EDIT_IGNORE_FIELDS'][]   = 'label';
+
         //  Update existing buttons
         $iDeleteKey     = arraySearchMulti(lang('action_delete'), 'label', $this->aConfig['INDEX_ROW_BUTTONS']);
         $cParentEnabled = clone($this->aConfig['INDEX_ROW_BUTTONS'][$iDeleteKey]['enabled']);
@@ -81,5 +85,13 @@ class Customer extends DefaultController
 
             return $sOut;
         };
+    }
+
+    // --------------------------------------------------------------------------
+
+    protected function loadEditViewData(\Nails\Common\Resource $oItem = null): void
+    {
+        $oItem->addresses = $oItem->addresses();
+        parent::loadEditViewData($oItem);
     }
 }

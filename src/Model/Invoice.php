@@ -289,6 +289,8 @@ class Invoice extends Base
                 $this->getTableAlias() . '.callback_data',
                 $this->getTableAlias() . '.payment_data',
                 $this->getTableAlias() . '.payment_driver',
+                $this->getTableAlias() . '.billing_address_id',
+                $this->getTableAlias() . '.delivery_address_id',
                 $this->getTableAlias() . '.created',
                 $this->getTableAlias() . '.created_by',
                 $this->getTableAlias() . '.modified',
