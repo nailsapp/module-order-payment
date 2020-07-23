@@ -12,7 +12,6 @@
 
 namespace Nails\Invoice\Model;
 
-use Nails\Admin\Factory\Model\Field\DynamicTable;
 use Nails\Admin\Helper\Form;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Factory\Model\Field;
@@ -85,34 +84,6 @@ class Customer extends Base
 
         $aFields['email']->validation[]         = FormValidation::RULE_VALID_EMAIL;
         $aFields['billing_email']->validation[] = FormValidation::RULE_VALID_EMAIL;
-
-        /** @var Country $oCountryService */
-        $oCountryService = Factory::service('Country');
-
-        /** @var DynamicTable $oField */
-        $oField = Factory::factory('ModelFieldDynamicTable', 'nails/module-admin');
-        $oField
-            ->setKey('addresses')
-            ->setLabel('Addresses')
-            ->setFieldset('Addresses')
-            ->setColumns([
-                'Line 1'   => implode('', [
-                    '<input type="hidden" name="addresses[{{index}}][id]" value="{{id}}">' .
-                    '<input type="text" name="addresses[{{index}}][line_1]" value="{{line_1}}">',
-                ]),
-                'Line 2'   => '<input type="text" name="addresses[{{index}}][line_2]" value="{{line_2}}">',
-                'Line 3'   => '<input type="text" name="addresses[{{index}}][line_3]" value="{{line_3}}">',
-                'Town'     => '<input type="text" name="addresses[{{index}}][town]" value="{{town}}">',
-                'Postcode' => '<input type="text" name="addresses[{{index}}][postcode]" value="{{postcode}}">',
-                'Country'  => form_dropdown(
-                    'addresses[{{index}}][country]',
-                    $oCountryService->getCountriesFlat(),
-                    null,
-                    'data-dynamic-table-value="{{country.iso}}"'
-                ),
-            ]);
-
-        $aFields[$oField->getKey()] = $oField;
 
         return $aFields;
     }
