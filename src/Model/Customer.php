@@ -12,9 +12,13 @@
 
 namespace Nails\Invoice\Model;
 
+use Nails\Admin\Helper\Form;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Factory\Model\Field;
 use Nails\Common\Model\Base;
+use Nails\Common\Service\Country;
+use Nails\Common\Service\FormValidation;
+use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\InvoiceException;
 
@@ -60,15 +64,9 @@ class Customer extends Base
         $this->destructiveDelete  = false;
         $this->searchableFields[] = 'email';
         $this->searchableFields[] = 'billing_email';
+
         $this
-            ->addExpandableField([
-                'trigger'   => 'invoices',
-                'type'      => self::EXPANDABLE_TYPE_MANY,
-                'property'  => 'invoices',
-                'model'     => 'Invoice',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'customer_id',
-            ]);
+            ->hasMany('invoices', 'Invoice', 'customer_id', Constants::MODULE_SLUG);
     }
 
     // --------------------------------------------------------------------------
@@ -84,25 +82,8 @@ class Customer extends Base
     {
         $aFields = parent::describeFields($sTable);
 
-        $aFieldsets = [
-            'Address' => [
-                'billing_address_line_1',
-                'billing_address_line_2',
-                'billing_address_town',
-                'billing_address_county',
-                'billing_address_postcode',
-                'billing_address_country',
-            ],
-        ];
-
-        foreach ($aFieldsets as $sFieldset => $aItems) {
-            foreach ($aItems as $sField) {
-                $aFields[$sField]->fieldset = $sFieldset;
-            }
-        }
-
-        $aFields['email']->validation[]         = 'valid_email';
-        $aFields['billing_email']->validation[] = 'valid_email';
+        $aFields['email']->validation[]         = FormValidation::RULE_VALID_EMAIL;
+        $aFields['billing_email']->validation[] = FormValidation::RULE_VALID_EMAIL;
 
         return $aFields;
     }

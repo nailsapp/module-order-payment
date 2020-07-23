@@ -9,10 +9,10 @@
 
 namespace Nails\Invoice\Resource;
 
+use Nails\Address;
+use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Resource\Entity;
 use Nails\Factory;
-use Nails\Invoice\Constants;
-use Nails\Invoice\Resource\Customer\Address;
 
 /**
  * Class Customer
@@ -66,42 +66,28 @@ class Customer extends Entity
      */
     public $is_deleted;
 
-    /**
-     * @var Address Object
-     */
-    public $billing_address;
-
     // --------------------------------------------------------------------------
 
     /**
-     * Customer constructor.
+     * Returns associated customer addresses
      *
-     * @param array $mObj
-     *
-     * @throws \Nails\Common\Exception\FactoryException
+     * @return Address\Resource\Address[]
      */
-    public function __construct($mObj = [])
+    public function addresses(): array
     {
-        parent::__construct($mObj);
+        /** @var Address\Model\Address\Associated $oModel */
+        $oModel = Factory::model('AddressAssociated', Address\Constants::MODULE_SLUG);
 
-        $this->billing_address = Factory::resource(
-            'CustomerAddress',
-            Constants::MODULE_SLUG,
-            (object) [
-                'line_1'   => $mObj->billing_address_line_1,
-                'line_2'   => $mObj->billing_address_line_2,
-                'town'     => $mObj->billing_address_town,
-                'county'   => $mObj->billing_address_county,
-                'postcode' => $mObj->billing_address_postcode,
-                'country'  => $mObj->billing_address_country,
-            ]
-        );
+        $aAddresses = $oModel->getAll([
+            new Expand('address'),
+            'where' => [
+                ['associated_type', self::class],
+                ['associated_id', $this->id],
+            ],
+        ]);
 
-        unset($this->billing_address_line_1);
-        unset($this->billing_address_line_2);
-        unset($this->billing_address_town);
-        unset($this->billing_address_county);
-        unset($this->billing_address_postcode);
-        unset($this->billing_address_country);
+        return array_map(function (Address\Resource\Address\Associated $oAssociation) {
+            return $oAssociation->address;
+        }, $aAddresses);
     }
 }
