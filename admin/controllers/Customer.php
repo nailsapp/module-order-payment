@@ -198,13 +198,5 @@ class Customer extends DefaultController
             }
         }
     }
-
-    // --------------------------------------------------------------------------
-
-    protected function loadEditViewData(\Nails\Common\Resource $oItem = null): void
-    {
-        $oItem->addresses = $oItem->addresses();
-        parent::loadEditViewData($oItem);
-    }
 }
 
