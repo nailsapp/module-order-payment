@@ -15,8 +15,11 @@ namespace Nails\Admin\Invoice;
 use Nails\Address;
 use Nails\Admin\Controller\DefaultController;
 use Nails\Admin\Factory\Model\Field\DynamicTable;
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\NailsException;
+use Nails\Common\Exception\ValidationException;
 use Nails\Common\Service\Country;
-use Nails\Common\Service\Database;
+use Nails\Common\Service\Input;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Resource;
@@ -39,6 +42,12 @@ class Customer extends DefaultController
 
     // --------------------------------------------------------------------------
 
+    /**
+     * Customer constructor.
+     *
+     * @throws FactoryException
+     * @throws NailsException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -105,6 +114,7 @@ class Customer extends DefaultController
             ->setColumns([
                 'Details' => implode('', [
                     '<input type="hidden" name="addresses[{{index}}][id]" value="{{id}}">' .
+                    '<input type="text" name="addresses[{{index}}][label]" placeholder="Label" value="{{label}}">',
                     '<input type="text" name="addresses[{{index}}][line_1]" placeholder="Line 1" value="{{line_1}}">',
                     '<input type="text" name="addresses[{{index}}][line_2]" placeholder="Line 2" value="{{line_2}}">',
                     '<input type="text" name="addresses[{{index}}][line_3]" placeholder="Line 3" value="{{line_3}}">',
@@ -127,8 +137,51 @@ class Customer extends DefaultController
 
     protected function loadEditViewData(\Nails\Common\Resource $oItem = null): void
     {
-        $oItem->addresses = $oItem->addresses();
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+
+        if ($oInput->post()) {
+            $oItem->addresses = $oInput->post('addresses');
+        } else {
+            $oItem->addresses = $oItem->addresses();
+        }
+
         parent::loadEditViewData($oItem);
+    }
+
+    // --------------------------------------------------------------------------
+
+    protected function runFormValidation(string $sMode, array $aOverrides = []): void
+    {
+        parent::runFormValidation($sMode, $aOverrides);
+
+        /** @var Input $oInput */
+        $oInput = Factory::service('Input');
+        /** @var Address\Service\Address $oAddressService */
+        $oAddressService = Factory::service('Address', Address\Constants::MODULE_SLUG);
+
+        try {
+
+            $aAddresses = array_filter((array) $oInput->post('addresses'));
+            $aAddresses = array_values($aAddresses);
+
+            foreach ($aAddresses as $iIndex => $aAddress) {
+
+                $oAddress = Address\Helper\Address::extractAddressFromArray($aAddress);
+                $oAddress->validate();
+            }
+
+        } catch (ValidationException $e) {
+            throw new ValidationException(
+                sprintf(
+                    'Validation failed for address at position %s: %s',
+                    $iIndex + 1,
+                    $e->getMessage()
+                ),
+                $e->getCode(),
+                $e
+            );
+        }
     }
 
     // --------------------------------------------------------------------------
@@ -150,53 +203,14 @@ class Customer extends DefaultController
 
         parent::afterCreateAndEdit($sMode, $oNewItem, $oOldItem);
 
-        /** @var Database $oDb */
-        $oDb = Factory::service('Database');
-        /** @var Address\Model\Address $oAddressModel */
-        $oAddressModel = Factory::model('Address', Address\Constants::MODULE_SLUG);
-        /** @var Address\Model\Address\Associated $oAddressAssociatedModel */
-        $oAddressAssociatedModel = Factory::model('AddressAssociated', Address\Constants::MODULE_SLUG);
+        /** @var Address\Service\Address $oAddressService */
+        $oAddressService = Factory::service('Address', Address\Constants::MODULE_SLUG);
 
         /** @var array[] $aAddresses */
-        $aAddresses = getFromArray('addresses', parent::getPostObject(), []);
-        /** @var int[] $aAddressIds */
-        $aAddressIds = [];
+        $aAddresses = getFromArray('addresses', parent::getPostObject());
+        $aAddresses = array_filter((array) $aAddresses);
 
-        //  Update/create addresses
-        foreach ($aAddresses as $aAddress) {
-            if (!empty($aAddress['id'])) {
-                $oAddressModel->update($aAddress['id'], $aAddress);
-                $aAddressIds[] = (int) $aAddress['id'];
-            } else {
-                $aAddressIds[] = $oAddressModel->create($aAddress);
-            }
-        }
-
-        //  Delete old associations (old addresses are left as they might be in use)
-        $oAddressAssociatedModel->deleteWhere([
-            'address_id NOT IN (' . implode(',', $aAddressIds) . ')',
-            ['associated_type', Resource\Customer::class],
-            ['associated_id', $oNewItem->id],
-        ]);
-
-        $aExistingAssociations = $oAddressAssociatedModel->getAll([
-            'where' => [
-                ['associated_type', Resource\Customer::class],
-                ['associated_id', $oNewItem->id],
-            ],
-        ]);
-        $aExistingAddressIds   = arrayExtractProperty($aExistingAssociations, 'address_id');
-
-        //  Insert new associations
-        foreach ($aAddressIds as $iAddressId) {
-            if (!in_array($iAddressId, $aExistingAddressIds)) {
-                $oAddressAssociatedModel->create([
-                    'address_id'      => $iAddressId,
-                    'associated_type' => Resource\Customer::class,
-                    'associated_id'   => $oNewItem->id,
-                ]);
-            }
-        }
+        $oAddressService->associatedAddressesSet($oNewItem, $aAddresses);
     }
 }
 
