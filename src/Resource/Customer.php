@@ -10,7 +10,6 @@
 namespace Nails\Invoice\Resource;
 
 use Nails\Address;
-use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Resource\Entity;
 use Nails\Factory;
 
@@ -75,19 +74,8 @@ class Customer extends Entity
      */
     public function addresses(): array
     {
-        /** @var Address\Model\Address\Associated $oModel */
-        $oModel = Factory::model('AddressAssociated', Address\Constants::MODULE_SLUG);
-
-        $aAddresses = $oModel->getAll([
-            new Expand('address'),
-            'where' => [
-                ['associated_type', self::class],
-                ['associated_id', $this->id],
-            ],
-        ]);
-
-        return array_map(function (Address\Resource\Address\Associated $oAssociation) {
-            return $oAssociation->address;
-        }, $aAddresses);
+        /** @var Address\Service\Address $oAddressService */
+        $oAddressService = Factory::service('Address', Address\Constants::MODULE_SLUG);
+        return $oAddressService->associatedAddressesGet($this);
     }
 }
