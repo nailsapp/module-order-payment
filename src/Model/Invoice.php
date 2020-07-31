@@ -824,6 +824,9 @@ class Invoice extends Base
             $oEmailer           = Factory::service('Emailer', Email\Constants::MODULE_SLUG);
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
+            $oBillingAddress  = $oInvoice->billingAddress();
+            $oDeliveryAddress = $oInvoice->deliveryAddress();
+
             $oEmail       = new \stdClass();
             $oEmail->type = 'send_invoice';
             $oEmail->data = [
@@ -833,9 +836,16 @@ class Invoice extends Base
                     'due'      => $oInvoice->due->formatted,
                     'dated'    => $oInvoice->dated->formatted,
                     'customer' => [
-                        'id'      => $oInvoice->customer->id,
-                        'label'   => $oInvoice->customer->label,
-                        'address' => $oInvoice->customer->billing_address,
+                        'id'    => $oInvoice->customer->id,
+                        'label' => $oInvoice->customer->label,
+                    ],
+                    'address'  => [
+                        'billing'  => $oBillingAddress
+                            ? array_filter($oBillingAddress->formatted()->asArray())
+                            : null,
+                        'delivery' => $oDeliveryAddress
+                            ? array_filter($oDeliveryAddress->formatted()->asArray())
+                            : null,
                     ],
                     'urls'     => [
                         'view'     => $oInvoice->urls->view,

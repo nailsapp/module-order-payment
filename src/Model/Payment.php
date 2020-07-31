@@ -483,6 +483,9 @@ class Payment extends Base
                 $oEmail->type = 'payment_processing_receipt';
             }
 
+            $oBillingAddress  = $oPayment->invoice->billingAddress();
+            $oDeliveryAddress = $oPayment->invoice->deliveryAddress();
+
             $oEmail->data = [
                 'payment' => (object) [
                     'ref'    => $oPayment->ref,
@@ -494,9 +497,16 @@ class Payment extends Base
                     'due'      => $oPayment->invoice->due->formatted,
                     'dated'    => $oPayment->invoice->dated->formatted,
                     'customer' => (object) [
-                        'id'              => $oPayment->invoice->customer->id,
-                        'label'           => $oPayment->invoice->customer->label,
-                        'billing_address' => $oPayment->invoice->customer->billing_address,
+                        'id'    => $oPayment->invoice->customer->id,
+                        'label' => $oPayment->invoice->customer->label,
+                    ],
+                    'address'  => [
+                        'billing'  => $oBillingAddress
+                            ? array_filter($oBillingAddress->formatted()->asArray())
+                            : null,
+                        'delivery' => $oDeliveryAddress
+                            ? array_filter($oDeliveryAddress->formatted()->asArray())
+                            : null,
                     ],
                     'urls'     => (object) [
                         'download' => $oPayment->invoice->urls->download,
