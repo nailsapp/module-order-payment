@@ -12,6 +12,7 @@
 namespace Nails\Invoice\Factory;
 
 use DateTime;
+use Nails\Address\Resource\Address;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Resource\Date;
@@ -103,6 +104,20 @@ class Invoice
      * @var string
      */
     protected $sCurrency = '';
+
+    /**
+     * The invoice's billing address ID
+     *
+     * @var int
+     */
+    protected $iBillingAddressId = null;
+
+    /**
+     * The invoice's delivery address ID
+     *
+     * @var int
+     */
+    protected $iDeliveryAddressId = null;
 
     /**
      * The invoice's additional text
@@ -455,6 +470,88 @@ class Invoice
     public function getCurrency(): string
     {
         return $this->sCurrency;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's Billing Address ID
+     *
+     * @param Address|int $mAddress The address to use
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setBillingAddressId($mAddress): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mAddress instanceof Address) {
+            $this->iBillingAddressId = $mAddress->id;
+
+        } elseif (is_int($mAddress)) {
+            $this->iBillingAddressId = $mAddress;
+
+        } else {
+            throw new InvoiceException(
+                'Invalid data type (' . gettype($mAddress) . ') passed to ' . __METHOD__
+            );
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's billing address ID
+     *
+     * @return int|null
+     */
+    public function getBillingAddressId(): ?int
+    {
+        return $this->iBillingAddressId;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets the invoice's Delivery Address ID
+     *
+     * @param Address|int $mAddress The address to use
+     *
+     * @return $this
+     * @throws InvoiceException
+     */
+    public function setDeliveryAddressId($mAddress): Invoice
+    {
+        $this->ensureNotSaved();
+
+        if ($mAddress instanceof Address) {
+            $this->iDeliveryAddressId = $mAddress->id;
+
+        } elseif (is_int($mAddress)) {
+            $this->iDeliveryAddressId = $mAddress;
+
+        } else {
+            throw new InvoiceException(
+                'Invalid data type (' . gettype($mAddress) . ') passed to ' . __METHOD__
+            );
+        }
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's billing address ID
+     *
+     * @return int|null
+     */
+    public function getDeliveryAddressId(): ?int
+    {
+        return $this->iDeliveryAddressId;
     }
 
     // --------------------------------------------------------------------------
@@ -850,19 +947,21 @@ class Invoice
     public function toArray()
     {
         return [
-            'ref'             => $this->getRef(),
-            'state'           => $this->getState(),
-            'dated'           => $this->getDated(),
-            'paid'            => $this->getPaidDate(),
-            'terms'           => $this->getTerms(),
-            'customer_id'     => $this->getCustomerId(),
-            'email'           => $this->getEmail(),
-            'currency'        => $this->getCurrency(),
-            'additional_text' => $this->getAdditionalText(),
-            'callback_data'   => $this->getCallbackData(),
-            'payment_data'    => $this->getPaymentData(),
-            'payment_driver'  => $this->getPaymentDriver(),
-            'items'           => $this->getItems(),
+            'ref'                 => $this->getRef(),
+            'state'               => $this->getState(),
+            'dated'               => $this->getDated(),
+            'paid'                => $this->getPaidDate(),
+            'terms'               => $this->getTerms(),
+            'customer_id'         => $this->getCustomerId(),
+            'email'               => $this->getEmail(),
+            'currency'            => $this->getCurrency(),
+            'additional_text'     => $this->getAdditionalText(),
+            'callback_data'       => $this->getCallbackData(),
+            'payment_data'        => $this->getPaymentData(),
+            'payment_driver'      => $this->getPaymentDriver(),
+            'billing_address_id'  => $this->getBillingAddressId(),
+            'delivery_address_id' => $this->getDeliveryAddressId(),
+            'items'               => $this->getItems(),
         ];
     }
 }
