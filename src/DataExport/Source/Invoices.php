@@ -65,6 +65,20 @@ class Invoices implements Source
                 'info'  => 'This value is inclusive',
                 'type'  => 'date',
             ],
+            [
+                'key'     => 'date_column',
+                'label'   => 'Date Column',
+                'type'    => 'dropdown',
+                'class'   => 'select2',
+                'options' => [
+                    'dated'       => 'Raised — the date when the invoice was raised',
+                    'due'         => 'Due — the date when payment is due by',
+                    'paid'        => 'Paid — the date when payment was made',
+                    'written_off' => 'Written Off — the date when the invoice was written off',
+                    'created'     => 'Created — the date when the invoice was created',
+                    'modified'    => 'Modified — the date when the invoice was last modified',
+                ],
+            ],
         ];
     }
 
@@ -83,28 +97,48 @@ class Invoices implements Source
         $oInvoiceModel     = Factory::model('Invoice', Constants::MODULE_SLUG);
         $oInvoiceItemModel = Factory::model('InvoiceItem', Constants::MODULE_SLUG);
 
-        $sState     = getFromArray('state', $aOptions);
-        $sDateStart = getFromArray('date_start', $aOptions);
-        $sDateEnd   = getFromArray('date_end', $aOptions);
+        $sState      = getFromArray('state', $aOptions);
+        $sDateStart  = getFromArray('date_start', $aOptions);
+        $sDateEnd    = getFromArray('date_end', $aOptions);
+        $sDateColumn = getFromArray('date_column', $aOptions) ?? 'dated';
 
         $sTableInvoice     = $oInvoiceModel->getTableName();
         $sTableInvoiceItem = $oInvoiceItemModel->getTableName();
 
-        $sSqlInvoice     = 'SELECT `i`.* FROM `' . $sTableInvoice . '` `i`';
-        $sSqlInvoiceItem = 'SELECT `ii`.* FROM `' . $sTableInvoiceItem . '` `ii` LEFT JOIN `' . $sTableInvoice . '` `i` ON `i`.`id` = `ii`.`invoice_id`';
+        $sSqlInvoice = sprintf(
+            'SELECT `i`.* FROM `%s` `i`',
+            $sTableInvoice
+        );
+
+        $sSqlInvoiceItem = sprintf(
+            'SELECT `ii`.* FROM `%s` `ii` LEFT JOIN `%s` `i` ON `i`.`id` = `ii`.`invoice_id`',
+            $sTableInvoiceItem,
+            $sTableInvoice
+        );
 
         $aConditionals = [];
 
         if (!empty($sDateStart)) {
-            $aConditionals[] = '`i`.`dated` >= "' . $sDateStart . '"';
+            $aConditionals[] = sprintf(
+                '`i`.`%s` >= "%s"',
+                $sDateColumn,
+                $sDateStart
+            );
         }
 
         if (!empty($sDateEnd)) {
-            $aConditionals[] = '`i`.`dated` <= "' . $sDateEnd . '"';
+            $aConditionals[] = sprintf(
+                '`i`.`%s` <= "%s"',
+                $sDateColumn,
+                $sDateStart
+            );
         }
 
         if (!empty($sState)) {
-            $aConditionals[] = '`i`.`state` = "' . $sState . '"';
+            $aConditionals[] = sprintf(
+                '`i`.`state` = "%s"',
+                $sState
+            );
         }
 
         if (!empty($aConditionals)) {
@@ -118,6 +152,7 @@ class Invoices implements Source
                 ->setFileName('invoice')
                 ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoice)->result(), 'Field'))
                 ->setSource($oDb->query($sSqlInvoice)),
+
             Factory::factory('DataExportSourceResponse', 'nails/module-admin')
                 ->setLabel('Table: ' . $sTableInvoiceItem)
                 ->setFileName('invoice_item')
