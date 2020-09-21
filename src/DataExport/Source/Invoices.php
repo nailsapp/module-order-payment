@@ -130,7 +130,7 @@ class Invoices implements Source
             $aConditionals[] = sprintf(
                 '`i`.`%s` <= "%s"',
                 $sDateColumn,
-                $sDateStart
+                $sDateEnd
             );
         }
 
