@@ -19,17 +19,18 @@ use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Common\Service\Database;
 use Nails\Currency;
-use Nails\Email;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
+use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Exception\PaymentException;
 use Nails\Invoice\Exception\RefundRequestException;
 use Nails\Invoice\Exception\RequestException;
+use Nails\Invoice\Factory\Email\Payment\Complete;
+use Nails\Invoice\Factory\Email\Payment\Processing;
 use Nails\Invoice\Factory\RefundRequest;
 use Nails\Invoice\Factory\RefundResponse;
 use Nails\Invoice\Resource\Invoice\Item;
-use stdClass;
 
 /**
  * Class Payment
@@ -478,18 +479,18 @@ class Payment extends Base
                 throw new PaymentException('Payment must be in a paid or processing state to send receipt.');
             }
 
-            $oEmail = new stdClass();
-
             if ($oPayment->status->id == self::STATUS_COMPLETE) {
-                $oEmail->type = 'payment_complete_receipt';
+                /** @var Complete $oEmail */
+                $oEmail = Factory::factory('EmailPaymentComplete', Constants::MODULE_SLUG);
             } else {
-                $oEmail->type = 'payment_processing_receipt';
+                /** @var Processing $oEmail */
+                $oEmail = Factory::factory('EmailPaymentProcessing', Constants::MODULE_SLUG);
             }
 
             $oBillingAddress  = $oPayment->invoice->billingAddress();
             $oDeliveryAddress = $oPayment->invoice->deliveryAddress();
 
-            $oEmail->data = [
+            $oEmail->data([
                 'payment' => (object) [
                     'ref'    => $oPayment->ref,
                     'amount' => $oPayment->amount->formatted,
@@ -512,6 +513,8 @@ class Payment extends Base
                             : null,
                     ],
                     'urls'     => (object) [
+                        'view'     => $oPayment->invoice->urls->view,
+                        'payment'  => $oPayment->invoice->urls->payment,
                         'download' => $oPayment->invoice->urls->download,
                     ],
                     'totals'   => [
@@ -521,26 +524,33 @@ class Payment extends Base
                     ],
                     'items'    => array_map(function (Item $oItem) {
                         return [
-                            'id'     => $oItem->id,
-                            'label'  => $oItem->label,
-                            'body'   => $oItem->body,
-                            'totals' => [
-                                'sub' => $oItem->totals->formatted->sub,
+                            'id'       => $oItem->id,
+                            'label'    => $oItem->label,
+                            'body'     => $oItem->body,
+                            'quantity' => $oItem->quantity,
+                            'totals'   => [
+                                'sub'   => $oItem->totals->formatted->sub,
+                                'tax'   => $oItem->totals->formatted->tax,
+                                'grand' => $oItem->totals->formatted->grand,
                             ],
                         ];
                     }, $oPayment->invoice->items->data),
                 ],
-            ];
+            ]);
 
             if (!empty($sEmailOverride)) {
                 //  @todo, validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
+
             } elseif (!empty($oPayment->invoice->customer->billing_email)) {
                 $aEmails = explode(',', $oPayment->invoice->customer->billing_email);
+
             } elseif (!empty($oPayment->invoice->customer->email)) {
                 $aEmails = [$oPayment->invoice->customer->email];
+
             } elseif (!empty($oPayment->invoice->email)) {
                 $aEmails = [$oPayment->invoice->email];
+
             } else {
                 throw new PaymentException('No email address to send the receipt to.');
             }
@@ -548,27 +558,27 @@ class Payment extends Base
             $aEmails = array_unique($aEmails);
             $aEmails = array_filter($aEmails);
 
-            $oEmailer           = Factory::service('Emailer', Email\Constants::MODULE_SLUG);
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
+                try {
 
-                $oEmail->to_email = $sEmail;
-                $oResult          = $oEmailer->send($oEmail);
+                    $oEmail
+                        ->to($sEmail)
+                        ->send();
 
-                if (!empty($oResult)) {
+                    $aGeneratedEmails = $oEmail->getGeneratedEmails();
+                    $oLastEmail       = reset($aGeneratedEmails);
 
-                    $oInvoiceEmailModel->create(
-                        [
-                            'invoice_id' => $oPayment->invoice->id,
-                            'email_id'   => $oResult->id,
-                            'email_type' => $oEmail->type,
-                            'recipient'  => $oEmail->to_email,
-                        ]
-                    );
+                    $oInvoiceEmailModel->create([
+                        'invoice_id' => $oPayment->invoice->id,
+                        'email_id'   => $oLastEmail->id,
+                        'email_type' => $oLastEmail->type,
+                        'recipient'  => $sEmail,
+                    ]);
 
-                } else {
-                    throw new PaymentException($oEmailer->lastError());
+                } catch (\Exception $e) {
+                    throw new InvoiceException($e->getMessage(), null, $e);
                 }
             }
 
