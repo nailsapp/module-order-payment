@@ -2,7 +2,11 @@
 
 namespace Nails\Invoice\Factory\Email\Refund;
 
+use Nails\Common\Exception\FactoryException;
 use Nails\Email\Factory\Email;
+use Nails\Factory;
+use Nails\Invoice\Constants;
+use Nails\Invoice\Factory\Email\Payment\Complete;
 
 /**
  * Class Processing
@@ -24,10 +28,12 @@ class Processing extends Email
      * Returns test data to use when sending test emails
      *
      * @return array
+     * @throws FactoryException
      */
     public function getTestData(): array
     {
-        //  @todo (Pablo 29/09/2020) - implement method
-        return [];
+        /** @var Complete $oEmail */
+        $oEmail = Factory::factory('EmailRefundComplete', Constants::MODULE_SLUG);
+        return $oEmail->getTestData();
     }
 }

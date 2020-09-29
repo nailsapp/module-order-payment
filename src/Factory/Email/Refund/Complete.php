@@ -27,7 +27,22 @@ class Complete extends Email
      */
     public function getTestData(): array
     {
-        //  @todo (Pablo 29/09/2020) - implement method
-        return [];
+        return [
+            'refund'  => [
+                'id'     => 123,
+                'ref'    => '1234-ABCDEF',
+                'reason' => 'Donec ullamcorper nulla non metus auctor fringilla.',
+                'amount' => '&pound;12.00',
+            ],
+            'payment' => [
+                'id'     => 123,
+                'ref'    => '1234-ABCDEF',
+                'amount' => '&pound;12.00',
+            ],
+            'invoice' => [
+                'id'  => 123,
+                'ref' => '1234-ABCDEF',
+            ],
+        ];
     }
 }
