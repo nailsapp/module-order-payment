@@ -74,20 +74,22 @@ class Send extends Email
                 ],
                 'items'    => [
                     [
-                        'id'     => 123,
-                        'label'  => 'A Line Item',
-                        'body'   => 'Etiam porta sem malesuada magna mollis euismod.',
-                        'totals' => [
+                        'id'       => 123,
+                        'label'    => 'A Line Item',
+                        'body'     => 'Etiam porta sem malesuada magna mollis euismod.',
+                        'quantity' => 1,
+                        'totals'   => [
                             'sub'   => '&pound5.00',
                             'tax'   => '&pound1.00',
                             'grand' => '&pound6.00',
                         ],
                     ],
                     [
-                        'id'     => 123,
-                        'label'  => 'A Line Item',
-                        'body'   => 'Etiam porta sem malesuada magna mollis euismod.',
-                        'totals' => [
+                        'id'       => 123,
+                        'label'    => 'A Line Item',
+                        'body'     => 'Etiam porta sem malesuada magna mollis euismod.',
+                        'quantity' => 1,
+                        'totals'   => [
                             'sub'   => '&pound5.00',
                             'tax'   => '&pound1.00',
                             'grand' => '&pound6.00',
