@@ -327,7 +327,7 @@ class Refund extends Base
                 $iRefundId,
                 [
                     'expand' => [
-                        ['invoice', ['expand' => ['customer']]],
+                        'invoice',
                         'payment',
                     ],
                 ]
@@ -354,12 +354,12 @@ class Refund extends Base
                     'id'     => $oRefund->id,
                     'ref'    => $oRefund->ref,
                     'reason' => $oRefund->reason,
-                    'amount' => $oRefund->amount->formatted,
+                    'amount' => html_entity_decode($oRefund->amount->formatted),
                 ],
                 'payment' => [
                     'id'     => $oRefund->payment->id,
                     'ref'    => $oRefund->payment->ref,
-                    'amount' => $oRefund->payment->amount->formatted,
+                    'amount' => html_entity_decode($oRefund->payment->amount->formatted),
                 ],
                 'invoice' => [
                     'id'  => $oRefund->invoice->id,

@@ -32,12 +32,12 @@ class Complete extends Email
                 'id'     => 123,
                 'ref'    => '1234-ABCDEF',
                 'reason' => 'Donec ullamcorper nulla non metus auctor fringilla.',
-                'amount' => '&pound;12.00',
+                'amount' => '£12.00',
             ],
             'payment' => [
                 'id'     => 123,
                 'ref'    => '1234-ABCDEF',
-                'amount' => '&pound;12.00',
+                'amount' => '£12.00',
             ],
             'invoice' => [
                 'id'  => 123,

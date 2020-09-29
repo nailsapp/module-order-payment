@@ -835,9 +835,9 @@ class Invoice extends Base
                             'download' => $oInvoice->urls->download,
                         ],
                         'totals'   => [
-                            'sub'   => $oInvoice->totals->formatted->sub,
-                            'tax'   => $oInvoice->totals->formatted->tax,
-                            'grand' => $oInvoice->totals->formatted->grand,
+                            'sub'   => html_entity_decode($oInvoice->totals->formatted->sub),
+                            'tax'   => html_entity_decode($oInvoice->totals->formatted->tax),
+                            'grand' => html_entity_decode($oInvoice->totals->formatted->grand),
                         ],
                         'items'    => array_map(function (\Nails\Invoice\Resource\Invoice\Item $oItem) {
                             return [
@@ -846,9 +846,9 @@ class Invoice extends Base
                                 'body'     => $oItem->body,
                                 'quantity' => $oItem->quantity,
                                 'totals'   => [
-                                    'sub'   => $oItem->totals->formatted->sub,
-                                    'tax'   => $oItem->totals->formatted->tax,
-                                    'grand' => $oItem->totals->formatted->grand,
+                                    'sub'   => html_entity_decode($oItem->totals->formatted->sub),
+                                    'tax'   => html_entity_decode($oItem->totals->formatted->tax),
+                                    'grand' => html_entity_decode($oItem->totals->formatted->grand),
                                 ],
                             ];
                         }, $oInvoice->items->data),

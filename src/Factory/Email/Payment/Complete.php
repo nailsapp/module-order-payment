@@ -37,7 +37,7 @@ class Complete extends Email
         return [
             'payment' => (object) [
                 'ref'    => '1234-ABCDEF',
-                'amount' => '&pound;12.00',
+                'amount' => '£12.00',
             ],
             'invoice' => [
                 'id'       => 123,
@@ -70,9 +70,9 @@ class Complete extends Email
                     'download' => 'https://example.com',
                 ],
                 'totals'   => [
-                    'sub'   => '&pound;10.00',
-                    'tax'   => '&pound;2.00',
-                    'grand' => '&pound;12.00',
+                    'sub'   => '£10.00',
+                    'tax'   => '£2.00',
+                    'grand' => '£12.00',
                 ],
                 'items'    => [
                     [
@@ -81,9 +81,9 @@ class Complete extends Email
                         'body'     => 'Etiam porta sem malesuada magna mollis euismod.',
                         'quantity' => 1,
                         'totals'   => [
-                            'sub'   => '&pound5.00',
-                            'tax'   => '&pound1.00',
-                            'grand' => '&pound6.00',
+                            'sub'   => '£5.00',
+                            'tax'   => '£1.00',
+                            'grand' => '£6.00',
                         ],
                     ],
                     [
@@ -92,9 +92,9 @@ class Complete extends Email
                         'body'     => 'Etiam porta sem malesuada magna mollis euismod.',
                         'quantity' => 1,
                         'totals'   => [
-                            'sub'   => '&pound5.00',
-                            'tax'   => '&pound1.00',
-                            'grand' => '&pound6.00',
+                            'sub'   => '£5.00',
+                            'tax'   => '£1.00',
+                            'grand' => '£6.00',
                         ],
                     ],
                 ],

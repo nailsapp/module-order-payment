@@ -517,9 +517,9 @@ class Payment extends Base
                         'download' => $oPayment->invoice->urls->download,
                     ],
                     'totals'   => [
-                        'sub'   => $oPayment->invoice->totals->formatted->sub,
-                        'tax'   => $oPayment->invoice->totals->formatted->tax,
-                        'grand' => $oPayment->invoice->totals->formatted->grand,
+                        'sub'   => html_entity_decode($oPayment->invoice->totals->formatted->sub),
+                        'tax'   => html_entity_decode($oPayment->invoice->totals->formatted->tax),
+                        'grand' => html_entity_decode($oPayment->invoice->totals->formatted->grand),
                     ],
                     'items'    => array_map(function (Item $oItem) {
                         return [
@@ -528,9 +528,9 @@ class Payment extends Base
                             'body'     => $oItem->body,
                             'quantity' => $oItem->quantity,
                             'totals'   => [
-                                'sub'   => $oItem->totals->formatted->sub,
-                                'tax'   => $oItem->totals->formatted->tax,
-                                'grand' => $oItem->totals->formatted->grand,
+                                'sub'   => html_entity_decode($oItem->totals->formatted->sub),
+                                'tax'   => html_entity_decode($oItem->totals->formatted->tax),
+                                'grand' => html_entity_decode($oItem->totals->formatted->grand),
                             ],
                         ];
                     }, $oPayment->invoice->items->data),
