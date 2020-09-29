@@ -804,29 +804,6 @@ class Invoice extends Base
                 throw new InvoiceException('Invoice must be in an open state to send.');
             }
 
-            if (!empty($sEmailOverride)) {
-
-                //  @todo (Pablo - 2019-08-02) - validate email address (or addresses if an array)
-                $aEmails = explode(',', $sEmailOverride);
-
-            } elseif (!empty($oInvoice->customer->billing_email)) {
-
-                $aEmails = explode(',', $oInvoice->customer->billing_email);
-
-            } elseif (!empty($oInvoice->customer->email)) {
-
-                $aEmails = [$oInvoice->customer->email];
-
-            } elseif (!empty($oInvoice->email)) {
-
-                $aEmails = [$oInvoice->email];
-
-            } else {
-                throw new InvoiceException('No email address to send the invoice to.');
-            }
-
-            $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
-
             $oBillingAddress  = $oInvoice->billingAddress();
             $oDeliveryAddress = $oInvoice->deliveryAddress();
 
@@ -876,6 +853,31 @@ class Invoice extends Base
                         }, $oInvoice->items->data),
                     ],
                 ]);
+
+            if (!empty($sEmailOverride)) {
+                //  @todo (Pablo - 2019-08-02) - validate email address (or addresses if an array)
+                $aEmails = explode(',', $sEmailOverride);
+
+            } elseif (!empty($oInvoice->customer->billing_email)) {
+
+                $aEmails = explode(',', $oInvoice->customer->billing_email);
+
+            } elseif (!empty($oInvoice->customer->email)) {
+
+                $aEmails = [$oInvoice->customer->email];
+
+            } elseif (!empty($oInvoice->email)) {
+
+                $aEmails = [$oInvoice->email];
+
+            } else {
+                throw new InvoiceException('No email address to send the invoice to.');
+            }
+
+            $aEmails = array_unique($aEmails);
+            $aEmails = array_filter($aEmails);
+
+            $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
                 try {

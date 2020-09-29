@@ -16,15 +16,14 @@ use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
-use Nails\Common\Resource;
 use Nails\Currency;
-use Nails\Email;
-use Nails\Email\Service\Emailer;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
+use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Exception\PaymentException;
-use stdClass;
+use Nails\Invoice\Factory\Email\Refund\Complete;
+use Nails\Invoice\Factory\Email\Refund\Processing;
 
 /**
  * Class Refund
@@ -142,8 +141,8 @@ class Refund extends Base
     /**
      * Create a new refund
      *
-     * @param array   $aData         The data to create the refund with
-     * @param boolean $bReturnObject Whether to return the complete refund object
+     * @param array $aData         The data to create the refund with
+     * @param bool  $bReturnObject Whether to return the complete refund object
      *
      * @return mixed
      */
@@ -185,10 +184,10 @@ class Refund extends Base
     /**
      * Update a payment
      *
-     * @param integer $iRefundId The ID of the refund to update
-     * @param array   $aData     The data to update the payment with
+     * @param int   $iRefundId The ID of the refund to update
+     * @param array $aData     The data to update the payment with
      *
-     * @return boolean
+     * @return bool
      */
     public function update($iRefundId, array $aData = []): bool
     {
@@ -251,10 +250,10 @@ class Refund extends Base
     /**
      * Set a refund as PENDING
      *
-     * @param integer $iRefundId The refund to update
-     * @param array   $aData     Any additional data to save to the transaction
+     * @param int   $iRefundId The refund to update
+     * @param array $aData     Any additional data to save to the transaction
      *
-     * @return boolean
+     * @return bool
      */
     public function setPending($iRefundId, $aData = [])
     {
@@ -267,10 +266,10 @@ class Refund extends Base
     /**
      * Set a refund as PROCESSING
      *
-     * @param integer $iRefundId The refund to update
-     * @param array   $aData     Any additional data to save to the transaction
+     * @param int   $iRefundId The refund to update
+     * @param array $aData     Any additional data to save to the transaction
      *
-     * @return boolean
+     * @return bool
      */
     public function setProcessing($iRefundId, $aData = [])
     {
@@ -283,10 +282,10 @@ class Refund extends Base
     /**
      * Set a refund as COMPLETE
      *
-     * @param integer $iRefundId The refund to update
-     * @param array   $aData     Any additional data to save to the transaction
+     * @param int   $iRefundId The refund to update
+     * @param array $aData     Any additional data to save to the transaction
      *
-     * @return boolean
+     * @return bool
      */
     public function setComplete($iRefundId, $aData = [])
     {
@@ -299,10 +298,10 @@ class Refund extends Base
     /**
      * Set a refund as FAILED
      *
-     * @param integer $iRefundId The refund to update
-     * @param array   $aData     Any additional data to save to the transaction
+     * @param int   $iRefundId The refund to update
+     * @param array $aData     Any additional data to save to the transaction
      *
-     * @return boolean
+     * @return bool
      */
     public function setFailed($iRefundId, $aData = [])
     {
@@ -315,8 +314,8 @@ class Refund extends Base
     /**
      * Sends refund receipt email
      *
-     * @param integer $iRefundId      The ID of the refund
-     * @param string  $sEmailOverride The email address to send the email to
+     * @param int         $iRefundId      The ID of the refund
+     * @param string|null $sEmailOverride The email address to send the email to
      *
      * @return bool
      */
@@ -324,6 +323,7 @@ class Refund extends Base
     {
         try {
 
+            /** @var \Nails\Invoice\Resource\Refund $oRefund */
             $oRefund = $this->getById(
                 $iRefundId,
                 [
@@ -342,25 +342,42 @@ class Refund extends Base
                 throw new PaymentException('Refund must be in a paid or processing state to send receipt.', 1);
             }
 
-            $oEmail = new stdClass();
-
             if ($oRefund->status->id == self::STATUS_COMPLETE) {
-                $oEmail->type = 'refund_complete_receipt';
+                /** @var Complete $oEmail */
+                $oEmail = Factory::factory('EmailRefundComplete', Constants::MODULE_SLUG);
             } else {
-                $oEmail->type = 'refund_processing_receipt';
+                /** @var Processing $oEmail */
+                $oEmail = Factory::factory('EmailRefundProcessing', Constants::MODULE_SLUG);
             }
 
-            $oEmail->data = [
-                'refund' => $oRefund,
-            ];
+            $oEmail->data([
+                'refund'  => [
+                    'id'     => $oRefund->id,
+                    'ref'    => $oRefund->ref,
+                    'reason' => $oRefund->reason,
+                    'amount' => $oRefund->amount->formatted,
+                ],
+                'payment' => [
+                    'id'     => $oRefund->payment->id,
+                    'ref'    => $oRefund->payment->ref,
+                    'amount' => $oRefund->payment->amount->formatted,
+                ],
+                'invoice' => [
+                    'id'  => $oRefund->invoice->id,
+                    'ref' => $oRefund->invoice->ref,
+                ],
+            ]);
 
             if (!empty($sEmailOverride)) {
                 //  @todo (Pablo - 2019-01-20) - validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
+
             } elseif (!empty($oRefund->invoice->customer->billing_email)) {
                 $aEmails = explode(',', $oRefund->invoice->customer->billing_email);
+
             } elseif (!empty($oRefund->invoice->customer->email)) {
                 $aEmails = [$oRefund->invoice->customer->email];
+
             } else {
                 throw new PaymentException('No email address to send the receipt to.', 1);
             }
@@ -368,27 +385,28 @@ class Refund extends Base
             $aEmails = array_unique($aEmails);
             $aEmails = array_filter($aEmails);
 
-            /** @var Emailer $oEmailer */
-            $oEmailer = Factory::service('Emailer', Email\Constants::MODULE_SLUG);
             /** @var Invoice\Email $oInvoiceEmailModel */
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
+                try {
 
-                $oEmail->to_email = $sEmail;
-                $oResult          = $oEmailer->send($oEmail);
+                    $oEmail
+                        ->to($sEmail)
+                        ->send();
 
-                if (!empty($oResult)) {
-                    $oInvoiceEmailModel->create(
-                        [
-                            'invoice_id' => $oRefund->invoice->id,
-                            'email_id'   => $oResult->id,
-                            'email_type' => $oEmail->type,
-                            'recipient'  => $oEmail->to_email,
-                        ]
-                    );
-                } else {
-                    throw new PaymentException($oEmailer->lastError(), 1);
+                    $aGeneratedEmails = $oEmail->getGeneratedEmails();
+                    $oLastEmail       = reset($aGeneratedEmails);
+
+                    $oInvoiceEmailModel->create([
+                        'invoice_id' => $oRefund->payment->invoice->id,
+                        'email_id'   => $oLastEmail->id,
+                        'email_type' => $oLastEmail->type,
+                        'recipient'  => $sEmail,
+                    ]);
+
+                } catch (\Exception $e) {
+                    throw new InvoiceException($e->getMessage(), null, $e);
                 }
             }
 
@@ -407,11 +425,12 @@ class Refund extends Base
      *
      * @param int $iRefundId The refund ID
      *
-     * @return Resource
+     * @return \Nails\Invoice\Resource\Refund
      * @throws ModelException
      */
-    protected function getRefundForEvent(int $iRefundId): Resource
+    protected function getRefundForEvent(int $iRefundId): \Nails\Invoice\Resource\Refund
     {
+        /** @var \Nails\Invoice\Resource\Refund $oRefund */
         $oRefund = $this->getById($iRefundId);
         if (empty($oRefund)) {
             throw new ModelException('Invalid refund ID');
@@ -425,12 +444,12 @@ class Refund extends Base
      * Formats a single object
      *
      * The getAll() method iterates over each returned item with this method so as to
-     * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
+     * correctly format the output. Use this to cast ints and bools and/or organise data into objects.
      *
      * @param object $oObj      A reference to the object being formatted.
      * @param array  $aData     The same data array which is passed to _getcount_common, for reference if needed
-     * @param array  $aIntegers Fields which should be cast as integers if numerical and not null
-     * @param array  $aBools    Fields which should be cast as booleans if not null
+     * @param array  $aIntegers Fields which should be cast as ints if numerical and not null
+     * @param array  $aBools    Fields which should be cast as bools if not null
      * @param array  $aFloats   Fields which should be cast as floats if not null
      *
      * @return void

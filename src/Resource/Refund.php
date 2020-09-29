@@ -9,10 +9,13 @@
 
 namespace Nails\Invoice\Resource;
 
+use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Entity;
+use Nails\Currency\Exception\CurrencyException;
 use Nails\Currency\Service\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
+use Nails\Invoice\Resource\Refund\Amount;
 use Nails\Invoice\Resource\Refund\Status;
 
 class Refund extends Entity
@@ -24,12 +27,18 @@ class Refund extends Entity
      */
     public $payment_id;
 
+    /** @var Payment */
+    public $payment;
+
     /**
      * The refund's invoice ID
      *
      * @var int
      */
     public $invoice_id;
+
+    /** @var Invoice */
+    public $invoice;
 
     /**
      * The refund's ref
@@ -78,8 +87,10 @@ class Refund extends Entity
      */
     public $currency;
 
-
+    /** @var Amount */
     public $amount;
+
+    /** @var Amount */
     public $fee;
 
     // --------------------------------------------------------------------------
@@ -88,6 +99,9 @@ class Refund extends Entity
      * Refund constructor.
      *
      * @param array $mObj
+     *
+     * @throws FactoryException
+     * @throws CurrencyException
      */
     public function __construct($mObj = [])
     {

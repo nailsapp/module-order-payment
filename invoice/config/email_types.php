@@ -55,6 +55,7 @@ $config['email_types'] = [
         'template_body'   => 'invoice/email/refund_complete_receipt',
         'template_footer' => '',
         'default_subject' => 'You have been refunded',
+        'factory'         => Constants::MODULE_SLUG . '::EmailRefundComplete',
     ],
     (object) [
         'slug'            => 'refund_processing_receipt',
@@ -65,5 +66,6 @@ $config['email_types'] = [
         'template_body'   => 'invoice/email/refund_processing_receipt',
         'template_footer' => '',
         'default_subject' => 'We are processing your refund',
+        'factory'         => Constants::MODULE_SLUG . '::EmailRefundProcessing',
     ],
 ];

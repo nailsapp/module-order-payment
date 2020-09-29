@@ -8,15 +8,15 @@
     <tbody>
         <tr>
             <td style="padding: 5px;width: 100px;">Reference:</td>
-            <td style="padding: 5px;">{{refund.payment.ref}}</td>
+            <td style="padding: 5px;">{{payment.ref}}</td>
         </tr>
         <tr>
             <td style="padding: 5px;width: 100px;">Invoice:</td>
-            <td style="padding: 5px;">{{refund.invoice.ref}}</td>
+            <td style="padding: 5px;">{{invoice.ref}}</td>
         </tr>
         <tr>
             <td style="padding: 5px;">Amount:</td>
-            <td style="padding: 5px;">{{{refund.payment.amount.formatted}}}</td>
+            <td style="padding: 5px;">{{payment.amount}}}</td>
         </tr>
     </tbody>
 </table>
@@ -37,7 +37,7 @@
         {{/refund.reason}}
         <tr>
             <td style="padding: 5px;">Amount:</td>
-            <td style="padding: 5px;">{{{refund.amount.formatted}}}</td>
+            <td style="padding: 5px;">{{{refund.amount}}}</td>
         </tr>
     </tbody>
 </table>

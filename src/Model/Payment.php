@@ -479,6 +479,9 @@ class Payment extends Base
                 throw new PaymentException('Payment must be in a paid or processing state to send receipt.');
             }
 
+            $oBillingAddress  = $oPayment->invoice->billingAddress();
+            $oDeliveryAddress = $oPayment->invoice->deliveryAddress();
+
             if ($oPayment->status->id == self::STATUS_COMPLETE) {
                 /** @var Complete $oEmail */
                 $oEmail = Factory::factory('EmailPaymentComplete', Constants::MODULE_SLUG);
@@ -486,9 +489,6 @@ class Payment extends Base
                 /** @var Processing $oEmail */
                 $oEmail = Factory::factory('EmailPaymentProcessing', Constants::MODULE_SLUG);
             }
-
-            $oBillingAddress  = $oPayment->invoice->billingAddress();
-            $oDeliveryAddress = $oPayment->invoice->deliveryAddress();
 
             $oEmail->data([
                 'payment' => (object) [
@@ -539,7 +539,7 @@ class Payment extends Base
             ]);
 
             if (!empty($sEmailOverride)) {
-                //  @todo, validate email address (or addresses if an array)
+                //  @todo (Pablo - 2019-08-02) - validate email address (or addresses if an array)
                 $aEmails = explode(',', $sEmailOverride);
 
             } elseif (!empty($oPayment->invoice->customer->billing_email)) {
@@ -558,6 +558,7 @@ class Payment extends Base
             $aEmails = array_unique($aEmails);
             $aEmails = array_filter($aEmails);
 
+            /** @var Invoice\Email $oInvoiceEmailModel */
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
