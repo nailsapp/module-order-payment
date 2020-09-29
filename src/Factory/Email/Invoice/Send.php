@@ -19,7 +19,7 @@ class Send extends Email
      *
      * @var string
      */
-    protected static $sType = 'send_invoice';
+    protected $sType = 'send_invoice';
 
     // --------------------------------------------------------------------------
 

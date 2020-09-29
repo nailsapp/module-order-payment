@@ -16,7 +16,7 @@ class Processing extends Email
      *
      * @var string
      */
-    protected static $sType = 'refund_processing_receipt';
+    protected $sType = 'refund_processing_receipt';
 
     // --------------------------------------------------------------------------
 

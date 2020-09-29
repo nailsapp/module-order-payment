@@ -19,7 +19,7 @@ class Complete extends Email
      *
      * @var string
      */
-    protected static $sType = 'payment_complete_receipt';
+    protected $sType = 'payment_complete_receipt';
 
     // --------------------------------------------------------------------------
 
