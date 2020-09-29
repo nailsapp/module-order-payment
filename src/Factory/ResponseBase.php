@@ -13,6 +13,7 @@
 namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Exception\ResponseException;
+use stdClass;
 
 /**
  * Class ResponseBase
@@ -367,9 +368,9 @@ class ResponseBase
     /**
      * Return the error messages
      *
-     * @return \stdClass
+     * @return stdClass
      */
-    public function getError(): \stdClass
+    public function getError(): stdClass
     {
         return (object) [
             'msg'  => $this->getErrorMessage(),

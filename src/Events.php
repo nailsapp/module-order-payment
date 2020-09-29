@@ -13,6 +13,7 @@ namespace Nails\Invoice;
 
 use Nails\Common\Events\Base;
 use Nails\Invoice\Resource\Invoice;
+use stdClass;
 
 /**
  * Class Events
@@ -75,14 +76,14 @@ class Events extends Base
     /**
      * Fired when a payment is created
      *
-     * @param \stdClass $oPayment The newly created payment
+     * @param stdClass $oPayment The newly created payment
      */
     const PAYMENT_CREATED = 'PAYMENT:CREATED';
 
     /**
      * Fired when a payment is updated
      *
-     * @param \stdClass $oPayment The payment which was updated
+     * @param stdClass $oPayment The payment which was updated
      */
     const PAYMENT_UPDATED = 'PAYMENT:UPDATED';
 
@@ -91,14 +92,14 @@ class Events extends Base
     /**
      * Fired when a refund is created
      *
-     * @param \stdClass $oRefund The newly created refund
+     * @param stdClass $oRefund The newly created refund
      */
     const REFUND_CREATED = 'REFUND:CREATED';
 
     /**
      * Fired when a refund is updated
      *
-     * @param \stdClass $oRefund The refund which was updated
+     * @param stdClass $oRefund The refund which was updated
      */
     const REFUND_UPDATED = 'REFUND:UPDATED';
 }

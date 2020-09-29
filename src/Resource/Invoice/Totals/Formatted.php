@@ -4,6 +4,7 @@ namespace Nails\Invoice\Resource\Invoice\Totals;
 
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource;
+use Nails\Currency\Constants;
 use Nails\Currency\Exception\CurrencyException;
 use Nails\Currency\Service\Currency;
 use Nails\Factory;
@@ -65,7 +66,7 @@ class Formatted extends Resource
         parent::__construct($mObj);
 
         /** @var Currency $oCurrencyService */
-        $oCurrencyService = Factory::service('Currency', \Nails\Currency\Constants::MODULE_SLUG);
+        $oCurrencyService = Factory::service('Currency', Constants::MODULE_SLUG);
 
         foreach (['sub', 'tax', 'grand', 'paid', 'processing'] as $sProperty) {
             $this->{$sProperty} = $oCurrencyService->format(

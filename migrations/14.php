@@ -18,6 +18,7 @@ use Nails\Common\Console\Migrate\Base;
 use Nails\Common\Service\Country;
 use Nails\Factory;
 use Nails\Invoice\Resource\Customer;
+use PDO;
 
 class Migration14 extends Base
 {
@@ -104,7 +105,7 @@ class Migration14 extends Base
             );
         ');
 
-        while ($oCustomer = $oResult->fetch(\PDO::FETCH_OBJ)) {
+        while ($oCustomer = $oResult->fetch(PDO::FETCH_OBJ)) {
 
             $sCountry = getFromArray(trim(strtolower($oCustomer->billing_address_country)), $aCountries);
 

@@ -12,6 +12,7 @@ namespace Nails\Invoice\Resource\Invoice;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Entity;
 use Nails\Currency\Exception\CurrencyException;
+use Nails\Currency\Service\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Resource\Invoice;
@@ -125,7 +126,7 @@ class Item extends Entity
         // --------------------------------------------------------------------------
 
         //  Currency
-        /** @var \Nails\Currency\Service\Currency $oCurrencyService */
+        /** @var Currency $oCurrencyService */
         $oCurrencyService = Factory::service('Currency', \Nails\Currency\Constants::MODULE_SLUG);
         $this->currency   = $oCurrencyService->getByIsoCode($mObj->currency);
 

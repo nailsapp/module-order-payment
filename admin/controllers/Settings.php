@@ -12,6 +12,7 @@
 
 namespace Nails\Admin\Invoice;
 
+use Exception;
 use Nails\Admin\Controller\Base;
 use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
@@ -151,7 +152,7 @@ class Settings extends Base
                     $oDb->trans_commit();
                     $this->data['success'] = 'Invoice &amp; Payment settings were saved.';
 
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $oDb->trans_rollback();
                     $this->data['error'] = 'There was a problem saving settings. ' . $e->getMessage();
                 }

@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Model;
 
+use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
@@ -23,6 +24,7 @@ use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\PaymentException;
+use stdClass;
 
 /**
  * Class Refund
@@ -171,7 +173,7 @@ class Refund extends Base
 
             return $mRefund;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -212,7 +214,7 @@ class Refund extends Base
 
             return $bResult;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -340,7 +342,7 @@ class Refund extends Base
                 throw new PaymentException('Refund must be in a paid or processing state to send receipt.', 1);
             }
 
-            $oEmail = new \stdClass();
+            $oEmail = new stdClass();
 
             if ($oRefund->status->id == self::STATUS_COMPLETE) {
                 $oEmail->type = 'refund_complete_receipt';
@@ -368,7 +370,7 @@ class Refund extends Base
 
             /** @var Emailer $oEmailer */
             $oEmailer = Factory::service('Emailer', Email\Constants::MODULE_SLUG);
-            /** @var \Nails\Invoice\Model\Invoice\Email $oInvoiceEmailModel */
+            /** @var Invoice\Email $oInvoiceEmailModel */
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             foreach ($aEmails as $sEmail) {
@@ -390,7 +392,7 @@ class Refund extends Base
                 }
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setError($e->getMessage());
             return false;
         }

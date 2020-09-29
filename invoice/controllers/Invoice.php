@@ -384,7 +384,7 @@ class Invoice extends Base
                     throw new InvoiceException('Payment failed.');
                 }
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
 
                 $sErrorUrl = !empty($oChargeResponse) ? $oChargeResponse->getErrorUrl() : null;
                 if (!empty($sErrorUrl)) {

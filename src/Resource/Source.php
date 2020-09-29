@@ -14,6 +14,7 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Date;
 use Nails\Common\Resource\Entity;
 use Nails\Factory;
+use stdClass;
 
 /**
  * Class Source
@@ -39,7 +40,7 @@ class Source extends Entity
     /**
      * Any data required by the driver
      *
-     * @var \stdClass
+     * @var stdClass
      */
     public $data;
 

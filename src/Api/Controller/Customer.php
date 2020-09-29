@@ -15,6 +15,7 @@ namespace Nails\Invoice\Api\Controller;
 use Nails\Api\Controller\CrudController;
 use Nails\Api\Exception\ApiException;
 use Nails\Invoice\Constants;
+use stdClass;
 
 /**
  * Class Customer
@@ -78,9 +79,9 @@ class Customer extends CrudController
     // --------------------------------------------------------------------------
 
     /**
-     * @param \stdClass $oObj
+     * @param stdClass $oObj
      *
-     * @return object|\stdClass
+     * @return object|stdClass
      */
     protected function formatObject($oObj)
     {

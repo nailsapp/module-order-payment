@@ -15,6 +15,7 @@ use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item\CallbackData;
 use Nails\Invoice\Model\Invoice;
 use Nails\Invoice\Resource\Tax;
+use stdClass;
 
 /**
  * Class Item
@@ -286,11 +287,11 @@ class Item
     {
         if ($mKey instanceof CallbackData) {
             $this->oCallbackData = $mKey;
-        } elseif ($mKey instanceof \stdClass) {
+        } elseif ($mKey instanceof stdClass) {
             $this->oCallbackData = new CallbackData($mKey);
         } else {
             if ($this->oCallbackData === null) {
-                $this->oCallbackData = new \stdClass();
+                $this->oCallbackData = new stdClass();
             }
             $this->oCallbackData->{$mKey} = $mValue;
         }

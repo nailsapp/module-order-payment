@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Factory;
 
+use DateTime;
 use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
@@ -622,7 +623,7 @@ class ChargeRequest extends RequestBase
             if (!empty($this->oSource->expiry->raw)) {
 
                 $oNow     = Factory::factory('DateTime');
-                $oExpires = new \DateTime($this->oSource->expiry->raw);
+                $oExpires = new DateTime($this->oSource->expiry->raw);
 
                 if ($oExpires < $oNow) {
                     throw new ChargeRequestException\PaymentSourceExpiredException(

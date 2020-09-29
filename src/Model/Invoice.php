@@ -12,6 +12,10 @@
 
 namespace Nails\Invoice\Model;
 
+use CI_DB_mysqli_result;
+use DateInterval;
+use DateTime;
+use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
@@ -24,6 +28,7 @@ use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Invoice\Item;
+use stdClass;
 
 /**
  * Class Invoice
@@ -190,7 +195,7 @@ class Invoice extends Base
      * @throws FactoryException
      * @throws ModelException
      */
-    public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): \CI_DB_mysqli_result
+    public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): CI_DB_mysqli_result
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
@@ -355,7 +360,7 @@ class Invoice extends Base
 
             return $bReturnObject ? $oInvoice : $oInvoice->id;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -432,7 +437,7 @@ class Invoice extends Base
 
             return $bResult;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -479,8 +484,8 @@ class Invoice extends Base
                 $iTerms = (int) appSetting('default_payment_terms', Constants::MODULE_SLUG);
             }
 
-            $oDate = new \DateTime($aData['dated']);
-            $oDate->add(new \DateInterval('P' . $iTerms . 'D'));
+            $oDate = new DateTime($aData['dated']);
+            $oDate->add(new DateInterval('P' . $iTerms . 'D'));
             $aData['due'] = $oDate->format('Y-m-d');
         }
 
@@ -827,7 +832,7 @@ class Invoice extends Base
             $oBillingAddress  = $oInvoice->billingAddress();
             $oDeliveryAddress = $oInvoice->deliveryAddress();
 
-            $oEmail       = new \stdClass();
+            $oEmail       = new stdClass();
             $oEmail->type = 'send_invoice';
             $oEmail->data = [
                 'invoice' => [
@@ -892,7 +897,7 @@ class Invoice extends Base
                 }
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setError($e->getMessage());
             return false;
         }

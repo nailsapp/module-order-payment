@@ -1,9 +1,12 @@
 <?php
 
-//  Get any additional libraries we'll need
-$oInput = \Nails\Factory::service('Input');
+use Nails\Factory;
+use Nails\Invoice\Constants;
 
-use Nails\Invoice\Constants; ?>
+//  Get any additional libraries we'll need
+$oInput = Factory::service('Input');
+
+?>
 <div class="group-invoice settings">
     <?php
 

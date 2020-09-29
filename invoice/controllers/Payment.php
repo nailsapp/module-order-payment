@@ -114,7 +114,7 @@ class Payment extends Base
                     throw new NailsException('Payment failed.');
                 }
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 /** @var Session $oSession */
                 $oSession = Factory::service('Session');
                 $oSession->setFlashData('error', $e->getMessage());

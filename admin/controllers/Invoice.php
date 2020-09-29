@@ -29,6 +29,7 @@ use Nails\Invoice\Constants;
 use Nails\Invoice\Model;
 use Nails\Invoice\Model\Invoice\Item;
 use Nails\Invoice\Model\Tax;
+use stdClass;
 
 /**
  * Class Invoice
@@ -318,15 +319,15 @@ class Invoice extends Base
                 $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
 
                 $sUnitCost                     = $aItem['unit_cost'];
-                $aItem['unit_cost']            = new \stdClass();
-                $aItem['unit_cost']->formatted = new \stdClass();
+                $aItem['unit_cost']            = new stdClass();
+                $aItem['unit_cost']->formatted = new stdClass();
                 $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
 
-                $aItem['tax']     = new \stdClass();
+                $aItem['tax']     = new stdClass();
                 $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
 
                 $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
-                $aItem['unit']     = new \stdClass();
+                $aItem['unit']     = new stdClass();
                 $aItem['unit']->id = $sUnit;
             }
 
@@ -458,15 +459,15 @@ class Invoice extends Base
                 $aItem['body']  = html_entity_decode($aItem['body'], ENT_QUOTES, 'UTF-8');
 
                 $sUnitCost                     = $aItem['unit_cost'];
-                $aItem['unit_cost']            = new \stdClass();
-                $aItem['unit_cost']->formatted = new \stdClass();
+                $aItem['unit_cost']            = new stdClass();
+                $aItem['unit_cost']->formatted = new stdClass();
                 $aItem['unit_cost']->formatted = !empty($sUnitCost) ? $sUnitCost : null;
 
-                $aItem['tax']     = new \stdClass();
+                $aItem['tax']     = new stdClass();
                 $aItem['tax']->id = !empty($aItem['tax_id']) ? (int) $aItem['tax_id'] : null;
 
                 $sUnit             = !empty($aItem['unit']) ? $aItem['unit'] : null;
-                $aItem['unit']     = new \stdClass();
+                $aItem['unit']     = new stdClass();
                 $aItem['unit']->id = $sUnit;
             }
 

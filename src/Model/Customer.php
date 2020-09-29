@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Model;
 
+use Exception;
 use Nails\Admin\Helper\Form;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Factory\Model\Field;
@@ -151,7 +152,7 @@ class Customer extends Base
 
             return parent::create($aData, $bReturnObject);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setError($e->getMessage());
             return false;
         }
@@ -189,7 +190,7 @@ class Customer extends Base
 
             return parent::update($iCustomerId, $aData);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setError($e->getMessage());
             return false;
         }

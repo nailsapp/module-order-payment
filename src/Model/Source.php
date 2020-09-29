@@ -9,6 +9,8 @@
 
 namespace Nails\Invoice\Model;
 
+use DateTime;
+use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Exception\ValidationException;
@@ -220,7 +222,7 @@ class Source extends Base
             $oDb->trans_commit();
             return true;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -302,7 +304,7 @@ class Source extends Base
 
             return true;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             return false;
         }
@@ -421,8 +423,8 @@ class Source extends Base
     protected function validateExpiry(string $sExpiry): void
     {
         try {
-            $oExpiry = new \DateTime($sExpiry);
-        } catch (\Exception $e) {
+            $oExpiry = new DateTime($sExpiry);
+        } catch (Exception $e) {
             throw new DriverException('"' . $sExpiry . '" is not a valid expiry date.', null, $e);
         }
 

@@ -13,6 +13,7 @@ use Nails\Common\Resource\Entity;
 use Nails\Email\Constants;
 use Nails\Email\Service\Emailer;
 use Nails\Factory;
+use Nails\Invoice\Resource\Invoice;
 
 class Email extends Entity
 {
@@ -26,7 +27,7 @@ class Email extends Entity
     /**
      * The invoice object
      *
-     * @var \Nails\Invoice\Resource\Invoice
+     * @var Invoice
      */
     public $invoice;
 

@@ -172,7 +172,7 @@ class Payment extends Entity
     /**
      * The payment's custom data
      *
-     * @var \Nails\Invoice\Resource\Invoice\Data\Payment
+     * @var Invoice\Data\Payment
      */
     public $custom_data;
 

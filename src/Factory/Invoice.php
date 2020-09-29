@@ -30,6 +30,7 @@ use Nails\Invoice\Factory\Invoice\PaymentData;
 use Nails\Invoice\Interfaces\Driver\Payment;
 use Nails\Invoice\Model;
 use Nails\Invoice\Resource;
+use stdClass;
 
 /**
  * Class Invoice
@@ -600,11 +601,11 @@ class Invoice
 
         if ($mKey instanceof CallbackData) {
             $this->oCallbackData = $mKey;
-        } elseif ($mKey instanceof \stdClass) {
+        } elseif ($mKey instanceof stdClass) {
             $this->oCallbackData = new CallbackData($mKey);
         } else {
             if ($this->oCallbackData === null) {
-                $this->oCallbackData = new \stdClass();
+                $this->oCallbackData = new stdClass();
             }
             $this->oCallbackData->{$mKey} = $mValue;
         }

@@ -1,5 +1,6 @@
 <?php
 
+use Nails\Currency\Resource\Currency;
 use Nails\Invoice\Constants;
 
 ?>
@@ -62,7 +63,7 @@ use Nails\Invoice\Constants;
             'required' => true,
             'options'  => array_combine(
                 arrayExtractProperty($currencies, 'code'),
-                array_map(function (\Nails\Currency\Resource\Currency $oCurrency) {
+                array_map(function (Currency $oCurrency) {
                     return $oCurrency->code . ' - ' . $oCurrency->label;
                 }, $currencies)
             ),

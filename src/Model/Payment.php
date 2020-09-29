@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Model;
 
+use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
@@ -27,6 +28,8 @@ use Nails\Invoice\Exception\RefundRequestException;
 use Nails\Invoice\Exception\RequestException;
 use Nails\Invoice\Factory\RefundRequest;
 use Nails\Invoice\Factory\RefundResponse;
+use Nails\Invoice\Resource\Invoice\Item;
+use stdClass;
 
 /**
  * Class Payment
@@ -253,7 +256,7 @@ class Payment extends Base
 
             return $mPayment;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -300,7 +303,7 @@ class Payment extends Base
 
             return $bResult;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $oDb->trans_rollback();
             $this->setError($e->getMessage());
             return false;
@@ -475,7 +478,7 @@ class Payment extends Base
                 throw new PaymentException('Payment must be in a paid or processing state to send receipt.');
             }
 
-            $oEmail = new \stdClass();
+            $oEmail = new stdClass();
 
             if ($oPayment->status->id == self::STATUS_COMPLETE) {
                 $oEmail->type = 'payment_complete_receipt';
@@ -516,7 +519,7 @@ class Payment extends Base
                         'tax'   => $oPayment->invoice->totals->formatted->tax,
                         'grand' => $oPayment->invoice->totals->formatted->grand,
                     ],
-                    'items'    => array_map(function (\Nails\Invoice\Resource\Invoice\Item $oItem) {
+                    'items'    => array_map(function (Item $oItem) {
                         return [
                             'id'     => $oItem->id,
                             'label'  => $oItem->label,
@@ -569,7 +572,7 @@ class Payment extends Base
                 }
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->setError($e->getMessage());
             return false;
         }
