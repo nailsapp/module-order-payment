@@ -22,7 +22,6 @@ use Nails\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
-use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Exception\PaymentException;
 use Nails\Invoice\Exception\RefundRequestException;
 use Nails\Invoice\Exception\RequestException;
@@ -552,36 +551,16 @@ class Payment extends Base
                 $aEmails = [$oPayment->invoice->email];
 
             } else {
-                throw new PaymentException('No email address to send the receipt to.');
+                $aEmails = [];
             }
-
-            $aEmails = array_unique($aEmails);
-            $aEmails = array_filter($aEmails);
 
             /** @var Invoice\Email $oInvoiceEmailModel */
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
-
-            foreach ($aEmails as $sEmail) {
-                try {
-
-                    $oEmail
-                        ->to($sEmail)
-                        ->send();
-
-                    $aGeneratedEmails = $oEmail->getGeneratedEmails();
-                    $oLastEmail       = reset($aGeneratedEmails);
-
-                    $oInvoiceEmailModel->create([
-                        'invoice_id' => $oPayment->invoice->id,
-                        'email_id'   => $oLastEmail->id,
-                        'email_type' => $oLastEmail->type,
-                        'recipient'  => $sEmail,
-                    ]);
-
-                } catch (\Exception $e) {
-                    throw new InvoiceException($e->getMessage(), null, $e);
-                }
-            }
+            $oInvoiceEmailModel->sendEmails(
+                $aEmails,
+                $oEmail,
+                $oPayment->invoice
+            );
 
         } catch (Exception $e) {
             $this->setError($e->getMessage());

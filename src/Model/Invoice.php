@@ -28,6 +28,7 @@ use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
 use Nails\Invoice\Factory\Email\Invoice\Send;
 use Nails\Invoice\Factory\Invoice\Item;
+use Nails\Invoice\Model\Invoice\Email;
 
 /**
  * Class Invoice
@@ -859,47 +860,25 @@ class Invoice extends Base
                 $aEmails = explode(',', $sEmailOverride);
 
             } elseif (!empty($oInvoice->customer->billing_email)) {
-
                 $aEmails = explode(',', $oInvoice->customer->billing_email);
 
             } elseif (!empty($oInvoice->customer->email)) {
-
                 $aEmails = [$oInvoice->customer->email];
 
             } elseif (!empty($oInvoice->email)) {
-
                 $aEmails = [$oInvoice->email];
 
             } else {
-                throw new InvoiceException('No email address to send the invoice to.');
+                $aEmails = [];
             }
 
-            $aEmails = array_unique($aEmails);
-            $aEmails = array_filter($aEmails);
-
+            /** @var Email $oInvoiceEmailModel */
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
-
-            foreach ($aEmails as $sEmail) {
-                try {
-
-                    $oEmail
-                        ->to($sEmail)
-                        ->send();
-
-                    $aGeneratedEmails = $oEmail->getGeneratedEmails();
-                    $oLastEmail       = reset($aGeneratedEmails);
-
-                    $oInvoiceEmailModel->create([
-                        'invoice_id' => $oInvoice->id,
-                        'email_id'   => $oLastEmail->id,
-                        'email_type' => $oLastEmail->type,
-                        'recipient'  => $sEmail,
-                    ]);
-
-                } catch (\Exception $e) {
-                    throw new InvoiceException($e->getMessage(), null, $e);
-                }
-            }
+            $oInvoiceEmailModel->sendEmails(
+                $aEmails,
+                $oEmail,
+                $oInvoice
+            );
 
         } catch (Exception $e) {
             $this->setError($e->getMessage());

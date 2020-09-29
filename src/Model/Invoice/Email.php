@@ -14,6 +14,8 @@ namespace Nails\Invoice\Model\Invoice;
 
 use Nails\Common\Model\Base;
 use Nails\Invoice\Constants;
+use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Resource\Invoice;
 
 /**
  * Class Email
@@ -65,6 +67,45 @@ class Email extends Base
                 'provider'  => \Nails\Email\Constants::MODULE_SLUG,
                 'id_column' => 'email_id',
             ]);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sends an email to recipients and records it against an invoice
+     *
+     * @param string[]                   $aEmails Array of emails
+     * @param \Nails\Email\Factory\Email $oEmail
+     * @param Invoice                    $oInvoice
+     *
+     * @throws InvoiceException
+     */
+    public function sendEmails(array $aEmails, \Nails\Email\Factory\Email $oEmail, Invoice $oInvoice)
+    {
+        $aEmails = array_unique($aEmails);
+        $aEmails = array_filter($aEmails);
+
+        foreach ($aEmails as $sEmail) {
+            try {
+
+                $oEmail
+                    ->to($sEmail)
+                    ->send();
+
+                $aGeneratedEmails = $oEmail->getGeneratedEmails();
+                $oLastEmail       = reset($aGeneratedEmails);
+
+                $this->create([
+                    'invoice_id' => $oInvoice->id,
+                    'email_id'   => $oLastEmail->id,
+                    'email_type' => $oLastEmail->type,
+                    'recipient'  => $sEmail,
+                ]);
+
+            } catch (\Exception $e) {
+                throw new InvoiceException($e->getMessage(), null, $e);
+            }
+        }
     }
 
     // --------------------------------------------------------------------------
