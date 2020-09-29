@@ -11,7 +11,6 @@ use Nails\Invoice\Factory\RefundResponse;
 use Nails\Invoice\Factory\ScaRequest;
 use Nails\Invoice\Factory\ScaResponse;
 use Nails\Invoice\Resource\Customer;
-use Nails\Invoice\Resource\Customer\Address;
 use Nails\Invoice\Resource\Invoice\Email;
 use Nails\Invoice\Resource\Invoice\Item;
 use Nails\Invoice\Resource\Invoice\Item\Data\Callback;
@@ -197,13 +196,6 @@ return [
                 return new \App\Invoice\Resource\Customer($mObj);
             } else {
                 return new Customer($mObj);
-            }
-        },
-        'CustomerAddress'            => function ($mObj) {
-            if (class_exists('\App\Invoice\Resource\Customer\Address')) {
-                return new \App\Invoice\Resource\Customer\Address($mObj);
-            } else {
-                return new Address($mObj);
             }
         },
         'Invoice'                    => function ($mObj) {
