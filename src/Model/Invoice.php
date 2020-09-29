@@ -887,14 +887,12 @@ class Invoice extends Base
                     $aGeneratedEmails = $oEmail->getGeneratedEmails();
                     $oLastEmail       = reset($aGeneratedEmails);
 
-                    $oInvoiceEmailModel->create(
-                        [
-                            'invoice_id' => $oInvoice->id,
-                            'email_id'   => $oLastEmail->id,
-                            'email_type' => $oLastEmail->type,
-                            'recipient'  => $sEmail,
-                        ]
-                    );
+                    $oInvoiceEmailModel->create([
+                        'invoice_id' => $oInvoice->id,
+                        'email_id'   => $oLastEmail->id,
+                        'email_type' => $oLastEmail->type,
+                        'recipient'  => $sEmail,
+                    ]);
 
                 } catch (\Exception $e) {
                     throw new InvoiceException($e->getMessage(), null, $e);
