@@ -22,13 +22,12 @@ use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Config;
 use Nails\Currency;
-use Nails\Email;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Events;
 use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Factory\Email\Invoice\Send;
 use Nails\Invoice\Factory\Invoice\Item;
-use stdClass;
 
 /**
  * Class Invoice
@@ -826,74 +825,79 @@ class Invoice extends Base
                 throw new InvoiceException('No email address to send the invoice to.');
             }
 
-            $oEmailer           = Factory::service('Emailer', Email\Constants::MODULE_SLUG);
             $oInvoiceEmailModel = Factory::model('InvoiceEmail', Constants::MODULE_SLUG);
 
             $oBillingAddress  = $oInvoice->billingAddress();
             $oDeliveryAddress = $oInvoice->deliveryAddress();
 
-            $oEmail       = new stdClass();
-            $oEmail->type = 'send_invoice';
-            $oEmail->data = [
-                'invoice' => [
-                    'id'       => $oInvoice->id,
-                    'ref'      => $oInvoice->ref,
-                    'due'      => $oInvoice->due->formatted,
-                    'dated'    => $oInvoice->dated->formatted,
-                    'customer' => [
-                        'id'    => $oInvoice->customer->id,
-                        'label' => $oInvoice->customer->label,
+            /** @var Send $oEmail */
+            $oEmail = Factory::factory('EmailInvoiceSend', Constants::MODULE_SLUG);
+            $oEmail
+                ->data([
+                    'invoice' => [
+                        'id'       => $oInvoice->id,
+                        'ref'      => $oInvoice->ref,
+                        'due'      => $oInvoice->due->formatted,
+                        'dated'    => $oInvoice->dated->formatted,
+                        'customer' => [
+                            'id'    => $oInvoice->customer->id,
+                            'label' => $oInvoice->customer->label,
+                        ],
+                        'address'  => [
+                            'billing'  => $oBillingAddress
+                                ? array_filter($oBillingAddress->formatted()->asArray())
+                                : null,
+                            'delivery' => $oDeliveryAddress
+                                ? array_filter($oDeliveryAddress->formatted()->asArray())
+                                : null,
+                        ],
+                        'urls'     => [
+                            'view'     => $oInvoice->urls->view,
+                            'payment'  => $oInvoice->urls->payment,
+                            'download' => $oInvoice->urls->download,
+                        ],
+                        'totals'   => [
+                            'sub'   => $oInvoice->totals->formatted->sub,
+                            'tax'   => $oInvoice->totals->formatted->tax,
+                            'grand' => $oInvoice->totals->formatted->grand,
+                        ],
+                        'items'    => array_map(function (\Nails\Invoice\Resource\Invoice\Item $oItem) {
+                            return [
+                                'id'       => $oItem->id,
+                                'label'    => $oItem->label,
+                                'body'     => $oItem->body,
+                                'quantity' => $oItem->quantity,
+                                'totals'   => [
+                                    'sub'   => $oItem->totals->formatted->sub,
+                                    'tax'   => $oItem->totals->formatted->tax,
+                                    'grand' => $oItem->totals->formatted->grand,
+                                ],
+                            ];
+                        }, $oInvoice->items->data),
                     ],
-                    'address'  => [
-                        'billing'  => $oBillingAddress
-                            ? array_filter($oBillingAddress->formatted()->asArray())
-                            : null,
-                        'delivery' => $oDeliveryAddress
-                            ? array_filter($oDeliveryAddress->formatted()->asArray())
-                            : null,
-                    ],
-                    'urls'     => [
-                        'view'     => $oInvoice->urls->view,
-                        'payment'  => $oInvoice->urls->payment,
-                        'download' => $oInvoice->urls->download,
-                    ],
-                    'totals'   => [
-                        'sub'   => $oInvoice->totals->formatted->sub,
-                        'tax'   => $oInvoice->totals->formatted->tax,
-                        'grand' => $oInvoice->totals->formatted->grand,
-                    ],
-                    'items'    => array_map(function (\Nails\Invoice\Resource\Invoice\Item $oItem) {
-                        return [
-                            'id'     => $oItem->id,
-                            'label'  => $oItem->label,
-                            'body'   => $oItem->body,
-                            'totals' => [
-                                'sub' => $oItem->totals->formatted->sub,
-                            ],
-                        ];
-                    }, $oInvoice->items->data),
-                ],
-            ];
+                ]);
 
             foreach ($aEmails as $sEmail) {
+                try {
 
-                $oEmail->to_email = $sEmail;
+                    $oEmail
+                        ->to($sEmail)
+                        ->send();
 
-                $oResult = $oEmailer->send($oEmail);
-
-                if (!empty($oResult)) {
+                    $aGeneratedEmails = $oEmail->getGeneratedEmails();
+                    $oLastEmail       = reset($aGeneratedEmails);
 
                     $oInvoiceEmailModel->create(
                         [
                             'invoice_id' => $oInvoice->id,
-                            'email_id'   => $oResult->id,
-                            'email_type' => $oEmail->type,
-                            'recipient'  => $oEmail->to_email,
+                            'email_id'   => $oLastEmail->id,
+                            'email_type' => $oLastEmail->type,
+                            'recipient'  => $sEmail,
                         ]
                     );
 
-                } else {
-                    throw new InvoiceException($oEmailer->lastError());
+                } catch (\Exception $e) {
+                    throw new InvoiceException($e->getMessage(), null, $e);
                 }
             }
 

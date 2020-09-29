@@ -10,6 +10,8 @@
  * @link
  */
 
+use Nails\Invoice\Constants;
+
 $config['email_types'] = [
     (object) [
         'slug'            => 'send_invoice',
@@ -20,6 +22,7 @@ $config['email_types'] = [
         'template_body'   => 'invoice/email/send_invoice',
         'template_footer' => '',
         'default_subject' => 'Invoice {{invoice.ref}}',
+        'factory'         => Constants::MODULE_SLUG . '::EmailInvoiceSend',
     ],
     (object) [
         'slug'            => 'payment_complete_receipt',

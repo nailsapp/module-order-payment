@@ -6,8 +6,8 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Resource\Invoice\Totals\Item\Formatted;
-use Nails\Invoice\Resource\Invoice\Totals\Item\Raw;
+use Nails\Invoice\Resource\Invoice\Item\Totals\Formatted;
+use Nails\Invoice\Resource\Invoice\Item\Totals\Raw;
 
 /**
  * Class Totals
