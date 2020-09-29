@@ -1,383 +1,394 @@
 <?php
 
-use Nails\Invoice\Factory\ChargeRequest;
-use Nails\Invoice\Factory\ChargeResponse;
-use Nails\Invoice\Factory\CompleteRequest;
-use Nails\Invoice\Factory\CompleteResponse;
-use Nails\Invoice\Factory\Invoice\CallbackData;
-use Nails\Invoice\Factory\Invoice\PaymentData;
-use Nails\Invoice\Factory\RefundRequest;
-use Nails\Invoice\Factory\RefundResponse;
-use Nails\Invoice\Factory\ScaRequest;
-use Nails\Invoice\Factory\ScaResponse;
-use Nails\Invoice\Resource\Customer;
-use Nails\Invoice\Resource\Invoice\Email;
-use Nails\Invoice\Resource\Invoice\Item;
-use Nails\Invoice\Resource\Invoice\Item\Data\Callback;
-use Nails\Invoice\Resource\Invoice\Item\Unit;
-use Nails\Invoice\Resource\Invoice\Item\UnitCost;
-use Nails\Invoice\Resource\Invoice\State;
-use Nails\Invoice\Resource\Invoice\Totals;
-use Nails\Invoice\Resource\Invoice\Totals\Formatted;
-use Nails\Invoice\Resource\Invoice\Totals\Raw;
-use Nails\Invoice\Resource\Payment\Urls;
-use Nails\Invoice\Resource\Refund;
-use Nails\Invoice\Resource\Refund\Amount;
-use Nails\Invoice\Resource\Refund\Status;
-use Nails\Invoice\Resource\Source;
-use Nails\Invoice\Resource\Tax;
-use Nails\Invoice\Service\Invoice\Skin;
-use Nails\Invoice\Service\PaymentDriver;
+use Nails\Invoice\Factory;
+use Nails\Invoice\Model;
+use Nails\Invoice\Resource;
+use Nails\Invoice\Service;
 
 return [
     'services'  => [
-        'InvoiceSkin'   => function () {
+        'InvoiceSkin'   => function (): Service\Invoice\Skin {
             if (class_exists('\App\Invoice\Service\Invoice\Skin')) {
                 return new \App\Invoice\Service\Invoice\Skin();
             } else {
-                return new Skin();
+                return new Service\Invoice\Skin();
             }
         },
-        'PaymentDriver' => function () {
+        'PaymentDriver' => function (): Service\PaymentDriver {
             if (class_exists('\App\Invoice\Service\PaymentDriver')) {
                 return new \App\Invoice\Service\PaymentDriver();
             } else {
-                return new PaymentDriver();
+                return new Service\PaymentDriver();
             }
         },
     ],
     'models'    => [
-        'Customer'     => function () {
+        'Customer'     => function (): Model\Customer {
             if (class_exists('\App\Invoice\Model\Customer')) {
                 return new \App\Invoice\Model\Customer();
             } else {
-                return new \Nails\Invoice\Model\Customer();
+                return new Model\Customer();
             }
         },
-        'Invoice'      => function () {
+        'Invoice'      => function (): Model\Invoice {
             if (class_exists('\App\Invoice\Model\Invoice')) {
                 return new \App\Invoice\Model\Invoice();
             } else {
-                return new \Nails\Invoice\Model\Invoice();
+                return new Model\Invoice();
             }
         },
-        'InvoiceEmail' => function () {
+        'InvoiceEmail' => function (): Model\Invoice\Email {
             if (class_exists('\App\Invoice\Model\Invoice\Email')) {
                 return new \App\Invoice\Model\Invoice\Email();
             } else {
-                return new \Nails\Invoice\Model\Invoice\Email();
+                return new Model\Invoice\Email();
             }
         },
-        'InvoiceItem'  => function () {
+        'InvoiceItem'  => function (): Model\Invoice\Item {
             if (class_exists('\App\Invoice\Model\Invoice\Item')) {
                 return new \App\Invoice\Model\Invoice\Item();
             } else {
-                return new \Nails\Invoice\Model\Invoice\Item();
+                return new Model\Invoice\Item();
             }
         },
-        'Payment'      => function () {
+        'Payment'      => function (): Model\Payment {
             if (class_exists('\App\Invoice\Model\Payment')) {
                 return new \App\Invoice\Model\Payment();
             } else {
-                return new \Nails\Invoice\Model\Payment();
+                return new Model\Payment();
             }
         },
-        'Refund'       => function () {
+        'Refund'       => function (): Model\Refund {
             if (class_exists('\App\Invoice\Model\Refund')) {
                 return new \App\Invoice\Model\Refund();
             } else {
-                return new \Nails\Invoice\Model\Refund();
+                return new Model\Refund();
             }
         },
-        'Source'       => function () {
+        'Source'       => function (): Model\Source {
             if (class_exists('\App\Invoice\Model\Source')) {
                 return new \App\Invoice\Model\Source();
             } else {
-                return new \Nails\Invoice\Model\Source();
+                return new Model\Source();
             }
         },
-        'Tax'          => function () {
+        'Tax'          => function (): Model\Tax {
             if (class_exists('\App\Invoice\Model\Tax')) {
                 return new \App\Invoice\Model\Tax();
             } else {
-                return new \Nails\Invoice\Model\Tax();
+                return new Model\Tax();
             }
         },
     ],
     'factories' => [
-        'ChargeRequest'       => function () {
+        'ChargeRequest'          => function (): Factory\ChargeRequest {
             if (class_exists('\App\Invoice\Factory\ChargeRequest')) {
                 return new \App\Invoice\Factory\ChargeRequest();
             } else {
-                return new ChargeRequest();
+                return new Factory\ChargeRequest();
             }
         },
-        'ChargeResponse'      => function () {
+        'ChargeResponse'         => function (): Factory\ChargeResponse {
             if (class_exists('\App\Invoice\Factory\ChargeResponse')) {
                 return new \App\Invoice\Factory\ChargeResponse();
             } else {
-                return new ChargeResponse();
+                return new Factory\ChargeResponse();
             }
         },
-        'CompleteRequest'     => function () {
+        'CompleteRequest'        => function (): Factory\CompleteRequest {
             if (class_exists('\App\Invoice\Factory\CompleteRequest')) {
                 return new \App\Invoice\Factory\CompleteRequest();
             } else {
-                return new CompleteRequest();
+                return new Factory\CompleteRequest();
             }
         },
-        'CompleteResponse'    => function () {
+        'CompleteResponse'       => function (): Factory\CompleteResponse {
             if (class_exists('\App\Invoice\Factory\CompleteResponse')) {
                 return new \App\Invoice\Factory\CompleteResponse();
             } else {
-                return new CompleteResponse();
+                return new Factory\CompleteResponse();
             }
         },
-        'Invoice'             => function () {
+        'EmailInvoiceSend'       => function (): Factory\Email\Invoice\Send {
+            if (class_exists('\App\Invoice\Factory\Email\Invoice\Send')) {
+                return new \App\Invoice\Factory\Email\Invoice\Send();
+            } else {
+                return new Factory\Email\Invoice\Send();
+            }
+        },
+        'EmailPaymentComplete'   => function (): Factory\Email\Payment\Complete {
+            if (class_exists('\App\Invoice\Factory\Email\Payment\Complete')) {
+                return new \App\Invoice\Factory\Email\Payment\Complete();
+            } else {
+                return new Factory\Email\Payment\Complete();
+            }
+        },
+        'EmailPaymentProcessing' => function (): Factory\Email\Payment\Processing {
+            if (class_exists('\App\Invoice\Factory\Email\Payment\Processing')) {
+                return new \App\Invoice\Factory\Email\Payment\Processing();
+            } else {
+                return new Factory\Email\Payment\Processing();
+            }
+        },
+        'EmailRefundComplete'    => function (): Factory\Email\Refund\Complete {
+            if (class_exists('\App\Invoice\Factory\Email\Refund\Complete')) {
+                return new \App\Invoice\Factory\Email\Refund\Complete();
+            } else {
+                return new Factory\Email\Refund\Complete();
+            }
+        },
+        'EmailRefundProcessing'  => function (): Factory\Email\Refund\Processing {
+            if (class_exists('\App\Invoice\Factory\Email\Refund\Processing')) {
+                return new \App\Invoice\Factory\Email\Refund\Processing();
+            } else {
+                return new Factory\Email\Refund\Processing();
+            }
+        },
+        'Invoice'                => function (): Factory\Invoice {
             if (class_exists('\App\Invoice\Factory\Invoice')) {
                 return new \App\Invoice\Factory\Invoice();
             } else {
-                return new \Nails\Invoice\Factory\Invoice();
+                return new Factory\Invoice();
             }
         },
-        'InvoiceCallbackData' => function () {
+        'InvoiceCallbackData'    => function (): Factory\Invoice\CallbackData {
             if (class_exists('\App\Invoice\Factory\Invoice\CallbackData')) {
                 return new \App\Invoice\Factory\Invoice\CallbackData();
             } else {
-                return new CallbackData();
+                return new Factory\Invoice\CallbackData();
             }
         },
-        'InvoiceItem'         => function () {
+        'InvoiceItem'            => function (): Factory\Invoice\Item {
             if (class_exists('\App\Invoice\Factory\Invoice\Item')) {
                 return new \App\Invoice\Factory\Invoice\Item();
             } else {
-                return new \Nails\Invoice\Factory\Invoice\Item();
+                return new Factory\Invoice\Item();
             }
         },
-        'InvoicePaymentData'  => function () {
+        'InvoicePaymentData'     => function (): Factory\Invoice\PaymentData {
             if (class_exists('\App\Invoice\Factory\Invoice\PaymentData')) {
                 return new \App\Invoice\Factory\Invoice\PaymentData();
             } else {
-                return new PaymentData();
+                return new Factory\Invoice\PaymentData();
             }
         },
-        'RefundRequest'       => function () {
+        'RefundRequest'          => function (): Factory\RefundRequest {
             if (class_exists('\App\Invoice\Factory\RefundRequest')) {
                 return new \App\Invoice\Factory\RefundRequest();
             } else {
-                return new RefundRequest();
+                return new Factory\RefundRequest();
             }
         },
-        'RefundResponse'      => function () {
+        'RefundResponse'         => function (): Factory\RefundResponse {
             if (class_exists('\App\Invoice\Factory\RefundResponse')) {
                 return new \App\Invoice\Factory\RefundResponse();
             } else {
-                return new RefundResponse();
+                return new Factory\RefundResponse();
             }
         },
-        'ScaRequest'          => function () {
+        'ScaRequest'             => function (): Factory\ScaRequest {
             if (class_exists('\App\Invoice\Factory\ScaRequest')) {
                 return new \App\Invoice\Factory\ScaRequest();
             } else {
-                return new ScaRequest();
+                return new Factory\ScaRequest();
             }
         },
-        'ScaResponse'         => function () {
+        'ScaResponse'            => function (): Factory\ScaResponse {
             if (class_exists('\App\Invoice\Factory\ScaResponse')) {
                 return new \App\Invoice\Factory\ScaResponse();
             } else {
-                return new ScaResponse();
+                return new Factory\ScaResponse();
             }
         },
     ],
     'resources' => [
-        'Customer'                   => function ($mObj) {
+        'Customer'                   => function ($mObj): Resource\Customer {
             if (class_exists('\App\Invoice\Resource\Customer')) {
                 return new \App\Invoice\Resource\Customer($mObj);
             } else {
-                return new Customer($mObj);
+                return new Resource\Customer($mObj);
             }
         },
-        'Invoice'                    => function ($mObj) {
+        'Invoice'                    => function ($mObj): Resource\Invoice {
             if (class_exists('\App\Invoice\Resource\Invoice')) {
                 return new \App\Invoice\Resource\Invoice($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Invoice($mObj);
+                return new Resource\Invoice($mObj);
             }
         },
-        'InvoiceDataCallback'        => function ($mObj) {
+        'InvoiceDataCallback'        => function ($mObj): Resource\Invoice\Data\Callback {
             if (class_exists('\App\Invoice\Resource\Invoice\Data\Callback')) {
                 return new \App\Invoice\Resource\Invoice\Data\Callback($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Invoice\Data\Callback($mObj);
+                return new Resource\Invoice\Data\Callback($mObj);
             }
         },
-        'InvoiceDataPayment'         => function ($mObj) {
+        'InvoiceDataPayment'         => function ($mObj): Resource\Invoice\Data\Payment {
             if (class_exists('\App\Invoice\Resource\Invoice\Data\Payment')) {
                 return new \App\Invoice\Resource\Invoice\Data\Payment($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Invoice\Data\Payment($mObj);
+                return new Resource\Invoice\Data\Payment($mObj);
             }
         },
-        'InvoiceEmail'               => function ($mObj) {
+        'InvoiceEmail'               => function ($mObj): Resource\Invoice\Email {
             if (class_exists('\App\Invoice\Resource\Invoice\Email')) {
                 return new \App\Invoice\Resource\Invoice\Email($mObj);
             } else {
-                return new Email($mObj);
+                return new Resource\Invoice\Email($mObj);
             }
         },
-        'InvoiceItem'                => function ($mObj) {
+        'InvoiceItem'                => function ($mObj): Resource\Invoice\Item {
             if (class_exists('\App\Invoice\Resource\Invoice\Item')) {
                 return new \App\Invoice\Resource\Invoice\Item($mObj);
             } else {
-                return new Item($mObj);
+                return new Resource\Invoice\Item($mObj);
             }
         },
-        'InvoiceItemDataCallback'    => function ($mObj) {
+        'InvoiceItemDataCallback'    => function ($mObj): Resource\Invoice\Item\Data\Callback {
             if (class_exists('\App\Invoice\Resource\Invoice\Item\Data\Callback')) {
                 return new \App\Invoice\Resource\Invoice\Item\Data\Callback($mObj);
             } else {
-                return new Callback($mObj);
+                return new Resource\Invoice\Item\Data\Callback($mObj);
             }
         },
-        'InvoiceItemTotals'          => function ($mObj) {
+        'InvoiceItemTotals'          => function ($mObj): Resource\Invoice\Item\Totals {
             if (class_exists('\App\Invoice\Resource\Invoice\Item\Totals')) {
                 return new \App\Invoice\Resource\Invoice\Item\Totals($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Invoice\Item\Totals($mObj);
+                return new Resource\Invoice\Item\Totals($mObj);
             }
         },
-        'InvoiceItemTotalsFormatted' => function ($mObj) {
+        'InvoiceItemTotalsFormatted' => function ($mObj): Resource\Invoice\Item\Totals\Formatted {
             if (class_exists('\App\Invoice\Resource\Invoice\Item\Totals\Formatted')) {
                 return new \App\Invoice\Resource\Invoice\Item\Totals\Formatted($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Invoice\Item\Totals\Formatted($mObj);
+                return new Resource\Invoice\Item\Totals\Formatted($mObj);
             }
         },
-        'InvoiceItemTotalsRaw'       => function ($mObj) {
+        'InvoiceItemTotalsRaw'       => function ($mObj): Resource\Invoice\Item\Totals\Raw {
             if (class_exists('\App\Invoice\Resource\Invoice\Item\Totals\Raw')) {
                 return new \App\Invoice\Resource\Invoice\Item\Totals\Raw($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Invoice\Item\Totals\Raw($mObj);
+                return new Resource\Invoice\Item\Totals\Raw($mObj);
             }
         },
-        'InvoiceItemUnit'            => function ($mObj) {
+        'InvoiceItemUnit'            => function ($mObj): Resource\Invoice\Item\Unit {
             if (class_exists('\App\Invoice\Resource\Invoice\Item\Unit')) {
                 return new \App\Invoice\Resource\Invoice\Item\Unit($mObj);
             } else {
-                return new Unit($mObj);
+                return new Resource\Invoice\Item\Unit($mObj);
             }
         },
-        'InvoiceItemUnitCost'        => function ($mObj) {
+        'InvoiceItemUnitCost'        => function ($mObj): Resource\Invoice\Item\UnitCost {
             if (class_exists('\App\Invoice\Resource\Invoice\Item\UnitCost')) {
                 return new \App\Invoice\Resource\Invoice\Item\UnitCost($mObj);
             } else {
-                return new UnitCost($mObj);
+                return new Resource\Invoice\Item\UnitCost($mObj);
             }
         },
-        'InvoiceState'               => function ($mObj) {
+        'InvoiceState'               => function ($mObj): Resource\Invoice\State {
             if (class_exists('\App\Invoice\Resource\Invoice\State')) {
                 return new \App\Invoice\Resource\Invoice\State($mObj);
             } else {
-                return new State($mObj);
+                return new Resource\Invoice\State($mObj);
             }
         },
-        'InvoiceTotals'              => function ($mObj) {
+        'InvoiceTotals'              => function ($mObj): Resource\Invoice\Totals {
             if (class_exists('\App\Invoice\Resource\Invoice\Totals')) {
                 return new \App\Invoice\Resource\Invoice\Totals($mObj);
             } else {
-                return new Totals($mObj);
+                return new Resource\Invoice\Totals($mObj);
             }
         },
-        'InvoiceTotalsFormatted'     => function ($mObj) {
+        'InvoiceTotalsFormatted'     => function ($mObj): Resource\Invoice\Totals\Formatted {
             if (class_exists('\App\Invoice\Resource\Invoice\Totals\Formatted')) {
                 return new \App\Invoice\Resource\Invoice\Totals\Formatted($mObj);
             } else {
-                return new Formatted($mObj);
+                return new Resource\Invoice\Totals\Formatted($mObj);
             }
         },
-        'InvoiceTotalsRaw'           => function ($mObj) {
+        'InvoiceTotalsRaw'           => function ($mObj): Resource\Invoice\Totals\Raw {
             if (class_exists('\App\Invoice\Resource\Invoice\Totals\Raw')) {
                 return new \App\Invoice\Resource\Invoice\Totals\Raw($mObj);
             } else {
-                return new Raw($mObj);
+                return new Resource\Invoice\Totals\Raw($mObj);
             }
         },
-        'InvoiceUrls'                => function ($mObj) {
+        'InvoiceUrls'                => function ($mObj): Resource\Invoice\Urls {
             if (class_exists('\App\Invoice\Resource\Invoice\Urls')) {
                 return new \App\Invoice\Resource\Invoice\Urls($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Invoice\Urls($mObj);
+                return new Resource\Invoice\Urls($mObj);
             }
         },
-        'Payment'                    => function ($mObj) {
+        'Payment'                    => function ($mObj): Resource\Payment {
             if (class_exists('\App\Invoice\Resource\Payment')) {
                 return new \App\Invoice\Resource\Payment($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Payment($mObj);
+                return new Resource\Payment($mObj);
             }
         },
-        'PaymentAmount'              => function ($mObj) {
+        'PaymentAmount'              => function ($mObj): Resource\Payment\Amount {
             if (class_exists('\App\Invoice\Resource\Payment\Amount')) {
                 return new \App\Invoice\Resource\Payment\Amount($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Payment\Amount($mObj);
+                return new Resource\Payment\Amount($mObj);
             }
         },
-        'PaymentDataSca'             => function ($mObj) {
+        'PaymentDataSca'             => function ($mObj): Resource\Payment\Data\Sca {
             if (class_exists('\App\Invoice\Resource\Payment\Data\Sca')) {
                 return new \App\Invoice\Resource\Payment\Data\Sca($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Payment\Data\Sca($mObj);
+                return new Resource\Payment\Data\Sca($mObj);
             }
         },
-        'PaymentStatus'              => function ($mObj) {
+        'PaymentStatus'              => function ($mObj): Resource\Payment\Status {
             if (class_exists('\App\Invoice\Resource\Payment\Status')) {
                 return new \App\Invoice\Resource\Payment\Status($mObj);
             } else {
-                return new \Nails\Invoice\Resource\Payment\Status($mObj);
+                return new Resource\Payment\Status($mObj);
             }
         },
-        'PaymentUrls'                => function ($mObj) {
+        'PaymentUrls'                => function ($mObj): Resource\Payment\Urls {
             if (class_exists('\App\Invoice\Resource\Payment\Urls')) {
                 return new \App\Invoice\Resource\Payment\Urls($mObj);
             } else {
-                return new Urls($mObj);
+                return new Resource\Payment\Urls($mObj);
             }
         },
-        'Refund'                     => function ($mObj) {
+        'Refund'                     => function ($mObj): Resource\Refund {
             if (class_exists('\App\Invoice\Resource\Refund')) {
                 return new \App\Invoice\Resource\Refund($mObj);
             } else {
-                return new Refund($mObj);
+                return new Resource\Refund($mObj);
             }
         },
-        'RefundAmount'               => function ($mObj) {
+        'RefundAmount'               => function ($mObj): Resource\Refund\Amount {
             if (class_exists('\App\Invoice\Resource\Refund\Amount')) {
                 return new \App\Invoice\Resource\Refund\Amount($mObj);
             } else {
-                return new Amount($mObj);
+                return new Resource\Refund\Amount($mObj);
             }
         },
-        'RefundStatus'               => function ($mObj) {
+        'RefundStatus'               => function ($mObj): Resource\Refund\Status {
             if (class_exists('\App\Invoice\Resource\Refund\Status')) {
                 return new \App\Invoice\Resource\Refund\Status($mObj);
             } else {
-                return new Status($mObj);
+                return new Resource\Refund\Status($mObj);
             }
         },
-        'Source'                     => function ($mObj) {
+        'Source'                     => function ($mObj): Resource\Source {
             if (class_exists('\App\Invoice\Resource\Source')) {
                 return new \App\Invoice\Resource\Source($mObj);
             } else {
-                return new Source($mObj);
+                return new Resource\Source($mObj);
             }
         },
-        'Tax'                        => function ($mObj) {
+        'Tax'                        => function ($mObj): Resource\Tax {
             if (class_exists('\App\Invoice\Resource\Tax')) {
                 return new \App\Invoice\Resource\Tax($mObj);
             } else {
-                return new Tax($mObj);
+                return new Resource\Tax($mObj);
             }
         },
     ],
