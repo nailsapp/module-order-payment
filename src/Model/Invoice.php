@@ -815,8 +815,8 @@ class Invoice extends Base
                     'invoice' => [
                         'id'       => $oInvoice->id,
                         'ref'      => $oInvoice->ref,
-                        'due'      => $oInvoice->due->formatted,
-                        'dated'    => $oInvoice->dated->formatted,
+                        'due'      => $oInvoice->due->format('l jS F Y'),
+                        'dated'    => $oInvoice->dated->format('l jS F Y'),
                         'customer' => [
                             'id'    => $oInvoice->customer->id,
                             'label' => $oInvoice->customer->label,

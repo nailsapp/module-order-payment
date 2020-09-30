@@ -497,8 +497,8 @@ class Payment extends Base
                 'invoice' => [
                     'id'       => $oPayment->invoice->id,
                     'ref'      => $oPayment->invoice->ref,
-                    'due'      => $oPayment->invoice->due->formatted,
-                    'dated'    => $oPayment->invoice->dated->formatted,
+                    'due'      => $oPayment->invoice->due->format('l jS F Y'),
+                    'dated'    => $oPayment->invoice->dated->format('l jS F Y'),
                     'customer' => (object) [
                         'id'    => $oPayment->invoice->customer->id,
                         'label' => $oPayment->invoice->customer->label,

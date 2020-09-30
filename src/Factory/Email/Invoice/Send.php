@@ -38,8 +38,8 @@ class Send extends Email
             'invoice' => [
                 'id'       => 123,
                 'ref'      => '1234-ABCDEF',
-                'due'      => $now->format('Y-m-d H:i:s'),
-                'dated'    => $now->format('Y-m-d H:i:s'),
+                'due'      => $now->format('l jS F Y'),
+                'dated'    => $now->format('l jS F Y'),
                 'customer' => [
                     'id'    => 123,
                     'label' => 'Jenny Jones',
