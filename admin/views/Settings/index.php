@@ -165,7 +165,7 @@ $oInput = Factory::service('Input');
             ?>
             <div class="tab-page tab-invoice-skin">
                 <?=adminHelper(
-                    'loadSettingsDriverTable',
+                    'loadSettingsSkinTable',
                     'InvoiceSkin',
                     Constants::MODULE_SLUG
                 )?>
