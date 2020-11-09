@@ -122,9 +122,14 @@ class ChargeRequest extends RequestBase
      * @param string $sCardName The cardholder's name
      *
      * @return $this
+     * @throws ChargeRequestException
      */
     public function setCardName(string $sCardName): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         $this->oCard->name = $sCardName;
         return $this;
     }
@@ -148,11 +153,15 @@ class ChargeRequest extends RequestBase
      *
      * @param string $sCardNumber The card's number
      *
-     * @throws ChargeRequestException
      * @return $this
+     * @throws ChargeRequestException
      */
     public function setCardNumber(string $sCardNumber): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         //  Validate
         if (preg_match('/[^\d ]/', $sCardNumber)) {
             throw new ChargeRequestException('Invalid card number; can only contain digits and spaces.', 1);
@@ -181,13 +190,15 @@ class ChargeRequest extends RequestBase
      *
      * @param string $sCardExpMonth The card's expiry month
      *
-     * @throws ChargeRequestException
      * @return $this
+     * @throws ChargeRequestException
      */
     public function setCardExpMonth(string $sCardExpMonth): ChargeRequest
     {
-        //  Validate
-        if (is_numeric($sCardExpMonth)) {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+
+        } elseif (is_numeric($sCardExpMonth)) {
 
             $iMonth = (int) $sCardExpMonth;
             if ($iMonth < 1 || $iMonth > 12) {
@@ -229,14 +240,15 @@ class ChargeRequest extends RequestBase
      *
      * @param string $sCardExpYear The card's expiry year
      *
+     * @return $this
      * @throws ChargeRequestException
      * @throws FactoryException
-     * @return $this
      */
     public function setCardExpYear(string $sCardExpYear): ChargeRequest
     {
-        //  Validate
-        if (is_numeric($sCardExpYear)) {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        } elseif (is_numeric($sCardExpYear)) {
 
             //  Accept two digits or 4 digits only
             if (strlen($sCardExpYear) == 2 || strlen($sCardExpYear) == 4) {
@@ -296,9 +308,14 @@ class ChargeRequest extends RequestBase
      * @param string $sCardCvc The card's cvc number
      *
      * @return $this
+     * @throws ChargeRequestException
      */
     public function setCardCvc(string $sCardCvc): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         //  Validate
         $this->oCard->cvc = $sCardCvc;
         return $this;
@@ -325,9 +342,14 @@ class ChargeRequest extends RequestBase
      * @param mixed|null      $mValue The value to set
      *
      * @return ChargeRequest
+     * @throws ChargeRequestException
      */
     public function setCustomField(string $mKey, $mValue = null): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         if ($mKey instanceof stdClass) {
             $this->oCustomField = $mKey;
         } else {
@@ -358,10 +380,13 @@ class ChargeRequest extends RequestBase
      * @param mixed|null      $mValue The value to set
      *
      * @return ChargeRequest
+     * @throws ChargeRequestException
      */
     public function setPaymentData($mKey, $mValue = null): ChargeRequest
     {
-        if ($mKey instanceof stdClass) {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        } elseif ($mKey instanceof stdClass) {
             $this->oPaymentData = $mKey;
         } else {
             $this->oPaymentData->{$mKey} = $mValue;
@@ -393,9 +418,14 @@ class ChargeRequest extends RequestBase
      * @param string $sDescription The description of the charge
      *
      * @return $this
+     * @throws ChargeRequestException
      */
     public function setDescription(string $sDescription): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         $this->sDescription = $sDescription;
         return $this;
     }
@@ -420,9 +450,14 @@ class ChargeRequest extends RequestBase
      * @param bool $bAutoRedirect Whether to auto redirect or not
      *
      * @return $this
+     * @throws ChargeRequestException
      */
     public function setAutoRedirect(bool $bAutoRedirect): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         $this->bAutoRedirect = (bool) $bAutoRedirect;
         return $this;
     }
@@ -448,9 +483,14 @@ class ChargeRequest extends RequestBase
      * @param bool $bCustomerPresent Whether the customer is present during the transaction
      *
      * @return $this
+     * @throws ChargeRequestException
      */
     public function setCustomerPresent(bool $bCustomerPresent): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         $this->bCustomerPresent = (bool) $bCustomerPresent;
         return $this;
     }
@@ -479,7 +519,9 @@ class ChargeRequest extends RequestBase
      */
     public function setAmount(int $iAmount): ChargeRequest
     {
-        if ($iAmount <= 0) {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        } elseif ($iAmount <= 0) {
             throw new ChargeRequestException('Amount must be positive');
         }
         $this->iAmount = $iAmount;
@@ -512,6 +554,10 @@ class ChargeRequest extends RequestBase
      */
     public function setCurrency($mCurrency): ChargeRequest
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         /** @var Currency\Service\Currency $oCurrencyService */
         $oCurrencyService = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
 
@@ -562,6 +608,10 @@ class ChargeRequest extends RequestBase
      */
     public function execute(int $iAmount = null, $mCurrency = null): ChargeResponse
     {
+        if ($this->isLocked()) {
+            throw new ChargeRequestException('Charge Request is locked and cannot be modified.');
+        }
+
         /**
          * If a specific amount has been passed, use it
          * If the charge amount is empty and an invoice has been applied, assume the outstanding total
@@ -684,6 +734,9 @@ class ChargeRequest extends RequestBase
          * The error URL is, by default, the checkout page but can be overridden
          */
         $sErrorUrl = $this->getErrorUrl() ?: siteUrl('invoice/invoice/' . $this->oInvoice->ref . '/' . $this->oInvoice->token . '/pay');
+
+        //  Lock the charge request
+        $this->lock();
 
         //  Execute the charge
         $oChargeResponse = $this->oDriver->charge(

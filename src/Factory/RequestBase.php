@@ -16,7 +16,6 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
 use Nails\Invoice\Interfaces\Driver;
 use Nails\Invoice\Model;
@@ -30,6 +29,13 @@ use Nails\Invoice\Service;
  */
 class RequestBase
 {
+    /**
+     * Whether the response is locked
+     *
+     * @var bool
+     */
+    protected $bIsLocked = false;
+
     /**
      * The payment driver instance
      *
@@ -139,6 +145,31 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Prevent the object from being altered
+     *
+     * @return $this
+     */
+    public function lock(): ResponseBase
+    {
+        $this->bIsLocked = true;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the response is locked
+     *
+     * @return bool
+     */
+    public function isLocked(): bool
+    {
+        return $this->bIsLocked;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set the driver to be used for the request
      *
      * @param string|Driver\Payment $mDriver A driver object or slug
@@ -148,7 +179,10 @@ class RequestBase
      */
     public function setDriver($mDriver)
     {
-        if (!($mDriver instanceof Driver\Payment)) {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+
+        } elseif (!($mDriver instanceof Driver\Payment)) {
 
             $aDrivers = $this->oDriverService->getEnabled();
             $oDriver  = null;
@@ -199,7 +233,10 @@ class RequestBase
      */
     public function setInvoice($mInvoice)
     {
-        if (!($mInvoice instanceof Resource\Invoice)) {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+
+        } elseif (!($mInvoice instanceof Resource\Invoice)) {
 
             $oModel = $this->oInvoiceModel;
             /** @var Resource\Invoice $oInvoice */
@@ -246,7 +283,10 @@ class RequestBase
      */
     public function setPayment($mPayment)
     {
-        if (!($mPayment instanceof Resource\Payment)) {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+
+        } elseif (!($mPayment instanceof Resource\Payment)) {
 
             /** @var Resource\Payment $oPayment */
             $oPayment = $this->oPaymentModel->getById(
@@ -292,7 +332,10 @@ class RequestBase
      */
     public function setSource($mSource)
     {
-        if (!($mSource instanceof Resource\Source)) {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+
+        } elseif (!($mSource instanceof Resource\Source)) {
 
             /** @var Resource\Source $oSource */
             $oSource = $this->oSourceModel->getById($mSource);
@@ -338,7 +381,10 @@ class RequestBase
      */
     public function setRefund($mRefund)
     {
-        if (!($mRefund instanceof Resource\Refund)) {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+
+        } elseif (!($mRefund instanceof Resource\Refund)) {
 
             /** @var Resource\Refund $oRefund */
             $oRefund = $this->oRefundModel->getById($mRefund);
@@ -474,7 +520,7 @@ class RequestBase
      * @param string $sMessage The error message
      * @param string $sCode    The error code
      *
-     * @throws ChargeRequestException
+     * @throws RequestException
      * @throws FactoryException
      * @throws ModelException
      */
@@ -492,7 +538,7 @@ class RequestBase
         );
 
         if (empty($bResult)) {
-            throw new ChargeRequestException('Failed to update existing payment.', 1);
+            throw new RequestException('Failed to update existing payment.', 1);
         }
     }
 
@@ -552,6 +598,10 @@ class RequestBase
      */
     public function setSuccessUrl(string $sSuccessUrl): RequestBase
     {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+        }
+
         $this->sSuccessUrl = $sSuccessUrl;
         return $this;
     }
@@ -576,9 +626,14 @@ class RequestBase
      * @param string $sErrorUrl The the error URL
      *
      * @return $this
+     * @throws RequestException
      */
     public function setErrorUrl(string $sErrorUrl): RequestBase
     {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+        }
+
         $this->sErrorUrl = $sErrorUrl;
         return $this;
     }
@@ -603,9 +658,14 @@ class RequestBase
      * @param string $sCancelUrl The the cancel URL
      *
      * @return $this
+     * @throws RequestException
      */
     public function setCancelUrl(string $sCancelUrl): RequestBase
     {
+        if ($this->isLocked()) {
+            throw new RequestException('Request is locked and cannot be modified.');
+        }
+
         $this->sCancelUrl = $sCancelUrl;
         return $this;
     }
