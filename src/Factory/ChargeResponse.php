@@ -13,6 +13,7 @@
 namespace Nails\Invoice\Factory;
 
 use Nails\Invoice\Resource\Payment;
+use Nails\Invoice\Exception\ChargeResponseException;
 
 /**
  * Class ChargeResponse
@@ -77,9 +78,16 @@ class ChargeResponse extends ResponseBase
      * Set the payment object
      *
      * @param Payment|null $oPayment
+     *
+     * @return $this
+     * @throws ChargeResponseException
      */
     public function setPayment(?Payment $oPayment): self
     {
+        if ($this->isLocked()) {
+            throw new ChargeResponseException('Charge Response is locked and cannot be modified.');
+        }
+
         $this->oPayment = $oPayment;
         return $this;
     }
@@ -116,13 +124,16 @@ class ChargeResponse extends ResponseBase
      * @param array $aData Any data to save for the SCA flow
      *
      * @return $this
+     * @throws ChargeResponseException
      */
     public function setIsSca(array $aData): ChargeResponse
     {
-        if (!$this->bIsLocked) {
-            $this->bIsSca   = true;
-            $this->aScaData = $aData;
+        if ($this->isLocked()) {
+            throw new ChargeResponseException('Charge Response is locked and cannot be modified.');
         }
+
+        $this->bIsSca   = true;
+        $this->aScaData = $aData;
         return $this;
     }
 
@@ -158,12 +169,15 @@ class ChargeResponse extends ResponseBase
      * @param bool $bIsRedirect Whether the response is a redirect
      *
      * @return $this
+     * @throws ChargeResponseException
      */
     public function setIsRedirect(bool $bIsRedirect): ChargeResponse
     {
-        if (!$this->bIsLocked) {
-            $this->bIsRedirect = (bool) $bIsRedirect;
+        if ($this->isLocked()) {
+            throw new ChargeResponseException('Charge Response is locked and cannot be modified.');
         }
+
+        $this->bIsRedirect = (bool) $bIsRedirect;
         return $this;
     }
 
@@ -175,13 +189,16 @@ class ChargeResponse extends ResponseBase
      * @param string $sRedirectUrl The Redirect URL
      *
      * @return $this
+     * @throws ChargeResponseException
      */
     public function setRedirectUrl(string $sRedirectUrl): ChargeResponse
     {
-        if (!$this->bIsLocked) {
-            $this->sRedirectUrl = $sRedirectUrl;
-            $this->setIsRedirect(!empty($sRedirectUrl));
+        if ($this->isLocked()) {
+            throw new ChargeResponseException('Charge Response is locked and cannot be modified.');
         }
+
+        $this->sRedirectUrl = $sRedirectUrl;
+        $this->setIsRedirect(!empty($sRedirectUrl));
         return $this;
     }
 
@@ -205,12 +222,15 @@ class ChargeResponse extends ResponseBase
      * @param string $sScaUrl The Sca URL
      *
      * @return $this
+     * @throws ChargeResponseException
      */
     public function setScaUrl(string $sScaUrl): ChargeResponse
     {
-        if (!$this->bIsLocked) {
-            $this->sScaUrl = $sScaUrl;
+        if ($this->isLocked()) {
+            throw new ChargeResponseException('Charge Response is locked and cannot be modified.');
         }
+
+        $this->sScaUrl = $sScaUrl;
         return $this;
     }
 
@@ -234,13 +254,16 @@ class ChargeResponse extends ResponseBase
      * @param array $aRedirectPostData The data to post
      *
      * @return $this
+     * @throws ChargeResponseException
      */
     public function setRedirectPostData(array $aRedirectPostData): ChargeResponse
     {
-        if (!$this->bIsLocked) {
-            $this->aRedirectPostData = $aRedirectPostData;
-            $this->setIsRedirect(!empty($aRedirectPostData));
+        if ($this->isLocked()) {
+            throw new ChargeResponseException('Charge Response is locked and cannot be modified.');
         }
+
+        $this->aRedirectPostData = $aRedirectPostData;
+        $this->setIsRedirect(!empty($aRedirectPostData));
         return $this;
     }
 

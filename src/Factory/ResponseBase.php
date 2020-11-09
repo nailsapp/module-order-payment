@@ -139,15 +139,16 @@ class ResponseBase
      */
     public function setStatus(string $sStatus): ResponseBase
     {
-        if (!$this->isLocked()) {
-
-            $aStatuses = $this->getStatuses();
-            if (!in_array($sStatus, $aStatuses)) {
-                throw new ResponseException('"' . $sStatus . '" is an invalid response status.', 1);
-            }
-
-            $this->sStatus = $sStatus;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $aStatuses = $this->getStatuses();
+        if (!in_array($sStatus, $aStatuses)) {
+            throw new ResponseException('"' . $sStatus . '" is an invalid response status.', 1);
+        }
+
+        $this->sStatus = $sStatus;
 
         return $this;
     }
@@ -162,6 +163,10 @@ class ResponseBase
      */
     public function setStatusPending(): ResponseBase
     {
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
+        }
+
         return $this->setStatus(self::STATUS_PENDING);
     }
 
@@ -175,6 +180,10 @@ class ResponseBase
      */
     public function setStatusProcessing(): ResponseBase
     {
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
+        }
+
         return $this->setStatus(self::STATUS_PROCESSING);
     }
 
@@ -188,6 +197,10 @@ class ResponseBase
      */
     public function setStatusComplete(): ResponseBase
     {
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
+        }
+
         return $this->setStatus(self::STATUS_COMPLETE);
     }
 
@@ -208,6 +221,10 @@ class ResponseBase
         $sReasonCode = null,
         string $sUserFeedback = ''
     ): ResponseBase {
+
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
+        }
 
         $this->setErrorMessage(trim($sReasonMsg));
         $this->setErrorCode(trim($sReasonCode));
@@ -284,12 +301,15 @@ class ResponseBase
      * @param string $sValue
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setErrorMessage(string $sValue): ResponseBase
     {
-        if (!$this->isLocked()) {
-            $this->sErrorMessage = $sValue;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->sErrorMessage = $sValue;
         return $this;
     }
 
@@ -313,12 +333,15 @@ class ResponseBase
      * @param string $sValue
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setErrorMessageUser(string $sValue): ResponseBase
     {
-        if (!$this->isLocked()) {
-            $this->sErrorMessageUser = $sValue;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->sErrorMessageUser = $sValue;
         return $this;
     }
 
@@ -342,12 +365,15 @@ class ResponseBase
      * @param string $sValue
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setErrorCode(string $sValue): ResponseBase
     {
-        if (!$this->isLocked()) {
-            $this->sErrorCode = $sValue;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->sErrorCode = $sValue;
         return $this;
     }
 
@@ -387,12 +413,15 @@ class ResponseBase
      * @param string $sTransactionId The transaction ID
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setTransactionId($sTransactionId): ResponseBase
     {
-        if (!$this->isLocked()) {
-            $this->sTransactionId = $sTransactionId;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->sTransactionId = $sTransactionId;
         return $this;
     }
 
@@ -416,12 +445,15 @@ class ResponseBase
      * @param int $iFee The fee charged by the payment processor
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setFee($iFee): ResponseBase
     {
-        if (!$this->isLocked()) {
-            $this->iFee = (int) $iFee;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->iFee = (int) $iFee;
         return $this;
     }
 
@@ -470,12 +502,15 @@ class ResponseBase
      * @param string $sSuccessUrl The success URL
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setSuccessUrl(string $sSuccessUrl): ResponseBase
     {
-        if (!$this->isLocked()) {
-            $this->sSuccessUrl = $sSuccessUrl;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->sSuccessUrl = $sSuccessUrl;
         return $this;
     }
 
@@ -499,12 +534,15 @@ class ResponseBase
      * @param string $sErrorUrl The the error URL
      *
      * @return $this
+     * @throws ResponseException
      */
     public function setErrorUrl(string $sErrorUrl): ResponseBase
     {
-        if (!$this->isLocked()) {
-            $this->sErrorUrl = $sErrorUrl;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->sErrorUrl = $sErrorUrl;
         return $this;
     }
 
