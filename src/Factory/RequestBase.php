@@ -30,7 +30,7 @@ use Nails\Invoice\Service;
 class RequestBase
 {
     /**
-     * Whether the response is locked
+     * Whether the request is locked
      *
      * @var bool
      */
@@ -149,7 +149,7 @@ class RequestBase
      *
      * @return $this
      */
-    public function lock(): ResponseBase
+    public function lock(): RequestBase
     {
         $this->bIsLocked = true;
         return $this;
@@ -158,7 +158,7 @@ class RequestBase
     // --------------------------------------------------------------------------
 
     /**
-     * Whether the response is locked
+     * Whether the request is locked
      *
      * @return bool
      */
