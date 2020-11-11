@@ -330,4 +330,24 @@ class Payment extends Entity
             json_decode($this->sca_data) ?: (object) []
         );
     }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the payment source used for the payment, if known
+     *
+     * @return Source|null
+     * @throws FactoryException
+     * @throws \Nails\Common\Exception\ModelException
+     */
+    public function source(): ?Source
+    {
+        if (empty($this->source) && !empty($this->source_id)) {
+            /** @var \Nails\Invoice\Model\Source $oModel */
+            $oModel       = Factory::model('Source', Constants::MODULE_SLUG);
+            $this->source = $oModel->getById($this->source_id);
+        }
+
+        return $this->source;
+    }
 }
