@@ -13,14 +13,13 @@
         "postcss-loader": "^3.0",
         "sass-loader": "^10.1",
         "webpack": "^4.44",
-        "webpack-command": "^0.5"
+        "webpack-cli": "^4.2"
     },
     "dependencies": {
         "jquery.payment": "~3.0.0"
     },
     "scripts": {
-        "build": "webpack -p",
-        "build-dev": "webpack",
+        "build": "webpack",
         "watch": "webpack --watch"
     }
 }
