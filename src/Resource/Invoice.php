@@ -333,7 +333,7 @@ class Invoice extends Entity
     {
         return $oChargeRequest
             ->setInvoice($this)
-            ->setDescription($sDescription ?? $oChargeRequest->getDescription() ?? 'Payment for invoice ' . $this->sRef)
+            ->setDescription($sDescription ?? $oChargeRequest->getDescription() ?? 'Payment for invoice ' . $this->ref)
             ->execute();
     }
 
