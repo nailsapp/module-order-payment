@@ -82,7 +82,7 @@
 
                                                                         <tr>
                                                                             <td class="alignright" width="80%" style="border-top: 2px solid #333; border-bottom: 2px solid #333; padding:10px; text-align:right;">
-                                                                                <strong>VAT</strong>
+                                                                                <strong>TAX</strong>
                                                                             </td>
                                                                             <td class="alignright" style="border-top: 2px solid #333; border-bottom: 2px solid #333; padding:10px; text-align:right;">
                                                                                 <strong>
