@@ -323,16 +323,17 @@ class Invoice extends Entity
     /**
      * Charges this invoice
      *
-     * @param ChargeRequest $oChargeRequest
+     * @param ChargeRequest $oChargeRequest The ChargeRequest object to use
+     * @param string|null   $sDescription   The description to give the charge
      *
      * @return ChargeResponse
      * @throws InvoiceException
      */
-    public function charge(ChargeRequest $oChargeRequest)
+    public function charge(ChargeRequest $oChargeRequest, string $sDescription = null)
     {
         return $oChargeRequest
             ->setInvoice($this)
-            ->setDescription('Payment for invoice ' . $this->ref)
+            ->setDescription($sDescription ?? $oChargeRequest->getDescription() ?? 'Payment for invoice ' . $this->sRef)
             ->execute();
     }
 
