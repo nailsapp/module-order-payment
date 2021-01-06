@@ -934,7 +934,7 @@ class Invoice
 
         return $oChargeRequest
             ->setInvoice($oInvoice)
-            ->setDescription($sDescription ?: 'Payment for invoice ' . $this->sRef)
+            ->setDescription($sDescription ?? $oChargeRequest->getDescription() ??  'Payment for invoice ' . $this->sRef)
             ->execute();
     }
 
