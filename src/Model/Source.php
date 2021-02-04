@@ -91,6 +91,11 @@ class Source extends Base
         $oResource = Factory::resource('Source', Constants::MODULE_SLUG, [
             'customer_id' => $aData['customer_id'],
             'driver'      => $aData['driver'],
+            'label'       => getFromArray('label', $aData),
+            'name'        => getFromArray('name', $aData),
+            'brand'       => getFromArray('brand', $aData),
+            'last_four'   => getFromArray('last_four', $aData),
+            'expiry'      => getFromArray('expiry', $aData),
         ]);
 
         unset($aData['driver']);
