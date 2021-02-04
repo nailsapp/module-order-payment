@@ -307,6 +307,10 @@ class Source extends Base
 
             $oDb->trans_commit();
 
+            if ($mSource instanceof Resource\Source) {
+                $mSource->is_default = true;
+            }
+
             return true;
 
         } catch (Exception $e) {
