@@ -172,7 +172,7 @@ class Source extends Entity
         if (empty($this->billing_address) && !empty($this->billing_address_id)) {
 
             /** @var \Nails\Address\Model\Address $oAddressModel */
-            $oAddressModel         = Factory::model('Address', Constants::MODULE_SLUG);
+            $oAddressModel         = Factory::model('Address', \Nails\Address\Constants::MODULE_SLUG);
             $this->billing_address = $oAddressModel->getById($this->billing_address_id);
         }
 
