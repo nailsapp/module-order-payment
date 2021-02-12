@@ -10,10 +10,12 @@
 namespace Nails\Invoice\Resource;
 
 use DateTime;
+use Nails\Address\Resource\Address;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Resource\Date;
 use Nails\Common\Resource\Entity;
 use Nails\Factory;
+use Nails\Invoice\Constants;
 use stdClass;
 
 /**
@@ -29,6 +31,27 @@ class Source extends Entity
      * @var int
      */
     public $customer_id;
+
+    /**
+     * The source's customer
+     *
+     * @var Customer
+     */
+    public $customer;
+
+    /**
+     * The source's billing address ID
+     *
+     * @var int|null
+     */
+    public $billing_address_id;
+
+    /**
+     * The source's billing address
+     *
+     * @var Address|null
+     */
+    public $billing_address;
 
     /**
      * Which driver is responsible for the source
@@ -117,7 +140,49 @@ class Source extends Entity
     // --------------------------------------------------------------------------
 
     /**
-     * Determines whether source has expired
+     * Return's the source's customer
+     *
+     * @return Customer
+     * @throws FactoryException
+     * @throws \Nails\Common\Exception\ModelException
+     */
+    public function customer(): Customer
+    {
+        if (empty($this->customer) && !empty($this->customer_id)) {
+
+            /** @var \Nails\Invoice\Model\Customer $oCustomerModel */
+            $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
+            $this->customer = $oCustomerModel->getById($this->customer_id);
+        }
+
+        return $this->customer;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Return's the source's billing address
+     *
+     * @return Address|null
+     * @throws FactoryException
+     * @throws \Nails\Common\Exception\ModelException
+     */
+    public function billingAddress(): ?Address
+    {
+        if (empty($this->billing_address) && !empty($this->billing_address_id)) {
+
+            /** @var \Nails\Address\Model\Address $oAddressModel */
+            $oAddressModel         = Factory::model('Address', Constants::MODULE_SLUG);
+            $this->billing_address = $oAddressModel->getById($this->billing_address_id);
+        }
+
+        return $this->billing_address;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Determines whether the source has expired
      *
      * @param DateTime $oWhen
      *

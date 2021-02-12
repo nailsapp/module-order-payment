@@ -55,6 +55,21 @@ class Source extends Base
     // --------------------------------------------------------------------------
 
     /**
+     * Source constructor.
+     *
+     * @throws ModelException
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this
+            ->hasOne('customer', 'Customer', Constants::MODULE_SLUG)
+            ->hasOne('billing_address', 'Address', \Nails\Address\Constants::MODULE_SLUG);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Creates a new payment source. Delegates to the payment driver.
      *
      * @param array $aData         The data array
@@ -89,17 +104,20 @@ class Source extends Base
 
         /** @var Resource\Source $oResource */
         $oResource = Factory::resource('Source', Constants::MODULE_SLUG, [
-            'customer_id' => $aData['customer_id'],
-            'driver'      => $aData['driver'],
-            'label'       => getFromArray('label', $aData),
-            'name'        => getFromArray('name', $aData),
-            'brand'       => getFromArray('brand', $aData),
-            'last_four'   => getFromArray('last_four', $aData),
-            'expiry'      => getFromArray('expiry', $aData),
+            'customer_id'        => $aData['customer_id'],
+            'driver'             => $aData['driver'],
+            'billing_address_id' => getFromArray('billing_address_id', $aData),
+            'label'              => getFromArray('label', $aData),
+            'name'               => getFromArray('name', $aData),
+            'brand'              => getFromArray('brand', $aData),
+            'last_four'          => getFromArray('last_four', $aData),
+            'expiry'             => getFromArray('expiry', $aData),
         ]);
 
         unset($aData['driver']);
         unset($aData['customer_id']);
+        unset($aData['customer']);
+        unset($aData['billing_address']);
 
         $oDriver->createSource($oResource, $aData);
 
@@ -114,6 +132,8 @@ class Source extends Base
 
         $aResource = (array) $oResource;
         unset($aResource['is_expired']);
+        unset($aResource['customer']);
+        unset($aResource['billing_address']);
 
         /** @var Resource\Source $oSource */
         $oSource = parent::create($aResource, $bReturnObject);
