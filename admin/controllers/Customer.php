@@ -106,7 +106,7 @@ class Customer extends DefaultController
         $oCountryService = Factory::service('Country');
 
         /** @var DynamicTable $oField */
-        $oField = Factory::factory('ModelFieldDynamicTable', 'nails/module-admin');
+        $oField = Factory::factory('ModelFieldDynamicTable', \Nails\Admin\Constants::MODULE_SLUG);
         $oField
             ->setKey('addresses')
             ->setLabel('Addresses')

@@ -71,7 +71,7 @@ class Invoice extends Base
     {
         if (userHasPermission('admin:invoice:invoice:manage')) {
             /** @var Nav $oNavGroup */
-            $oNavGroup = Factory::factory('Nav', 'nails/module-admin')
+            $oNavGroup = Factory::factory('Nav', \Nails\Admin\Constants::MODULE_SLUG)
                 ->setLabel('Invoices &amp; Payments')
                 ->setIcon('fa-credit-card')
                 ->addAction('Manage Invoices', 'index', [], 0);

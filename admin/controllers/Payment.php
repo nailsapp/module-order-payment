@@ -42,7 +42,7 @@ class Payment extends Base
         if (userHasPermission('admin:invoice:payment:view')) {
 
             /** @var Nav $oNavGroup */
-            $oNavGroup = Factory::factory('Nav', 'nails/module-admin')
+            $oNavGroup = Factory::factory('Nav', \Nails\Admin\Constants::MODULE_SLUG)
                 ->setLabel('Invoices &amp; Payments')
                 ->setIcon('fa-credit-card');
 

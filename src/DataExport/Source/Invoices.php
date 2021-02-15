@@ -147,13 +147,13 @@ class Invoices implements Source
         }
 
         return [
-            Factory::factory('DataExportSourceResponse', 'nails/module-admin')
+            Factory::factory('DataExportSourceResponse', \Nails\Admin\Constants::MODULE_SLUG)
                 ->setLabel('Table: ' . $sTableInvoice)
                 ->setFileName('invoice')
                 ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoice)->result(), 'Field'))
                 ->setSource($oDb->query($sSqlInvoice)),
 
-            Factory::factory('DataExportSourceResponse', 'nails/module-admin')
+            Factory::factory('DataExportSourceResponse', \Nails\Admin\Constants::MODULE_SLUG)
                 ->setLabel('Table: ' . $sTableInvoiceItem)
                 ->setFileName('invoice_item')
                 ->setFields(arrayExtractProperty($oDb->query('DESCRIBE ' . $sTableInvoiceItem)->result(), 'Field'))
