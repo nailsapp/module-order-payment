@@ -893,14 +893,33 @@ class Invoice extends Base
     /**
      * Whether an invoice has been fully paid or not
      *
-     * @param int  $iInvoiceId         The Invoice to query
-     * @param bool $bIncludeProcessing Whether to include payments which are still processing
+     * @param \Nails\Invoice\Resource\Invoice|int $mInvoice           The Invoice to query
+     * @param bool                                $bIncludeProcessing Whether to include payments which are still processing
      *
      * @return bool
      * @throws ModelException
      */
-    public function isPaid(int $iInvoiceId, bool $bIncludeProcessing = false): bool
+    public function isPaid($mInvoice, bool $bIncludeProcessing = false): bool
     {
+        if ($mInvoice instanceof \Nails\Invoice\Resource\Invoice) {
+            $iInvoiceId = $mInvoice->id;
+
+        } elseif (is_int($mInvoice)) {
+            $iInvoiceId = $mInvoice;
+
+        } else {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Expected %s, got %s',
+                    implode('|', [
+                        \Nails\Invoice\Resource\Invoice::class,
+                        'int',
+                    ]),
+                    gettype($mInvoice)
+                )
+            );
+        }
+
         /** @var \Nails\Invoice\Resource\Invoice $oInvoice */
         $oInvoice = $this->skipCache()->getById($iInvoiceId);
 
