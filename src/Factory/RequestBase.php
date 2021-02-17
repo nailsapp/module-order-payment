@@ -448,7 +448,7 @@ class RequestBase
         }
 
         //  Has the invoice been paid in full? If so, mark it as paid and fire the invoice.paid.processing event
-        if ($this->oInvoice->isPaid(true)) {
+        if ($this->oInvoiceModel->isPaid($this->oInvoice, true)) {
 
             //  Mark Invoice as PAID_PROCESSING
             if (!$this->oInvoiceModel->setPaidProcessing($this->oInvoice->id)) {
@@ -498,7 +498,7 @@ class RequestBase
         }
 
         //  Has the invoice been paid in full? If so, mark it as paid and fire the invoice.paid event
-        if ($this->oInvoice->isPaid(true)) {
+        if ($this->oInvoiceModel->isPaid($this->oInvoice, true)) {
 
             //  Mark Invoice as PAID
             if (!$this->oInvoiceModel->setPaid($this->oInvoice->id)) {
