@@ -27,6 +27,11 @@ use Nails\Invoice\Resource\Invoice\State;
 use Nails\Invoice\Resource\Invoice\Totals;
 use Nails\Invoice\Resource\Invoice\Urls;
 
+/**
+ * Class Invoice
+ *
+ * @package Nails\Invoice\Resource
+ */
 class Invoice extends Entity
 {
     /**
@@ -393,5 +398,24 @@ class Invoice extends Entity
         }
 
         return $this->delivery_address;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the invoice has been fully paid or not
+     *
+     * @param bool $bIncludeProcessing Whether to include payments which are still processing
+     *
+     * @return bool
+     */
+    public function isPaid(bool $bIncludeProcessing = false): bool
+    {
+        $iPaid = $this->totals->raw->paid;
+        if ($bIncludeProcessing) {
+            $iPaid += $this->totals->raw->processing;
+        }
+
+        return $iPaid >= $this->totals->raw->grand;
     }
 }

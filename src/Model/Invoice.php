@@ -898,22 +898,16 @@ class Invoice extends Base
      *
      * @return bool
      * @throws ModelException
+     * @deprecated
      */
     public function isPaid(int $iInvoiceId, bool $bIncludeProcessing = false): bool
     {
+        /** @var \Nails\Invoice\Resource\Invoice $oInvoice */
         $oInvoice = $this->getById($iInvoiceId);
 
-        if (!empty($oInvoice)) {
-
-            $iPaid = $oInvoice->totals->raw->paid;
-            if ($bIncludeProcessing) {
-                $iPaid += $oInvoice->totals->raw->processing;
-            }
-
-            return $iPaid >= $oInvoice->totals->raw->grand;
-        }
-
-        return false;
+        return $oInvoice
+            ? $oInvoice->isPaid($bIncludeProcessing)
+            : false;
     }
 
     // --------------------------------------------------------------------------
