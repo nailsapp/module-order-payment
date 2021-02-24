@@ -51,6 +51,20 @@ class Customer extends Base
      */
     const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
+    /**
+     * Whether this model uses destructive delete or not
+     *
+     * @var bool
+     */
+    const DESTRUCTIVE_DELETE = false;
+
+    /**
+     * The default column to sort on
+     *
+     * @var string|null
+     */
+    const DEFAULT_SORT_COLUMN = 'first_name';
+
     // --------------------------------------------------------------------------
 
     /**
@@ -61,8 +75,6 @@ class Customer extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->defaultSortColumn  = 'first_name';
-        $this->destructiveDelete  = false;
         $this->searchableFields[] = 'email';
         $this->searchableFields[] = 'billing_email';
 

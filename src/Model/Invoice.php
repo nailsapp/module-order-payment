@@ -58,6 +58,13 @@ class Invoice extends Base
      */
     const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
+    /**
+     * The default column to sort on
+     *
+     * @var string|null
+     */
+    const DEFAULT_SORT_COLUMN = 'created';
+
     // --------------------------------------------------------------------------
 
     /**
@@ -100,9 +107,8 @@ class Invoice extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->defaultSortColumn = 'created';
-        $this->searchableFields  = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
-        $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
+        $this->searchableFields = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
+        $this->oCurrency        = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->addExpandableField([
                 'trigger'   => 'customer',

@@ -47,6 +47,13 @@ class Item extends Base
      */
     const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
+    /**
+     * The default column to sort on
+     *
+     * @var string|null
+     */
+    const DEFAULT_SORT_COLUMN = 'order';
+
     // --------------------------------------------------------------------------
 
     /**
@@ -80,8 +87,7 @@ class Item extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->defaultSortColumn = 'order';
-        $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
+        $this->oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->addExpandableField([
                 'trigger'   => 'invoice',

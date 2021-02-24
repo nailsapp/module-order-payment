@@ -52,6 +52,13 @@ class Refund extends Base
      */
     const RESOURCE_PROVIDER = Constants::MODULE_SLUG;
 
+    /**
+     * The default column to sort on
+     *
+     * @var string|null
+     */
+    const DEFAULT_SORT_COLUMN = 'created';
+
     // --------------------------------------------------------------------------
 
     /**
@@ -80,8 +87,7 @@ class Refund extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->defaultSortColumn = 'created';
-        $this->oCurrency         = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
+        $this->oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->addExpandableField([
                 'trigger'   => 'invoice',
