@@ -29,7 +29,7 @@ use Nails\Invoice\Model\Source;
 use Nails\Invoice\Resource;
 use Nails\Invoice\Service\Invoice\Skin;
 use Nails\Invoice\Service\PaymentDriver;
-use Nails\Pdf\Service\Pdf;
+use Nails\Pdf;
 
 /**
  * Class Invoice
@@ -72,8 +72,8 @@ class Invoice extends Base
         $this->data['isPdf']   = true;
         $sHtml                 = $oInvoiceSkinService->view($sEnabledSkin, 'render', $this->data, true);
 
-        /** @var Pdf $oPdf */
-        $oPdf = Factory::service('Pdf', 'nails/module-pdf');
+        /** @var Pdf\Service\Pdf $oPdf */
+        $oPdf = Factory::service('Pdf', Pdf\Constants::MODULE_SLUG);
 
         $oPdf->setPaperSize('A4', 'portrait');
         $oPdf->load_html($sHtml);
