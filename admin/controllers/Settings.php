@@ -138,7 +138,7 @@ class Settings extends Base
                         'saved_addresses_enabled' => (bool) $oInput->post('saved_addresses_enabled'),
                     ];
 
-                    $oDb->trans_begin();
+                    $oDb->transaction()->start();
 
                     //  Normal settings
                     if (!$oAppSettingService->set($aSettings, Constants::MODULE_SLUG)) {
@@ -149,11 +149,11 @@ class Settings extends Base
                     $oPaymentDriverService->saveEnabled($oInput->post($sKeyPaymentDriver));
                     $oInvoiceSkinService->saveEnabled($oInput->post($sKeyInvoiceSkin));
 
-                    $oDb->trans_commit();
+                    $oDb->transaction()->commit();
                     $this->data['success'] = 'Invoice &amp; Payment settings were saved.';
 
                 } catch (Exception $e) {
-                    $oDb->trans_rollback();
+                    $oDb->transaction()->rollback();
                     $this->data['error'] = 'There was a problem saving settings. ' . $e->getMessage();
                 }
 

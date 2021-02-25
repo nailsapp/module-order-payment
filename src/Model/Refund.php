@@ -157,7 +157,7 @@ class Refund extends Base
 
         try {
 
-            $oDb->trans_begin();
+            $oDb->transaction()->start();
 
             if (empty($aData['ref'])) {
                 $aData['ref'] = $this->generateValidRef();
@@ -169,7 +169,7 @@ class Refund extends Base
                 throw new PaymentException('Failed to create refund.', 1);
             }
 
-            $oDb->trans_commit();
+            $oDb->transaction()->commit();
             $this->triggerEvent(
                 Events::REFUND_CREATED,
                 [$this->getRefundForEvent($bReturnObject ? $mRefund->id : $mRefund)]
@@ -178,7 +178,7 @@ class Refund extends Base
             return $mRefund;
 
         } catch (Exception $e) {
-            $oDb->trans_rollback();
+            $oDb->transaction()->rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -200,7 +200,7 @@ class Refund extends Base
 
         try {
 
-            $oDb->trans_begin();
+            $oDb->transaction()->start();
 
             unset($aData['ref']);
 
@@ -210,7 +210,7 @@ class Refund extends Base
                 throw new PaymentException('Failed to update refund.', 1);
             }
 
-            $oDb->trans_commit();
+            $oDb->transaction()->commit();
             $this->triggerEvent(
                 Events::REFUND_UPDATED,
                 [$this->getRefundForEvent($iRefundId)]
@@ -219,7 +219,7 @@ class Refund extends Base
             return $bResult;
 
         } catch (Exception $e) {
-            $oDb->trans_rollback();
+            $oDb->transaction()->rollback();
             $this->setError($e->getMessage());
             return false;
         }

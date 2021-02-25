@@ -335,7 +335,7 @@ class Invoice extends Base
                 throw new InvoiceException('Either "customer_id" or "email" field must be supplied.');
             }
 
-            $oDb->trans_begin();
+            $oDb->transaction()->start();
 
             $this->prepareInvoice($aData);
 
@@ -358,7 +358,7 @@ class Invoice extends Base
                 $this->updateLineItems($oInvoice->id, $aItems);
             }
 
-            $oDb->trans_commit();
+            $oDb->transaction()->commit();
             $this->triggerEvent(
                 Events::INVOICE_CREATED,
                 [$this->getInvoiceForEvent($oInvoice->id)]
@@ -367,7 +367,7 @@ class Invoice extends Base
             return $bReturnObject ? $oInvoice : $oInvoice->id;
 
         } catch (Exception $e) {
-            $oDb->trans_rollback();
+            $oDb->transaction()->rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -413,7 +413,7 @@ class Invoice extends Base
                 $aData['customer_id'] = null;
             }
 
-            $oDb->trans_begin();
+            $oDb->transaction()->start();
 
             $this->prepareInvoice($aData, $mIds);
 
@@ -435,7 +435,7 @@ class Invoice extends Base
                 $this->updateLineItems($mIds, $aItems);
             }
 
-            $oDb->trans_commit();
+            $oDb->transaction()->commit();
             $this->triggerEvent(
                 Events::INVOICE_UPDATED,
                 [$this->getInvoiceForEvent($mIds)]
@@ -444,7 +444,7 @@ class Invoice extends Base
             return $bResult;
 
         } catch (Exception $e) {
-            $oDb->trans_rollback();
+            $oDb->transaction()->rollback();
             $this->setError($e->getMessage());
             return false;
         }

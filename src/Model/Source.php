@@ -219,7 +219,7 @@ class Source extends Base
     {
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
-        $oDb->trans_begin();
+        $oDb->transaction()->start();
 
         try {
 
@@ -244,11 +244,11 @@ class Source extends Base
                 $oDriver->deleteSource($oSource);
             }
 
-            $oDb->trans_commit();
+            $oDb->transaction()->commit();
             return true;
 
         } catch (Exception $e) {
-            $oDb->trans_rollback();
+            $oDb->transaction()->rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -304,7 +304,7 @@ class Source extends Base
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
 
-        $oDb->trans_begin();
+        $oDb->transaction()->start();
         try {
 
             $oDb->set('is_default', false);
@@ -325,7 +325,7 @@ class Source extends Base
                 );
             }
 
-            $oDb->trans_commit();
+            $oDb->transaction()->commit();
 
             if ($mSource instanceof Resource\Source) {
                 $mSource->is_default = true;
@@ -334,7 +334,7 @@ class Source extends Base
             return true;
 
         } catch (Exception $e) {
-            $oDb->trans_rollback();
+            $oDb->transaction()->rollback();
             return false;
         }
     }
