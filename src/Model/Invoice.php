@@ -345,7 +345,7 @@ class Invoice extends Base
 
             $aData['token'] = $this->generateToken();
 
-            $aItems = $aData['items'];
+            $aItems = $aData['items'] ?? [];
             unset($aData['items']);
 
             $oInvoice = parent::create($aData, true);
