@@ -126,7 +126,7 @@ class ChargeResponse extends ResponseBase
      * @return $this
      * @throws ChargeResponseException
      */
-    public function setIsSca(array $aData): ChargeResponse
+    public function setIsSca(array $aData = []): ChargeResponse
     {
         if ($this->isLocked()) {
             throw new ChargeResponseException('Charge Response is locked and cannot be modified.');
