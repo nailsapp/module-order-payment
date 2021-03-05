@@ -776,7 +776,6 @@ class ChargeRequest extends RequestBase
             /**
              * Payment requires SCA, redirect to handle this
              */
-
             $sScaData = json_encode($oChargeResponse->getScaData());
             $this->oPaymentModel->update(
                 $this->oPayment->id,

@@ -12,6 +12,8 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Factory;
+use Nails\Invoice\Constants;
 use Nails\Invoice\Resource\Payment;
 use Nails\Invoice\Exception\ChargeResponseException;
 
@@ -142,11 +144,15 @@ class ChargeResponse extends ResponseBase
     /**
      * Returns SCA data
      *
-     * @return array
+     * @return Payment\Data\Sca
      */
-    public function getScaData(): ?array
+    public function getScaData(): Payment\Data\Sca
     {
-        return $this->aScaData;
+        return Factory::resource(
+            'PaymentDataSca',
+            Constants::MODULE_SLUG,
+            (object) $this->aScaData
+        );
     }
 
     // --------------------------------------------------------------------------
