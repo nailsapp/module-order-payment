@@ -12,6 +12,8 @@
 
 namespace Nails\Invoice\Factory;
 
+use Nails\Invoice\Exception\ResponseException;
+
 /**
  * Class ScaResponse
  *
@@ -19,20 +21,6 @@ namespace Nails\Invoice\Factory;
  */
 class ScaResponse extends ResponseBase
 {
-    /**
-     * Whether the request is pending or not
-     *
-     * @var bool
-     */
-    protected $bIsPending = true;
-
-    /**
-     * Whether the request is complete or not
-     *
-     * @var bool
-     */
-    protected $bIsComplete = false;
-
     /**
      * Whether the request is a redirect or not
      *
@@ -47,64 +35,6 @@ class ScaResponse extends ResponseBase
      */
     protected $sRedirectUrl = '';
 
-    // --------------------------------------------------------------------------
-
-    /**
-     * Sets whether the response is pending
-     *
-     * @param bool $bValue The value to set
-     *
-     * @return $this
-     */
-    public function setIsPending(bool $bValue): self
-    {
-        if (!$this->bIsLocked) {
-            $this->bIsPending = $bValue;
-        }
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Returns whether the request is pending or not
-     *
-     * @return bool
-     */
-    public function isPending(): bool
-    {
-        return $this->bIsPending;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Sets whether the response is complete
-     *
-     * @param bool $bValue The value to set
-     *
-     * @return $this
-     */
-    public function setIsComplete(bool $bValue): self
-    {
-        if (!$this->bIsLocked) {
-            $this->bIsComplete = $bValue;
-            $this->setIsPending(false);
-        }
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Returns whether the request is complete or not
-     *
-     * @return bool
-     */
-    public function isComplete(): bool
-    {
-        return $this->bIsComplete;
-    }
 
     // --------------------------------------------------------------------------
 
@@ -117,10 +47,11 @@ class ScaResponse extends ResponseBase
      */
     public function setIsRedirect(bool $bValue): self
     {
-        if (!$this->bIsLocked) {
-            $this->bIsRedirect = $bValue;
-            $this->setIsPending(false);
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->bIsRedirect = $bValue;
         return $this;
     }
 
@@ -147,9 +78,11 @@ class ScaResponse extends ResponseBase
      */
     public function setRedirectUrl(string $sValue): self
     {
-        if (!$this->bIsLocked) {
-            $this->sRedirectUrl = $sValue;
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
         }
+
+        $this->sRedirectUrl = $sValue;
         return $this;
     }
 
