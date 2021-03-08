@@ -10,12 +10,16 @@
  * @link
  */
 
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Service\Session;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Controller\Base;
+use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\InvoiceException;
+use Nails\Invoice\Exception\RequestException;
 use Nails\Invoice\Factory\ScaRequest;
 use Nails\Invoice\Service\PaymentDriver;
 
@@ -24,6 +28,13 @@ use Nails\Invoice\Service\PaymentDriver;
  */
 class Sca extends Base
 {
+    /**
+     * @throws InvoiceException
+     * @throws FactoryException
+     * @throws ModelException
+     * @throws ChargeRequestException
+     * @throws RequestException
+     */
     public function index()
     {
         /** @var Uri $oUri */
@@ -42,16 +53,14 @@ class Sca extends Base
         // --------------------------------------------------------------------------
 
         /** @var ScaRequest $oScaRequest */
-        $oScaRequest = Factory::factory('ScaRequest', Constants::MODULE_SLUG);
-
-        $oScaRequest->setPayment($oPayment->id);
-        $oScaRequest->setInvoice($oPayment->invoice->id);
-        $oScaRequest->setDriver($oPayment->driver);
-
-        $oScaResponse = $oScaRequest->execute();
+        $oScaRequest  = Factory::factory('ScaRequest', Constants::MODULE_SLUG);
+        $oScaResponse = $oScaRequest
+            ->setPayment($oPayment->id)
+            ->setInvoice($oPayment->invoice->id)
+            ->setDriver($oPayment->driver)
+            ->execute();
 
         if ($oScaResponse->isComplete()) {
-
             if (!empty($oPayment->urls->success)) {
                 redirect($oPayment->urls->success);
             } else {
@@ -59,7 +68,6 @@ class Sca extends Base
             }
 
         } elseif ($oScaResponse->isRedirect()) {
-
             redirect($oScaResponse->getRedirectUrl());
 
         } elseif ($oScaResponse->isFailed()) {
