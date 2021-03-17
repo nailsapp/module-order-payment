@@ -70,6 +70,20 @@ class Sca extends Base
         } elseif ($oScaResponse->isRedirect()) {
             redirect($oScaResponse->getRedirectUrl());
 
+        } elseif ($oScaResponse->isRedirectWithPost()) {
+            /** @var \Nails\Common\Service\View $oView */
+            $oView = Factory::service('View');
+            $oView
+                ->setData([
+                    'sFormUrl'  => $oScaResponse->getRedirectWithPostUrl(),
+                    'aFormData' => $oScaResponse->getRedirectWithPostData(),
+                ])
+                ->load([
+                    'structure/header/blank',
+                    'invoice/sca/postWithData',
+                    'structure/footer/blank',
+                ]);
+
         } elseif ($oScaResponse->isFailed()) {
 
             $oError = $oScaResponse->getError();

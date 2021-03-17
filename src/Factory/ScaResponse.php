@@ -35,6 +35,26 @@ class ScaResponse extends ResponseBase
      */
     protected $sRedirectUrl = '';
 
+    /**
+     * Whether the request is a redirect with POST data or not
+     *
+     * @var bool
+     */
+    protected $bIsRedirectWithPost = false;
+
+    /**
+     * The URL to POST to when redirecting with POST data
+     *
+     * @var string
+     */
+    protected $sRedirectWithPostUrl = '';
+
+    /**
+     * Key value POST data for redirect
+     *
+     * @var array
+     */
+    protected $aRedirectWithPostData = [];
 
     // --------------------------------------------------------------------------
 
@@ -96,5 +116,86 @@ class ScaResponse extends ResponseBase
     public function getRedirectUrl(): string
     {
         return $this->sRedirectUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Sets whether the response is a redirect with POST data
+     *
+     * @param bool $bValue The value to set
+     *
+     * @return $this
+     */
+    public function setIsRedirectWithPost(bool $bValue): self
+    {
+        if ($this->isLocked()) {
+            throw new ResponseException('Response is locked and cannot be modified');
+        }
+
+        $this->bIsRedirectWithPost = $bValue;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns whether the request is a redirect with POST data or not
+     *
+     * @return bool
+     */
+    public function isRedirectWithPost(): bool
+    {
+        return $this->bIsRedirectWithPost;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the redirect with POST URL
+     *
+     * @param string $sValue The value to set
+     */
+    public function setRedirectWithPostUrl(string $sValue): self
+    {
+        $this->sRedirectWithPostUrl = $sValue;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the redirect with POST URL
+     *
+     * @return string
+     */
+    public function getRedirectWithPostUrl(): string
+    {
+        return $this->sRedirectWithPostUrl;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the redirect with POST data
+     *
+     * @param array $aValue The values to set
+     */
+    public function setRedirectWithPostData(array $aValue): self
+    {
+        $this->aRedirectWithPostData = $aValue;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the redirect with POST data
+     *
+     * @return array
+     */
+    public function getRedirectWithPostData(): array
+    {
+        return $this->aRedirectWithPostData;
     }
 }
