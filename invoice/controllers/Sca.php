@@ -39,6 +39,8 @@ class Sca extends Base
     {
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
+        /** @var \Nails\Common\Service\View $oView */
+        $oView = Factory::service('View');
         /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
         $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
         /** @var PaymentDriver $oPaymentDriverService */
@@ -68,21 +70,26 @@ class Sca extends Base
             }
 
         } elseif ($oScaResponse->isRedirect()) {
-            redirect($oScaResponse->getRedirectUrl());
 
-        } elseif ($oScaResponse->isRedirectWithPost()) {
-            /** @var \Nails\Common\Service\View $oView */
-            $oView = Factory::service('View');
-            $oView
-                ->setData([
-                    'sFormUrl'  => $oScaResponse->getRedirectWithPostUrl(),
-                    'aFormData' => $oScaResponse->getRedirectWithPostData(),
-                ])
-                ->load([
-                    'structure/header/blank',
-                    'invoice/sca/postWithData',
-                    'structure/footer/blank',
-                ]);
+            $sRedirectUrl = $oScaResponse->getRedirectUrl();
+            $aPostData    = $oScaResponse->getRedirectPostData();
+
+            if (is_null($aPostData)) {
+                redirect($sRedirectUrl);
+
+            } else {
+                $oView
+                    ->setData([
+                        'sMessage'  => 'Please wait while we redirect you to your bank...',
+                        'sFormUrl'  => $sRedirectUrl,
+                        'aFormData' => $aPostData,
+                    ])
+                    ->load([
+                        'structure/header/blank',
+                        'invoice/pay/post',
+                        'structure/footer/blank',
+                    ]);
+            }
 
         } elseif ($oScaResponse->isFailed()) {
 

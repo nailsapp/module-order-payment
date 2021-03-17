@@ -55,7 +55,7 @@ class ChargeResponse extends ResponseBase
     /**
      * Any redirect POST Data
      *
-     * @var array
+     * @var array|null
      */
     protected $aRedirectPostData = null;
 

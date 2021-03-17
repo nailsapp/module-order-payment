@@ -16,6 +16,7 @@ use DateTime;
 use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Service\View;
 use Nails\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -802,23 +803,23 @@ class ChargeRequest extends RequestBase
             $sRedirectUrl = $oChargeResponse->getRedirectUrl();
             $aPostData    = $oChargeResponse->getRedirectPostData();
 
-            if (empty($aPostData)) {
-
+            if (is_null($aPostData)) {
                 redirect($sRedirectUrl);
 
             } else {
-
+                /** @var View $oView */
                 $oView = Factory::service('View');
-                echo $oView->load('structure/header/blank', getControllerData(), true);
-                echo $oView->load(
-                    'invoice/pay/post',
-                    [
-                        'redirectUrl' => $sRedirectUrl,
-                        'postFields'  => $aPostData,
-                    ],
-                    true
-                );
-                echo $oView->load('structure/footer/blank', getControllerData(), true);
+                $oView
+                    ->setData([
+                        'sMessage'  => 'Please wait while we redirect you to our payment provider...',
+                        'sFormUrl'  => $sRedirectUrl,
+                        'aFormData' => $aPostData,
+                    ])
+                    ->load([
+                        'structure/header/blank',
+                        'invoice/pay/post',
+                        'structure/footer/blank',
+                    ]);
                 exit();
             }
 

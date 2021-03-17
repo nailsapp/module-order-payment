@@ -1,19 +1,28 @@
+<?php
+/**
+ * @var string $sMessage
+ * @var string $sFormUrl
+ * @var array  $aFormData
+ */
+?>
 <div class="nails-invoice post u-center-screen">
     <div class="panel">
         <div class="panel__body text-center">
-            <p>Please wait while we redirect you to our payment provider...</p>
+            <p><?=$sMessage?></p>
         </div>
     </div>
 </div>
-<form action="<?=$redirectUrl?>" method="POST" id="form">
+<form id="form" method="POST" action="<?=$sFormUrl?>">
     <?php
-
-    foreach ($postFields as $sKey => $sValue) {
-        echo '<input type="hidden" name="' . $sKey . '" value="' . $sValue . '" />';
+    foreach ($aFormData as $sKey => $sValue) {
+        ?>
+        <input type="hidden" name="<?=$sKey?>" value="<?=$sValue?>" />
+        <?php
     }
-
     ?>
 </form>
 <script type="text/javascript">
+window.onload = function() {
     document.getElementById('form').submit();
+}
 </script>
