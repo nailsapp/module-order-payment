@@ -97,10 +97,11 @@ class Sca extends Base
 
             /** @var Session $oSession */
             $oSession = Factory::service('Session');
-            $oSession->setFlashData('error', $oError->user);
+            $oSession->setFlashData('error', $oError->user ?: 'An error occurred during payment authentication');
 
             if (!empty($oPayment->urls->error)) {
                 redirect($oPayment->urls->error);
+
             } else {
 
                 $sUrl    = $oPayment->invoice->urls->payment;
