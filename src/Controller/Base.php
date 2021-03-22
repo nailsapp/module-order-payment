@@ -12,6 +12,7 @@
 
 namespace Nails\Invoice\Controller;
 
+use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Asset;
 use Nails\Factory;
 use Nails\Invoice\Constants;
