@@ -644,10 +644,13 @@ class ChargeRequest extends RequestBase
 
         if (empty($this->oDriver)) {
             throw new ChargeRequestException('No driver selected.');
+
         } elseif (empty($this->oInvoice)) {
             throw new ChargeRequestException('No invoice selected.');
+
         } elseif (empty($this->iAmount)) {
             throw new ChargeRequestException('Amount to charge must be greater than zero.');
+
         } elseif (empty($this->oCurrency)) {
             throw new ChargeRequestException('No currency selected.');
         }
@@ -760,18 +763,14 @@ class ChargeRequest extends RequestBase
             ->setSuccessUrl($sSuccessUrl)
             ->setErrorUrl($sErrorUrl);
 
-        //  Validate driver response
-        if (empty($oChargeResponse)) {
-            throw new ChargeRequestException('Response from driver was empty.');
+        if (!$oChargeResponse instanceof ChargeResponse) {
+            throw new ChargeRequestException(sprintf(
+                'Response from driver must be an instance of %s, received %s.',
+                \Nails\Invoice\Factory\ChargeResponse::class,
+                gettype($oChargeResponse)
+            ));
         }
 
-        if (!($oChargeResponse instanceof ChargeResponse)) {
-            throw new ChargeRequestException(
-                'Response from driver must be an instance of \Nails\Invoice\Factory\ChargeResponse.'
-            );
-        }
-
-        //  Handle the response
         if ($oChargeResponse->isSca()) {
 
             /**
@@ -786,6 +785,7 @@ class ChargeRequest extends RequestBase
             $sRedirectUrl = siteUrl('invoice/payment/sca/' . $this->oPayment->token . '/' . md5($sScaData));
             if ($this->isAutoRedirect()) {
                 redirect($sRedirectUrl);
+
             } else {
                 $oChargeResponse->setScaUrl($sRedirectUrl);
                 //  Set the redirect values too, in case dev has not considered SCA

@@ -48,11 +48,14 @@ abstract class PaymentBase extends Base implements Payment
         $aSupported = $this->getSupportedCurrencies();
         if (is_null($aSupported)) {
             throw new DriverException('Currency support not configured for driver "' . $this->getSlug() . '"');
+
         } elseif (empty($aSupported)) {
             //  If not defined assume support for all currencies
             return true;
+
         } elseif ($mCurrency instanceof Currency) {
             return in_array($mCurrency->code, $aSupported);
+
         } elseif (is_string($mCurrency)) {
             return in_array($mCurrency, $aSupported);
         }

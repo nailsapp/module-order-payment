@@ -70,12 +70,12 @@ class RefundRequest extends RequestBase
     {
         //  Ensure we have a driver
         if (empty($this->oDriver)) {
-            throw new RefundRequestException('No driver selected.', 1);
+            throw new RefundRequestException('No driver selected.');
         }
 
         //  Ensure we have a payment
         if (empty($this->oPayment)) {
-            throw new RefundRequestException('No payment selected.', 1);
+            throw new RefundRequestException('No payment selected.');
         }
 
         //  Ensure we have an invoice
@@ -86,66 +86,62 @@ class RefundRequest extends RequestBase
         //  Validate ability to refund
         if (!$this->oPayment->is_refundable) {
             if ($this->oPayment->available_for_refund->raw === 0) {
-                throw new RefundRequestException('Payment is already fully refunded.', 1);
+                throw new RefundRequestException('Payment is already fully refunded.');
             } else {
-                throw new RefundRequestException('Payment is not in a state where it can be refunded.', 1);
+                throw new RefundRequestException('Payment is not in a state where it can be refunded.');
             }
         }
 
         $iRefundAmount = is_null($iAmount) ? $this->oPayment->available_for_refund->raw : $iAmount;
 
         if (empty($iRefundAmount)) {
-            throw new RefundRequestException('Refund amount must be greater than 0.', 1);
+            throw new RefundRequestException('Refund amount must be greater than 0.');
         }
 
         //  Validate refund amount
         if ($iRefundAmount > $this->oPayment->available_for_refund->raw) {
-            throw new RefundRequestException(
-                'Requested refund amount is greater than the value of the remaining payment balance (' .
-                $this->oPayment->available_for_refund->formatted . ').',
-                1
-            );
+            throw new RefundRequestException(sprintf(
+                'Requested refund amount is greater than the value of the remaining payment balance (%s)',
+                $this->oPayment->available_for_refund->formatted
+            ));
         }
 
         //  Create a refund against the payment if one hasn't been specified
         if (empty($this->oRefund)) {
 
-            $iRefundId = $this->oRefundModel->create([
+            $oRefund = $this->oRefundModel->create([
                 'reason'     => $this->getReason(),
-                'payment_id' => $this->oPayment->id,
-                'invoice_id' => $this->oInvoice->id,
-                'currency'   => $this->oPayment->currency->code,
+                'payment_id' => $this->getPayment()->id,
+                'invoice_id' => $this->getInvoice()->id,
+                'currency'   => $this->getPayment()->currency->code,
                 'amount'     => $iRefundAmount,
-            ]);
+            ], true);
 
-            if (empty($iRefundId)) {
-                throw new RefundRequestException('Failed to create new refund.', 1);
+            if (empty($oRefund)) {
+                throw new RefundRequestException('Failed to create new refund.');
             }
 
-            $this->setRefund($iRefundId);
+            $this->setRefund($oRefund);
         }
 
         //  Execute the refund
         $oRefundResponse = $this->oDriver->refund(
-            $this->oPayment->transaction_id,
-            $iAmount,
-            $this->oPayment->currency,
-            $this->oPayment->custom_data,
+            $this->getPayment()->transaction_id,
+            $iRefundAmount,
+            $this->getPayment()->currency,
+            $this->getPayment()->custom_data,
             $this->getReason(),
-            $this->oPayment,
-            $this->oInvoice
+            $this->getPayment(),
+            $this->getRefund(),
+            $this->getInvoice()
         );
 
-        //  Validate driver response
-        if (empty($oRefundResponse)) {
-            throw new RefundRequestException('Response from driver was empty.', 1);
-        }
-
-        if (!($oRefundResponse instanceof RefundResponse)) {
-            throw new RefundRequestException(
-                'Response from driver must be an instance of \Nails\Invoice\Factory\RefundResponse.',
-                1
-            );
+        if (!$oRefundResponse instanceof RefundResponse) {
+            throw new RefundRequestException(sprintf(
+                'Response from driver must be an instance of %s, received %s.',
+                \Nails\Invoice\Factory\RefundResponse::class,
+                gettype($oRefundResponse)
+            ));
         }
 
         if ($oRefundResponse->isComplete()) {
@@ -170,7 +166,7 @@ class RefundRequest extends RequestBase
             );
 
             if (empty($bResult)) {
-                throw new RefundRequestException('Failed to update existing payment.', 1);
+                throw new RefundRequestException('Failed to update existing payment.');
             }
         }
 
