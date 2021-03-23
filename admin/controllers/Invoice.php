@@ -546,10 +546,6 @@ class Invoice extends Base
 
         $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
 
-        /** @var Asset $oAsset */
-        $oAsset = Factory::service('Asset');
-        $oAsset->load('admin.invoice.view.min.js', Constants::MODULE_SLUG);
-
         Helper::loadView('view');
     }
 

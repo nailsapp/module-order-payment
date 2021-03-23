@@ -265,7 +265,7 @@ class Payment extends Base
             // --------------------------------------------------------------------------
 
             if (!$oPaymentModel->refund($iPaymentId, $iAmount, $sReason)) {
-                throw new NailsException('Failed to refund payment. ' . $oPaymentModel->lastError(), 1);
+                throw new NailsException('Failed to refund payment. ' . $oPaymentModel->lastError());
             }
 
             $sStatus  = 'success';

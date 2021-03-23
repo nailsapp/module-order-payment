@@ -1,7 +1,17 @@
 <?php
+
+use Nails\Factory;
+use Nails\Invoice\Constants;
+use Nails\Invoice\Resource;
+use Nails\Invoice\Model;
+
 /**
- * @var \Nails\Invoice\Resource\Payment $payment
+ * @var Resource\Payment $payment
  */
+
+/** @var Model\Refund $oRefundModel */
+$oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
+
 ?>
 <div class="group-invoice payment view">
     <div class="row">
@@ -24,6 +34,10 @@
                         <tr>
                             <td class="header">Transaction ID</td>
                             <td><?=$payment->transaction_id?></td>
+                        </tr>
+                        <tr>
+                            <td class="header">Invoice</td>
+                            <td><?=anchor('admin/invoice/invoice/view/' . $payment->invoice->id, $payment->invoice->ref)?></td>
                         </tr>
                         <tr>
                             <td class="header">Description</td>
@@ -130,6 +144,19 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <strong>Associated Refunds</strong>
+            <?php
+            if ($payment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
+                ?>
+                <button class="btn btn-xs btn-danger js-invoice-refund pull-right"
+                        data-id="<?=$payment->id?>"
+                        data-max="<?=$payment->available_for_refund->raw?>"
+                        data-max-formatted="<?=$payment->available_for_refund->formatted?>"
+                >
+                    Issue Refund
+                </button>
+                <?php
+            }
+            ?>
         </div>
         <?php
 
@@ -154,21 +181,39 @@
 
                         foreach ($payment->refunds->data as $oRefund) {
 
+                            switch ($oRefund->status->id) {
+                                case $oRefundModel::STATUS_COMPLETE:
+                                    $sClass = 'success';
+                                    $sText  = '';
+                                    break;
+                                case $oRefundModel::STATUS_PENDING:
+                                case $oRefundModel::STATUS_PROCESSING:
+                                    $sClass = 'warning';
+                                    $sText  = '';
+                                    break;
+                                case $oRefundModel::STATUS_FAILED:
+                                    $sClass = 'danger';
+                                    $sText  = $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
+                                    break;
+                                default:
+                                    $sClass = '';
+                                    $sText  = '';
+                                    break;
+                            }
+
                             ?>
                             <tr>
                                 <td class="text-center"><?=$oRefund->id?></td>
-                                <td class="text-center">
+                                <td class="text-center <?=$sClass?>">
                                     <?php
-
                                     echo $oRefund->status->label;
-
-                                    if (!empty($oRefund->fail_msg)) {
-
-                                        echo '<small class="text-danger">';
-                                        echo $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')';
-                                        echo '</small>';
+                                    if (!empty($sText)) {
+                                        ?>
+                                        <small>
+                                            <?=$sText?>
+                                        </small>
+                                        <?php
                                     }
-
                                     ?>
                                 </td>
                                 <td><?=$oRefund->transaction_id?></td>

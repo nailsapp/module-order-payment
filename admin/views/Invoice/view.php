@@ -378,19 +378,15 @@ $iColWidth   = [
                                     );
 
                                     if ($oPayment->is_refundable && userHasPermission('admin:invoice:payment:refund')) {
-
-                                        $aAttr = [
-                                            'class="btn btn-xs btn-danger js-confirm-refund"',
-                                            'data-max="' . $oPayment->available_for_refund->raw . '"',
-                                            'data-max-formatted="' . $oPayment->available_for_refund->formatted . '"',
-                                            'data-return-to="' . urlencode(current_url()) . '"',
-                                        ];
-
-                                        echo anchor(
-                                            'admin/invoice/payment/refund/' . $oPayment->id,
-                                            'Refund',
-                                            implode(' ', $aAttr)
-                                        );
+                                        ?>
+                                        <button class="btn btn-xs btn-danger js-invoice-refund pull-right"
+                                                data-id="<?=$oPayment->id?>"
+                                                data-max="<?=$oPayment->available_for_refund->raw?>"
+                                                data-max-formatted="<?=$oPayment->available_for_refund->formatted?>"
+                                        >
+                                            Refund
+                                        </button>
+                                        <?php
                                     }
 
                                     ?>
