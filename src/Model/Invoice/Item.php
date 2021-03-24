@@ -115,12 +115,12 @@ class Item extends Base
     {
         return [
             self::UNIT_NONE   => 'None',
-            self::UNIT_MINUTE => 'Minutes',
-            self::UNIT_HOUR   => 'Hours',
-            self::UNIT_DAY    => 'Days',
-            self::UNIT_WEEK   => 'Weeks',
-            self::UNIT_MONTH  => 'Months',
-            self::UNIT_YEAR   => 'Years',
+            self::UNIT_MINUTE => 'Minute',
+            self::UNIT_HOUR   => 'Hour',
+            self::UNIT_DAY    => 'Day',
+            self::UNIT_WEEK   => 'Week',
+            self::UNIT_MONTH  => 'Month',
+            self::UNIT_YEAR   => 'Year',
         ];
     }
 

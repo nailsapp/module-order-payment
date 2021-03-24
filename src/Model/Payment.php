@@ -15,6 +15,7 @@ namespace Nails\Invoice\Model;
 use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Helper\Inflector;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Common\Service\Database;
@@ -533,7 +534,7 @@ class Payment extends Base
                             'label'    => $oItem->label,
                             'body'     => $oItem->body,
                             'quantity' => $oItem->quantity,
-                            'unit'     => $oItem->unit->label,
+                            'unit'     => $oItem->unit->id !== 'NONE'? Inflector::pluralise($oItem->quantity, $oItem->unit->label) : '',
                             'totals'   => [
                                 'sub'   => html_entity_decode($oItem->totals->formatted->sub),
                                 'tax'   => html_entity_decode($oItem->totals->formatted->tax),

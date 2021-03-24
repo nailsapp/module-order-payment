@@ -1,5 +1,6 @@
 <?php
 
+use Nails\Common\Helper\Inflector;
 use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Resource\Invoice\Email;
@@ -199,17 +200,25 @@ $iColWidth   = [
                                     <?=$oItem->label?>
                                     <?=$oItem->body ? '<small>' . $oItem->body . '</small>' : ''?>
                                 </td>
-                                <td class="text-center"><?=$oItem->unit_cost->formatted?></td>
                                 <td class="text-center">
-                                    <?=$oItem->quantity?> <?=$oItem->unit->label?>
+                                    <?=$oItem->unit_cost->formatted?>
                                 </td>
-                                <td class="text-center"><?=$oItem->totals->formatted->sub?></td>
+                                <td class="text-center">
+                                    <?=$oItem->quantity?>
+                                    <?=$oItem->unit->id !== 'NONE' ? Inflector::pluralise($oItem->quantity, $oItem->unit->label) : ''?>
+                                </td>
+                                <td class="text-center">
+                                    <?=$oItem->totals->formatted->sub?>
+                                </td>
                                 <td class="text-center">
                                     <?=$oItem->totals->formatted->tax?>
                                     <small>
                                         at <?=$oItem->tax ? $oItem->tax->rate : 0?>%
+                                    </small>
                                 </td>
-                                <td class="text-center"><?=$oItem->totals->formatted->grand?></td>
+                                <td class="text-center">
+                                    <?=$oItem->totals->formatted->grand?>
+                                </td>
                             </tr>
                             <?php
                         }
