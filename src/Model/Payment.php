@@ -533,6 +533,7 @@ class Payment extends Base
                             'label'    => $oItem->label,
                             'body'     => $oItem->body,
                             'quantity' => $oItem->quantity,
+                            'unit'     => $oItem->unit->label,
                             'totals'   => [
                                 'sub'   => html_entity_decode($oItem->totals->formatted->sub),
                                 'tax'   => html_entity_decode($oItem->totals->formatted->tax),
