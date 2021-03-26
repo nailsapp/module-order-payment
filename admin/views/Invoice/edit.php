@@ -160,19 +160,19 @@ use Nails\Invoice\Constants;
                     <tr class="total-row">
                         <td colspan="6" class="text-right">
                             <strong>Sub Total:</strong>
-                            <span data-bind="html: currencySymbolBefore() + _nails_admin.numberFormat(calculateSubTotal(), 2) + currencySymbolAfter()"></span>
+                            <span data-bind="html: currencySymbolBefore() + window._nails_admin.numberFormat(calculateSubTotal(), 2) + currencySymbolAfter()"></span>
                         </td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="6" class="text-right">
                             <strong>Tax:</strong>
-                            <span data-bind="html: currencySymbolBefore() + _nails_admin.numberFormat(calculateTax(), 2) + currencySymbolAfter()"></span>
+                            <span data-bind="html: currencySymbolBefore() + window._nails_admin.numberFormat(calculateTax(), 2) + currencySymbolAfter()"></span>
                         </td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="6" class="text-right">
                             <strong>Grand Total:</strong>
-                            <span data-bind="html: currencySymbolBefore() + _nails_admin.numberFormat(calculateGrandTotal(), 2) + currencySymbolAfter()"></span>
+                            <span data-bind="html: currencySymbolBefore() + window._nails_admin.numberFormat(calculateGrandTotal(), 2) + currencySymbolAfter()"></span>
                         </td>
                     </tr>
                 </tfoot>
