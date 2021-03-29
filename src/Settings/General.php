@@ -142,6 +142,10 @@ class General implements Interfaces\Component\Settings
                 FormValidation::RULE_REQUIRED,
             ]);
 
+
+        Factory::destroy($oPaymentDriverService);
+        Factory::destroy($oSkinService);
+
         return [
             $oBusinessName,
             $oBusinessAddress,
