@@ -172,14 +172,21 @@ class Invoice extends Entity
      *
      * @var bool
      */
-    public $is_scheduled;
+    public $is_scheduled = false;
+
+    /**
+     * Whether the invoice is due
+     *
+     * @var bool
+     */
+    public $is_due = false;
 
     /**
      * Whether the invoice is overdue
      *
      * @var bool
      */
-    public $is_overdue;
+    public $is_overdue = false;
 
     /**
      * Whether the invoice has processing payments
@@ -247,19 +254,16 @@ class Invoice extends Entity
 
         // --------------------------------------------------------------------------
 
-        //  Computed booleans
+        if ($this->state->id == $oModel::STATE_OPEN) {
 
-        /** @var \DateTime $oNow */
-        $oNow = Factory::factory('DateTime');
+            /** @var \DateTime $oNow */
+            $oNow = Factory::factory('DateTime');
+            /** @var Date $oNow */
+            $oNow = Factory::resource('Date', null, (object) ['raw' => $oNow->format('Y-m-d')]);
 
-        $this->is_scheduled = false;
-        if ($this->state->id == $oModel::STATE_OPEN && $oNow < (new \DateTime($mObj->dated))) {
-            $this->is_scheduled = true;
-        }
-
-        $this->is_overdue = false;
-        if ($this->state->id == $oModel::STATE_OPEN && $oNow > (new \DateTime($mObj->due))) {
-            $this->is_overdue = true;
+            $this->is_scheduled = $this->dated->isFuture();
+            $this->is_due       = $oNow == $this->dated || $this->dated->isPast();
+            $this->is_overdue   = $this->due->isPast();
         }
 
         $this->has_processing_payments = $mObj->processing_payments > 0;
@@ -417,5 +421,41 @@ class Invoice extends Entity
         }
 
         return $iPaid >= $this->totals->raw->grand;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whetehr the invoice is due for payment
+     *
+     * @return bool
+     */
+    public function isDue(): bool
+    {
+        return $this->is_due;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whetehr the invoice is overdue for payment
+     *
+     * @return bool
+     */
+    public function isOverdue(): bool
+    {
+        return $this->is_overdue;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whetehr the invoice is scheduled for the future
+     *
+     * @return bool
+     */
+    public function isScheduled(): bool
+    {
+        return $this->is_scheduled;
     }
 }
