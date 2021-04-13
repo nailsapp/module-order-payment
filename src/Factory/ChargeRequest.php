@@ -20,6 +20,7 @@ use Nails\Common\Service\View;
 use Nails\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
+use Nails\Invoice\Driver\Payment\WorldPay\Sca\Data;
 use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
 use Nails\Invoice\Resource\Invoice\Data\Payment;
@@ -776,21 +777,24 @@ class ChargeRequest extends RequestBase
             /**
              * Payment requires SCA, redirect to handle this
              */
-            $sScaData = json_encode($oChargeResponse->getScaData());
+            $oScaData = $oChargeResponse->getScaData();
+
             $this->oPaymentModel->update(
                 $this->oPayment->id,
-                ['sca_data' => $sScaData]
+                ['sca_data' => $oScaData]
             );
 
-            $sRedirectUrl = siteUrl('invoice/payment/sca/' . $this->oPayment->token . '/' . md5($sScaData));
+            $sRedirectUrl = static::compileScaUrl($this->oPayment, $oScaData);
+
             if ($this->isAutoRedirect()) {
                 redirect($sRedirectUrl);
 
             } else {
-                $oChargeResponse->setScaUrl($sRedirectUrl);
-                //  Set the redirect values too, in case dev has not considered SCA
-                $oChargeResponse->setIsRedirect(true);
-                $oChargeResponse->setRedirectUrl($sRedirectUrl);
+                $oChargeResponse
+                    ->setScaUrl($sRedirectUrl)
+                    //  Set the redirect values too, in case dev has not considered SCA
+                    ->setIsRedirect(true)
+                    ->setRedirectUrl($sRedirectUrl);
             }
 
         } elseif ($oChargeResponse->isRedirect() && $this->isAutoRedirect()) {
@@ -852,5 +856,26 @@ class ChargeRequest extends RequestBase
         $oChargeResponse->lock();
 
         return $oChargeResponse;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Compiles the SCA URL
+     *
+     * @param \Nails\Invoice\Resource\Payment          $oPayment
+     * @param \Nails\Invoice\Resource\Payment\Data\Sca $oData
+     *
+     * @return string
+     */
+    public static function compileScaUrl(
+        \Nails\Invoice\Resource\Payment $oPayment,
+        \Nails\Invoice\Resource\Payment\Data\Sca $oData
+    ): string {
+        return siteUrl(sprintf(
+            'invoice/payment/sca/%s/%s',
+            $oPayment->token,
+            $oData->hash()
+        ));
     }
 }

@@ -39,11 +39,13 @@ class ScaRequest extends RequestBase
     {
         /** @var ScaResponse $oScaResponse */
         $oScaResponse = Factory::factory('ScaResponse', Constants::MODULE_SLUG);
+        /** @var \Nails\Invoice\Factory\ChargeRequest $oChargeRequest */
+        $oChargeRequest = Factory::factory('ChargeRequest', Constants::MODULE_SLUG);
 
         $oScaResponse = $this->oDriver->sca(
             $oScaResponse,
-            json_decode($this->oPayment->sca_data, JSON_OBJECT_AS_ARRAY) ?? [],
-            siteUrl('invoice/payment/sca/' . $this->oPayment->token . '/' . md5($this->oPayment->sca_data))
+            $this->oPayment->sca_data,
+            $oChargeRequest::compileScaUrl($this->oPayment, $this->oPayment->sca_data)
         );
 
         $oScaResponse->lock();

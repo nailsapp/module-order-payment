@@ -128,15 +128,15 @@ interface Payment
     /**
      * Handles any SCA requests
      *
-     * @param ScaResponse $oScaResponse The SCA Response object
-     * @param array       $aData        Any saved SCA data
-     * @param string      $sSuccessUrl  The URL to redirect to after authorisation
+     * @param ScaResponse               $oScaResponse The SCA Response object
+     * @param Resource\Payment\Data\Sca $oData        Any saved SCA data
+     * @param string                    $sSuccessUrl  The URL to redirect to after authorisation
      *
      * @return ScaResponse
      */
     public function sca(
         ScaResponse $oScaResponse,
-        array $aData,
+        Resource\Payment\Data\Sca $oData,
         string $sSuccessUrl
     ): ScaResponse;
 

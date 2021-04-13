@@ -48,7 +48,7 @@ class Sca extends Base
 
         /** @var \Nails\Invoice\Resource\Payment $oPayment */
         $oPayment = $oPaymentModel->getByToken($oUri->segment(4), ['expand' => ['invoice']]);
-        if (empty($oPayment) || md5($oPayment->sca_data) !== $oUri->segment(5)) {
+        if (empty($oPayment) || $oPayment->sca_data->hash() !== $oUri->segment(5)) {
             show404();
         }
 

@@ -25,6 +25,28 @@ abstract class ArbitraryData extends Resource
      */
     public function __toString(): string
     {
-        return json_encode($this);
+        return json_encode($this->toSortedArray());
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Converts the object to an multi-dimensional, sorted array
+     *
+     * @param array|null $aArray
+     *
+     * @return array
+     */
+    public function toSortedArray(array $aArray = null): array
+    {
+        foreach (($aArray ?? get_object_vars($this)) as $sProp => $mValue) {
+            $aArray[$sProp] = is_object($mValue) || is_array($mValue)
+                ? static::toSortedArray((array) $mValue)
+                : $mValue;
+        }
+
+        ksort($aArray);
+
+        return $aArray;
     }
 }
