@@ -209,13 +209,14 @@ class Source extends Base
     /**
      * Deletes an existing payment source
      *
-     * @param int  $iId           The ID of the object to deleted
-     * @param bool $bDeleteRemote Whetehr to delete the remote source as well
+     * @param int  $iId                    The ID of the object to deleted
+     * @param bool $bDeleteRemote          Whether to delete the remote source as well
+     * @param bool $bTolerateRemoteFailure Whether to tolerate the remote delete failing
      *
      * @return bool
      * @throws FactoryException
      */
-    public function delete($iId, bool $bDeleteRemote = true): bool
+    public function delete($iId, bool $bDeleteRemote = true, bool $bTolerateRemoteFailure = false): bool
     {
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
@@ -233,15 +234,21 @@ class Source extends Base
                 throw new ModelException('Failed to delete source. ' . $this->lastError());
             }
 
-            //  Give the driver the chance to delete the remote source
             if ($bDeleteRemote) {
+                try {
 
-                /** @var PaymentDriver $oPaymentDriverService */
-                $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
-                /** @var PaymentBase $oDriver */
-                $oDriver = $oPaymentDriverService->getInstance($oSource->driver);
+                    /** @var PaymentDriver $oPaymentDriverService */
+                    $oPaymentDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
+                    /** @var PaymentBase $oDriver */
+                    $oDriver = $oPaymentDriverService->getInstance($oSource->driver);
 
-                $oDriver->deleteSource($oSource);
+                    $oDriver->deleteSource($oSource);
+
+                } catch (\Exception $e) {
+                    if (!$bTolerateRemoteFailure) {
+                        throw $e;
+                    }
+                }
             }
 
             $oDb->transaction()->commit();
