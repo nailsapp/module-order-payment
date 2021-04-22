@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Migration:   2
- * Started:     17/03/2016
- * Finalised:   17/03/2016
+ * Migration:   11
+ * Started:     08/07/2019
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -12,11 +11,11 @@
  * @link
  */
 
-namespace Nails\Database\Migration\Nails\ModuleInvoice;
+namespace Nails\Invoice\Database\Migration;
 
 use Nails\Common\Console\Migrate\Base;
 
-class Migration2 extends Base
+class Migration11 extends Base
 {
     /**
      * Execute the migration
@@ -24,6 +23,6 @@ class Migration2 extends Base
      */
     public function execute()
     {
-        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_payment` ADD `fee` INT(11)  NULL  DEFAULT NULL  AFTER `amount`;");
+        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` CHANGE `ref` `ref` CHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '';");
     }
 }

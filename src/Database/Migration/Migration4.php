@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Migration:   9
- * Started:     14/09/2018
- * Finalised:   14/09/2018
+ * Migration:   4
+ * Started:     17/06/2016
+ * Finalised:   17/06/2016
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -12,11 +12,11 @@
  * @link
  */
 
-namespace Nails\Database\Migration\Nails\ModuleInvoice;
+namespace Nails\Invoice\Database\Migration;
 
 use Nails\Common\Console\Migrate\Base;
 
-class Migration9 extends Base
+class Migration4 extends Base
 {
     /**
      * Execute the migration
@@ -24,6 +24,6 @@ class Migration9 extends Base
      */
     public function execute()
     {
-        $this->query("UPDATE `{{NAILS_DB_PREFIX}}invoice_payment` SET `driver` = REPLACE(`driver`, 'nailsapp', 'nails');");
+        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` ADD `written_off` DATETIME  NULL  AFTER `paid`;");
     }
 }

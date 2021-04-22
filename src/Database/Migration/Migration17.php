@@ -10,7 +10,7 @@
  * @author     Nails Dev Team
  */
 
-namespace Nails\Database\Migration\Nails\ModuleInvoice;
+namespace Nails\Invoice\Database\Migration;
 
 use Nails\Address;
 use Nails\Common\Console\Migrate\Base;

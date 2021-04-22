@@ -12,7 +12,7 @@
  * @link
  */
 
-namespace Nails\Database\Migration\Nails\ModuleInvoice;
+namespace Nails\Invoice\Database\Migration;
 
 use Nails\Common\Console\Migrate\Base;
 use Nails\Invoice\Constants;

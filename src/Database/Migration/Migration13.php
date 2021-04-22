@@ -1,9 +1,8 @@
 <?php
 
 /**
- * Migration:   4
- * Started:     17/06/2016
- * Finalised:   17/06/2016
+ * Migration:   13
+ * Started:     03/10/2019
  *
  * @package     Nails
  * @subpackage  module-invoice
@@ -12,18 +11,19 @@
  * @link
  */
 
-namespace Nails\Database\Migration\Nails\ModuleInvoice;
+namespace Nails\Invoice\Database\Migration;
 
 use Nails\Common\Console\Migrate\Base;
 
-class Migration4 extends Base
+class Migration13 extends Base
 {
     /**
      * Execute the migration
+     *
      * @return Void
      */
     public function execute()
     {
-        $this->query("ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_invoice` ADD `written_off` DATETIME  NULL  AFTER `paid`;");
+        $this->query('ALTER TABLE `{{NAILS_DB_PREFIX}}invoice_source` ADD `name` VARCHAR(150) NULL DEFAULT NULL AFTER `label`;');
     }
 }
