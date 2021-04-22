@@ -1,6 +1,6 @@
 <?php
 
-namespace Nails\Invoice\DataExport\Source;
+namespace Nails\Invoice\Admin\DataExport\Source;
 
 use Nails\Admin\Interfaces\DataExport\Source;
 use Nails\Factory;
@@ -9,7 +9,7 @@ use Nails\Invoice\Constants;
 /**
  * Class Invoices
  *
- * @package Nails\Invoice\DataExport\Source
+ * @package Nails\Invoice\Admin\DataExport\Source
  */
 class Invoices implements Source
 {
