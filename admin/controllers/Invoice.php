@@ -719,7 +719,7 @@ class Invoice extends Base
      */
     public function resend()
     {
-        if (!userHasPermission('admin:invoice:invoice:browse')) {
+        if (!userHasPermission('admin:invoice:invoice:manage')) {
             unauthorised();
         }
 

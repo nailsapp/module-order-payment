@@ -49,7 +49,7 @@ class Invoice extends CrudController
                 break;
 
             case static::ACTION_READ;
-                if (!userHasPermission('admin:invoice:customer:browse')) {
+                if (!userHasPermission('admin:invoice:customer:manage')) {
                     throw new ApiException(
                         'You are not authorised to access this resource.',
                         401
