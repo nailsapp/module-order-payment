@@ -39,6 +39,13 @@ class Email extends Entity
     public $recipient = '';
 
     /**
+     * The error, if not sent
+     *
+     * @var string
+     */
+    public $error;
+
+    /**
      * The email object
      *
      * @var \Nails\Email\Resource\Email

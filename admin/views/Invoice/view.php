@@ -529,6 +529,7 @@ $iColWidth   = [
                         <tr>
                             <th>Type</th>
                             <th>Recipient</th>
+                            <th class="text-center">Status</th>
                             <th>Sent</th>
                             <th class="text-center">Preview</th>
                     </thead>
@@ -537,7 +538,6 @@ $iColWidth   = [
 
                         /** @var Email $oEmail */
                         foreach ($invoice->emails->data as $oEmail) {
-
                             ?>
                             <tr>
                                 <td>
@@ -559,6 +559,28 @@ $iColWidth   = [
                                 } else {
                                     ?>
                                     <td><?=$oEmail->recipient?></td>
+                                    <?php
+                                }
+
+                                if (!empty($oEmail->email)) {
+                                    echo \Nails\Email\Admin\Helper::emailStatusCell($oEmail->email);
+
+                                } elseif (!empty($oEmail->error)) {
+                                    ?>
+                                    <td class="text-center danger">
+                                        <b class="fa fa-lg fa-times-circle"></b>
+                                        <small>
+                                            <?=$oEmail->error?>
+                                        </small>
+                                    </td>
+                                    <?php
+                                } else {
+                                    ?>
+                                    <td>
+                                        <span class="text-muted">
+                                            Not Available
+                                        </span>
+                                    </td>
                                     <?php
                                 }
 

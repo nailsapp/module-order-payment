@@ -105,6 +105,12 @@ class Email extends Base
                 ]);
 
             } catch (\Exception $e) {
+                $this->create([
+                    'invoice_id' => $oInvoice->id,
+                    'email_type' => $oLastEmail->type,
+                    'recipient'  => $sEmail,
+                    'error'      => $e->getMessage(),
+                ]);
                 throw new InvoiceException($e->getMessage(), null, $e);
             }
         }
