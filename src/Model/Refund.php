@@ -166,7 +166,7 @@ class Refund extends Base
             $mRefund = parent::create($aData, $bReturnObject);
 
             if (!$mRefund) {
-                throw new PaymentException('Failed to create refund.', 1);
+                throw new PaymentException('Failed to create refund.');
             }
 
             $oDb->transaction()->commit();
@@ -207,7 +207,7 @@ class Refund extends Base
             $bResult = parent::update($iRefundId, $aData);
 
             if (!$bResult) {
-                throw new PaymentException('Failed to update refund.', 1);
+                throw new PaymentException('Failed to update refund.');
             }
 
             $oDb->transaction()->commit();
@@ -340,20 +340,17 @@ class Refund extends Base
             );
 
             if (empty($oRefund)) {
-                throw new PaymentException('Invalid Payment ID', 1);
+                throw new PaymentException('Invalid Payment ID');
             }
 
             if (!in_array($oRefund->status->id, [self::STATUS_PROCESSING, self::STATUS_COMPLETE])) {
-                throw new PaymentException('Refund must be in a paid or processing state to send receipt.', 1);
+                throw new PaymentException('Refund must be in a paid or processing state to send receipt.');
             }
 
-            if ($oRefund->status->id == self::STATUS_COMPLETE) {
-                /** @var Complete $oEmail */
-                $oEmail = Factory::factory('EmailRefundComplete', Constants::MODULE_SLUG);
-            } else {
-                /** @var Processing $oEmail */
-                $oEmail = Factory::factory('EmailRefundProcessing', Constants::MODULE_SLUG);
-            }
+            /** @var Complete|Processing $oEmail */
+            $oEmail = $oRefund->status->id == self::STATUS_COMPLETE
+                ? Factory::factory('EmailRefundComplete', Constants::MODULE_SLUG)
+                : Factory::factory('EmailRefundProcessing', Constants::MODULE_SLUG);
 
             $oEmail->data([
                 'refund'  => [

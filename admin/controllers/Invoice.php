@@ -18,6 +18,7 @@ use Nails\Admin\Helper;
 use Nails\Common\Exception\AssetException;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\FormValidation;
 use Nails\Common\Service\Input;
@@ -527,16 +528,11 @@ class Invoice extends Base
         $this->data['invoice'] = $this->oInvoiceModel->getById(
             $iInvoiceId,
             [
-                'expand' => [
-                    'customer',
-                    [
-                        'emails',
-                        ['expand' => ['email']],
-                    ],
-                    ['payments', ['expand' => ['source']]],
-                    'refunds',
-                    'items',
-                ],
+                new Expand('customer'),
+                new Expand('emails', new Expand('email')),
+                new Expand('payments', new Expand('source')),
+                new Expand('refunds'),
+                new Expand('items'),
             ]
         );
 

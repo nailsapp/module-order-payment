@@ -110,46 +110,11 @@ class Invoice extends Base
         $this->searchableFields = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
         $this->oCurrency        = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
-            ->addExpandableField([
-                'trigger'   => 'customer',
-                'type'      => self::EXPANDABLE_TYPE_SINGLE,
-                'property'  => 'customer',
-                'model'     => 'Customer',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'customer_id',
-            ])
-            ->addExpandableField([
-                'trigger'   => 'emails',
-                'type'      => self::EXPANDABLE_TYPE_MANY,
-                'property'  => 'emails',
-                'model'     => 'InvoiceEmail',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'invoice_id',
-            ])
-            ->addExpandableField([
-                'trigger'   => 'payments',
-                'type'      => self::EXPANDABLE_TYPE_MANY,
-                'property'  => 'payments',
-                'model'     => 'Payment',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'invoice_id',
-            ])
-            ->addExpandableField([
-                'trigger'   => 'refunds',
-                'type'      => self::EXPANDABLE_TYPE_MANY,
-                'property'  => 'refunds',
-                'model'     => 'Refund',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'invoice_id',
-            ])
-            ->addExpandableField([
-                'trigger'   => 'items',
-                'type'      => self::EXPANDABLE_TYPE_MANY,
-                'property'  => 'items',
-                'model'     => 'InvoiceItem',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'invoice_id',
-            ]);
+            ->hasOne('customer', 'Customer', Constants::MODULE_SLUG)
+            ->hasMany('emails', 'InvoiceEmail', 'invoice_id', Constants::MODULE_SLUG)
+            ->hasMany('payments', 'Payment', 'invoice_id', Constants::MODULE_SLUG)
+            ->hasMany('refunds', 'Refund', 'invoice_id', Constants::MODULE_SLUG)
+            ->hasMany('items', 'InvoiceItem', 'invoice_id', Constants::MODULE_SLUG);
     }
 
     // --------------------------------------------------------------------------

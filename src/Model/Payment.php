@@ -534,7 +534,7 @@ class Payment extends Base
                             'label'    => $oItem->label,
                             'body'     => $oItem->body,
                             'quantity' => $oItem->quantity,
-                            'unit'     => $oItem->unit->id !== 'NONE'? Inflector::pluralise($oItem->quantity, $oItem->unit->label) : '',
+                            'unit'     => $oItem->unit->id !== 'NONE' ? Inflector::pluralise($oItem->quantity, $oItem->unit->label) : '',
                             'totals'   => [
                                 'sub'   => html_entity_decode($oItem->totals->formatted->sub),
                                 'tax'   => html_entity_decode($oItem->totals->formatted->tax),
@@ -597,7 +597,6 @@ class Payment extends Base
     {
         try {
 
-            //  Validate payment
             $oPayment = $this->getById($iPaymentId, ['expand' => ['invoice']]);
             if (!$oPayment) {
                 throw new PaymentException('Invalid payment ID.');
@@ -605,28 +604,16 @@ class Payment extends Base
 
             //  Set up RefundRequest object
             /** @var RefundRequest $oRefundRequest */
-            $oRefundRequest = Factory::factory('RefundRequest', Constants::MODULE_SLUG);
+            $oRefundRequest  = Factory::factory('RefundRequest', Constants::MODULE_SLUG);
+            $oRefundResponse = $oRefundRequest
+                ->setDriver($oPayment->driver)
+                ->setReason($sReason)
+                ->setPayment($oPayment->id)
+                ->execute($iAmount);
 
-            //  Set the driver to use for the request
-            $oRefundRequest->setDriver($oPayment->driver);
-
-            //  Describe the charge
-            $oRefundRequest->setReason($sReason);
-
-            //  Set the payment we're refunding against
-            $oRefundRequest->setPayment($oPayment->id);
-
-            //  Attempt the refund
-            /** @var RefundResponse $oRefundResponse */
-            $oRefundResponse = $oRefundRequest->execute($iAmount);
-
-            if ($oRefundResponse->isProcessing() || $oRefundResponse->isComplete()) {
-                //  It's all good
-            } elseif ($oRefundResponse->isFailed()) {
-                //  Refund failed, throw an error which will be caught and displayed to the user
+            if ($oRefundResponse->isFailed()) {
                 throw new PaymentException('Refund failed: ' . $oRefundResponse->getErrorMessageUser());
-            } else {
-                //  Something which we've not accounted for went wrong.
+            } elseif (!$oRefundResponse->isProcessing() && !$oRefundResponse->isComplete()) {
                 throw new PaymentException('Refund failed.');
             }
 
