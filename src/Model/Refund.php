@@ -15,6 +15,7 @@ namespace Nails\Invoice\Model;
 use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Model\Base;
 use Nails\Common\Service\Database;
 use Nails\Currency;
@@ -323,10 +324,8 @@ class Refund extends Base
             $oRefund = $this->getById(
                 $iRefundId,
                 [
-                    'expand' => [
-                        'invoice',
-                        'payment',
-                    ],
+                    new Expand('invoice', new Expand('customer')),
+                    new Expand('payment'),
                 ]
             );
 
