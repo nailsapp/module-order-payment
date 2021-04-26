@@ -90,22 +90,8 @@ class Refund extends Base
         parent::__construct();
         $this->oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
-            ->addExpandableField([
-                'trigger'   => 'invoice',
-                'type'      => self::EXPANDABLE_TYPE_SINGLE,
-                'property'  => 'invoice',
-                'model'     => 'Invoice',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'invoice_id',
-            ])
-            ->addExpandableField([
-                'trigger'   => 'payment',
-                'type'      => self::EXPANDABLE_TYPE_SINGLE,
-                'property'  => 'payment',
-                'model'     => 'Payment',
-                'provider'  => Constants::MODULE_SLUG,
-                'id_column' => 'payment_id',
-            ]);
+            ->hasOne('invoice', 'Invoice', Constants::MODULE_SLUG)
+            ->hasOne('payment', 'Payment', Constants::MODULE_SLUG);
     }
 
     // --------------------------------------------------------------------------
