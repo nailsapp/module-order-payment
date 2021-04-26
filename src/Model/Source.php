@@ -198,10 +198,21 @@ class Source extends Base
         //  Ensure data is encoded to a string
         $oResource->data = json_encode($oResource->data);
 
-        $aResource = (array) $oResource;
-        unset($aResource['is_expired']);
-
-        return parent::update($iId, $aResource);
+        return parent::update(
+            $oResource->id,
+            [
+                'customer_id'        => $oResource->customer_id,
+                'driver'             => $oResource->driver,
+                'billing_address_id' => $oResource->billing_address_id,
+                'data'               => $oResource->data,
+                'label'              => $oResource->label,
+                'name'               => $oResource->name,
+                'brand'              => $oResource->brand,
+                'last_four'          => $oResource->last_four,
+                'expiry'             => $oResource->expiry,
+                'is_default'         => $oResource->is_default,
+            ]
+        );
     }
 
     // --------------------------------------------------------------------------
