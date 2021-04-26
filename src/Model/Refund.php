@@ -16,6 +16,7 @@ use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
+use Nails\Common\Service\Database;
 use Nails\Currency;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -153,6 +154,7 @@ class Refund extends Base
      */
     public function create(array $aData = [], $bReturnObject = false)
     {
+        /** @var Database $oDb */
         $oDb = Factory::service('Database');
 
         try {
@@ -196,6 +198,7 @@ class Refund extends Base
      */
     public function update($iRefundId, array $aData = []): bool
     {
+        /** @var Database $oDb */
         $oDb = Factory::service('Database');
 
         try {
@@ -236,7 +239,9 @@ class Refund extends Base
     {
         Factory::helper('string');
 
-        $oDb  = Factory::service('Database');
+        /** @var Database $oDb */
+        $oDb = Factory::service('Database');
+        /** @var \DataTime $oNow */
         $oNow = Factory::factory('DateTime');
 
         do {
