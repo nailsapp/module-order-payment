@@ -410,35 +410,4 @@ class Refund extends Base
         }
         return $oRefund;
     }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Formats a single object
-     *
-     * The getAll() method iterates over each returned item with this method so as to
-     * correctly format the output. Use this to cast ints and bools and/or organise data into objects.
-     *
-     * @param object $oObj      A reference to the object being formatted.
-     * @param array  $aData     The same data array which is passed to _getcount_common, for reference if needed
-     * @param array  $aIntegers Fields which should be cast as ints if numerical and not null
-     * @param array  $aBools    Fields which should be cast as bools if not null
-     * @param array  $aFloats   Fields which should be cast as floats if not null
-     *
-     * @return void
-     */
-    protected function formatObject(
-        &$oObj,
-        array $aData = [],
-        array $aIntegers = [],
-        array $aBools = [],
-        array $aFloats = []
-    ) {
-
-        $aIntegers[] = 'payment_id';
-        $aIntegers[] = 'amount';
-        $aIntegers[] = 'fee';
-
-        parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
-    }
 }
