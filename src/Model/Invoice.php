@@ -187,7 +187,7 @@ class Invoice extends Base
      * @throws FactoryException
      * @throws ModelException
      */
-    public function countAll($aData = [], $bIncludeDeleted = false)
+    public function countAll($aData = [], $bIncludeDeleted = false): int
     {
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
