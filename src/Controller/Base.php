@@ -65,7 +65,7 @@ abstract class Base extends BaseMiddle
             $oAsset = Factory::service('Asset');
             $oAsset->clear();
             $oAsset->load('https://code.jquery.com/jquery-2.2.4.min.js');
-            $oAsset->load('nails.min.css', 'nails/common');
+            $oAsset->load('nails.min.css', \Nails\Common\Constants::MODULE_SLUG);
             $oAsset->load('invoice.pay.min.css', Constants::MODULE_SLUG);
         }
     }
