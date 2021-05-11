@@ -75,11 +75,25 @@ class Customer extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->searchableFields[] = 'email';
-        $this->searchableFields[] = 'billing_email';
-
         $this
             ->hasMany('invoices', 'Invoice', 'customer_id', Constants::MODULE_SLUG);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the searchable columns for this module
+     *
+     * @return string[]
+     */
+    public function getSearchableColumns(): array
+    {
+        return [
+            'id',
+            'label',
+            'email',
+            'billing_email',
+        ];
     }
 
     // --------------------------------------------------------------------------

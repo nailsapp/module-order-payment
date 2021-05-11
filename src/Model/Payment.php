@@ -97,8 +97,7 @@ class Payment extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->oCurrency        = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
-        $this->searchableFields = ['id', 'ref', 'description', 'transaction_id'];
+        $this->oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->addExpandableField([
                 'trigger'   => 'invoice',
@@ -119,6 +118,23 @@ class Payment extends Base
                 'provider'  => Constants::MODULE_SLUG,
                 'id_column' => 'payment_id',
             ]);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the searchable columns for this module
+     *
+     * @return string[]
+     */
+    public function getSearchableColumns(): array
+    {
+        return [
+            'id',
+            'ref',
+            'description',
+            'transaction_id',
+        ];
     }
 
     // --------------------------------------------------------------------------

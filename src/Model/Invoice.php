@@ -107,14 +107,29 @@ class Invoice extends Base
     public function __construct()
     {
         parent::__construct();
-        $this->searchableFields = [$this->getTableAlias() . '.id', $this->getTableAlias() . '.ref', 'c.label'];
-        $this->oCurrency        = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
+        $this->oCurrency = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
         $this
             ->hasOne('customer', 'Customer', Constants::MODULE_SLUG)
             ->hasMany('emails', 'InvoiceEmail', 'invoice_id', Constants::MODULE_SLUG)
             ->hasMany('payments', 'Payment', 'invoice_id', Constants::MODULE_SLUG)
             ->hasMany('refunds', 'Refund', 'invoice_id', Constants::MODULE_SLUG)
             ->hasMany('items', 'InvoiceItem', 'invoice_id', Constants::MODULE_SLUG);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the searchable columns for this module
+     *
+     * @return string[]
+     */
+    public function getSearchableColumns(): array
+    {
+        return [
+            $this->getTableAlias() . '.id',
+            $this->getTableAlias() . '.ref',
+            'c.label'
+        ];
     }
 
     // --------------------------------------------------------------------------
