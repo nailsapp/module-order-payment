@@ -47,6 +47,12 @@
             "Nails\\Invoice\\": "src/"
         }
     },
+    "suggest": {
+        "nails/driver-invoice-stripe": "Accept payments using Stripe",
+        "nails/driver-invoice-gocardless": "Accept payments using GoCardless",
+        "nails/driver-invoice-worldpay": "Accept payments using WorldPay",
+        "nails/driver-invoice-authorize-net": "Accept payments using Authorize.NET"
+    },
     "extra": {
         "nails": {
             "moduleName": "invoice",
