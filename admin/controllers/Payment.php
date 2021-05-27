@@ -18,7 +18,7 @@ use Nails\Admin\Helper;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\Session;
+use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -242,6 +242,8 @@ class Payment extends Base
         $oUri = Factory::service('Uri');
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
+        /** @var UserFeedback $oUserFeedback */
+        $oUserFeedback = Factory::service('UserFeedback');
         /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
         $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
@@ -268,17 +270,12 @@ class Payment extends Base
                 throw new NailsException('Failed to refund payment. ' . $oPaymentModel->lastError());
             }
 
-            $sStatus  = 'success';
-            $sMessage = 'Payment refunded successfully.';
+            $oUserFeedback->success('Payment refunded successfully.');
 
         } catch (NailsException $e) {
-            $sStatus  = 'error';
-            $sMessage = $e->getMessage();
+            $oUserFeedback->error($e->getMessage());
         }
 
-        /** @var Session $oSession */
-        $oSession = Factory::service('Session');
-        $oSession->setFlashData($sStatus, $sMessage);
         redirect($sRedirect);
     }
 }

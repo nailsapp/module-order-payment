@@ -12,11 +12,11 @@
 
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\Session;
+use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Controller\Base;
+use Nails\Invoice\Controller\Base
 use Nails\Invoice\Factory\CompleteRequest;
 
 /**
@@ -115,9 +115,9 @@ class Payment extends Base
                 }
 
             } catch (Exception $e) {
-                /** @var Session $oSession */
-                $oSession = Factory::service('Session');
-                $oSession->setFlashData('error', $e->getMessage());
+                /** @var UserFeedback $oUserFeedback */
+                $oUserFeedback = Factory::service('UserFeedback');
+                $oUserFeedback->error($e->getMessage());
                 redirect($oPayment->invoice->urls->payment);
             }
         }

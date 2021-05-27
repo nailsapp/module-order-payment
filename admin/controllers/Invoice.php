@@ -22,7 +22,7 @@ use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\FormValidation;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\Session;
+use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Currency;
 use Nails\Factory;
@@ -282,9 +282,9 @@ class Invoice extends Base
 
                     $this->sendInvoice($oInvoice);
 
-                    /** @var Session $oSession */
-                    $oSession = Factory::service('Session');
-                    $oSession->setFlashData('success', 'Invoice created successfully.');
+                    /** @var UserFeedback $oUserFeedback */
+                    $oUserFeedback = Factory::service('UserFeedback');
+                    $oUserFeedback->success('Invoice created successfully.');
 
                     redirect('admin/invoice/invoice');
 
@@ -420,9 +420,9 @@ class Invoice extends Base
                     $oInvoice = $oModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
-                    /** @var Session $oSession */
-                    $oSession = Factory::service('Session');
-                    $oSession->setFlashData('success', 'Invoice was saved successfully.');
+                    /** @var UserFeedback $oUserFeedback */
+                    $oUserFeedback = Factory::service('UserFeedback');
+                    $oUserFeedback->success('Invoice was saved successfully.');
 
                     if ($oInvoice->state->id === $oModel::STATE_DRAFT) {
                         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
@@ -590,7 +590,12 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         /** @var Uri $oUri */
-        $oUri     = Factory::service('Uri');
+        $oUri = Factory::service('Uri');
+        /** @var UserFeedback $oUserFeedback */
+        $oUserFeedback = Factory::service('UserFeedback');
+
+        // --------------------------------------------------------------------------
+
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
             show404();
@@ -605,16 +610,10 @@ class Invoice extends Base
             'state' => $oInvoiceModel::STATE_DRAFT,
         ];
         if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-            $sStatus  = 'success';
-            $sMessage = 'Invoice updated successfully!';
+            $oUserFeedback->success('Invoice updated successfully!');
         } else {
-            $sStatus  = 'error';
-            $sMessage = 'Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError();
+            $oUserFeedback->error('Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError());
         }
-
-        /** @var Session $oSession */
-        $oSession = Factory::service('Session');
-        $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
     }
@@ -636,7 +635,12 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         /** @var Uri $oUri */
-        $oUri     = Factory::service('Uri');
+        $oUri  = Factory::service('Uri');
+        /** @var UserFeedback $oUserFeedback */
+        $oUserFeedback = Factory::service('UserFeedback');
+
+        // --------------------------------------------------------------------------
+
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
             show404();
@@ -651,16 +655,10 @@ class Invoice extends Base
             'state' => $oInvoiceModel::STATE_WRITTEN_OFF,
         ];
         if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-            $sStatus  = 'success';
-            $sMessage = 'Invoice written off successfully!';
+            $oUserFeedback->success('Invoice written off successfully!');
         } else {
-            $sStatus  = 'error';
-            $sMessage = 'Failed to write off invoice. ' . $this->oInvoiceModel->lastError();
+            $oUserFeedback->error('Failed to write off invoice. ' . $this->oInvoiceModel->lastError());
         }
-
-        /** @var Session $oSession */
-        $oSession = Factory::service('Session');
-        $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice');
     }
@@ -682,7 +680,12 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         /** @var Uri $oUri */
-        $oUri     = Factory::service('Uri');
+        $oUri = Factory::service('Uri');
+        /** @var UserFeedback $oUserFeedback */
+        $oUserFeedback = Factory::service('UserFeedback');
+
+        // --------------------------------------------------------------------------
+
         $oInvoice = $this->oInvoiceModel->getById($oUri->segment(5));
         if (!$oInvoice) {
             show404();
@@ -691,16 +694,10 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         if ($this->oInvoiceModel->delete($oInvoice->id)) {
-            $sStatus  = 'success';
-            $sMessage = 'Invoice deleted successfully!';
+            $oUserFeedback->success('Invoice deleted successfully!');
         } else {
-            $sStatus  = 'error';
-            $sMessage = 'Invoice failed to delete. ' . $this->oInvoiceModel->lastError();
+            $oUserFeedback->error('Invoice failed to delete. ' . $this->oInvoiceModel->lastError());
         }
-
-        /** @var Session $oSession */
-        $oSession = Factory::service('Session');
-        $oSession->setFlashData($sStatus, $sMessage);
 
         redirect('admin/invoice/invoice');
     }
@@ -723,8 +720,8 @@ class Invoice extends Base
 
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
-        /** @var Session $oSession */
-        $oSession = Factory::service('Session');
+        /** @var UserFeedback $oUserFeedback */
+        $oUserFeedback = Factory::service('UserFeedback');
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
 
@@ -735,9 +732,9 @@ class Invoice extends Base
         }
 
         if ($this->oInvoiceModel->send($oInvoice->id)) {
-            $oSession->setFlashData('success', 'Invoice sent successfully.');
+            $oUserFeedback->success('Invoice sent successfully.');
         } else {
-            $oSession->setFlashData('error', 'Failed to resend invoice. ' . $this->oInvoiceModel->lastError());
+            $oUserFeedback->error('Failed to resend invoice. ' . $this->oInvoiceModel->lastError());
         }
 
         //  @todo (Pablo - 2019-09-12) - Use returnToIndex() when this controller uses the Defaultcontroller
@@ -862,12 +859,9 @@ class Invoice extends Base
 
         if ($oInvoice->state->id === $sInvoiceClass::STATE_OPEN) {
             if (!$this->oInvoiceModel->send($oInvoice->id)) {
-                /** @var Session $oSession */
-                $oSession = Factory::service('Session');
-                $oSession->setFlashData(
-                    'warning',
-                    'Failed to email invoice to customer. ' . $this->oInvoiceModel->lastError()
-                );
+                /** @var UserFeedback $oUserFeedback */
+                $oUserFeedback = Factory::service('UserFeedback');
+                $oUserFeedback->warning('Failed to email invoice to customer. ' . $this->oInvoiceModel->lastError());
                 return false;
             }
             return true;

@@ -16,7 +16,7 @@ use Nails\Common\Exception\NailsException;
 use Nails\Common\Exception\ValidationException;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\Session;
+use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -389,9 +389,9 @@ class Invoice extends Base
                 $sErrorUrl = !empty($oChargeResponse) ? $oChargeResponse->getErrorUrl() : null;
                 if (!empty($sErrorUrl)) {
 
-                    /** @var Session $oSession */
-                    $oSession = Factory::service('Session');
-                    $oSession->setFlashData('error', $e->getMessage());
+                    /** @var UserFeedback $oUserFeedback */
+                    $oUserFeedback = Factory::service('UserFeedback');
+                    $oUserFeedback->error($e->getMessage());
 
                     redirect($sErrorUrl);
 

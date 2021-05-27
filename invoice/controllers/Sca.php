@@ -12,7 +12,7 @@
 
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
-use Nails\Common\Service\Session;
+use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -95,9 +95,9 @@ class Sca extends Base
 
             $oError = $oScaResponse->getError();
 
-            /** @var Session $oSession */
-            $oSession = Factory::service('Session');
-            $oSession->setFlashData('error', $oError->user ?: 'An error occurred during payment authentication');
+            /** @var UserFeedback $oUserFeedback */
+            $oUserFeedback = Factory::service('UserFeedback');
+            $oUserFeedback->error($oError->user ?: 'An error occurred during payment authentication');
 
             if (!empty($oPayment->urls->error)) {
                 redirect($oPayment->urls->error);
