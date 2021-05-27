@@ -16,7 +16,7 @@ use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
-use Nails\Invoice\Controller\Base
+use Nails\Invoice\Controller\Base;
 use Nails\Invoice\Factory\CompleteRequest;
 
 /**
