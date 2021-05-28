@@ -12,6 +12,7 @@ namespace Nails\Invoice\Resource;
 use Nails\Address\Resource\Address;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Resource\Date;
 use Nails\Common\Resource\DateTime;
 use Nails\Common\Resource\Entity;
@@ -402,6 +403,25 @@ class Invoice extends Entity
         }
 
         return $this->delivery_address;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the invoice's items
+     *
+     * @return ExpandableField
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function items(): ExpandableField
+    {
+        if (empty($this->items)) {
+            $oModel      = Factory::model('Invoice', Constants::MODULE_SLUG);
+            $this->items = $oModel->getById($this->id, [new Expand('items')])->items;
+        }
+
+        return $this->items;
     }
 
     // --------------------------------------------------------------------------
