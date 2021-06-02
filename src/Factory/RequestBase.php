@@ -140,6 +140,7 @@ class RequestBase
         $this->oInvoiceModel  = Factory::model('Invoice', Constants::MODULE_SLUG);
         $this->oPaymentModel  = Factory::model('Payment', Constants::MODULE_SLUG);
         $this->oRefundModel   = Factory::model('Refund', Constants::MODULE_SLUG);
+        $this->oSourceModel   = Factory::model('Source', Constants::MODULE_SLUG);
     }
 
     // --------------------------------------------------------------------------
