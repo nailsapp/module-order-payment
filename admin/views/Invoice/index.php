@@ -228,7 +228,7 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
 
                                 ?>
                             </td>
-                        <tr>
+                        </tr>
                         <?php
                     }
 
