@@ -13,10 +13,12 @@
 namespace Nails\Admin\Invoice;
 
 use Nails\Admin\Controller\Base;
+use Nails\Admin\Controller\DefaultController;
 use Nails\Admin\Factory\Nav;
 use Nails\Admin\Helper;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\NailsException;
+use Nails\Common\Factory\Component;
 use Nails\Common\Service\Input;
 use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
@@ -29,29 +31,137 @@ use Nails\Invoice\Service\PaymentDriver;
  *
  * @package Nails\Admin\Invoice
  */
-class Payment extends Base
+class Payment extends DefaultController
 {
+    const CONFIG_MODEL_NAME     = 'Payment';
+    const CONFIG_MODEL_PROVIDER = Constants::MODULE_SLUG;
+    const CONFIG_CAN_COPY       = false;
+    const CONFIG_CAN_CREATE     = false;
+    const CONFIG_CAN_DELETE     = false;
+    const CONFIG_CAN_RESTORE    = false;
+    const CONFIG_CAN_EDIT       = false;
+    const CONFIG_CAN_VIEW       = false;
+    const CONFIG_SORT_OPTIONS   = [
+        'Received Date'  => 'created',
+        'Gateway'        => 'driver',
+        'Invoice'        => 'invoice_id',
+        'Transaction ID' => 'ref',
+        'Gateway ID'     => 'transaction_id',
+        'Amount'         => 'amount',
+        'Fee'            => 'fee',
+        'Currency'       => 'currency',
+    ];
+    const CONFIG_INDEX_DATA     = [
+        'expand' => [
+            'invoice',
+        ],
+    ];
+    const CONFIG_INDEX_FIELDS   = [
+        'Gateway'        => null,
+        'Transaction ID' => 'ref',
+        'Gateway ID'     => 'transaction_id',
+        'Status'         => null,
+        'Invoice'        => null,
+        'Amount'         => 'amount.formatted',
+        'Refunded'       => 'amount_refunded.formatted',
+        'Fee'            => 'fee.formatted',
+        'Currency'       => 'currency.code',
+        'Received'       => 'created',
+    ];
+
+    // --------------------------------------------------------------------------
+
     /**
-     * Announces this controller's navGroups
+     * Payment constructor.
      *
-     * @return array|Nav
-     * @throws FactoryException
+     * @throws \Nails\Common\Exception\NailsException
      */
-    public static function announce()
+    public function __construct()
     {
-        if (userHasPermission('admin:invoice:payment:view')) {
+        parent::__construct();
 
-            /** @var Nav $oNavGroup */
-            $oNavGroup = Factory::factory('Nav', \Nails\Admin\Constants::MODULE_SLUG)
-                ->setLabel('Invoices &amp; Payments')
-                ->setIcon('fa-credit-card');
+        $this->aConfig['INDEX_HEADER_BUTTONS'] = array_merge(
+            $this->aConfig['INDEX_HEADER_BUTTONS'],
+            array_filter([
+                userHasPermission('admin:invoice:invoice:create')
+                    ? [
+                    'url'   => siteUrl('admin/invoice/invoice/create'),
+                    'label' => 'Create Invoice',
+                ] : null,
+            ])
+        );
 
-            if (userHasPermission('admin:invoice:payment:view')) {
-                $oNavGroup->addAction('Manage Payments');
+        $this->aConfig['INDEX_FIELDS']['Gateway'] = function (\Nails\Invoice\Resource\Payment $oPayment) {
+            return $oPayment->driver->getLabel();
+        };
+
+        $this->aConfig['INDEX_FIELDS']['Status'] = function (\Nails\Invoice\Resource\Payment $oPayment) {
+
+            /** @var \Nails\Invoice\Model\Payment $oModel */
+            $oModel = static::getModel();
+
+            switch ($oPayment->status->id) {
+                case $oModel::STATUS_PENDING:
+                    $sStatus = 'info';
+                    break;
+
+                case $oModel::STATUS_PROCESSING:
+                case $oModel::STATUS_COMPLETE:
+                    $sStatus = 'success';
+                    break;
+
+                case $oModel::STATUS_FAILED:
+                    $sStatus = 'danger';
+                    break;
+
+                case $oModel::STATUS_REFUNDED:
+                case $oModel::STATUS_REFUNDED_PARTIAL:
+                    $sStatus = 'warning';
+                    break;
             }
 
-            return $oNavGroup;
-        }
+            return [
+                sprintf(
+                    '%s<small>%s</small>',
+                    $oPayment->status->label,
+                    $oPayment->fail_msg
+                        ? $oPayment->fail_msg . ' (Code: ' . $oPayment->fail_code . ')'
+                        : null,
+                ),
+                $sStatus,
+            ];
+        };
+
+        $this->aConfig['INDEX_FIELDS']['Invoice'] = function (\Nails\Invoice\Resource\Payment $oPayment) {
+            return sprintf(
+                '<a href="%s">%s</a><small>%s</small>',
+                siteUrl('admin/invoice/invoice/view/' . $oPayment->invoice->id),
+                $oPayment->invoice->ref,
+                $oPayment->invoice->state->label,
+            );
+        };
+
+        $this->aConfig['INDEX_ROW_BUTTONS'] = array_merge(
+            $this->aConfig['INDEX_ROW_BUTTONS'],
+            [
+                [
+                    'url'     => siteUrl('admin/invoice/payment/view/{{id}}'),
+                    'label'   => 'View',
+                    'class'   => 'btn-default',
+                    'enabled' => function () {
+                        return userHasPermission('admin:invoice:payment:view');
+                    },
+                ],
+                [
+                    'url'     => siteUrl('admin/invoice/invoice/view/{{invoice.id}}'),
+                    'label'   => 'View Invoice',
+                    'class'   => 'btn-default',
+                    'enabled' => function () {
+                        return userHasPermission('admin:invoice:invoice:edit');
+                    },
+                ],
+            ]
+        );
     }
 
     // --------------------------------------------------------------------------
@@ -63,128 +173,69 @@ class Payment extends Base
      */
     public static function permissions(): array
     {
-        $aPermissions = parent::permissions();
-
-        $aPermissions['view']   = 'Can view payment details';
-        $aPermissions['refund'] = 'Can refund payments';
-
-        return $aPermissions;
+        return array_merge(
+            parent::permissions(),
+            [
+                'view'   => 'Can view payment details',
+                'refund' => 'Can refund payments',
+            ]
+        );
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Browse payments
-     *
-     * @return void
+     * @return array
+     * @throws \Nails\Common\Exception\FactoryException
      */
-    public function index()
+    protected function indexCheckboxFilters(): array
     {
-        if (!userHasPermission('admin:invoice:payment:view')) {
-            unauthorised();
-        }
-
-        // --------------------------------------------------------------------------
-
-        //  Set method info
-        $this->data['page']->title = 'Manage Payments';
-
-        // --------------------------------------------------------------------------
-
-        /** @var Input $oInput */
-        $oInput = Factory::service('Input');
         /** @var PaymentDriver $oDriverService */
         $oDriverService = Factory::service('PaymentDriver', Constants::MODULE_SLUG);
-        /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
-        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
-        /** @var \Nails\Invoice\Model\Invoice $oInvoiceModel */
-        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
 
-        // --------------------------------------------------------------------------
+        /** @var \Nails\Admin\Factory\IndexFilter $oFilterDriver */
+        $oFilterDriver = Factory::factory('IndexFilter', \Nails\Admin\Constants::MODULE_SLUG);
+        $oFilterDriver
+            ->setLabel('Gateway')
+            ->setColumn('driver')
+            ->addOptions(array_map(function (Component $oDriver) {
 
-        $sTableAlias = $oPaymentModel->getTableAlias();
+                /** @var \Nails\Admin\Factory\IndexFilter\Option $oOption */
+                $oOption = Factory::factory('IndexFilterOption', \Nails\Admin\Constants::MODULE_SLUG);
+                $oOption
+                    ->setLabel($oDriver->name)
+                    ->setValue($oDriver->slug);
 
-        //  Get pagination and search/sort variables
-        $iPage      = $oInput->get('page') ? $oInput->get('page') : 0;
-        $iPerPage   = $oInput->get('perPage') ? $oInput->get('perPage') : 50;
-        $sSortOn    = $oInput->get('sortOn') ? $oInput->get('sortOn') : $sTableAlias . '.created';
-        $sSortOrder = $oInput->get('sortOrder') ? $oInput->get('sortOrder') : 'desc';
-        $sKeywords  = $oInput->get('keywords') ? $oInput->get('keywords') : '';
+                return $oOption;
 
-        // --------------------------------------------------------------------------
+            }, $oDriverService->getAll()));
 
-        //  Define the sortable columns
-        $sortColumns = [
-            $sTableAlias . '.created'        => 'Received Date',
-            $sTableAlias . '.driver'         => 'Payment Gateway',
-            $sTableAlias . '.invoice_id'     => 'Invoice ID',
-            $sTableAlias . '.transaction_id' => 'Transaction ID',
-            $sTableAlias . '.amount'         => 'Amount',
-            $sTableAlias . '.currency'       => 'Currency',
-        ];
+        $aStatuses = self::getModel()->getStatusesHuman();
 
-        // --------------------------------------------------------------------------
+        /** @var \Nails\Admin\Factory\IndexFilter $oFilterStatus */
+        $oFilterStatus = Factory::factory('IndexFilter', \Nails\Admin\Constants::MODULE_SLUG);
+        $oFilterStatus
+            ->setLabel('Status')
+            ->setColumn('status')
+            ->addOptions(array_map(function ($sKey, $sLabel) {
 
-        //  Define the filters
-        $aCbFilters = [];
-        $aOptions   = [];
-        $aDrivers   = $oDriverService->getAll();
+                /** @var \Nails\Admin\Factory\IndexFilter\Option $oOption */
+                $oOption = Factory::factory('IndexFilterOption', \Nails\Admin\Constants::MODULE_SLUG);
+                $oOption
+                    ->setLabel($sLabel)
+                    ->setValue($sKey);
 
-        foreach ($aDrivers as $sSlug => $oDriver) {
-            $aOptions[] = [
-                $oDriver->name,
-                $sSlug,
-                true,
-            ];
-        }
+                return $oOption;
 
-        $aCbFilters[] = Helper::searchFilterObject(
-            $sTableAlias . '.driver',
-            'Gateway',
-            $aOptions
+            }, array_keys($aStatuses), $aStatuses));
+
+        return array_merge(
+            parent::indexCheckboxFilters(),
+            [
+                $oFilterDriver,
+                $oFilterStatus,
+            ]
         );
-
-        $aCbFilters[] = Helper::searchFilterObject(
-            $sTableAlias . '.status',
-            'Status',
-            $oPaymentModel->getStatusesHuman()
-        );
-
-        // --------------------------------------------------------------------------
-
-        //  Define the $aData variable for the queries
-        $aData = [
-            'expand'    => [
-                'invoice',
-            ],
-            'sort'      => [
-                [$sSortOn, $sSortOrder],
-            ],
-            'keywords'  => $sKeywords,
-            'cbFilters' => $aCbFilters,
-        ];
-
-        //  Get the items for the page
-        $totalRows              = $oPaymentModel->countAll($aData);
-        $this->data['payments'] = $oPaymentModel->getAll($iPage, $iPerPage, $aData);
-
-        //  Set Search and Pagination objects for the view
-        $this->data['search']     = Helper::searchObject(true, $sortColumns, $sSortOn, $sSortOrder, $iPerPage, $sKeywords, $aCbFilters);
-        $this->data['pagination'] = Helper::paginationObject($iPage, $iPerPage, $totalRows);
-
-        // --------------------------------------------------------------------------
-
-        //  Add a header button
-        if (userHasPermission('admin:invoice:invoice:create')) {
-            Helper::addHeaderButton(
-                'admin/invoice/invoice/create',
-                'Create Invoice'
-            );
-        }
-
-        // --------------------------------------------------------------------------
-
-        Helper::loadView('index');
     }
 
     // --------------------------------------------------------------------------
