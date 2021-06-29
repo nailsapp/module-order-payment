@@ -75,7 +75,7 @@ use Nails\Invoice\Constants;
         echo form_field_number([
             'key'         => 'terms',
             'label'       => 'Payment Terms',
-            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', Constants::MODULE_SLUG) ?: '',
+            'default'     => !empty($invoice->terms) ? $invoice->terms : appSetting('default_payment_terms', Constants::MODULE_SLUG),
             'info'        => '<span data-bind="html: termsText()"></span>',
             'id'          => 'invoice-terms',
             'placeholder' => 'Leave blank to set the invoice to be due on receipt',
@@ -113,8 +113,8 @@ use Nails\Invoice\Constants;
                 <tbody data-bind="foreach: items">
                     <tr>
                         <td class="quantity text-center">
-                            <input type="hidden" data-bind="attr: {name: 'items[' + $index() + '][id]'}, value: id"/>
-                            <input type="number" step="0.001" min="0" data-bind="attr: {name: 'items[' + $index() + '][quantity]'}, textInput: quantity"/>
+                            <input type="hidden" data-bind="attr: {name: 'items[' + $index() + '][id]'}, value: id" />
+                            <input type="number" step="0.001" min="0" data-bind="attr: {name: 'items[' + $index() + '][quantity]'}, textInput: quantity" />
                         </td>
                         <td class="unit">
                             <select data-bind="
@@ -125,11 +125,11 @@ use Nails\Invoice\Constants;
                                 value: unit.id"></select>
                         </td>
                         <td>
-                            <input type="text" placeholder="The line item's label" data-bind="attr: {name: 'items[' + $index() + '][label]'}, value: label"/>
+                            <input type="text" placeholder="The line item's label" data-bind="attr: {name: 'items[' + $index() + '][label]'}, value: label" />
                             <textarea placeholder="The line item's description" data-bind="attr: {name: 'items[' + $index() + '][body]'}, html: body"></textarea>
                         </td>
                         <td class="price text-center">
-                            <input type="number" step="0.01" min="0" data-bind="attr: {name: 'items[' + $index() + '][unit_cost]'}, textInput: unit_cost"/>
+                            <input type="number" step="0.01" min="0" data-bind="attr: {name: 'items[' + $index() + '][unit_cost]'}, textInput: unit_cost" />
                         </td>
                         <td class="tax">
                             <select data-bind="
