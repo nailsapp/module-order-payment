@@ -99,15 +99,15 @@ class Email extends Base
 
                 $this->create([
                     'invoice_id' => $oInvoice->id,
-                    'email_id'   => $oLastEmail->id,
-                    'email_type' => $oLastEmail->type,
+                    'email_id'   => $oLastEmail->id ?? null,
+                    'email_type' => $oLastEmail->type ?? null,
                     'recipient'  => $sEmail,
                 ]);
 
             } catch (\Exception $e) {
                 $this->create([
                     'invoice_id' => $oInvoice->id,
-                    'email_type' => $oLastEmail->type,
+                    'email_type' => $oLastEmail->type ?? null,
                     'recipient'  => $sEmail,
                     'error'      => $e->getMessage(),
                 ]);
