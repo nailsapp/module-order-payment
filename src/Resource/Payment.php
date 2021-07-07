@@ -10,6 +10,7 @@
 namespace Nails\Invoice\Resource;
 
 use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\ModelException;
 use Nails\Common\Resource\Entity;
 use Nails\Currency\Exception\CurrencyException;
 use Nails\Currency\Service\Currency;
@@ -338,7 +339,7 @@ class Payment extends Entity
      *
      * @return Source|null
      * @throws FactoryException
-     * @throws \Nails\Common\Exception\ModelException
+     * @throws ModelException
      */
     public function source(): ?Source
     {
