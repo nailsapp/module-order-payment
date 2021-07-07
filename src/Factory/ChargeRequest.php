@@ -720,6 +720,9 @@ class ChargeRequest extends RequestBase
             }
 
             $this->setPayment($iPaymentId);
+
+        } elseif (!$this->oPayment->isPending()) {
+            throw new ChargeRequestException('Payment is not in a pending state.');
         }
 
         $mFields = $this->oDriver->getPaymentFields();
