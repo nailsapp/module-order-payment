@@ -351,4 +351,94 @@ class Payment extends Entity
 
         return $this->source;
     }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the payment is in the PENDING state
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function isPending(): bool
+    {
+        /** @var \Nails\Invoice\Model\Payment $oModel */
+        $oModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        return $this->status->id === $oModel::STATUS_PENDING;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the payment is in the PROCESSING state
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function isProcessing(): bool
+    {
+        /** @var \Nails\Invoice\Model\Payment $oModel */
+        $oModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        return $this->status->id === $oModel::STATUS_PROCESSING;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the payment is in the COMPLETE state
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function isComplete(): bool
+    {
+        /** @var \Nails\Invoice\Model\Payment $oModel */
+        $oModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        return $this->status->id === $oModel::STATUS_COMPLETE;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the payment is in the FAILED state
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function isFailed(): bool
+    {
+        /** @var \Nails\Invoice\Model\Payment $oModel */
+        $oModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        return $this->status->id === $oModel::STATUS_FAILED;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the payment is in the REFUNDED state
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function isRefunded(): bool
+    {
+        /** @var \Nails\Invoice\Model\Payment $oModel */
+        $oModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        return $this->status->id === $oModel::STATUS_REFUNDED;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the payment is REFUNDED_PARTIAL state
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function isRefundedPartial(): bool
+    {
+        /** @var \Nails\Invoice\Model\Payment $oModel */
+        $oModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        return $this->status->id === $oModel::STATUS_REFUNDED_PARTIAL;
+    }
 }
