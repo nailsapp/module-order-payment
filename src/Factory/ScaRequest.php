@@ -42,11 +42,21 @@ class ScaRequest extends RequestBase
         /** @var \Nails\Invoice\Factory\ChargeRequest $oChargeRequest */
         $oChargeRequest = Factory::factory('ChargeRequest', Constants::MODULE_SLUG);
 
-        $oScaResponse = $this->oDriver->sca(
-            $oScaResponse,
-            $this->oPayment->sca_data,
-            $oChargeRequest::compileScaUrl($this->oPayment, $this->oPayment->sca_data)
-        );
+        if (!$this->getPayment()->isPending()) {
+            $oScaResponse
+                ->setStatusFailed(
+                    'Payment is not in a pending state',
+                    null,
+                    'Payment has already been processed'
+                );
+
+        } else {
+            $oScaResponse = $this->oDriver->sca(
+                $oScaResponse,
+                $this->oPayment->sca_data,
+                $oChargeRequest::compileScaUrl($this->oPayment, $this->oPayment->sca_data)
+            );
+        }
 
         $oScaResponse->lock();
 
