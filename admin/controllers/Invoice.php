@@ -227,6 +227,32 @@ class Invoice extends Base
             ],
             'keywords'  => $sKeywords,
             'cbFilters' => $aCbFilters,
+
+            /*
+             * Take the minimum number of columns, callback data might be massive so avoid
+             * including to avoid running out of sort memory.
+             */
+            'select'    => [
+                $this->oInvoiceModel->getTableAlias() . '.id',
+                $this->oInvoiceModel->getTableAlias() . '.ref',
+                $this->oInvoiceModel->getTableAlias() . '.state',
+                $this->oInvoiceModel->getTableAlias() . '.customer_id',
+                $this->oInvoiceModel->getTableAlias() . '.dated',
+                $this->oInvoiceModel->getTableAlias() . '.due',
+                $this->oInvoiceModel->getTableAlias() . '.paid',
+                $this->oInvoiceModel->getTableAlias() . '.currency',
+                $this->oInvoiceModel->getTableAlias() . '.sub_total',
+                $this->oInvoiceModel->getTableAlias() . '.tax_total',
+                $this->oInvoiceModel->getTableAlias() . '.grand_total',
+                $this->oInvoiceModel->getTableAlias() . '.billing_address_id',
+                $this->oInvoiceModel->getTableAlias() . '.created',
+                $this->oInvoiceModel->getTableAlias() . '.modified',
+
+                //  Mock calculated columns
+                '"0" paid_total',
+                '"0" processing_total',
+                '"0" processing_payments',
+            ],
         ];
 
         //  Get the items for the page
