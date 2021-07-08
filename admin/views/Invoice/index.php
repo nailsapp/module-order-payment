@@ -13,9 +13,6 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
 
 ?>
 <div class="group-invoice invoice browse">
-    <p>
-        Browse invoices which have been raised.
-    </p>
     <?=adminHelper('loadSearch', $search)?>
     <?=adminHelper('loadPagination', $pagination)?>
     <div class="table-responsive">
@@ -31,7 +28,7 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                     <th class="amount grand">Grand Total</th>
                     <th class="datetime">Created</th>
                     <th class="datetime">Modified</th>
-                    <th class="actions">Actions</th>
+                    <th class="actions" style="width:175px;">Actions</th>
                 </tr>
             </thead>
             <tbody>

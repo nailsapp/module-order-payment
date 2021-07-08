@@ -35,6 +35,7 @@ class Payment extends DefaultController
 {
     const CONFIG_MODEL_NAME     = 'Payment';
     const CONFIG_MODEL_PROVIDER = Constants::MODULE_SLUG;
+    const CONFIG_SIDEBAR_GROUP  = 'Invoices &amp; Payments';
     const CONFIG_CAN_COPY       = false;
     const CONFIG_CAN_CREATE     = false;
     const CONFIG_CAN_DELETE     = false;
@@ -277,7 +278,7 @@ class Payment extends DefaultController
     // --------------------------------------------------------------------------
 
     /**
-     * View a single payment
+     * Issue a refund
      *
      * @return void
      */

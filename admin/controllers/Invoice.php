@@ -662,7 +662,7 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         /** @var Uri $oUri */
-        $oUri  = Factory::service('Uri');
+        $oUri = Factory::service('Uri');
         /** @var UserFeedback $oUserFeedback */
         $oUserFeedback = Factory::service('UserFeedback');
 
