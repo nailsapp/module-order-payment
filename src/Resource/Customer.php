@@ -43,6 +43,11 @@ class Customer extends Entity
     /**
      * @var string
      */
+    public $name;
+
+    /**
+     * @var string
+     */
     public $email;
 
     /**
@@ -64,6 +69,24 @@ class Customer extends Entity
      * @var bool
      */
     public $is_deleted;
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Customer constructor.
+     *
+     * @param array $mObj
+     */
+    public function __construct($mObj = [])
+    {
+        parent::__construct($mObj);
+
+        $this->name = trim(sprintf(
+            '%s %s',
+            $this->first_name,
+            $this->last_name
+        ));
+    }
 
     // --------------------------------------------------------------------------
 

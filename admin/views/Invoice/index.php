@@ -21,7 +21,7 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                 <tr>
                     <th class="ref">Ref</th>
                     <th class="state">State</th>
-                    <th class="customer">Customer</th>
+                    <th class="details">Details</th>
                     <th class="currency">Currency</th>
                     <th class="amount sub">Sub Total</th>
                     <th class="amount tax">Tax</th>
@@ -85,38 +85,142 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                             <td class="state <?=$sClass?>">
                                 <?=$sText?>
                             </td>
-                            <td class="customer">
+                            <td class="details">
                                 <?php
 
+                                $aStylesInline = [
+                                    'display: inline-block;',
+                                    'margin: 0;',
+                                    'margin-top: 0.5rem;',
+                                    'margin-right: 0.25rem;',
+                                    'list-style-type: none;',
+                                    'border: 1px solid #ececec;',
+                                    'padding: 0.5rem;',
+                                    'border-radius: 3px;',
+                                    'background: #fff;',
+                                ];
+                                $sStylesInline = implode('', $aStylesInline);
+
+                                $aStylesBlock = [
+                                    'margin: 0;',
+                                    'margin-top: 0.5rem;',
+                                    'list-style-type: none;',
+                                    'border: 1px solid #ececec;',
+                                    'padding: 0.5rem;',
+                                    'border-radius: 3px;',
+                                    'background: #fff;',
+                                ];
+                                $sStylesBlock = implode('', $aStylesBlock);
+
                                 if (!empty($oInvoice->customer)) {
+                                    ?>
+                                    <strong>Customer</strong>
+                                    <div style="<?=$sStylesBlock?> margin-bottom: 1rem;">
+                                        <?php
+                                        echo $oInvoice->customer->name;
+                                        echo $oInvoice->customer->label !== $oInvoice->customer->name
+                                            ? '<br/>' . $oInvoice->customer->label
+                                            : '';
+                                        echo ($oInvoice->customer->billing_email ?: $oInvoice->customer->email)
+                                            ? '<br><small>' . mailto($oInvoice->customer->billing_email ?: $oInvoice->customer->email) . '</small>'
+                                            : '';
+                                        ?>
+                                    </div>
+                                    <?php
+                                }
 
-                                    echo anchor(
-                                        'admin/invoice/customer/edit/' . $oInvoice->customer->id,
-                                        $oInvoice->customer->label ?: $oInvoice->customer->first_name . ' ' . $oInvoice->customer->last_name
-                                    );
+                                if ($oInvoice->billingAddress()) {
+                                    ?>
+                                    <strong>Billing Address:</strong>
+                                    <div style="<?=$sStylesBlock?> margin-bottom: 1rem;">
+                                        <?=$oInvoice->billingAddress()->formatted()->asCsv()?>
+                                    </div>
+                                    <?php
+                                }
 
-                                    echo '<small>';
-                                    if (!empty($oInvoice->customer->first_name)) {
-                                        echo $oInvoice->customer->first_name . ' ' . $oInvoice->customer->last_name;
-                                        echo '<br />';
-                                    }
+                                if ($oInvoice->payments->count) {
+                                    ?>
+                                    <strong>Payments:</strong>
+                                    <ul style="margin: 0; margin-bottom: 1rem; list-style-type: none;">
+                                        <?php
+                                        /** @var \Nails\Invoice\Resource\Payment $oPayment */
+                                        foreach ($oInvoice->payments->data as $oPayment) {
+                                            echo userHasPermission('admin:invoice:payment:view')
+                                                ? sprintf(
+                                                    '<li style="%s"><a href="%s" class="fancybox">%s<small>%s — %s</small></a></li>',
+                                                    $sStylesInline,
+                                                    siteUrl('admin/invoice/payment/view/' . $oPayment->id),
+                                                    $oPayment->ref,
+                                                    $oPayment->amount->formatted,
+                                                    $oPayment->status->label
+                                                )
+                                                : sprintf(
+                                                    '<li style="%s">%s<small>%s — %s</small></li>',
+                                                    $sStylesInline,
+                                                    $oPayment->ref,
+                                                    $oPayment->amount->formatted,
+                                                    $oPayment->status->label
+                                                );
+                                        }
 
-                                    if (!empty($oInvoice->customer->billing_email)) {
-                                        echo mailto($oInvoice->customer->billing_email);
-                                    } else {
-                                        echo mailto($oInvoice->customer->email);
-                                    }
-                                    echo '</small>';
+                                        ?>
+                                    </ul>
+                                    <?php
+                                }
 
-                                } elseif (!empty($oInvoice->email)) {
+                                if ($oInvoice->refunds->count) {
+                                    ?>
+                                    <strong>Refunds:</strong>
+                                    <ul style="margin: 0; margin-bottom: 1rem; list-style-type: none;">
+                                        <?php
+                                        /** @var \Nails\Invoice\Resource\Refund $oRefund */
+                                        foreach ($oInvoice->refunds->data as $oRefund) {
+                                            echo userHasPermission('admin:invoice:payment:view')
+                                                ? sprintf(
+                                                    '<li style="%s"><a href="%s" class="fancybox">%s<small>%s — %s</small></a></li>',
+                                                    $sStylesInline,
+                                                    siteUrl('admin/invoice/refund/view/' . $oRefund->id),
+                                                    $oRefund->ref,
+                                                    $oRefund->amount->formatted,
+                                                    $oRefund->status->label
+                                                )
+                                                : sprintf(
+                                                    '<li style="%s">%s<small>%s — %s</small></li>',
+                                                    $sStylesInline,
+                                                    $oRefund->ref,
+                                                    $oRefund->amount->formatted,
+                                                    $oRefund->status->label
+                                                );
+                                        }
 
-                                    echo mailto($oInvoice->email);
-
-                                } else {
-                                    echo '<span class="text-muted">Unknown</span>';
+                                        ?>
+                                    </ul>
+                                    <?php
                                 }
 
                                 ?>
+                                <strong>Line Items:</strong>
+                                <ul style="margin: 0; list-style-type: none;">
+                                    <?php
+
+                                    /** @var \Nails\Invoice\Resource\Invoice\Item $oItem */
+                                    foreach ($oInvoice->items()->data as $oItem) {
+                                        ?>
+                                        <li style="<?=$sStylesBlock?>">
+                                            <?php
+                                            echo sprintf(
+                                                '%s x %s<small>%s</small>',
+                                                $oItem->quantity,
+                                                $oItem->label,
+                                                $oItem->totals->formatted->grand
+                                            );
+                                            ?>
+                                        </li>
+                                        <?php
+                                    }
+                                    ?>
+
+                                </ul>
                             </td>
                             <td class="currency">
                                 <?=$oInvoice->currency->code?>
@@ -132,99 +236,100 @@ $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
                             </td>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->created)?>
                             <?=adminHelper('loadDateTimeCell', $oInvoice->modified)?>
-                            <td class="actions">
-                                <?php
+                            <?php
+                            //  So that the "no actions" text shows when cell is empty
+                            echo '<td class="actions">';
+                            if (userHasPermission('admin:invoice:invoice:edit')) {
 
-                                if (userHasPermission('admin:invoice:invoice:edit')) {
+                                if ($oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
 
-                                    if ($oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
+                                    echo anchor(
+                                        'admin/invoice/invoice/edit/' . $oInvoice->id,
+                                        lang('action_edit'),
+                                        'class="btn btn-xs btn-primary"'
+                                    );
 
+                                } elseif (in_array($oInvoice->state->id, [
+                                    'WRITTEN_OFF',
+                                    'PAID',
+                                    'PAID_PROCESING',
+                                ])) {
+
+                                    echo anchor(
+                                        'admin/invoice/invoice/view/' . $oInvoice->id,
+                                        lang('action_view'),
+                                        'class="btn btn-xs btn-default"'
+                                    );
+
+                                    echo anchor(
+                                        $oInvoice->urls->download,
+                                        lang('action_download'),
+                                        'class="btn btn-xs btn-primary" target="_blank"'
+                                    );
+
+                                } else {
+
+                                    echo anchor(
+                                        'admin/invoice/invoice/view/' . $oInvoice->id,
+                                        lang('action_view'),
+                                        'class="btn btn-xs btn-default"'
+                                    );
+
+                                    echo anchor(
+                                        $oInvoice->urls->download,
+                                        lang('action_download'),
+                                        'class="btn btn-xs btn-primary" target="_blank"'
+                                    );
+
+                                    if ($oInvoice->state->id == $oInvoiceModel::STATE_OPEN || $oInvoice->state->id == $oInvoiceModel::STATE_PAID_PARTIAL) {
                                         echo anchor(
-                                            'admin/invoice/invoice/edit/' . $oInvoice->id,
-                                            lang('action_edit'),
-                                            'class="btn btn-xs btn-primary"'
-                                        );
-
-                                    } elseif (in_array($oInvoice->state->id, [
-                                        'WRITTEN_OFF',
-                                        'PAID',
-                                        'PAID_PROCESING',
-                                    ])) {
-
-                                        echo anchor(
-                                            'admin/invoice/invoice/view/' . $oInvoice->id,
-                                            lang('action_view'),
-                                            'class="btn btn-xs btn-default"'
-                                        );
-
-                                        echo anchor(
-                                            $oInvoice->urls->download,
-                                            lang('action_download'),
+                                            $oInvoice->urls->payment,
+                                            'Pay',
                                             'class="btn btn-xs btn-primary" target="_blank"'
                                         );
+                                    }
 
-                                    } else {
-
-                                        echo anchor(
-                                            'admin/invoice/invoice/view/' . $oInvoice->id,
-                                            lang('action_view'),
-                                            'class="btn btn-xs btn-default"'
-                                        );
-
-                                        echo anchor(
-                                            $oInvoice->urls->download,
-                                            lang('action_download'),
-                                            'class="btn btn-xs btn-primary" target="_blank"'
-                                        );
-
-                                        if ($oInvoice->state->id == $oInvoiceModel::STATE_OPEN || $oInvoice->state->id == $oInvoiceModel::STATE_PAID_PARTIAL) {
-                                            echo anchor(
-                                                $oInvoice->urls->payment,
-                                                'Pay',
-                                                'class="btn btn-xs btn-primary" target="_blank"'
-                                            );
+                                    $aValidPayments = array_filter(
+                                        $oInvoice->payments->data,
+                                        function ($oPayment) {
+                                            return $oPayment->status->id !== 'FAILED';
                                         }
+                                    );
 
-                                        $aValidPayments = array_filter(
-                                            $oInvoice->payments->data,
-                                            function ($oPayment) {
-                                                return $oPayment->status->id !== 'FAILED';
-                                            }
+                                    if (empty($aValidPayments)) {
+                                        echo anchor(
+                                            'admin/invoice/invoice/make_draft/' . $oInvoice->id,
+                                            'Make Draft',
+                                            'class="btn btn-xs btn-warning"'
                                         );
-
-                                        if (empty($aValidPayments)) {
+                                        if (in_array($oInvoice->state->id, [$oInvoiceModel::STATE_OPEN])) {
                                             echo anchor(
-                                                'admin/invoice/invoice/make_draft/' . $oInvoice->id,
-                                                'Make Draft',
-                                                'class="btn btn-xs btn-warning"'
+                                                'admin/invoice/invoice/write_off/' . $oInvoice->id,
+                                                'Write Off',
+                                                'class="btn btn-xs btn-danger confirm" data-body="Write invoice ' . $oInvoice->ref . ' off?"'
                                             );
-                                            if (in_array($oInvoice->state->id, [$oInvoiceModel::STATE_OPEN])) {
-                                                echo anchor(
-                                                    'admin/invoice/invoice/write_off/' . $oInvoice->id,
-                                                    'Write Off',
-                                                    'class="btn btn-xs btn-danger confirm" data-body="Write invoice ' . $oInvoice->ref . ' off?"'
-                                                );
-                                            }
                                         }
                                     }
                                 }
+                            }
 
-                                if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
-                                    echo anchor(
-                                        'admin/invoice/invoice/delete/' . $oInvoice->id,
-                                        lang('action_delete'),
-                                        'class="btn btn-xs btn-danger confirm" data-body="You cannot undo this action"'
-                                    );
-                                }
-
+                            if (userHasPermission('admin:invoice:invoice:delete') && $oInvoice->state->id == $oInvoiceModel::STATE_DRAFT) {
                                 echo anchor(
-                                    'admin/invoice/invoice/resend/' . $oInvoice->id,
-                                    'Re-send',
-                                    'class="btn btn-xs btn-default"'
+                                    'admin/invoice/invoice/delete/' . $oInvoice->id,
+                                    lang('action_delete'),
+                                    'class="btn btn-xs btn-danger confirm" data-body="You cannot undo this action"'
                                 );
+                            }
 
-                                ?>
-                            </td>
+                            echo anchor(
+                                'admin/invoice/invoice/resend/' . $oInvoice->id,
+                                'Re-send',
+                                'class="btn btn-xs btn-default"'
+                            );
+
+                            echo '</td>';
+
+                            ?>
                         </tr>
                         <?php
                     }

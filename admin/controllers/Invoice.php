@@ -219,6 +219,9 @@ class Invoice extends Base
         $aData = [
             new Expand('customer'),
             new Expand('items'),
+            new Expand('billing_address'),
+            new Expand('payments'),
+            new Expand('refunds'),
             'where'     => array_filter([
                 !empty($oCustomer) ? ['customer_id', $oCustomer->id] : null,
             ]),
