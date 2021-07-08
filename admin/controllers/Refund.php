@@ -1,0 +1,268 @@
+<?php
+
+/**
+ * Manage payments
+ *
+ * @package     Nails
+ * @subpackage  module-invoice
+ * @category    AdminController
+ * @author      Nails Dev Team
+ * @link
+ */
+
+namespace Nails\Admin\Invoice;
+
+use Nails\Admin\Controller\Base;
+use Nails\Admin\Controller\DefaultController;
+use Nails\Admin\Factory\Nav;
+use Nails\Admin\Helper;
+use Nails\Common\Exception\FactoryException;
+use Nails\Common\Exception\NailsException;
+use Nails\Common\Factory\Component;
+use Nails\Common\Helper\Model\Expand;
+use Nails\Common\Service\Input;
+use Nails\Common\Service\UserFeedback;
+use Nails\Common\Service\Uri;
+use Nails\Factory;
+use Nails\Invoice\Constants;
+use Nails\Invoice\Service\RefundDriver;
+
+/**
+ * Class Refund
+ *
+ * @package Nails\Admin\Invoice
+ */
+class Refund extends DefaultController
+{
+    const CONFIG_MODEL_NAME     = 'Refund';
+    const CONFIG_MODEL_PROVIDER = Constants::MODULE_SLUG;
+    const CONFIG_SIDEBAR_GROUP  = 'Invoices &amp; Payments';
+    const CONFIG_CAN_COPY       = false;
+    const CONFIG_CAN_CREATE     = false;
+    const CONFIG_CAN_DELETE     = false;
+    const CONFIG_CAN_RESTORE    = false;
+    const CONFIG_CAN_EDIT       = false;
+    const CONFIG_CAN_VIEW       = false;
+    const CONFIG_SORT_OPTIONS   = [
+        'Received Date'  => 'created',
+        'Gateway'        => 'driver',
+        'Invoice'        => 'invoice_id',
+        'Transaction ID' => 'ref',
+        'Gateway ID'     => 'transaction_id',
+        'Amount'         => 'amount',
+        'Fee'            => 'fee',
+        'Currency'       => 'currency',
+    ];
+    const CONFIG_INDEX_DATA     = [
+        'expand' => [
+            [
+                'payment',
+                ['expand' => ['invoice']],
+            ],
+        ],
+    ];
+    const CONFIG_INDEX_FIELDS   = [
+        'Gateway'        => null,
+        'Transaction ID' => 'ref',
+        'Gateway ID'     => 'transaction_id',
+        'Status'         => null,
+        'Invoice'        => null,
+        'Amount'         => 'amount.formatted',
+        'Fee'            => 'fee.formatted',
+        'Currency'       => 'currency.code',
+        'Received'       => 'created',
+    ];
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Refund constructor.
+     *
+     * @throws \Nails\Common\Exception\NailsException
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->aConfig['INDEX_HEADER_BUTTONS'] = array_merge(
+            $this->aConfig['INDEX_HEADER_BUTTONS'],
+            array_filter([
+                userHasPermission('admin:invoice:invoice:create')
+                    ? [
+                    'url'   => siteUrl('admin/invoice/invoice/create'),
+                    'label' => 'Create Invoice',
+                ] : null,
+            ])
+        );
+
+        $this->aConfig['INDEX_FIELDS']['Gateway'] = function (\Nails\Invoice\Resource\Refund $oRefund) {
+            return $oRefund->payment->driver->getLabel();
+        };
+
+        $this->aConfig['INDEX_FIELDS']['Status'] = function (\Nails\Invoice\Resource\Refund $oRefund) {
+
+            /** @var \Nails\Invoice\Model\Refund $oModel */
+            $oModel = static::getModel();
+
+            switch ($oRefund->status->id) {
+                case $oModel::STATUS_PENDING:
+                    $sStatus = 'info';
+                    break;
+
+                case $oModel::STATUS_PROCESSING:
+                case $oModel::STATUS_COMPLETE:
+                    $sStatus = 'success';
+                    break;
+
+                case $oModel::STATUS_FAILED:
+                    $sStatus = 'danger';
+                    break;
+
+                case $oModel::STATUS_REFUNDED:
+                case $oModel::STATUS_REFUNDED_PARTIAL:
+                    $sStatus = 'warning';
+                    break;
+            }
+
+            return [
+                sprintf(
+                    '%s<small>%s</small>',
+                    $oRefund->status->label,
+                    $oRefund->fail_msg
+                        ? $oRefund->fail_msg . ' (Code: ' . $oRefund->fail_code . ')'
+                        : null,
+                ),
+                $sStatus,
+            ];
+        };
+
+        $this->aConfig['INDEX_FIELDS']['Invoice'] = function (\Nails\Invoice\Resource\Refund $oRefund) {
+            return sprintf(
+                '<a href="%s">%s</a><small>%s</small>',
+                siteUrl('admin/invoice/invoice/view/' . $oRefund->payment->invoice->id),
+                $oRefund->payment->invoice->ref,
+                $oRefund->payment->invoice->state->label,
+            );
+        };
+
+        $this->aConfig['INDEX_ROW_BUTTONS'] = array_merge(
+            $this->aConfig['INDEX_ROW_BUTTONS'],
+            [
+                [
+                    'url'     => siteUrl('admin/invoice/refund/view/{{id}}'),
+                    'label'   => 'View',
+                    'class'   => 'btn-default',
+                    'enabled' => function () {
+                        return userHasPermission('admin:invoice:refund:view');
+                    },
+                ],
+                [
+                    'url'     => siteUrl('admin/invoice/payment/view/{{payment.id}}'),
+                    'label'   => 'View Payment',
+                    'class'   => 'btn-default',
+                    'enabled' => function () {
+                        return userHasPermission('admin:invoice:payment:view');
+                    },
+                ],
+                [
+                    'url'     => siteUrl('admin/invoice/invoice/view/{{payment.invoice.id}}'),
+                    'label'   => 'View Invoice',
+                    'class'   => 'btn-default',
+                    'enabled' => function () {
+                        return userHasPermission('admin:invoice:invoice:edit');
+                    },
+                ],
+            ]
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns an array of extra permissions for this controller
+     *
+     * @return array
+     */
+    public static function permissions(): array
+    {
+        return array_merge(
+            parent::permissions(),
+            [
+                'view' => 'Can view refund details',
+            ]
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * @return array
+     * @throws \Nails\Common\Exception\FactoryException
+     */
+    protected function indexCheckboxFilters(): array
+    {
+        $aStatuses = self::getModel()->getStatusesHuman();
+
+        /** @var \Nails\Admin\Factory\IndexFilter $oFilterStatus */
+        $oFilterStatus = Factory::factory('IndexFilter', \Nails\Admin\Constants::MODULE_SLUG);
+        $oFilterStatus
+            ->setLabel('Status')
+            ->setColumn('status')
+            ->addOptions(array_map(function ($sKey, $sLabel) {
+
+                /** @var \Nails\Admin\Factory\IndexFilter\Option $oOption */
+                $oOption = Factory::factory('IndexFilterOption', \Nails\Admin\Constants::MODULE_SLUG);
+                $oOption
+                    ->setLabel($sLabel)
+                    ->setValue($sKey);
+
+                return $oOption;
+
+            }, array_keys($aStatuses), $aStatuses));
+
+        return array_merge(
+            parent::indexCheckboxFilters(),
+            [
+                $oFilterStatus,
+            ]
+        );
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * View a single payment
+     *
+     * @return void
+     */
+    public function view()
+    {
+        if (!userHasPermission('admin:invoice:refund:view')) {
+            unauthorised();
+        }
+
+        // --------------------------------------------------------------------------
+
+        /** @var Uri $oUri */
+        $oUri = Factory::service('Uri');
+        /** @var \Nails\Invoice\Model\Refund $oRefundModel */
+        $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
+
+        // --------------------------------------------------------------------------
+
+        $this->data['refund'] = $oRefundModel->getById(
+            $oUri->segment(5),
+            [
+                new Expand('payment', new Expand('invoice')),
+            ]
+        );
+
+        if (!$this->data['refund']) {
+            show404();
+        }
+
+        $this->data['page']->title = 'View Refund &rsaquo; ' . $this->data['refund']->ref;
+
+        Helper::loadView('view');
+    }
+}
