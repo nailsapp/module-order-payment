@@ -217,13 +217,14 @@ class Invoice extends Base
 
         //  Define the $aData variable for the queries
         $aData = [
+            new Expand('customer'),
+            new Expand('items'),
             'where'     => array_filter([
                 !empty($oCustomer) ? ['customer_id', $oCustomer->id] : null,
             ]),
             'sort'      => [
                 [$sSortOn, $sSortOrder],
             ],
-            'expand'    => ['customer', 'payments'],
             'keywords'  => $sKeywords,
             'cbFilters' => $aCbFilters,
         ];
