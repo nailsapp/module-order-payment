@@ -18,9 +18,12 @@ use Nails\Common\Exception\ModelException;
 use Nails\Common\Factory\Model\Field;
 use Nails\Common\Model\Base;
 use Nails\Common\Service\Country;
+use Nails\Common\Service\Database;
 use Nails\Common\Service\FormValidation;
+use Nails\Common\Traits\Model\Mergeable;
 use Nails\Factory;
 use Nails\Invoice\Constants;
+use Nails\Invoice\Exception\CustomerException\MergeException;
 use Nails\Invoice\Exception\InvoiceException;
 
 /**
@@ -30,6 +33,10 @@ use Nails\Invoice\Exception\InvoiceException;
  */
 class Customer extends Base
 {
+    use Mergeable;
+
+    // --------------------------------------------------------------------------
+
     /**
      * The table this model represents
      *
@@ -252,7 +259,7 @@ class Customer extends Base
      * Returns the customer ID for the active user.
      *
      * This assumes that the user's customer ID is stored in the user_meta_app
-     * table. If yoyr application has different logic, you should override this
+     * table. If your application has different logic, you should override this
      * method and implement the appropriate behaviour.
      *
      * @return int|null
@@ -260,5 +267,59 @@ class Customer extends Base
     public function getCustomerIdForActiveUser(): ?int
     {
         return (int) activeUser('customer_id') ?: null;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * @param int   $iKeepId
+     * @param array $aMergeIds
+     * @param bool  $bMergeSources
+     *
+     * @return $this
+     * @throws \Nails\Common\Exception\FactoryException
+     * @throws \Nails\Common\Exception\ModelException
+     * @throws \Nails\Invoice\Exception\CustomerException\MergeException
+     */
+    public function merge(int $iKeepId, array $aMergeIds, bool $bMergeSources = true): self
+    {
+        /** @var Database $oDb */
+        $oDb           = Factory::service('Database');
+        $oInvoiceModel = Factory::model('Invoice', Constants::MODULE_SLUG);
+        $oSourceModel  = Factory::model('Source', Constants::MODULE_SLUG);
+
+        //  Merge invoices
+        $bResult = $oDb
+            ->set('customer_id', $iKeepId)
+            ->where_in('customer_id', $aMergeIds)
+            ->update($oInvoiceModel->getTableName());
+
+        if (!$bResult) {
+            throw new MergeException('Failed to merge customer invoices');
+        }
+
+        //  Merge payment sources
+        if ($bMergeSources) {
+            $bResult = $oDb
+                ->set('customer_id', $iKeepId)
+                ->where_in('customer_id', $aMergeIds)
+                ->update($oSourceModel->getTableName());
+
+            if (!$bResult) {
+                throw new MergeException('Failed to merge customer invoices');
+            }
+        }
+
+        //  Delete merged customers
+        foreach ($aMergeIds as $iMergeId) {
+            if (!$this->destroy($iMergeId)) {
+                throw new MergeException(sprintf(
+                    'Failed to delete customer "%s"',
+                    $iMergeId,
+                ));
+            }
+        }
+
+        return $this;
     }
 }
