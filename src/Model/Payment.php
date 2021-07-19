@@ -129,11 +129,47 @@ class Payment extends Base
      */
     public function getSearchableColumns(): array
     {
+        $oInvoiceModel  = Factory::model('Invoice', \Nails\Invoice\Constants::MODULE_SLUG);
+        $oCustomerModel = Factory::model('Customer', \Nails\Invoice\Constants::MODULE_SLUG);
+        $oRefundModel   = Factory::model('Refund', \Nails\Invoice\Constants::MODULE_SLUG);
+
         return [
             'id',
             'ref',
             'description',
             'transaction_id',
+            [
+                sprintf(
+                    '(SELECT i.ref FROM %s i WHERE i.id = %s.invoice_id)',
+                    $oInvoiceModel->getTableName(),
+                    $this->getTableAlias()
+                ),
+            ],
+            [
+                sprintf(
+                    '(
+                        SELECT
+                            CONCAT(
+                                c.label,
+                                COALESCE(c.email, ""),
+                                COALESCE(c.billing_email, "")
+                            )
+                        FROM %s i
+                        LEFT JOIN %s c ON c.id = i.customer_id
+                        WHERE i.id = %s.invoice_id
+                    )',
+                    $oInvoiceModel->getTableName(),
+                    $oCustomerModel->getTableName(),
+                    $this->getTableAlias()
+                ),
+            ],
+            [
+                sprintf(
+                    '(SELECT GROUP_CONCAT(r.ref) FROM %s r WHERE r.payment_id = %s.id)',
+                    $oRefundModel->getTableName(),
+                    $this->getTableAlias()
+                ),
+            ],
         ];
     }
 

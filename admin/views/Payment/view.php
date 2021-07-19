@@ -27,7 +27,7 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                             <td>
                                 <?=$payment->driver->getLabel()?>
                                 <small>
-                                    <?=$payment->driver->getSlug()?>
+                                    <code><?=$payment->driver->getSlug()?></code>
                                 </small>
                             </td>
                         </tr>
@@ -40,8 +40,12 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                             <td><?=anchor('admin/invoice/invoice/view/' . $payment->invoice->id, $payment->invoice->ref)?></td>
                         </tr>
                         <tr>
+                            <td class="header">Source</td>
+                            <td><?=$payment->source->label?></td>
+                        </tr>
+                        <tr>
                             <td class="header">Description</td>
-                            <td><?=$payment->description?></td>
+                            <td><?=$payment->description ?: '<span class="text-muted">&mdash;</span>'?></td>
                         </tr>
                         <tr>
                             <td class="header">Status</td>
@@ -60,6 +64,19 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
 
                                 ?>
                             </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Customer</td>
+                            <td>
+                                <?=$payment->invoice->customer->label?>
+                                <small>
+                                    <?=mailto($payment->invoice->customer->email ?? $payment->invoice->customer->billing_email)?>
+                                </small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="header">Customer Present</td>
+                            <td><?=$payment->customer_present ? 'Yes' : 'No'?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -170,6 +187,7 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                             <th class="text-center">ID</th>
                             <th class="text-center">Status</th>
                             <th>Reference</th>
+                            <th>Reason</th>
                             <th>Amount</th>
                             <th>Fee</th>
                             <th>Created</th>
@@ -216,7 +234,8 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                                     }
                                     ?>
                                 </td>
-                                <td><?=$oRefund->transaction_id?></td>
+                                <td><?=$oRefund->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
+                                <td><?=$oRefund->reason ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td>
                                     <?=$oRefund->amount->formatted?>
                                 </td>

@@ -44,7 +44,7 @@ class Refund extends DefaultController
     const CONFIG_CAN_EDIT       = false;
     const CONFIG_CAN_VIEW       = false;
     const CONFIG_SORT_OPTIONS   = [
-        'Received Date'  => 'created',
+        'Issued Date'    => 'created',
         'Gateway'        => 'driver',
         'Invoice'        => 'invoice_id',
         'Transaction ID' => 'ref',
@@ -53,11 +53,19 @@ class Refund extends DefaultController
         'Fee'            => 'fee',
         'Currency'       => 'currency',
     ];
+    const CONFIG_SORT_DIRECTION = self::SORT_DESCENDING;
     const CONFIG_INDEX_DATA     = [
         'expand' => [
             [
                 'payment',
-                ['expand' => ['invoice']],
+                [
+                    'expand' => [
+                        [
+                            'invoice',
+                            ['expand' => ['customer']],
+                        ],
+                    ],
+                ],
             ],
         ],
     ];
@@ -66,11 +74,14 @@ class Refund extends DefaultController
         'Transaction ID' => 'ref',
         'Gateway ID'     => 'transaction_id',
         'Status'         => null,
+        'reason'         => 'reason',
         'Invoice'        => null,
+        'Payment'        => null,
         'Amount'         => 'amount.formatted',
         'Fee'            => 'fee.formatted',
         'Currency'       => 'currency.code',
-        'Received'       => 'created',
+        'Customer'       => null,
+        'Issued'         => 'created',
     ];
 
     // --------------------------------------------------------------------------
@@ -142,6 +153,23 @@ class Refund extends DefaultController
                 siteUrl('admin/invoice/invoice/view/' . $oRefund->payment->invoice->id),
                 $oRefund->payment->invoice->ref,
                 $oRefund->payment->invoice->state->label,
+            );
+        };
+
+        $this->aConfig['INDEX_FIELDS']['Payment'] = function (\Nails\Invoice\Resource\Refund $oRefund) {
+            return sprintf(
+                '<a href="%s">%s</a><small>%s</small>',
+                siteUrl('admin/invoice/payment/view/' . $oRefund->payment->id),
+                $oRefund->payment->ref,
+                $oRefund->payment->status->label,
+            );
+        };
+
+        $this->aConfig['INDEX_FIELDS']['Customer'] = function (\Nails\Invoice\Resource\Refund $oRefund) {
+            return sprintf(
+                '%s<small>%s</small>',
+                $oRefund->payment->invoice->customer->label,
+                mailto($oRefund->payment->invoice->customer->email ?? $oRefund->payment->invoice->customer->billing_email)
             );
         };
 

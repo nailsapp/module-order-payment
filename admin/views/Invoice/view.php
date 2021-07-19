@@ -438,6 +438,7 @@ $iColWidth   = [
                             <th class="text-center">ID</th>
                             <th class="text-center">Status</th>
                             <th>Reference</th>
+                            <th>Reason</th>
                             <th>Amount</th>
                             <th>Fee</th>
                             <th>Created</th>
@@ -488,6 +489,7 @@ $iColWidth   = [
                                     ?>
                                 </td>
                                 <td><?=$oRefund->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
+                                <td><?=$oRefund->reason ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td><?=$oRefund->amount->formatted?></td>
                                 <td><?=$oRefund->fee->formatted?></td>
                                 <?=adminHelper('loadDateTimeCell', $oRefund->created)?>

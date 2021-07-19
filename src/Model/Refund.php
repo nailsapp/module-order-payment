@@ -131,6 +131,58 @@ class Refund extends Base
 
     // --------------------------------------------------------------------------
 
+    public function getSearchableColumns(): array
+    {
+        $oInvoiceModel  = Factory::model('Invoice', \Nails\Invoice\Constants::MODULE_SLUG);
+        $oPaymentModel  = Factory::model('Payment', \Nails\Invoice\Constants::MODULE_SLUG);
+        $oCustomerModel = Factory::model('Customer', \Nails\Invoice\Constants::MODULE_SLUG);
+
+        return [
+            $this->getColumnId(),
+            'payment_id',
+            'invoice_id',
+            'ref',
+            'reason',
+            'transaction_id',
+            'fail_msg',
+            'currency',
+            [
+                sprintf(
+                    '(SELECT p.ref FROM %s p WHERE p.id = payment_id)',
+                    $oPaymentModel->getTableName()
+                ),
+            ],
+            [
+                sprintf(
+                    '(SELECT i.ref FROM %s i WHERE i.id = invoice_id)',
+                    $oInvoiceModel->getTableName()
+                ),
+            ],
+            [
+                sprintf(
+                    '(
+                        SELECT
+                            CONCAT(
+                                c.label,
+                                COALESCE(c.email, ""),
+                                COALESCE(c.billing_email, "")
+                            )
+                        FROM %s p
+                        LEFT JOIN %s i ON i.id = p.invoice_id
+                        LEFT JOIN %s c ON c.id = i.customer_id
+                        WHERE p.id = %s.payment_id
+                    )',
+                    $oPaymentModel->getTableName(),
+                    $oInvoiceModel->getTableName(),
+                    $oCustomerModel->getTableName(),
+                    $this->getTableAlias()
+                ),
+            ],
+        ];
+    }
+
+    // --------------------------------------------------------------------------
+
     /**
      * Create a new refund
      *

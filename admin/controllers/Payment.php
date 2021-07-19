@@ -19,6 +19,7 @@ use Nails\Admin\Helper;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Factory\Component;
+use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Service\Input;
 use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
@@ -52,9 +53,13 @@ class Payment extends DefaultController
         'Fee'            => 'fee',
         'Currency'       => 'currency',
     ];
+    const CONFIG_SORT_DIRECTION = self::SORT_DESCENDING;
     const CONFIG_INDEX_DATA     = [
         'expand' => [
-            'invoice',
+            [
+                'invoice',
+                ['expand' => ['customer']],
+            ],
         ],
     ];
     const CONFIG_INDEX_FIELDS   = [
@@ -67,6 +72,7 @@ class Payment extends DefaultController
         'Refunded'       => 'amount_refunded.formatted',
         'Fee'            => 'fee.formatted',
         'Currency'       => 'currency.code',
+        'Customer'       => null,
         'Received'       => 'created',
     ];
 
@@ -139,6 +145,14 @@ class Payment extends DefaultController
                 siteUrl('admin/invoice/invoice/view/' . $oPayment->invoice->id),
                 $oPayment->invoice->ref,
                 $oPayment->invoice->state->label,
+            );
+        };
+
+        $this->aConfig['INDEX_FIELDS']['Customer'] = function (\Nails\Invoice\Resource\Payment $oPayment) {
+            return sprintf(
+                '%s<small>%s</small>',
+                $oPayment->invoice->customer->label,
+                mailto($oPayment->invoice->customer->email ?? $oPayment->invoice->customer->billing_email)
             );
         };
 
@@ -263,7 +277,13 @@ class Payment extends DefaultController
 
         $this->data['payment'] = $oPaymentModel->getById(
             $oUri->segment(5),
-            ['expand' => $oPaymentModel::EXPAND_ALL]
+            [
+                'expand' => [
+                    new Expand('invoice', new Expand('customer')),
+                    new Expand('source'),
+                    new Expand('refunds'),
+                ],
+            ]
         );
 
         if (!$this->data['payment']) {
