@@ -18,6 +18,7 @@ use Nails\Factory;
 use Nails\Invoice\Constants;
 use Nails\Invoice\Exception\ChargeRequestException;
 use Nails\Invoice\Exception\RequestException;
+use Nails\Invoice\Exception\ScaRequestException;
 
 /**
  * Class ScaRequest
@@ -32,7 +33,6 @@ class ScaRequest extends RequestBase
      * @return ScaResponse
      * @throws FactoryException
      * @throws ModelException
-     * @throws ChargeRequestException
      * @throws RequestException
      */
     public function execute(): ScaResponse
@@ -43,6 +43,7 @@ class ScaRequest extends RequestBase
         $oChargeRequest = Factory::factory('ChargeRequest', Constants::MODULE_SLUG);
 
         if (!$this->getPayment()->isPending()) {
+            $bSkipPaymentUpdate = true;
             $oScaResponse
                 ->setStatusFailed(
                     'Payment is not in a pending state',
@@ -67,7 +68,7 @@ class ScaRequest extends RequestBase
                 $oScaResponse->getTransactionId(),
                 $oScaResponse->getFee()
             );
-        } elseif ($oScaResponse->isFailed()) {
+        } elseif ($oScaResponse->isFailed() && empty($bSkipPaymentUpdate)) {
             $this->setPaymentFailed(
                 $oScaResponse->getErrorMessage(),
                 $oScaResponse->getErrorCode()

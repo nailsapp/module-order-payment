@@ -602,6 +602,7 @@ class ChargeRequest extends RequestBase
      * @return ChargeResponse
      * @throws ChargeRequestException
      * @throws ChargeRequestException\PaymentSourceExpiredException
+     * @throws ChargeRequestException\PaymentNotPendingException
      * @throws Currency\Exception\CurrencyException
      * @throws FactoryException
      * @throws ModelException
@@ -722,7 +723,9 @@ class ChargeRequest extends RequestBase
             $this->setPayment($iPaymentId);
 
         } elseif (!$this->oPayment->isPending()) {
-            throw new ChargeRequestException('Payment is not in a pending state.');
+            throw new ChargeRequestException\PaymentNotPendingException(
+                'Payment has already been processed'
+            );
         }
 
         $mFields = $this->oDriver->getPaymentFields();
