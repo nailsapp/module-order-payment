@@ -41,7 +41,7 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
                         </tr>
                         <tr>
                             <td class="header">Source</td>
-                            <td><?=$payment->source->label?></td>
+                            <td><?=$payment->source->label ?? '<span class="text-muted">&mdash;</span>'?></td>
                         </tr>
                         <tr>
                             <td class="header">Description</td>
