@@ -235,11 +235,11 @@ class Payment extends Base
      * This method applies the conditionals which are common across the get_*()
      * methods and the count() method.
      *
-     * @param array $data Data passed from the calling method
+     * @param array $aData Data passed from the calling method
      *
      * @throws FactoryException
      */
-    protected function getCountCommon(array $data = []): void
+    protected function getCountCommon(array &$aData = []): void
     {
         /** @var Database $oDb */
         $oDb = Factory::service('Database');
@@ -269,7 +269,7 @@ class Payment extends Base
                 ) fee_refunded',
             ]);
 
-        parent::getCountCommon($data);
+        parent::getCountCommon($aData);
     }
 
     // --------------------------------------------------------------------------
