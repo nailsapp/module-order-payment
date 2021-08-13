@@ -24,18 +24,19 @@ use Nails\Invoice\Exception\RequestException;
  */
 class RefundRequest extends RequestBase
 {
-    protected $sReason;
+    protected ?string $sReason;
+    protected int     $iAmount;
 
     // --------------------------------------------------------------------------
 
     /**
      * Set the reason
      *
-     * @param string $sReason The reason of the charge
+     * @param string|null $sReason The reason of the charge
      *
      * @return $this
      */
-    public function setReason($sReason)
+    public function setReason(?string $sReason)
     {
         $this->sReason = $sReason;
         return $this;
@@ -46,9 +47,9 @@ class RefundRequest extends RequestBase
     /**
      * Get the reason
      *
-     * @return string
+     * @return string|null
      */
-    public function getReason()
+    public function getReason(): ?string
     {
         return $this->sReason;
     }
@@ -56,9 +57,36 @@ class RefundRequest extends RequestBase
     // --------------------------------------------------------------------------
 
     /**
+     * Get the amount
+     *
+     * @return int|null
+     */
+    public function getAmount(): ?int
+    {
+        return $this->iAmount;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the amount
+     *
+     * @param int|null $iAmount The reason of the charge
+     *
+     * @return $this
+     */
+    public function setAmount(?int $iAmount)
+    {
+        $this->iAmount = $iAmount;
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Execute the refund
      *
-     * @param integer $iAmount The amount to refund
+     * @param int $iAmount The amount to refund
      *
      * @return RefundResponse
      * @throws RefundRequestException
@@ -66,43 +94,50 @@ class RefundRequest extends RequestBase
      * @throws ModelException
      * @throws RequestException
      */
-    public function execute($iAmount)
+    public function execute(int $iAmount = null)
     {
+        $iAmount  = $iAmount ?? $this->getAmount();
+        $oPayment = $this->getPayment();
+
+        //  Ensure we have a payment
+        if (empty($oPayment)) {
+            throw new RefundRequestException('No payment selected.');
+        }
+
         //  Ensure we have a driver
+        if (empty($this->oDriver)) {
+            $this->setDriver($oPayment->driver);
+        }
+
         if (empty($this->oDriver)) {
             throw new RefundRequestException('No driver selected.');
         }
 
-        //  Ensure we have a payment
-        if (empty($this->oPayment)) {
-            throw new RefundRequestException('No payment selected.');
-        }
-
         //  Ensure we have an invoice
         if (empty($this->oInvoice)) {
-            $this->setInvoice($this->oPayment->invoice->id);
+            $this->setInvoice($oPayment->invoice());
         }
 
         //  Validate ability to refund
-        if (!$this->oPayment->is_refundable) {
-            if ($this->oPayment->available_for_refund->raw === 0) {
+        if (!$oPayment->is_refundable) {
+            if ($oPayment->available_for_refund->raw === 0) {
                 throw new RefundRequestException('Payment is already fully refunded.');
             } else {
                 throw new RefundRequestException('Payment is not in a state where it can be refunded.');
             }
         }
 
-        $iRefundAmount = is_null($iAmount) ? $this->oPayment->available_for_refund->raw : $iAmount;
+        $iRefundAmount = is_null($iAmount) ? $oPayment->available_for_refund->raw : $iAmount;
 
         if (empty($iRefundAmount)) {
             throw new RefundRequestException('Refund amount must be greater than 0.');
         }
 
         //  Validate refund amount
-        if ($iRefundAmount > $this->oPayment->available_for_refund->raw) {
+        if ($iRefundAmount > $oPayment->available_for_refund->raw) {
             throw new RefundRequestException(sprintf(
                 'Requested refund amount is greater than the value of the remaining payment balance (%s)',
-                $this->oPayment->available_for_refund->formatted
+                $oPayment->available_for_refund->formatted
             ));
         }
 
@@ -126,12 +161,12 @@ class RefundRequest extends RequestBase
 
         //  Execute the refund
         $oRefundResponse = $this->oDriver->refund(
-            $this->getPayment()->transaction_id,
+            $oPayment->transaction_id,
             $iRefundAmount,
-            $this->getPayment()->currency,
-            $this->getPayment()->custom_data,
+            $oPayment->currency,
+            $oPayment->custom_data,
             $this->getReason(),
-            $this->getPayment(),
+            $oPayment,
             $this->getRefund(),
             $this->getInvoice()
         );
