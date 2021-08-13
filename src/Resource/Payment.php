@@ -335,6 +335,26 @@ class Payment extends Entity
     // --------------------------------------------------------------------------
 
     /**
+     * Returns the invoice the payment is for
+     *
+     * @return Invoice|null
+     * @throws FactoryException
+     * @throws ModelException
+     */
+    public function invoice(): ?Invoice
+    {
+        if (empty($this->invoice) && !empty($this->invoice_id)) {
+            /** @var \Nails\Invoice\Model\Invoice $oModel */
+            $oModel        = Factory::model('Invoice', Constants::MODULE_SLUG);
+            $this->invoice = $oModel->getById($this->invoice_id);
+        }
+
+        return $this->invoice;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Returns the payment source used for the payment, if known
      *
      * @return Source|null
