@@ -277,6 +277,7 @@ $iColWidth   = [
                             <th class="text-center">Status</th>
                             <th>Gateway</th>
                             <th>Reference</th>
+                            <th>Description</th>
                             <th>Amount</th>
                             <th>Fee</th>
                             <th>Source</th>
@@ -341,6 +342,7 @@ $iColWidth   = [
                                     ?>
                                 </td>
                                 <td><?=$oPayment->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
+                                <td><?=$oPayment->description ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td>
                                     <?php
 
