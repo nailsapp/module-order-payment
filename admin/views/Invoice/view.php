@@ -331,10 +331,14 @@ $iColWidth   = [
                                     ?>
                                 </td>
                                 <td>
-                                    <?=$oPayment->driver->getLabel()?>
-                                    <small>
-                                        <?=$oPayment->driver->getSlug()?>
-                                    </small>
+                                    <?php
+                                    if ($oPayment->driver) {
+                                        echo $oPayment->driver->getLabel();
+                                        echo '<small>' . $oPayment->driver->getSlug() . '</small>';
+                                    } else {
+                                        echo '<span class="text-muted">&mdash;</span>';
+                                    }
+                                    ?>
                                 </td>
                                 <td><?=$oPayment->transaction_id ?: '<span class="text-muted">&mdash;</span>'?></td>
                                 <td>
