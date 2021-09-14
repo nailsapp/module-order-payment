@@ -22,7 +22,6 @@ use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\FormValidation;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Currency;
 use Nails\Factory;
@@ -312,18 +311,16 @@ class Invoice extends Base
 
                     $this->sendInvoice($oInvoice);
 
-                    /** @var UserFeedback $oUserFeedback */
-                    $oUserFeedback = Factory::service('UserFeedback');
-                    $oUserFeedback->success('Invoice created successfully.');
+                    $this->oUserFeedback->success('Invoice created successfully.');
 
                     redirect('admin/invoice/invoice');
 
                 } else {
-                    $this->data['error'] = 'Failed to create invoice. ' . $this->oInvoiceModel->lastError();
+                    $this->oUserFeedback->error('Failed to create invoice. ' . $this->oInvoiceModel->lastError());
                 }
 
             } else {
-                $this->data['error'] = lang('fv_there_were_errors');
+                $this->oUserFeedback->error(lang('fv_there_were_errors'));
             }
         }
 
@@ -450,9 +447,7 @@ class Invoice extends Base
                     $oInvoice = $oModel->getById($this->data['invoice']->id);
                     $this->sendInvoice($oInvoice);
 
-                    /** @var UserFeedback $oUserFeedback */
-                    $oUserFeedback = Factory::service('UserFeedback');
-                    $oUserFeedback->success('Invoice was saved successfully.');
+                    $this->oUserFeedback->success('Invoice was saved successfully.');
 
                     if ($oInvoice->state->id === $oModel::STATE_DRAFT) {
                         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
@@ -461,10 +456,10 @@ class Invoice extends Base
                     }
 
                 } else {
-                    $this->data['error'] = 'Failed to update invoice. ' . $oModel->lastError();
+                    $this->oUserFeedback->error('Failed to update invoice. ' . $oModel->lastError());
                 }
             } else {
-                $this->data['error'] = lang('fv_there_were_errors');
+                $this->oUserFeedback->error(lang('fv_there_were_errors'));
             }
         }
 
@@ -621,8 +616,6 @@ class Invoice extends Base
 
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
-        /** @var UserFeedback $oUserFeedback */
-        $oUserFeedback = Factory::service('UserFeedback');
 
         // --------------------------------------------------------------------------
 
@@ -640,9 +633,9 @@ class Invoice extends Base
             'state' => $oInvoiceModel::STATE_DRAFT,
         ];
         if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-            $oUserFeedback->success('Invoice updated successfully!');
+            $this->oUserFeedback->success('Invoice updated successfully!');
         } else {
-            $oUserFeedback->error('Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError());
+            $this->oUserFeedback->error('Invoice failed to update invoice. ' . $this->oInvoiceModel->lastError());
         }
 
         redirect('admin/invoice/invoice/edit/' . $oInvoice->id);
@@ -666,8 +659,6 @@ class Invoice extends Base
 
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
-        /** @var UserFeedback $oUserFeedback */
-        $oUserFeedback = Factory::service('UserFeedback');
 
         // --------------------------------------------------------------------------
 
@@ -685,9 +676,9 @@ class Invoice extends Base
             'state' => $oInvoiceModel::STATE_WRITTEN_OFF,
         ];
         if ($this->oInvoiceModel->update($oInvoice->id, $aData)) {
-            $oUserFeedback->success('Invoice written off successfully!');
+            $this->oUserFeedback->success('Invoice written off successfully!');
         } else {
-            $oUserFeedback->error('Failed to write off invoice. ' . $this->oInvoiceModel->lastError());
+            $this->oUserFeedback->error('Failed to write off invoice. ' . $this->oInvoiceModel->lastError());
         }
 
         redirect('admin/invoice/invoice');
@@ -711,8 +702,6 @@ class Invoice extends Base
 
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
-        /** @var UserFeedback $oUserFeedback */
-        $oUserFeedback = Factory::service('UserFeedback');
 
         // --------------------------------------------------------------------------
 
@@ -724,9 +713,9 @@ class Invoice extends Base
         // --------------------------------------------------------------------------
 
         if ($this->oInvoiceModel->delete($oInvoice->id)) {
-            $oUserFeedback->success('Invoice deleted successfully!');
+            $this->oUserFeedback->success('Invoice deleted successfully!');
         } else {
-            $oUserFeedback->error('Invoice failed to delete. ' . $this->oInvoiceModel->lastError());
+            $this->oUserFeedback->error('Invoice failed to delete. ' . $this->oInvoiceModel->lastError());
         }
 
         redirect('admin/invoice/invoice');
@@ -750,8 +739,6 @@ class Invoice extends Base
 
         /** @var Uri $oUri */
         $oUri = Factory::service('Uri');
-        /** @var UserFeedback $oUserFeedback */
-        $oUserFeedback = Factory::service('UserFeedback');
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
 
@@ -762,9 +749,9 @@ class Invoice extends Base
         }
 
         if ($this->oInvoiceModel->send($oInvoice->id)) {
-            $oUserFeedback->success('Invoice sent successfully.');
+            $this->oUserFeedback->success('Invoice sent successfully.');
         } else {
-            $oUserFeedback->error('Failed to resend invoice. ' . $this->oInvoiceModel->lastError());
+            $this->oUserFeedback->error('Failed to resend invoice. ' . $this->oInvoiceModel->lastError());
         }
 
         //  @todo (Pablo - 2019-09-12) - Use returnToIndex() when this controller uses the Defaultcontroller
@@ -889,9 +876,7 @@ class Invoice extends Base
 
         if ($oInvoice->state->id === $sInvoiceClass::STATE_OPEN) {
             if (!$this->oInvoiceModel->send($oInvoice->id)) {
-                /** @var UserFeedback $oUserFeedback */
-                $oUserFeedback = Factory::service('UserFeedback');
-                $oUserFeedback->warning('Failed to email invoice to customer. ' . $this->oInvoiceModel->lastError());
+                $this->oUserFeedback->warning('Failed to email invoice to customer. ' . $this->oInvoiceModel->lastError());
                 return false;
             }
             return true;

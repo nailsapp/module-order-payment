@@ -21,7 +21,6 @@ use Nails\Common\Exception\NailsException;
 use Nails\Common\Factory\Component;
 use Nails\Common\Helper\Model\Expand;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -314,8 +313,6 @@ class Payment extends DefaultController
         $oUri = Factory::service('Uri');
         /** @var Input $oInput */
         $oInput = Factory::service('Input');
-        /** @var UserFeedback $oUserFeedback */
-        $oUserFeedback = Factory::service('UserFeedback');
         /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
         $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
@@ -342,10 +339,10 @@ class Payment extends DefaultController
                 throw new NailsException('Failed to refund payment. ' . $oPaymentModel->lastError());
             }
 
-            $oUserFeedback->success('Payment refunded successfully.');
+            $this->oUserFeedback->success('Payment refunded successfully.');
 
         } catch (NailsException $e) {
-            $oUserFeedback->error($e->getMessage());
+            $this->oUserFeedback->error($e->getMessage());
         }
 
         redirect($sRedirect);

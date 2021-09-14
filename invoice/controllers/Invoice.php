@@ -16,7 +16,6 @@ use Nails\Common\Exception\NailsException;
 use Nails\Common\Exception\ValidationException;
 use Nails\Common\Service\Asset;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -387,16 +386,13 @@ class Invoice extends Base
             } catch (Exception $e) {
 
                 $sErrorUrl = !empty($oChargeResponse) ? $oChargeResponse->getErrorUrl() : null;
+
                 if (!empty($sErrorUrl)) {
-
-                    /** @var UserFeedback $oUserFeedback */
-                    $oUserFeedback = Factory::service('UserFeedback');
-                    $oUserFeedback->error($e->getMessage());
-
+                    $this->oUserFeedback->error($e->getMessage());
                     redirect($sErrorUrl);
 
                 } else {
-                    $this->data['error'] = $e->getMessage();
+                    $this->oUserFeedback->error($e->getMessage());
                 }
             }
         }

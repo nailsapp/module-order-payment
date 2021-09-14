@@ -94,10 +94,7 @@ class Sca extends Base
         } elseif ($oScaResponse->isFailed()) {
 
             $oError = $oScaResponse->getError();
-
-            /** @var UserFeedback $oUserFeedback */
-            $oUserFeedback = Factory::service('UserFeedback');
-            $oUserFeedback->error($oError->user ?: 'An error occurred during payment authentication');
+            $this->oUserFeedback->error($oError->user ?: 'An error occurred during payment authentication');
 
             if (!empty($oPayment->urls->error)) {
                 redirect($oPayment->urls->error);

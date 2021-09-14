@@ -12,7 +12,6 @@
 
 use Nails\Common\Exception\NailsException;
 use Nails\Common\Service\Input;
-use Nails\Common\Service\UserFeedback;
 use Nails\Common\Service\Uri;
 use Nails\Factory;
 use Nails\Invoice\Constants;
@@ -115,9 +114,7 @@ class Payment extends Base
                 }
 
             } catch (Exception $e) {
-                /** @var UserFeedback $oUserFeedback */
-                $oUserFeedback = Factory::service('UserFeedback');
-                $oUserFeedback->error($e->getMessage());
+                $this->oUserFeedback->error($e->getMessage());
                 redirect($oPayment->invoice->urls->payment);
             }
         }
