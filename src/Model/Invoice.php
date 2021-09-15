@@ -203,6 +203,7 @@ class Invoice extends Base
      */
     public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): CI_DB_mysqli_result
     {
+        /** @var \Nails\Common\Service\Database $oDb */
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
         $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
@@ -224,6 +225,7 @@ class Invoice extends Base
      */
     public function countAll($aData = [], $bIncludeDeleted = false): int
     {
+        /** @var \Nails\Common\Service\Database $oDb */
         $oDb            = Factory::service('Database');
         $oCustomerModel = Factory::model('Customer', Constants::MODULE_SLUG);
         $oDb->join($oCustomerModel->getTableName() . ' c', $this->getTableAlias() . '.customer_id = c.id', 'LEFT');
@@ -254,8 +256,8 @@ class Invoice extends Base
 
         if (empty($aData['select'])) {
 
+            /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
             $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
-            $sPaymentClass = get_class($oPaymentModel);
 
             $aData['select'] = [
                 $this->getTableAlias() . '.id',
@@ -278,7 +280,7 @@ class Invoice extends Base
                         FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->getTableAlias() . '.id
-                        AND status = \'' . $sPaymentClass::STATUS_COMPLETE . '\'
+                        AND status = \'' . $oPaymentModel::STATUS_COMPLETE . '\'
                 ) paid_total',
                 '(
                     SELECT
@@ -286,7 +288,7 @@ class Invoice extends Base
                         FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->getTableAlias() . '.id
-                        AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
+                        AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
                 ) processing_total',
                 '(
                     SELECT
@@ -294,7 +296,7 @@ class Invoice extends Base
                         FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->getTableAlias() . '.id
-                        AND status = \'' . $sPaymentClass::STATUS_PROCESSING . '\'
+                        AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
                 ) processing_payments',
                 $this->getTableAlias() . '.additional_text',
                 $this->getTableAlias() . '.callback_data',
@@ -327,6 +329,7 @@ class Invoice extends Base
      */
     public function create(array $aData = [], $bReturnObject = false)
     {
+        /** @var \Nails\Common\Service\Database $oDb */
         $oDb = Factory::service('Database');
 
         try {
@@ -388,6 +391,7 @@ class Invoice extends Base
     {
         //  @todo (Pablo - 2019-03-06) - Support passing in multiple IDs so as to be compatible with parent
 
+        /** @var \Nails\Common\Service\Database $oDb */
         $oDb = Factory::service('Database');
 
         try {
@@ -612,6 +616,7 @@ class Invoice extends Base
         } elseif (array_key_exists('items', $aData)) {
 
             //  Check each item
+            /** @var \Nails\Invoice\Model\Invoice\Item $oItemModel */
             $oItemModel = Factory::model('InvoiceItem', Constants::MODULE_SLUG);
             foreach ($aData['items'] as &$aItem) {
 
@@ -735,6 +740,7 @@ class Invoice extends Base
         //  Delete those we no longer require
         if (!empty($aTouchedIds)) {
 
+            /** @var \Nails\Common\Service\Database $oDb */
             $oDb = Factory::service('Database');
             $oDb->where_not_in('id', $aTouchedIds);
             $oDb->where('invoice_id', $iInvoiceId);
@@ -772,7 +778,9 @@ class Invoice extends Base
     {
         Factory::helper('string');
 
-        $oDb  = Factory::service('Database');
+        /** @var \Nails\Common\Service\Database $oDb */
+        $oDb = Factory::service('Database');
+        /** @var \DateTime $oNow */
         $oNow = Factory::factory('DateTime');
 
         do {
@@ -947,6 +955,7 @@ class Invoice extends Base
      */
     public function setPaid($iInvoiceId): bool
     {
+        /** @var \DateTime $oNow */
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
             $iInvoiceId,
@@ -979,6 +988,7 @@ class Invoice extends Base
      */
     public function setPaidProcessing($iInvoiceId): bool
     {
+        /** @var \DateTime $oNow */
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
             $iInvoiceId,
@@ -1011,6 +1021,7 @@ class Invoice extends Base
      */
     public function setWrittenOff($iInvoiceId): bool
     {
+        /** @var \DateTime $oNow */
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
             $iInvoiceId,
@@ -1043,6 +1054,7 @@ class Invoice extends Base
      */
     public function setCancelled($iInvoiceId): bool
     {
+        /** @var \DateTime $oNow */
         $oNow    = Factory::factory('DateTime');
         $bResult = $this->update(
             $iInvoiceId,
@@ -1103,11 +1115,6 @@ class Invoice extends Base
         array $aFloats = []
     ) {
 
-        $aIntegers[] = 'terms';
-        $aIntegers[] = 'customer_id';
-        $aIntegers[] = 'sub_total';
-        $aIntegers[] = 'tax_total';
-        $aIntegers[] = 'grand_total';
         $aIntegers[] = 'paid_total';
         $aIntegers[] = 'processing_total';
 
