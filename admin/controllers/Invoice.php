@@ -237,6 +237,7 @@ class Invoice extends Base
             'select'    => [
                 $this->oInvoiceModel->getTableAlias() . '.id',
                 $this->oInvoiceModel->getTableAlias() . '.ref',
+                $this->oInvoiceModel->getTableAlias() . '.token',
                 $this->oInvoiceModel->getTableAlias() . '.state',
                 $this->oInvoiceModel->getTableAlias() . '.customer_id',
                 $this->oInvoiceModel->getTableAlias() . '.dated',
