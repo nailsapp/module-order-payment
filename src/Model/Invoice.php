@@ -201,7 +201,7 @@ class Invoice extends Base
      * @throws FactoryException
      * @throws ModelException
      */
-    public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): CI_DB_mysqli_result
+    public function getAllRawQuery($iPage = null, $iPerPage = null, array $aData = [], bool $bIncludeDeleted = false): CI_DB_mysqli_result
     {
         /** @var \Nails\Common\Service\Database $oDb */
         $oDb            = Factory::service('Database');
@@ -223,7 +223,7 @@ class Invoice extends Base
      * @throws FactoryException
      * @throws ModelException
      */
-    public function countAll($aData = [], $bIncludeDeleted = false): int
+    public function countAll($aData = [], bool $bIncludeDeleted = false): int
     {
         /** @var \Nails\Common\Service\Database $oDb */
         $oDb            = Factory::service('Database');
@@ -246,7 +246,7 @@ class Invoice extends Base
      * @return array
      * @throws FactoryException
      */
-    public function getAll($iPage = null, $iPerPage = null, array $aData = [], $bIncludeDeleted = false): array
+    public function getAll($iPage = null, $iPerPage = null, array $aData = [], bool $bIncludeDeleted = false): array
     {
         //  If the first value is an array then treat as if called with getAll(null, null, $aData);
         if (is_array($iPage)) {
