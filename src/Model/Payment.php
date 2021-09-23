@@ -205,7 +205,7 @@ class Payment extends Base
      *
      * @return array
      */
-    public function getForInvoices($aInvoiceIds)
+    public function getForInvoices(array $aInvoiceIds): array
     {
         return $this->getAll([
             'where_in' => [
