@@ -201,9 +201,9 @@ class Payment extends Base
     /**
      * Retrieve payments which relate to a particular set of invoice IDs
      *
-     * @param array $aInvoiceIds The invoice IDs
+     * @param int[] $aInvoiceIds The invoice IDs
      *
-     * @return array
+     * @return \Nails\Invoice\Resource\Payment[]
      */
     public function getForInvoices(array $aInvoiceIds): array
     {
@@ -314,8 +314,8 @@ class Payment extends Base
     /**
      * Update a payment
      *
-     * @param integer $iPaymentId The ID of the payment to update
-     * @param array   $aData      The data to update the payment with
+     * @param int   $iPaymentId The ID of the payment to update
+     * @param array $aData      The data to update the payment with
      *
      * @return bool
      * @throws FactoryException
@@ -370,7 +370,9 @@ class Payment extends Base
     {
         Factory::helper('string');
 
-        $oDb  = Factory::service('Database');
+        /** @var Database $oDb */
+        $oDb = Factory::service('Database');
+        /** @var \DateTime $oNow */
         $oNow = Factory::factory('DateTime');
 
         do {
@@ -389,8 +391,8 @@ class Payment extends Base
     /**
      * Set a payment as PENDING
      *
-     * @param integer $iPaymentId The payment to update
-     * @param array   $aData      Any additional data to save to the transaction
+     * @param int   $iPaymentId The payment to update
+     * @param array $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws FactoryException
@@ -406,8 +408,8 @@ class Payment extends Base
     /**
      * Set a payment as PROCESSING
      *
-     * @param integer $iPaymentId The payment to update
-     * @param array   $aData      Any additional data to save to the transaction
+     * @param int   $iPaymentId The payment to update
+     * @param array $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws FactoryException
@@ -423,8 +425,8 @@ class Payment extends Base
     /**
      * Set a payment as COMPLETE
      *
-     * @param integer $iPaymentId The payment to update
-     * @param array   $aData      Any additional data to save to the transaction
+     * @param int   $iPaymentId The payment to update
+     * @param array $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws FactoryException
@@ -440,8 +442,8 @@ class Payment extends Base
     /**
      * Set a payment as FAILED
      *
-     * @param integer $iPaymentId The payment to update
-     * @param array   $aData      Any additional data to save to the transaction
+     * @param int   $iPaymentId The payment to update
+     * @param array $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws FactoryException
@@ -457,8 +459,8 @@ class Payment extends Base
     /**
      * Set a payment as REFUNDED
      *
-     * @param integer $iPaymentId The payment to update
-     * @param array   $aData      Any additional data to save to the transaction
+     * @param int   $iPaymentId The payment to update
+     * @param array $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws FactoryException
@@ -474,8 +476,8 @@ class Payment extends Base
     /**
      * Set a payment as REFUNDED_PARTIAL
      *
-     * @param integer $iPaymentId The payment to update
-     * @param array   $aData      Any additional data to save to the transaction
+     * @param int   $iPaymentId The payment to update
+     * @param array $aData      Any additional data to save to the transaction
      *
      * @return bool
      * @throws FactoryException
@@ -491,8 +493,8 @@ class Payment extends Base
     /**
      * Send payment receipt
      *
-     * @param integer $iPaymentId     The ID of the payment
-     * @param string  $sEmailOverride Send to this email instead of the email defined by the invoice object
+     * @param int    $iPaymentId     The ID of the payment
+     * @param string $sEmailOverride Send to this email instead of the email defined by the invoice object
      *
      * @return bool
      */
@@ -673,10 +675,10 @@ class Payment extends Base
      *
      * @param int $iPaymentId The payment ID
      *
-     * @return Resource
+     * @return \Nails\Invoice\Resource\Payment
      * @throws ModelException
      */
-    protected function getPaymentForEvent(int $iPaymentId): Resource
+    protected function getPaymentForEvent(int $iPaymentId): \Nails\Invoice\Resource\Payment
     {
         $oPayment = $this->getById($iPaymentId);
         if (empty($oPayment)) {
