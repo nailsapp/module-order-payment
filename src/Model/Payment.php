@@ -710,13 +710,8 @@ class Payment extends Base
         array $aFloats = []
     ) {
 
-        $aIntegers[] = 'invoice_id';
-        $aIntegers[] = 'amount';
         $aIntegers[] = 'amount_refunded';
-        $aIntegers[] = 'fee';
         $aIntegers[] = 'fee_refunded';
-
-        $aBools[] = 'customer_present';
 
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
     }
