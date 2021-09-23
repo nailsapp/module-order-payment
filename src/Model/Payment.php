@@ -270,11 +270,13 @@ class Payment extends Base
      */
     public function create(array $aData = [], $bReturnObject = false)
     {
-        $oDb = Factory::service('Database');
+        /** @var Database $oDb */
+        $oDb          = Factory::service('Database');
+        $oTransaction = $oDb->transaction();
 
         try {
 
-            $oDb->transaction()->start();
+            $oTransaction->start();
 
             if (empty($aData['ref'])) {
                 $aData['ref'] = $this->generateValidRef();
@@ -292,7 +294,7 @@ class Payment extends Base
                 throw new PaymentException('Failed to create payment.');
             }
 
-            $oDb->transaction()->commit();
+            $oTransaction->commit();
             $this->triggerEvent(
                 Events::PAYMENT_CREATED,
                 [$this->getPaymentForEvent($bReturnObject ? $mPayment->id : $mPayment)]
@@ -301,7 +303,7 @@ class Payment extends Base
             return $mPayment;
 
         } catch (Exception $e) {
-            $oDb->transaction()->rollback();
+            $oTransaction->rollback();
             $this->setError($e->getMessage());
             return false;
         }
@@ -320,11 +322,13 @@ class Payment extends Base
      */
     public function update($iPaymentId, array $aData = []): bool
     {
-        $oDb = Factory::service('Database');
+        /** @var Database $oDb */
+        $oDb          = Factory::service('Database');
+        $oTransaction = $oDb->transaction();
 
         try {
 
-            $oDb->transaction()->start();
+            $oTransaction->start();
 
             unset($aData['ref']);
             unset($aData['token']);
@@ -339,7 +343,7 @@ class Payment extends Base
                 throw new PaymentException('Failed to update payment.');
             }
 
-            $oDb->transaction()->commit();
+            $oTransaction->commit();
             $this->triggerEvent(
                 Events::PAYMENT_UPDATED,
                 [$this->getPaymentForEvent($iPaymentId)]
@@ -348,7 +352,7 @@ class Payment extends Base
             return $bResult;
 
         } catch (Exception $e) {
-            $oDb->transaction()->rollback();
+            $oTransaction->rollback();
             $this->setError($e->getMessage());
             return false;
         }
