@@ -1,5 +1,7 @@
 <?php
 
+use Nails\Common\Service\UserFeedback;
+use Nails\Factory;
 use Nails\Invoice\Driver\PaymentBase;
 use Nails\Invoice\Resource\Invoice;
 use Nails\Invoice\Resource\Source;
@@ -11,6 +13,27 @@ use Nails\Invoice\Resource\Source;
  * @var Source[]      $aSavedPaymentSources
  * @var string        $sUrlCancel
  */
+
+/** @var UserFeedback $oUserFeedback */
+$oUserFeedback = Factory::service('UserFeedback');
+
+$aAlertConf = [
+    $oUserFeedback::TYPE_ERROR    => [
+        'class' => 'danger',
+    ],
+    $oUserFeedback::TYPE_NEGATIVE => [
+        'class' => 'danger',
+    ],
+    $oUserFeedback::TYPE_POSITIVE => [
+        'class' => 'success',
+    ],
+    $oUserFeedback::TYPE_MESSAGE  => [
+        'class' => 'warning',
+    ],
+    $oUserFeedback::TYPE_NOTICE   => [
+        'class' => 'info',
+    ],
+];
 
 ?>
 <div class="nails-invoice pay" id="js-invoice">
@@ -30,19 +53,20 @@ use Nails\Invoice\Resource\Source;
         </h1>
         <?=form_open($sFormUrl, 'id="js-invoice-main-form"')?>
         <div class="panel__body">
-            <p class="alert alert--danger <?=empty($error) ? 'hidden' : ''?>" id="js-error">
-                <?=$error?>
-            </p>
-            <p class="alert alert--success <?=empty($success) ? 'hidden' : ''?>">
-                <?=$success?>
-            </p>
-            <p class="alert alert--warning <?=empty($message) ? 'hidden' : ''?>">
-                <?=$message?>
-            </p>
-            <p class="alert alert--info <?=empty($info) ? 'hidden' : ''?>">
-                <?=$info?>
-            </p>
             <?php
+
+            foreach ($oUserFeedback->getTypes() as $sType) {
+
+                $sValue = (string) $oUserFeedback->get($sType);
+                $sClass = $aAlertConf[$sType]['class'] ?? strtolower($sType);
+
+                ?>
+                <p class="alert alert--<?=$sClass?> <?=$sValue ? '' : 'hidden'?>" id="js-<?=strtolower($sType)?>">
+                    <?=$sValue?>
+                </p>
+                <?php
+            }
+
             if (empty($aDrivers)) {
                 ?>
                 <p class="text-center">
@@ -329,7 +353,7 @@ use Nails\Invoice\Resource\Source;
                     </button>
                 </p>
                 <p class="text-center">
-                    <a href="<?=$sUrlCancel?>" class="btn btn--link"  id="js-invoice-cancel">
+                    <a href="<?=$sUrlCancel?>" class="btn btn--link" id="js-invoice-cancel">
                         Cancel payment
                     </a>
                 </p>
