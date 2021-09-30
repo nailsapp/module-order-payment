@@ -566,7 +566,11 @@ class Invoice extends Base
             show404();
         }
 
-        $this->data['page']->title = 'View Invoice &rsaquo; ' . $this->data['invoice']->ref;
+        $this->data['page']->title = sprintf(
+            'View Invoice &rsaquo; %s (%s)',
+            $this->data['invoice']->ref,
+            $this->data['invoice']->state->label,
+        );
 
         Helper::loadView('view');
     }

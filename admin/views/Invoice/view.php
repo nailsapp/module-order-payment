@@ -17,7 +17,7 @@ $oRefundModel = Factory::model('Refund', Constants::MODULE_SLUG);
 
 $bHasAddress = $invoice->billingAddress() || $invoice->deliveryAddress();
 $iColWidth   = [
-    'dates'    => 3,
+    'details'    => 3,
     'customer' => $bHasAddress ? 3 : 4,
     'address'  => 3,
     'notes'    => $bHasAddress ? 3 : 5,
@@ -26,13 +26,17 @@ $iColWidth   = [
 ?>
 <div class="group-invoice invoice view">
     <div class="row">
-        <div class="col-md-<?=$iColWidth['dates']?>">
+        <div class="col-md-<?=$iColWidth['details']?>">
             <div class="panel panel-default match-height">
                 <div class="panel-heading">
-                    <strong>Dates</strong>
+                    <strong>Details</strong>
                 </div>
                 <table>
                     <tbody>
+                        <tr>
+                            <td class="header">State</td>
+                            <td><?=$invoice->state->label?></td>
+                        </tr>
                         <tr>
                             <td class="header">Dated</td>
                             <td><?=toUserDate($invoice->dated->raw)?></td>
