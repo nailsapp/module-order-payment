@@ -175,42 +175,34 @@ class Invoice extends Base
         $aCbFilters = [];
 
         //  States
-        $aStateOptions = [];
-        $aStates       = $this->oInvoiceModel->getStates();
+        /** @var \Nails\Admin\Factory\IndexFilter $oFilterState */
+        $oFilterState = Factory::factory('IndexFilter', \Nails\Admin\Constants::MODULE_SLUG);
+        $oFilterState
+            ->setLabel('State')
+            ->setColumn($sTableAlias . '.state');
 
-        foreach ($aStates as $sState => $sLabel) {
-            $aStateOptions[] = [
-                $sLabel,
-                $sState,
-                true,
-            ];
+        foreach ($this->oInvoiceModel->getStates() as $sState => $sLabel) {
+            $oFilterState->addOption($sLabel, $sState, true);
         }
 
-        $aCbFilters[] = Helper::searchFilterObject(
-            $sTableAlias . '.state',
-            'State',
-            $aStateOptions
-        );
+        $aCbFilters[] = $oFilterState;
+
+
 
         //  Currencies
         /** @var Currency\Service\Currency $oCurrency */
         $oCurrency        = Factory::service('Currency', Currency\Constants::MODULE_SLUG);
-        $aCurrencyOptions = [];
-        $aCurrencies      = $oCurrency->getAllEnabled();
+        /** @var \Nails\Admin\Factory\IndexFilter $oFilterCurrency */
+        $oFilterCurrency = Factory::factory('IndexFilter', \Nails\Admin\Constants::MODULE_SLUG);
+        $oFilterCurrency
+            ->setLabel('Currency')
+            ->setColumn($sTableAlias . '.currency');
 
-        foreach ($aCurrencies as $oCurrency) {
-            $aCurrencyOptions[] = [
-                $oCurrency->code,
-                $oCurrency->code,
-                true,
-            ];
+        foreach ($oCurrency->getAllEnabled() as $oCurrency) {
+            $oFilterCurrency->addOption($oCurrency->code, $oCurrency->code, true);
         }
 
-        $aCbFilters[] = Helper::searchFilterObject(
-            $sTableAlias . '.currency',
-            'Currency',
-            $aCurrencyOptions
-        );
+        $aCbFilters[] = $oFilterCurrency;
 
         // --------------------------------------------------------------------------
 
