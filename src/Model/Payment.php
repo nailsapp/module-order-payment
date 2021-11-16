@@ -80,6 +80,7 @@ class Payment extends Base
 
     //  Statuses
     const STATUS_PENDING          = 'PENDING';
+    const STATUS_SENT_FOR_AUTH    = 'SENT_FOR_AUTH';
     const STATUS_PROCESSING       = 'PROCESSING';
     const STATUS_COMPLETE         = 'COMPLETE';
     const STATUS_FAILED           = 'FAILED';
@@ -169,6 +170,7 @@ class Payment extends Base
     {
         return [
             self::STATUS_PENDING,
+            self::STATUS_SENT_FOR_AUTH,
             self::STATUS_PROCESSING,
             self::STATUS_COMPLETE,
             self::STATUS_FAILED,
@@ -188,6 +190,7 @@ class Payment extends Base
     {
         return [
             self::STATUS_PENDING          => 'Pending',
+            self::STATUS_SENT_FOR_AUTH    => 'Sent for authentication',
             self::STATUS_PROCESSING       => 'Processing',
             self::STATUS_COMPLETE         => 'Complete',
             self::STATUS_FAILED           => 'Failed',
@@ -400,6 +403,23 @@ class Payment extends Base
     public function setPending($iPaymentId, $aData = []): bool
     {
         $aData['status'] = self::STATUS_PENDING;
+        return $this->update($iPaymentId, $aData);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set a payment as SENT_FOR_AUTH
+     *
+     * @param int   $iPaymentId The payment to update
+     * @param array $aData      Any additional data to save to the transaction
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function setSentForAuthentication($iPaymentId, $aData = []): bool
+    {
+        $aData['status'] = self::STATUS_SENT_FOR_AUTH;
         return $this->update($iPaymentId, $aData);
     }
 

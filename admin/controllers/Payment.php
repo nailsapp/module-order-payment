@@ -108,6 +108,7 @@ class Payment extends DefaultController
 
             switch ($oPayment->status->id) {
                 case $oModel::STATUS_PENDING:
+                case $oModel::STATUS_SENT_FOR_AUTH:
                     $sStatus = 'info';
                     break;
 

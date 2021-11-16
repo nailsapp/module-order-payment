@@ -307,6 +307,7 @@ $iColWidth   = [
                                         $sText  = '';
                                         break;
                                     case $oPaymentModel::STATUS_PENDING:
+                                    case $oPaymentModel::STATUS_SENT_FOR_AUTH:
                                     case $oPaymentModel::STATUS_REFUNDED:
                                     case $oPaymentModel::STATUS_REFUNDED_PARTIAL:
                                         $sClass = 'warning';

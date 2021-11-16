@@ -390,6 +390,21 @@ class Payment extends Entity
     // --------------------------------------------------------------------------
 
     /**
+     * Whether the payment is in the SENT_FOR_AUTH state
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function isSentForAuthentication(): bool
+    {
+        /** @var \Nails\Invoice\Model\Payment $oModel */
+        $oModel = Factory::model('Payment', Constants::MODULE_SLUG);
+        return $this->status->id === $oModel::STATUS_SENT_FOR_AUTH;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Whether the payment is in the PROCESSING state
      *
      * @return bool

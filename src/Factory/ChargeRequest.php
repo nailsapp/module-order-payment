@@ -785,7 +785,7 @@ class ChargeRequest extends RequestBase
              */
             $oScaData = $oChargeResponse->getScaData();
 
-            $this->oPaymentModel->update(
+            $this->oPaymentModel->setSentForAuthentication(
                 $this->oPayment->id,
                 ['sca_data' => $oScaData]
             );
