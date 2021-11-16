@@ -405,6 +405,19 @@ class Payment extends Entity
     // --------------------------------------------------------------------------
 
     /**
+     * Whether the payment has is considered as having been processed
+     *
+     * @return bool
+     * @throws FactoryException
+     */
+    public function hasBeenProcessed(): bool
+    {
+        return !$this->isPending() && !$this->isSentForAuthentication();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Whether the payment is in the PROCESSING state
      *
      * @return bool

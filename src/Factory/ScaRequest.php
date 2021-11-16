@@ -42,11 +42,11 @@ class ScaRequest extends RequestBase
         /** @var \Nails\Invoice\Factory\ChargeRequest $oChargeRequest */
         $oChargeRequest = Factory::factory('ChargeRequest', Constants::MODULE_SLUG);
 
-        if (!$this->getPayment()->isPending()) {
+        if ($this->getPayment()->hasBeenProcessed()) {
             $bSkipPaymentUpdate = true;
             $oScaResponse
                 ->setStatusFailed(
-                    'Payment is not in a pending state',
+                    'Payment is not in a `pending` or `sent for authentication` state',
                     null,
                     'Payment has already been processed'
                 );

@@ -722,7 +722,7 @@ class ChargeRequest extends RequestBase
 
             $this->setPayment($iPaymentId);
 
-        } elseif (!$this->oPayment->isPending()) {
+        } elseif ($this->oPayment->hasBeenProcessed()) {
             throw new ChargeRequestException\PaymentNotPendingException(
                 'Payment has already been processed'
             );
