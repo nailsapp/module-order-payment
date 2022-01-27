@@ -20,6 +20,7 @@ use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
+use Nails\Common\Traits\Model\HasDataColumns;
 use Nails\Config;
 use Nails\Currency;
 use Nails\Factory;
@@ -37,6 +38,10 @@ use Nails\Invoice\Model\Invoice\Email;
  */
 class Invoice extends Base
 {
+    use HasDataColumns;
+
+    // --------------------------------------------------------------------------
+
     /**
      * The table this model represents
      *
@@ -1119,5 +1124,20 @@ class Invoice extends Base
         $aIntegers[] = 'processing_total';
 
         parent::formatObject($oObj, $aData, $aIntegers, $aBools, $aFloats);
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the columns which contain large data
+     *
+     * @return string[]
+     */
+    public function getDataColumns(): array
+    {
+        return [
+            'callback_data',
+            'payment_data',
+        ];
     }
 }
