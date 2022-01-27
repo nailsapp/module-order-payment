@@ -88,6 +88,13 @@ class Invoice extends Base
      */
     protected $oCurrency;
 
+    /**
+     * Whether to exclude data columns from the select query
+     *
+     * @var bool
+     */
+    protected $bExcludeDataFromSelect = false;
+
     // --------------------------------------------------------------------------
 
     /**
@@ -264,7 +271,7 @@ class Invoice extends Base
             /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
             $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
-            $aData['select'] = [
+            $aData['select'] = array_filter([
                 $this->getTableAlias() . '.id',
                 $this->getTableAlias() . '.ref',
                 $this->getTableAlias() . '.token',
@@ -304,8 +311,8 @@ class Invoice extends Base
                         AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
                 ) processing_payments',
                 $this->getTableAlias() . '.additional_text',
-                $this->getTableAlias() . '.callback_data',
-                $this->getTableAlias() . '.payment_data',
+                !$this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.callback_data',
+                !$this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.payment_data',
                 $this->getTableAlias() . '.payment_driver',
                 $this->getTableAlias() . '.billing_address_id',
                 $this->getTableAlias() . '.delivery_address_id',
@@ -313,12 +320,22 @@ class Invoice extends Base
                 $this->getTableAlias() . '.created_by',
                 $this->getTableAlias() . '.modified',
                 $this->getTableAlias() . '.modified_by',
-            ];
+            ]);
         }
+
+        $this->bExcludeDataFromSelect = false;
 
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
 
         return $aItems;
+    }
+
+    // --------------------------------------------------------------------------
+
+    public function excludeDataFromSelect(): self
+    {
+        $this->bExcludeDataFromSelect = true;
+        return $this;
     }
 
     // --------------------------------------------------------------------------
