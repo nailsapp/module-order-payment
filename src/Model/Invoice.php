@@ -311,8 +311,8 @@ class Invoice extends Base
                         AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
                 ) processing_payments',
                 $this->getTableAlias() . '.additional_text',
-                !$this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.callback_data',
-                !$this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.payment_data',
+                $this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.callback_data',
+                $this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.payment_data',
                 $this->getTableAlias() . '.payment_driver',
                 $this->getTableAlias() . '.billing_address_id',
                 $this->getTableAlias() . '.delivery_address_id',
