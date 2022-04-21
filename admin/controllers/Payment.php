@@ -149,11 +149,13 @@ class Payment extends DefaultController
         };
 
         $this->aConfig['INDEX_FIELDS']['Customer'] = function (\Nails\Invoice\Resource\Payment $oPayment) {
-            return sprintf(
-                '%s<small>%s</small>',
-                $oPayment->invoice->customer->label,
-                mailto($oPayment->invoice->customer->email ?? $oPayment->invoice->customer->billing_email)
-            );
+            return $oPayment->invoice->customer
+                ? sprintf(
+                    '%s<small>%s</small>',
+                    $oPayment->invoice->customer->label,
+                    mailto($oPayment->invoice->customer->email ?? $oPayment->invoice->customer->billing_email)
+                )
+                : '<span class="text-muted">&mdash;</span>';
         };
 
         $this->aConfig['INDEX_ROW_BUTTONS'] = array_merge(
