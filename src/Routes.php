@@ -26,7 +26,7 @@ class Routes implements RouteGenerator
      *
      * @return array
      */
-    public static function generate()
+    public static function generate(): array
     {
         return [
             'invoice/payment/sca/(.+)/(.+)' => 'invoice/sca',
