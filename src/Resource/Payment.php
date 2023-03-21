@@ -321,14 +321,14 @@ class Payment extends Entity
         $this->custom_data = Factory::resource(
             'InvoiceDataPayment',
             Constants::MODULE_SLUG,
-            json_decode($this->custom_data) ?: (object) []
+            json_decode((string) $this->custom_data) ?: (object) []
         );
 
         //  SCA Data
         $this->sca_data = Factory::resource(
             'PaymentDataSca',
             Constants::MODULE_SLUG,
-            json_decode($this->sca_data) ?: (object) []
+            json_decode((string) $this->sca_data) ?: (object) []
         );
     }
 

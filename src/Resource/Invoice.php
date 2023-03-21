@@ -318,13 +318,13 @@ class Invoice extends Entity
         $this->callback_data = Factory::resource(
             'InvoiceDataCallback',
             Constants::MODULE_SLUG,
-            json_decode($this->callback_data) ?: (object) []
+            json_decode((string) $this->callback_data) ?: (object) []
         );
 
         $this->payment_data = Factory::resource(
             'InvoiceDataPayment',
             Constants::MODULE_SLUG,
-            json_decode($this->payment_data) ?: (object) []
+            json_decode((string) $this->payment_data) ?: (object) []
         );
     }
 

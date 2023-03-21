@@ -134,7 +134,7 @@ class Source extends Entity
         }
 
         $this->is_expired = $this->isExpired();
-        $this->data       = json_decode($this->data) ?? (object) [];
+        $this->data       = json_decode((string) $this->data) ?? (object) [];
     }
 
     // --------------------------------------------------------------------------

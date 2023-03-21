@@ -182,7 +182,7 @@ class Item extends Entity
         $this->callback_data = Factory::resource(
             'InvoiceItemDataCallback',
             Constants::MODULE_SLUG,
-            json_decode($this->callback_data) ?: (object) []
+            json_decode((string) $this->callback_data) ?: (object) []
         );
     }
 }
