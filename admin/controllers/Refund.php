@@ -166,11 +166,13 @@ class Refund extends DefaultController
         };
 
         $this->aConfig['INDEX_FIELDS']['Customer'] = function (\Nails\Invoice\Resource\Refund $oRefund) {
-            return sprintf(
-                '%s<small>%s</small>',
-                $oRefund->payment->invoice->customer->label,
-                mailto($oRefund->payment->invoice->customer->email ?? $oRefund->payment->invoice->customer->billing_email)
-            );
+            return $oRefund->payment->invoice->customer
+                ? sprintf(
+                    '%s<small>%s</small>',
+                    $oRefund->payment->invoice->customer->label,
+                    mailto($oRefund->payment->invoice->customer->email ?? $oRefund->payment->invoice->customer->billing_email)
+                )
+                : '<span class="text-muted">&mdash;</span>';
         };
 
         $this->aConfig['INDEX_ROW_BUTTONS'] = array_merge(
