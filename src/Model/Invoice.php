@@ -18,6 +18,7 @@ use DateTime;
 use Exception;
 use Nails\Common\Exception\FactoryException;
 use Nails\Common\Exception\ModelException;
+use Nails\Common\Factory\Model\Field;
 use Nails\Common\Model\Base;
 use Nails\Common\Resource;
 use Nails\Common\Traits\Model\HasDataColumns;
@@ -87,13 +88,6 @@ class Invoice extends Base
      * @var Currency\Service\Currency
      */
     protected $oCurrency;
-
-    /**
-     * Whether to exclude data columns from the select query
-     *
-     * @var bool
-     */
-    protected $bExcludeDataFromSelect = false;
 
     // --------------------------------------------------------------------------
 
@@ -271,59 +265,16 @@ class Invoice extends Base
             /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
             $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
 
-            $aData['select'] = array_filter([
-                $this->getTableAlias() . '.id',
-                $this->getTableAlias() . '.ref',
-                $this->getTableAlias() . '.token',
-                $this->getTableAlias() . '.state',
-                $this->getTableAlias() . '.dated',
-                $this->getTableAlias() . '.terms',
-                $this->getTableAlias() . '.due',
-                $this->getTableAlias() . '.paid',
-                $this->getTableAlias() . '.customer_id',
-                $this->getTableAlias() . '.email',
-                $this->getTableAlias() . '.currency',
-                $this->getTableAlias() . '.sub_total',
-                $this->getTableAlias() . '.tax_total',
-                $this->getTableAlias() . '.grand_total',
-                '(
-                    SELECT
-                        SUM(amount)
-                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
-                        WHERE
-                        invoice_id = ' . $this->getTableAlias() . '.id
-                        AND status = \'' . $oPaymentModel::STATUS_COMPLETE . '\'
-                ) paid_total',
-                '(
-                    SELECT
-                        SUM(amount)
-                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
-                        WHERE
-                        invoice_id = ' . $this->getTableAlias() . '.id
-                        AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
-                ) processing_total',
-                '(
-                    SELECT
-                        COUNT(id)
-                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
-                        WHERE
-                        invoice_id = ' . $this->getTableAlias() . '.id
-                        AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
-                ) processing_payments',
-                $this->getTableAlias() . '.additional_text',
-                $this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.callback_data',
-                $this->bExcludeDataFromSelect ? null : $this->getTableAlias() . '.payment_data',
-                $this->getTableAlias() . '.payment_driver',
-                $this->getTableAlias() . '.billing_address_id',
-                $this->getTableAlias() . '.delivery_address_id',
-                $this->getTableAlias() . '.created',
-                $this->getTableAlias() . '.created_by',
-                $this->getTableAlias() . '.modified',
-                $this->getTableAlias() . '.modified_by',
-            ]);
+            $aData['select'] = array_values(
+                array_merge(
+                    array_map(
+                        fn(Field $oField) => $this->getTableAlias(true) . $oField->getKey(),
+                        $this->describeFields()
+                    ),
+                    $this->getDynamicColumns()
+                )
+            );
         }
-
-        $this->bExcludeDataFromSelect = false;
 
         $aItems = parent::getAll($iPage, $iPerPage, $aData, $bIncludeDeleted);
 
@@ -332,10 +283,37 @@ class Invoice extends Base
 
     // --------------------------------------------------------------------------
 
-    public function excludeDataFromSelect(): self
+    public function getDynamicColumns(): array
     {
-        $this->bExcludeDataFromSelect = true;
-        return $this;
+        /** @var \Nails\Invoice\Model\Payment $oPaymentModel */
+        $oPaymentModel = Factory::model('Payment', Constants::MODULE_SLUG);
+
+        return [
+            '(
+                    SELECT
+                        SUM(amount)
+                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
+                        WHERE
+                        invoice_id = ' . $this->getTableAlias() . '.id
+                        AND status = \'' . $oPaymentModel::STATUS_COMPLETE . '\'
+                ) paid_total',
+            '(
+                    SELECT
+                        SUM(amount)
+                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
+                        WHERE
+                        invoice_id = ' . $this->getTableAlias() . '.id
+                        AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
+                ) processing_total',
+            '(
+                    SELECT
+                        COUNT(id)
+                        FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
+                        WHERE
+                        invoice_id = ' . $this->getTableAlias() . '.id
+                        AND status = \'' . $oPaymentModel::STATUS_PROCESSING . '\'
+                ) processing_payments',
+        ];
     }
 
     // --------------------------------------------------------------------------
@@ -1119,7 +1097,6 @@ class Invoice extends Base
 
     /**
      * Formats a single object
-     *
      * The getAll() method iterates over each returned item with this method so as to
      * correctly format the output. Use this to cast integers and booleans and/or organise data into objects.
      *
