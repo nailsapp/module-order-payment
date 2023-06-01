@@ -35,70 +35,70 @@ class ResponseBase
      *
      * @var bool
      */
-    protected $bIsLocked = false;
+    protected bool $bIsLocked = false;
 
     /**
      * The response's status
      *
      * @var string
      */
-    protected $sStatus = self::STATUS_PENDING;
+    protected string $sStatus = self::STATUS_PENDING;
 
     /**
      * The error message
      *
      * @var string
      */
-    protected $sErrorMessage = '';
+    protected string $sErrorMessage = '';
 
     /**
      * The user-friendly error message
      *
      * @var string
      */
-    protected $sErrorMessageUser = '';
+    protected string $sErrorMessageUser = '';
 
     /**
      * The error code
      *
      * @var string
      */
-    protected $sErrorCode = '';
+    protected string $sErrorCode = '';
 
     /**
      * The transaction ID
      *
      * @var string
      */
-    protected $sTransactionId = '';
+    protected string $sTransactionId = '';
 
     /**
      * The fee associated with the transaction
      *
      * @var int
      */
-    protected $iFee = 0;
+    protected int $iFee = 0;
 
     /**
      * The URL to redirect to when successful
      *
      * @var string
      */
-    protected $sSuccessUrl = '';
+    protected string $sSuccessUrl = '';
 
     /**
      * The URL to redirect to in event of an error
      *
      * @var string
      */
-    protected $sErrorUrl = '';
+    protected string $sErrorUrl = '';
 
     // --------------------------------------------------------------------------
 
     /**
      * Returns all the statuses as an array
      *
-     * @return array
+     * @return string[]
      */
     public function getStatuses(): array
     {
@@ -115,7 +115,7 @@ class ResponseBase
     /**
      * Returns an array of statuses with human friendly labels
      *
-     * @return array
+     * @return string[]
      */
     public function getStatusesHuman(): array
     {
@@ -217,8 +217,8 @@ class ResponseBase
      * @throws ResponseException
      */
     public function setStatusFailed(
-        $sReasonMsg = null,
-        $sReasonCode = null,
+        string $sReasonMsg = null,
+        string $sReasonCode = null,
         string $sUserFeedback = ''
     ): ResponseBase {
 
