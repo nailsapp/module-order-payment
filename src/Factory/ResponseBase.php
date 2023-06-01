@@ -254,7 +254,7 @@ class ResponseBase
      */
     public function isPending(): bool
     {
-        return $this->getStatus() == self::STATUS_PENDING;
+        return $this->getStatus() === self::STATUS_PENDING;
     }
 
     // --------------------------------------------------------------------------
@@ -266,7 +266,7 @@ class ResponseBase
      */
     public function isProcessing(): bool
     {
-        return $this->getStatus() == self::STATUS_PROCESSING;
+        return $this->getStatus() === self::STATUS_PROCESSING;
     }
 
     // --------------------------------------------------------------------------
@@ -278,7 +278,7 @@ class ResponseBase
      */
     public function isComplete(): bool
     {
-        return $this->getStatus() == self::STATUS_COMPLETE;
+        return $this->getStatus() === self::STATUS_COMPLETE;
     }
 
     // --------------------------------------------------------------------------
@@ -290,7 +290,7 @@ class ResponseBase
      */
     public function isFailed(): bool
     {
-        return $this->getStatus() == self::STATUS_FAILED;
+        return $this->getStatus() === self::STATUS_FAILED;
     }
 
     // --------------------------------------------------------------------------
