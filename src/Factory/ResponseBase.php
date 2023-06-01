@@ -226,8 +226,8 @@ class ResponseBase
             throw new ResponseException('Response is locked and cannot be modified');
         }
 
-        $this->setErrorMessage(trim($sReasonMsg));
-        $this->setErrorCode(trim($sReasonCode));
+        $this->setErrorMessage(trim((string) $sReasonMsg));
+        $this->setErrorCode(trim((string) $sReasonCode));
         $this->setErrorMessageUser(trim($sUserFeedback));
 
         return $this->setStatus(self::STATUS_FAILED);
