@@ -217,8 +217,8 @@ class ResponseBase
      * @throws ResponseException
      */
     public function setStatusFailed(
-        $sReasonMsg = null,
-        $sReasonCode = null,
+        string $sReasonMsg = null,
+        string $sReasonCode = null,
         string $sUserFeedback = ''
     ): ResponseBase {
 
@@ -415,7 +415,7 @@ class ResponseBase
      * @return $this
      * @throws ResponseException
      */
-    public function setTransactionId($sTransactionId): ResponseBase
+    public function setTransactionId(string $sTransactionId): ResponseBase
     {
         if ($this->isLocked()) {
             throw new ResponseException('Response is locked and cannot be modified');
@@ -447,7 +447,7 @@ class ResponseBase
      * @return $this
      * @throws ResponseException
      */
-    public function setFee($iFee): ResponseBase
+    public function setFee(int $iFee): ResponseBase
     {
         if ($this->isLocked()) {
             throw new ResponseException('Response is locked and cannot be modified');
