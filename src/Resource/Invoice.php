@@ -217,6 +217,20 @@ class Invoice extends Entity
      */
     public $items;
 
+    /**
+     * The invoice payments (expandable field)
+     *
+     * @var ExpandableField
+     */
+    public $payments;
+
+    /**
+     * The invoice refunds (expandable field)
+     *
+     * @var ExpandableField
+     */
+    public $refunds;
+
     // --------------------------------------------------------------------------
 
     /**
