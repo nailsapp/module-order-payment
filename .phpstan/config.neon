@@ -3,3 +3,14 @@ parameters:
     paths:
         - ../src
         - ../tests
+    bootstrapFiles:
+        - constants.php
+        - classes/App/Controller/Base.php
+    scanFiles:
+        - ../vendor/codeigniter/framework/system/database/drivers/mysqli/mysqli_result.php
+        - ../vendor/nails/common/src/Common/CodeIgniter/Core/Common.php
+    scanDirectories:
+        - ../vendor/codeigniter/framework/system/helpers
+        - ../vendor/nails/common/helpers
+        - ../vendor/nails/module-admin/helpers
+        - ../vendor/nails/module-auth/helpers

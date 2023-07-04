@@ -17,6 +17,13 @@ use Nails\Factory;
 class Formatted extends Resource
 {
     /**
+     * The currency
+     *
+     * @var \Nails\Currency\Resource\Currency
+     */
+    public $currency;
+
+    /**
      * The sub total
      *
      * @var string

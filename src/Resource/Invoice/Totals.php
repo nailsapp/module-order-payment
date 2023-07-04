@@ -17,6 +17,13 @@ use Nails\Invoice\Resource\Invoice\Totals\Raw;
 class Totals extends Resource
 {
     /**
+     * The currency
+     *
+     * @var \Nails\Currency\Resource\Currency
+     */
+    public $currency;
+
+    /**
      * The raw totals
      *
      * @var Raw

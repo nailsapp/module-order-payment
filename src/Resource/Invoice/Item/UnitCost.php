@@ -17,6 +17,13 @@ use Nails\Invoice\Constants;
 class UnitCost extends Resource
 {
     /**
+     * The currency
+     *
+     * @var \Nails\Currency\Resource\Currency
+     */
+    public $currency;
+
+    /**
      * The raw totals
      *
      * @var int

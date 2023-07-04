@@ -21,7 +21,6 @@ use Nails\Invoice\Constants;
 
 /**
  * Allow the app to add functionality, if needed
- * Negative conditional helps with static analysis
  */
 if (!class_exists('\App\Invoice\Controller\Base')) {
     abstract class BaseMiddle extends \App\Controller\Base
@@ -32,13 +31,16 @@ if (!class_exists('\App\Invoice\Controller\Base')) {
     {
         public function __construct()
         {
+            /** @phpstan-ignore-next-line */
             if (!classExtends(parent::class, \App\Controller\Base::class)) {
                 throw new NailsException(sprintf(
                     'Class %s must extend %s',
+                    /** @phpstan-ignore-next-line */
                     parent::class,
                     \App\Controller\Base::class
                 ));
             }
+            /** @phpstan-ignore-next-line */
             parent::__construct();
         }
     }

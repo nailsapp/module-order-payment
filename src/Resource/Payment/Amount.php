@@ -17,14 +17,21 @@ use Nails\Factory;
 class Amount extends Resource
 {
     /**
-     * The amount' raw value
+     * The amount's currency
+     *
+     * @var \Nails\Currency\Resource\Currency
+     */
+    public $currency;
+
+    /**
+     * The amount's raw value
      *
      * @var string
      */
     public $raw;
 
     /**
-     * The amount' formatted value
+     * The amount' sformatted value
      *
      * @var string
      */
