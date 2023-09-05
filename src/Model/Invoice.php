@@ -295,7 +295,7 @@ class Invoice extends Base
                         FROM `' . Config::get('NAILS_DB_PREFIX') . 'invoice_payment`
                         WHERE
                         invoice_id = ' . $this->getTableAlias() . '.id
-                        AND status = \'' . $oPaymentModel::STATUS_COMPLETE . '\'
+                        AND status IN (\'' . $oPaymentModel::STATUS_COMPLETE . '\', \'' . $oPaymentModel::STATUS_REFUNDED . '\', \'' . $oPaymentModel::STATUS_REFUNDED_PARTIAL . '\')
                 ) paid_total',
             '(
                     SELECT
