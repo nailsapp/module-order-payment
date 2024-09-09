@@ -127,16 +127,20 @@ class Source extends Base
             $oResource->label = 'Payment Source';
         }
 
-        //  Ensure data is encoded to a string
-        $oResource->data = json_encode($oResource->data);
-
-        $aResource = (array) $oResource;
-        unset($aResource['is_expired']);
-        unset($aResource['customer']);
-        unset($aResource['billing_address']);
-
         /** @var Resource\Source $oSource */
-        $oSource = parent::create($aResource, $bReturnObject);
+        $oSource = parent::create(
+            [
+                'customer_id' => $oResource->customer_id,
+                'driver'      => $oResource->driver,
+                'data'        => json_encode($oResource->data),
+                'label'       => $oResource->label,
+                'name'        => $oResource->name,
+                'brand'       => $oResource->brand,
+                'last_four'   => $oResource->last_four,
+                'expiry'      => $oResource->expiry->format('Y-m-d'),
+            ],
+            $bReturnObject
+        );
 
         //  Set as default payment source if no existing default for customer
         $oDefault = $this->getDefault($oResource->customer_id);
