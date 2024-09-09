@@ -137,7 +137,7 @@ class Source extends Base
                 'name'        => $oResource->name,
                 'brand'       => $oResource->brand,
                 'last_four'   => $oResource->last_four,
-                'expiry'      => $oResource->expiry->format('Y-m-d'),
+                'expiry'      => $oResource->expiry,
             ],
             $bReturnObject
         );
