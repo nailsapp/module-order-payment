@@ -13,8 +13,8 @@
     }
     ?>
 </form>
-<script>
+<?=scriptOpen()?>
 window.onload = function() {
     document.getElementById('form').submit();
 }
-</script>
+<?=scriptClose()?>
