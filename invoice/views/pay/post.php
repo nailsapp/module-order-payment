@@ -21,8 +21,8 @@
     }
     ?>
 </form>
-<script type="text/javascript">
+<?=scriptOpen()?>
 window.onload = function() {
     document.getElementById('form').submit();
 }
-</script>
+<?=scriptClose()?>
